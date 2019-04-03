@@ -146,13 +146,18 @@ namespace Unity.Collections
         //@TODO: Test for AddRange
         public void AddRange(NativeArray<T> elements)
         {
-            if (m_ListData->length + elements.Length > m_ListData->capacity)
-                Capacity = m_ListData->length + elements.Length * 2;
+            AddRange(elements.GetUnsafeReadOnlyPtr(), elements.Length);
+        }
+
+        public void AddRange(void* elements, int count)
+        {
+            if (m_ListData->length + count > m_ListData->capacity)
+                Capacity = m_ListData->length + count * 2;
 
             var sizeOf = UnsafeUtility.SizeOf<T> ();
-            UnsafeUtility.MemCpy((byte*)m_ListData->buffer + m_ListData->length * sizeOf, elements.GetUnsafePtr(), sizeOf * elements.Length);
+            UnsafeUtility.MemCpy((byte*)m_ListData->buffer + m_ListData->length * sizeOf, elements, sizeOf * count);
 
-            m_ListData->length += elements.Length;
+            m_ListData->length += count;
         }
 
 		public void RemoveAtSwapBack(int index)
@@ -193,7 +198,7 @@ namespace Unity.Collections
         /// <summary>
         /// Does NOT allocate memory, but shares it.
         /// </summary>
-		public NativeArray<T> ToNativeArray()
+		public NativeArray<T> AsNativeArray()
 		{
 		    return NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T> (m_ListData->buffer, m_ListData->length, Collections.Allocator.Invalid);
 		}

@@ -1,4 +1,6 @@
-﻿using System;
+#if !UNITY_ZEROPLAYER
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -156,22 +158,14 @@ namespace Unity.Collections.Experimental
             m_Allocator = label;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if UNITY_2018_3_OR_NEWER
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, label);
-#else
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth);
-#endif
 #endif
         }
 
         public void Dispose()
         {
 			#if ENABLE_UNITY_COLLECTIONS_CHECKS
-			#if UNITY_2018_3_OR_NEWER
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-			#else
-            DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
-			#endif
 			#endif
 
             if (m_Base != null)
@@ -287,22 +281,14 @@ namespace Unity.Collections.Experimental
             m_Allocator = label;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if UNITY_2018_3_OR_NEWER
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, label);
-#else
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth);
-#endif
 #endif
         }
 
         public void Dispose()
         {
 			#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            #if UNITY_2018_3_OR_NEWER
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-            #else
-            DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
-            #endif
 			#endif
 
             if (m_Base != null)
@@ -355,3 +341,4 @@ namespace Unity.Collections.Experimental
         }
     }
 }
+#endif

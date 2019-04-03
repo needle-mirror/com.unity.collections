@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Unity.Collections;
 
 public class NativeHashMapTests
@@ -216,5 +217,97 @@ public class NativeHashMapTests
 		}
 
 		hashMap.Dispose ();
+	}
+
+	[Test]
+	public void GetKeysEmpty()
+	{
+		var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
+	    var keys = hashMap.GetKeyArray(Allocator.Temp);
+	    hashMap.Dispose();
+
+	    Assert.AreEqual(0, keys.Length);
+		keys.Dispose ();
+	}
+
+	[Test]
+	public void GetKeys()
+	{
+		var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
+	    for (int i = 0; i < 30; ++i)
+	    {
+	        hashMap.TryAdd(i, 2 * i);
+	    }
+	    var keys = hashMap.GetKeyArray(Allocator.Temp);
+	    hashMap.Dispose();
+
+	    Assert.AreEqual(30, keys.Length);
+	    NativeSortExtension.Sort(keys);
+	    for (int i = 0; i < 30; ++i)
+	    {
+	        Assert.AreEqual(i, keys[i]);
+	    }
+		keys.Dispose ();
+	}
+
+    public struct EntityGuid : IEquatable<EntityGuid>, IComparable<EntityGuid>
+    {
+        public ulong a;
+        public ulong b;
+
+        public bool Equals(EntityGuid other)
+        {
+            return a == other.a && b == other.b;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (a.GetHashCode() * 397) ^ b.GetHashCode();
+            }
+        }
+
+        public int CompareTo(EntityGuid other)
+        {
+            var aComparison = a.CompareTo(other.a);
+            if (aComparison != 0) return aComparison;
+            return b.CompareTo(other.b);
+        }
+    }
+
+
+	[Test]
+	public void GetKeysGuid()
+	{
+		var hashMap = new NativeHashMap<EntityGuid, int> (1, Allocator.Temp);
+	    for (int i = 0; i < 30; ++i)
+	    {
+	        var didAdd = hashMap.TryAdd(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, 2 * i);
+	        Assert.IsTrue(didAdd);
+	    }
+	    
+        // Validate Hashtable has all the expected values
+	    Assert.AreEqual(30, hashMap.Length);
+	    for (int i = 0; i < 30; ++i)
+	    {
+	        int output;
+	        var exists = hashMap.TryGetValue(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, out output);
+	        Assert.IsTrue(exists);
+	        Assert.AreEqual(2 * i, output);
+	    }
+
+	    // Validate keys array
+	    var keys = hashMap.GetKeyArray(Allocator.Temp);
+	    Assert.AreEqual(30, keys.Length);
+
+	    keys.Sort();
+	    for (int i = 0; i < 30; ++i)
+	    {
+	        Assert.AreEqual(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, keys[i]);
+	    }
+
+	    hashMap.Dispose();
+	    keys.Dispose ();
 	}
 }

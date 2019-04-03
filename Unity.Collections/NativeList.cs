@@ -26,13 +26,8 @@ namespace Unity.Collections
 	    unsafe NativeList(int capacity, Allocator i_label, int stackDepth)
 	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if UNITY_2018_3_OR_NEWER
 	        var guardian = new NativeBufferSentinel(stackDepth, i_label);
 	        m_Safety = (i_label == Allocator.Temp) ? AtomicSafetyHandle.GetTempMemoryHandle() : AtomicSafetyHandle.Create();
-#else
-	        var guardian = new NativeBufferSentinel(stackDepth);
-	        m_Safety = AtomicSafetyHandle.Create();
-#endif
 	        m_Impl = new NativeListImpl<T, DefaultMemoryManager, NativeBufferSentinel>(capacity, i_label, guardian);
 #else
             m_Impl = new NativeListImpl<T, DefaultMemoryManager>(capacity, i_label);
@@ -106,6 +101,11 @@ namespace Unity.Collections
             m_Impl.AddRange(elements);
         }
 
+        public unsafe void AddRange(void* elements, int count)
+        {
+            m_Impl.AddRange(elements, count);
+        }
+
 		public void RemoveAtSwapBack(int index)
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -123,10 +123,8 @@ namespace Unity.Collections
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		    AtomicSafetyHandle.CheckDeallocateAndThrow(m_Safety);
-#if UNITY_2018_3_OR_NEWER
 		    if (AtomicSafetyHandle.IsTempMemoryHandle(m_Safety))
 		        m_Safety = AtomicSafetyHandle.Create();
-#endif
 		    AtomicSafetyHandle.Release(m_Safety);
 #endif
 		    m_Impl.Dispose();
@@ -143,21 +141,33 @@ namespace Unity.Collections
 
 	    public static implicit operator NativeArray<T> (NativeList<T> nativeList)
 	    {
+	        return nativeList.AsArray();
+	    }
+
+	    public NativeArray<T> AsArray()
+	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-	        AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(nativeList.m_Safety);
-	        var arraySafety = nativeList.m_Safety;
+	        AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+	        var arraySafety = m_Safety;
 	        AtomicSafetyHandle.UseSecondaryVersion(ref arraySafety);
 #endif
 
-	        var array = nativeList.m_Impl.ToNativeArray();
+	        var array = m_Impl.AsNativeArray();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	        NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, arraySafety);
 #endif
 	        return array;
 	    }
+	    
+	    
+	    [Obsolete("Please use AsDeferredJobArray")]
+	    public NativeArray<T> ToDeferredJobArray()
+	    {
+	        return AsDeferredJobArray();
+	    }
 
-	    public unsafe NativeArray<T> ToDeferredJobArray()
+	    public unsafe NativeArray<T> AsDeferredJobArray()
 	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	        AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
@@ -175,12 +185,19 @@ namespace Unity.Collections
 
 	        return array;
 	    }
-
+	    
 
 		public T[] ToArray()
 		{
 		    NativeArray<T> nativeArray = this;
 		    return nativeArray.ToArray();
+		}
+
+		public NativeArray<T> ToArray(Allocator allocator)
+		{
+		    NativeArray<T> result = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+		    result.CopyFrom(this);
+		    return result;
 		}
 
 		public void CopyFrom(T[] array)
