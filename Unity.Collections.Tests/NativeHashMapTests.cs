@@ -1,15 +1,40 @@
 ﻿using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 
 public class NativeHashMapTests
 {
+#pragma warning disable 0649 // always defaul value
+    struct NonBlittableStruct : IEquatable<NonBlittableStruct>
+    {
+         object o;
+
+         public bool Equals(NonBlittableStruct other)
+         {
+             return Equals(o, other.o);
+         }
+
+         public override bool Equals(object obj)
+         {
+             if (ReferenceEquals(null, obj)) return false;
+             return obj is NonBlittableStruct other && Equals(other);
+         }
+
+         public override int GetHashCode()
+         {
+             return (o != null ? o.GetHashCode() : 0);
+         }
+    }
+#pragma warning restore 0649
+
 	[Test]
 	public void Non_Blittable_Throws()
 	{
 #pragma warning disable 0219 // assigned but its value is never used
-		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<bool, int>(16, Allocator.Temp); });
-		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<int, bool>(16, Allocator.Temp); });
+		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<NonBlittableStruct, int>(16, Allocator.Temp); });
+		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<int, NonBlittableStruct>(16, Allocator.Temp); });
 #pragma warning restore 0219
 	}
 
@@ -269,7 +294,7 @@ public class NativeHashMapTests
         }
         values.Dispose();
     }
-    
+
     [Test]
     public void NativeMultiHashMapGetKeys()
     {
@@ -310,7 +335,7 @@ public class NativeHashMapTests
         }
         keys.Item1.Dispose();
     }
-    
+
     [Test]
     public void NativeMultiHashMapGetValues()
     {
@@ -331,7 +356,7 @@ public class NativeHashMapTests
         }
         values.Dispose();
     }
-            
+
     public struct EntityGuid : IEquatable<EntityGuid>, IComparable<EntityGuid>
     {
         public ulong a;
@@ -368,7 +393,7 @@ public class NativeHashMapTests
 	        var didAdd = hashMap.TryAdd(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, 2 * i);
 	        Assert.IsTrue(didAdd);
 	    }
-	    
+
         // Validate Hashtable has all the expected values
 	    Assert.AreEqual(30, hashMap.Length);
 	    for (int i = 0; i < 30; ++i)

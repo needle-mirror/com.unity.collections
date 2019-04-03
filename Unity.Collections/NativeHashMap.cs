@@ -54,16 +54,13 @@ namespace Unity.Collections
         }
 
         [BurstDiscard]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal static void IsBlittableAndThrow<TKey, TValue>()
             where TKey : struct
             where TValue : struct
         {
-            if (!UnsafeUtility.IsBlittable<TKey>())
-                throw new ArgumentException(string.Format("{0} used in NativeHashMap<{0},{1}> must be blittable",
-                    typeof(TKey), typeof(TValue)));
-            if (!UnsafeUtility.IsBlittable<TValue>())
-                throw new ArgumentException(string.Format("{1} used in NativeHashMap<{0},{1}> must be blittable",
-                    typeof(TKey), typeof(TValue)));
+            CollectionHelper.CheckIsUnmanaged<TKey>();
+            CollectionHelper.CheckIsUnmanaged<TValue>();
         }
 
         public static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
@@ -71,9 +68,7 @@ namespace Unity.Collections
             where TKey : struct
             where TValue : struct
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
             IsBlittableAndThrow<TKey, TValue>();
-#endif
 
             NativeHashMapData* data = (NativeHashMapData*) UnsafeUtility.Malloc(sizeof(NativeHashMapData),
                 UnsafeUtility.AlignOf<NativeHashMapData>(), label);

@@ -1,4 +1,8 @@
-﻿using System.Runtime.InteropServices;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Burst;
 
 namespace Unity.Collections
 {
@@ -54,5 +58,13 @@ namespace Unity.Collections
             }
             return (uint)hash;
         }        
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [BurstDiscard]
+        public static void CheckIsUnmanaged<T>()
+        {
+            if (!UnsafeUtilityEx.IsUnmanaged<T>())
+                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable or primitive");
+        }
     }
 }

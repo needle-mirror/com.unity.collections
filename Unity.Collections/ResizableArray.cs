@@ -35,93 +35,121 @@ namespace Unity.Collections
         const int k_BufferSizeInBytes = k_TotalSizeInBytes - sizeof(int);
         const int k_BufferSizeInInts = k_BufferSizeInBytes / sizeof(int);
 
-        int m_Count;
+        int m_Length;
 #pragma warning disable 649
         fixed int m_Buffer[k_BufferSizeInInts];
 #pragma warning restore 649
 
         public int Length
         {
-            get => m_Count;
+            get => m_Length;
             [WriteAccessRequired] set
             {
                 CheckResize(value);
-                m_Count = value;
+                m_Length = value;
             }
         }
 
-        public int Capacity
-            => k_BufferSizeInBytes / UnsafeUtility.SizeOf<T>();
+        int LengthBytes =>
+            m_Length * UnsafeUtility.SizeOf<T>();
+
+        public int Capacity =>
+            k_BufferSizeInBytes / UnsafeUtility.SizeOf<T>();
 
         public T this[int index]
         {
             get
             {
                 CheckElementAccess(index);
-                fixed(void *b = m_Buffer)
+                fixed (void* b = m_Buffer)
                     return UnsafeUtility.ReadArrayElement<T>(b, index);
             }
             [WriteAccessRequired] set
             {
                 CheckElementAccess(index);
-                fixed(void *b = m_Buffer)
+                fixed (void* b = m_Buffer)
                     UnsafeUtility.WriteArrayElement(b, index, value);
             }
         }
         
         // ReSharper disable once NonReadonlyMemberInGetHashCode
         public override int GetHashCode()
-            => (int)CollectionHelper.hash(GetUnsafePointer(), m_Count * UnsafeUtility.SizeOf<T>());
-
-        [WriteAccessRequired] public void Add(T a)
         {
-            this[Length++] = a;
+            fixed (void* b = m_Buffer)
+                return (int)CollectionHelper.hash(b, LengthBytes);
         }
 
-        public ResizableArray64Byte(T a)
+        public override bool Equals(object other) =>
+            throw new InvalidOperationException("Calling this function is a sign of inadvertent boxing");
+
+        public bool Equals(ref ResizableArray64Byte<T> other)
         {
-            m_Count = 1;
+            if (m_Length != other.m_Length)
+                return false;
+
+            fixed (void* ba = m_Buffer, bb = other.m_Buffer)
+                return UnsafeUtility.MemCmp(ba, bb, LengthBytes) == 0;
+        }
+
+        [WriteAccessRequired] public void Add(T value) =>
+            this[Length++] = value;
+
+        public ResizableArray64Byte(T value)
+        {
+            m_Length = 1;
             CheckResize(1);
-            this[0] = a;
+            fixed (void* b = m_Buffer)
+                UnsafeUtility.WriteArrayElement(b, 0, value);
         }
 
-        public ResizableArray64Byte(T a, T b)
+        public ResizableArray64Byte(T value0, T value1)
         {
-            m_Count = 2;
+            m_Length = 2;
             CheckResize(2);
-            this[0] = a;
-            this[1] = b;
+            fixed (void* b = m_Buffer)
+            {
+                UnsafeUtility.WriteArrayElement(b, 0, value0);
+                UnsafeUtility.WriteArrayElement(b, 1, value1);
+            }
         }
 
-        public ResizableArray64Byte(T a, T b, T c)
+        public ResizableArray64Byte(T value0, T value1, T value2)
         {
-            m_Count = 3;
+            m_Length = 3;
             CheckResize(3);
-            this[0] = a;
-            this[1] = b;
-            this[2] = c;
+            fixed (void* b = m_Buffer)
+            {
+                UnsafeUtility.WriteArrayElement(b, 0, value0);
+                UnsafeUtility.WriteArrayElement(b, 1, value1);
+                UnsafeUtility.WriteArrayElement(b, 2, value2);
+            }
         }
 
-        public ResizableArray64Byte(T a, T b, T c, T d)
+        public ResizableArray64Byte(T value0, T value1, T value2, T value3)
         {
-            m_Count = 4;
+            m_Length = 4;
             CheckResize(4);
-            this[0] = a;
-            this[1] = b;
-            this[2] = c;
-            this[3] = d;
+            fixed (void* b = m_Buffer)
+            {
+                UnsafeUtility.WriteArrayElement(b, 0, value0);
+                UnsafeUtility.WriteArrayElement(b, 1, value1);
+                UnsafeUtility.WriteArrayElement(b, 2, value2);
+                UnsafeUtility.WriteArrayElement(b, 3, value3);
+            }
         }
 
-        public ResizableArray64Byte(T a, T b, T c, T d, T e)
+        public ResizableArray64Byte(T value0, T value1, T value2, T value3, T value4)
         {
-            m_Count = 5;
+            m_Length = 5;
             CheckResize(5);
-            this[0] = a;
-            this[1] = b;
-            this[2] = c;
-            this[3] = d;
-            this[4] = e;
+            fixed (void* b = m_Buffer)
+            {
+                UnsafeUtility.WriteArrayElement(b, 0, value0);
+                UnsafeUtility.WriteArrayElement(b, 1, value1);
+                UnsafeUtility.WriteArrayElement(b, 2, value2);
+                UnsafeUtility.WriteArrayElement(b, 3, value3);
+                UnsafeUtility.WriteArrayElement(b, 4, value4);
+            }
         }
-
     }
 }

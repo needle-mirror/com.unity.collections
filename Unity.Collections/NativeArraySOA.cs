@@ -142,12 +142,7 @@ namespace Unity.Collections.Experimental
 
         public NativeArrayChunked8(int length, Allocator label, int stackDepth)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!UnsafeUtility.IsBlittable<T>())
-            {
-                throw new ArgumentException($"{typeof(T)} is not blittable");
-            }
-#endif
+            CollectionHelper.CheckIsUnmanaged<T>();
             if (!ms_CachedLayout.IsCreated)
             {
                 ms_CachedLayout = new StructLayoutData4(typeof(T));
@@ -265,12 +260,7 @@ namespace Unity.Collections.Experimental
 
         public NativeArrayFullSOA(int length, Allocator label, int stackDepth)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!UnsafeUtility.IsBlittable<T>())
-            {
-                throw new ArgumentException($"{typeof(T)} is not blittable");
-            }
-#endif
+            CollectionHelper.CheckIsUnmanaged<T>();
             if (!ms_CachedLayout.IsCreated)
             {
                 ms_CachedLayout = new StructLayoutData4(typeof(T));

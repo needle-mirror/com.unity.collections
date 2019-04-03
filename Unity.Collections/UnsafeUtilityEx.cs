@@ -35,5 +35,10 @@ namespace Unity.Collections.LowLevel.Unsafe
                 for (int i = 0; i < count; ++i)
                     ((byte*) destination)[i] = value;
         }
+
+        public static bool IsUnmanaged<T>()
+        {
+            return UnsafeUtility.IsUnmanaged<T>();
+        }
     }
 }

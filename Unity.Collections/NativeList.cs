@@ -51,7 +51,7 @@ namespace Unity.Collections
             if (capacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be >= 0");
 
-            IsBlittableAndThrow();
+            CollectionHelper.CheckIsUnmanaged<T>();
 
             // Make sure we cannot allocate more than int.MaxValue (2,147,483,647 bytes)
             // because the underlying UnsafeUtility.Malloc is expecting a int.
@@ -71,15 +71,6 @@ namespace Unity.Collections
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, m_Allocator);
 #endif
 	    }
-
-        [BurstDiscard]
-        internal static void IsBlittableAndThrow()
-        {
-            if (!UnsafeUtility.IsBlittable<T>())
-            {
-                throw new ArgumentException(string.Format("{0} used in NativeList<{0}> must be blittable", typeof(T)));
-            }
-        }
 
 	    public T this [int index]
 		{
@@ -165,7 +156,7 @@ namespace Unity.Collections
         public unsafe void AddRange(void* elements, int count)
         {
             if (m_ListData->length + count > m_ListData->capacity)
-                Capacity = m_ListData->length + count * 2;
+                Capacity = (m_ListData->length + count) * 2;
 
             var sizeOf = UnsafeUtility.SizeOf<T> ();
             UnsafeUtility.MemCpy((byte*)m_ListData->buffer + m_ListData->length * sizeOf, elements, sizeOf * count);

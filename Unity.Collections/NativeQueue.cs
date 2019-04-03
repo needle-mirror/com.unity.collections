@@ -95,7 +95,7 @@ namespace Unity.Collections
                         prev = (byte*)block;
                     }
                     data.firstBlock = (IntPtr)prev;
-                    
+
 #if !UNITY_CSHARP_TINY
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
 #endif
@@ -205,11 +205,9 @@ namespace Unity.Collections
 
         public unsafe NativeQueue(Allocator label)
         {
+            CollectionHelper.CheckIsUnmanaged<T>();
+
             m_QueuePool = NativeQueueBlockPool.QueueBlockPool;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (!UnsafeUtility.IsBlittable<T>())
-                throw new ArgumentException(string.Format("{0} used in NativeQueue<{0}> must be blittable", typeof(T)));
-#endif
             m_AllocatorLabel = label;
 
 			NativeQueueData.AllocateQueue<T>(label, out m_Buffer);
@@ -344,7 +342,7 @@ namespace Unity.Collections
 			concurrent.m_Safety = m_Safety;
 			AtomicSafetyHandle.UseSecondaryVersion(ref concurrent.m_Safety);
 #endif
-            
+
             concurrent.m_Buffer = m_Buffer;
             concurrent.m_QueuePool = m_QueuePool;
             concurrent.m_ThreadIndex = 0;
