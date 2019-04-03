@@ -4,7 +4,6 @@ using System.Threading;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
-using Unity.Mathematics;
 
 namespace Unity.Collections
 {
@@ -70,7 +69,7 @@ namespace Unity.Collections
             NativeHashMapData* data = (NativeHashMapData*) UnsafeUtility.Malloc(sizeof(NativeHashMapData),
                 UnsafeUtility.AlignOf<NativeHashMapData>(), label);
 
-            bucketLength = math.ceil_pow2(bucketLength);
+            bucketLength = CollectionHelper.CeilPow2(bucketLength);
 
             data->capacity = length;
             data->bucketCapacityMask = bucketLength - 1;
@@ -92,7 +91,7 @@ namespace Unity.Collections
             where TKey : struct
             where TValue : struct
         {
-            newBucketCapacity = math.ceil_pow2(newBucketCapacity);
+            newBucketCapacity = CollectionHelper.CeilPow2(newBucketCapacity);
 
             if (data->capacity == newCapacity && (data->bucketCapacityMask + 1) == newBucketCapacity)
                 return;
@@ -950,8 +949,8 @@ namespace Unity.Collections
                             else
                             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                                var startIndex = math.min(firstValue, value);
-                                var lastIndex = math.max(firstValue, value);
+                                var startIndex = Math.Min(firstValue, value);
+                                var lastIndex = Math.Max(firstValue, value);
                                 var rangeLength = (lastIndex - startIndex) + 1;
 
                                 JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData,

@@ -21,6 +21,21 @@ namespace Unity.Collections
             IntroSort<T, U>(array.GetUnsafePtr(), 0, array.Length - 1, (int)(2 * Math.Floor(Math.Log(array.Length, 2))), comp);
         }
 
+        unsafe public static void Sort<T>(this NativeSlice<T> slice) where T : struct, IComparable<T>
+        {
+            slice.Sort(new DefaultComparer<T>());
+        }
+
+        unsafe public static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (slice.Stride != UnsafeUtility.SizeOf<T>())
+                throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
+#endif
+
+            IntroSort<T, U>(slice.GetUnsafePtr(), 0, slice.Length - 1, (int)(2 * Math.Floor(Math.Log(slice.Length, 2))), comp);
+        }
+
         const int k_IntrosortSizeThreshold = 16;
         unsafe static void IntroSort<T, U>(void* array, int lo, int hi, int depth, U comp) where T : struct where U : IComparer<T>
         {

@@ -190,4 +190,80 @@ public class NativeArraySortTests
         array.Dispose();
     }
 
+    [Test]
+    public void SortNativeSlice_ReturnSorted()
+    {
+        var random = new System.Random();
+        NativeArray<int> array = new NativeArray<int>(1000, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; ++i)
+        {
+            array[i] = random.Next(int.MinValue, int.MaxValue);
+        }
+
+        var slice = new NativeSlice<int>(array, 200, 600);
+
+        slice.Sort();
+
+        int min = slice[0];
+        foreach (var i in slice)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+
+        array.Dispose();
+    }
+
+    [Test]
+    public void SortNativeSlice_DoesNotChangeArrayBeyondLimits()
+    {
+        var random = new System.Random();
+        NativeArray<int> array = new NativeArray<int>(1000, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; ++i)
+        {
+            array[i] = random.Next(int.MinValue, int.MaxValue);
+        }
+        var backupArray = new NativeArray<int>(array.Length, Allocator.Persistent);
+        backupArray.CopyFrom(array);
+
+        var slice = new NativeSlice<int>(array, 200, 600);
+
+        slice.Sort();
+
+        for (var i = 0; i < 200; ++i)
+        {
+            Assert.AreEqual(backupArray[i], array[i]);
+        }
+
+        for (var i = 800; i < 1000; ++i)
+        {
+            Assert.AreEqual(backupArray[i], array[i]);
+        }
+
+        array.Dispose();
+        backupArray.Dispose();
+    }
+
+    [Test]
+    public void SortNativeSlice_WithCustomStride_ThrowsInvalidOperationException()
+    {
+        var random = new System.Random();
+        NativeArray<int> array = new NativeArray<int>(10, Allocator.Persistent);
+        for (int i = 0; i < array.Length; ++i)
+        {
+            array[i] = random.Next(int.MinValue, int.MaxValue);
+        }
+
+        var slice = new NativeSlice<int>(array, 2, 6);
+        var sliceWithCustomStride = slice.SliceWithStride<short>();
+
+        Assert.DoesNotThrow(() => slice.Sort());
+        Assert.Throws<InvalidOperationException>(() => sliceWithCustomStride.Sort());
+
+        array.Dispose();
+    }
 }

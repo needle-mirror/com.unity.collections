@@ -32,7 +32,6 @@ public class NativeListJobDebuggerTests
 		}
 	}
 
-
 	[Test]
 	public void AddElementToListFromJobInvalidatesArray()
 	{
@@ -199,7 +198,29 @@ public class NativeListJobDebuggerTests
 		}
 		list.Dispose();
 	}
+    
+    struct InvalidArrayAccessFromListJob : IJob
+    {
+        public NativeList<int> list;
 
+        public void Execute()
+        {
+            list.Add (1);
+            NativeArray<int> array = list;
+            list.Add (2);
+
+            Assert.Throws<InvalidOperationException> (() => { array[0] = 5; } );
+        }
+    }
+
+    [Test]
+    [Ignore("Inside Jobs atomic safety handles are effectively disabled...")]
+    public void InvalidArrayAccessFromList() 
+    {
+        var job = new InvalidArrayAccessFromListJob { list = new NativeList<int>(Allocator.TempJob) };
+        job.Schedule().Complete();
+        job.list.Dispose();
+    }
 }
 //@TODO: Test for List read writing protection checks..
 

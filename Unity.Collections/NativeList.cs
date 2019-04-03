@@ -135,7 +135,7 @@ namespace Unity.Collections
 		public void Clear()
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-		    AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+		    AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
 
 		    m_Impl.Clear();
@@ -144,9 +144,8 @@ namespace Unity.Collections
 	    public static implicit operator NativeArray<T> (NativeList<T> nativeList)
 	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-	        AtomicSafetyHandle arraySafety = new AtomicSafetyHandle();
 	        AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(nativeList.m_Safety);
-	        arraySafety = nativeList.m_Safety;
+	        var arraySafety = nativeList.m_Safety;
 	        AtomicSafetyHandle.UseSecondaryVersion(ref arraySafety);
 #endif
 
@@ -162,8 +161,6 @@ namespace Unity.Collections
 	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	        AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
-	        AtomicSafetyHandle arraySafety = m_Safety;
-	        AtomicSafetyHandle.UseSecondaryVersion(ref arraySafety);
 #endif
 
 	        byte* buffer = (byte*)m_Impl.GetListData();
@@ -173,7 +170,7 @@ namespace Unity.Collections
 	        var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T> (buffer, 0, Allocator.Invalid);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-	        NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, arraySafety);
+	        NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, m_Safety);
 #endif
 
 	        return array;
@@ -197,7 +194,7 @@ namespace Unity.Collections
 		public void ResizeUninitialized(int length)
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-		    AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+		    AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
 			m_Impl.ResizeUninitialized(length);
 		}

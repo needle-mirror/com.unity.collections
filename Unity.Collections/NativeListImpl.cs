@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
 using System.Diagnostics;
 
 namespace Unity.Collections
@@ -202,7 +201,7 @@ namespace Unity.Collections
 
 		public void ResizeUninitialized(int length)
 		{
-		    Capacity = math.max(length, Capacity);
+		    Capacity = Math.Max(length, Capacity);
 			m_ListData->length = length;
 		}
 
