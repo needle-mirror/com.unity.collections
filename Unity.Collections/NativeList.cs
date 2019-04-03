@@ -20,8 +20,8 @@ namespace Unity.Collections
 	    internal NativeListImpl<T, DefaultMemoryManager> m_Impl;
 #endif
 
-        public unsafe NativeList(Allocator i_label) : this (1, i_label, 1) { }
-	    public unsafe NativeList(int capacity, Allocator i_label) : this (capacity, i_label, 1) { }
+        public unsafe NativeList(Allocator i_label) : this (1, i_label, 2) { }
+	    public unsafe NativeList(int capacity, Allocator i_label) : this (capacity, i_label, 2) { }
 
 	    unsafe NativeList(int capacity, Allocator i_label, int stackDepth)
 	    {

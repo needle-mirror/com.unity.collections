@@ -2,11 +2,34 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Mathematics;
+
+public class MathTests
+{
+    [Test]
+    public void Tests()
+    {
+        Assert.AreEqual(0, math_2.log2_floor(1));
+        Assert.AreEqual(1, math_2.log2_floor(2));
+        Assert.AreEqual(1, math_2.log2_floor(3));
+        Assert.AreEqual(2, math_2.log2_floor(4));
+        
+        Assert.AreEqual(3, math_2.log2_floor(15));
+        Assert.AreEqual(4, math_2.log2_floor(16));
+        Assert.AreEqual(4, math_2.log2_floor(19));
+
+        Assert.AreEqual(30, math_2.log2_floor(int.MaxValue));
+        Assert.AreEqual(16, math_2.log2_floor(1 << 16));
+        
+        Assert.AreEqual(-1, math_2.log2_floor(0));
+    }
+}
+
 
 public class NativeArraySortTests
 {
     [Test]
-    public void SortNativeArray_RandomInts_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new System.Random();
         NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
@@ -19,7 +42,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        int min = array[0];
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
@@ -29,7 +52,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_SortedInts_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_SortedInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
         Assert.IsTrue(array.IsCreated);
@@ -41,7 +64,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        int min = array[0];
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
@@ -51,7 +74,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_RandomBytes_ReturnSorted([Values(1, 10, 1000, 10000, 100000)] int size)
+    public void SortNativeArray_RandomBytes_ReturnSorted([Values(0, 1, 10, 1000, 10000, 100000)] int size)
     {
         var random = new System.Random();
         NativeArray<byte> array = new NativeArray<byte>(size, Allocator.Persistent);
@@ -64,7 +87,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        int min = array[0];
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
@@ -74,7 +97,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_RandomShorts_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_RandomShorts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new System.Random();
         NativeArray<short> array = new NativeArray<short>(size, Allocator.Persistent);
@@ -87,7 +110,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        int min = array[0];
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
@@ -97,7 +120,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_RandomFloats_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_RandomFloats_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new System.Random();
         NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
@@ -110,7 +133,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        float min = array[0];
+        float min = float.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
@@ -126,7 +149,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_RandomComparableType_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_RandomComparableType_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new System.Random();
         NativeArray<ComparableType> array = new NativeArray<ComparableType>(size, Allocator.Persistent);
@@ -142,7 +165,7 @@ public class NativeArraySortTests
 
         array.Sort();
 
-        int min = array[0].value;
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i.value);
@@ -165,7 +188,7 @@ public class NativeArraySortTests
     }
 
     [Test]
-    public void SortNativeArray_RandomNonComparableType_ReturnSorted([Values(1, 10, 1000, 10000)] int size)
+    public void SortNativeArray_RandomNonComparableType_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new System.Random();
         NativeArray<NonComparableType> array = new NativeArray<NonComparableType>(size, Allocator.Persistent);
@@ -181,7 +204,7 @@ public class NativeArraySortTests
 
         array.Sort(new NonComparableTypeComparator());
 
-        int min = array[0].value;
+        int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i.value);
@@ -206,7 +229,7 @@ public class NativeArraySortTests
 
         slice.Sort();
 
-        int min = slice[0];
+        int min = int.MinValue;
         foreach (var i in slice)
         {
             Assert.LessOrEqual(min, i);
