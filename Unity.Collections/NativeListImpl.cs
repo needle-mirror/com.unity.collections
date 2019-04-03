@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
-using System.Diagnostics;
 
 namespace Unity.Collections
 {

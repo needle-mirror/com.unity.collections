@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Collections;
-using UnityEngine;
 
 public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {
