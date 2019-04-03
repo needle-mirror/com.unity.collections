@@ -1,8 +1,5 @@
 {
     "name": "Unity.Collections",
-    "references": [
-        "Unity.Mathematics"
-    ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,19 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
-
-//@TODO: Move this into proper mathematics related place
-namespace Unity.Mathematics
-{
-    public class math_2
-    {
-        public static int log2_floor(int value)
-        {
-            return 31 - math.lzcnt(value);
-        }
-    }
-}
 
 namespace Unity.Collections
 {
@@ -32,7 +19,7 @@ namespace Unity.Collections
         unsafe public static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
         {
             
-            IntroSort<T, U>(array.GetUnsafePtr(), 0, array.Length - 1, 2 * math_2.log2_floor(array.Length), comp);
+            IntroSort<T, U>(array.GetUnsafePtr(), 0, array.Length - 1, 2 * CollectionHelper.log2_floor(array.Length), comp);
         }
 
         unsafe public static void Sort<T>(this NativeSlice<T> slice) where T : struct, IComparable<T>
@@ -47,7 +34,7 @@ namespace Unity.Collections
                 throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
 #endif
 
-            IntroSort<T, U>(slice.GetUnsafePtr(), 0, slice.Length - 1, 2 * math_2.log2_floor(slice.Length), comp);
+            IntroSort<T, U>(slice.GetUnsafePtr(), 0, slice.Length - 1, 2 * CollectionHelper.log2_floor(slice.Length), comp);
         }
 
         const int k_IntrosortSizeThreshold = 16;

@@ -2,26 +2,25 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
-using Unity.Mathematics;
 
 public class MathTests
 {
     [Test]
     public void Tests()
     {
-        Assert.AreEqual(0, math_2.log2_floor(1));
-        Assert.AreEqual(1, math_2.log2_floor(2));
-        Assert.AreEqual(1, math_2.log2_floor(3));
-        Assert.AreEqual(2, math_2.log2_floor(4));
+        Assert.AreEqual(0, CollectionHelper.log2_floor(1));
+        Assert.AreEqual(1, CollectionHelper.log2_floor(2));
+        Assert.AreEqual(1, CollectionHelper.log2_floor(3));
+        Assert.AreEqual(2, CollectionHelper.log2_floor(4));
         
-        Assert.AreEqual(3, math_2.log2_floor(15));
-        Assert.AreEqual(4, math_2.log2_floor(16));
-        Assert.AreEqual(4, math_2.log2_floor(19));
+        Assert.AreEqual(3, CollectionHelper.log2_floor(15));
+        Assert.AreEqual(4, CollectionHelper.log2_floor(16));
+        Assert.AreEqual(4, CollectionHelper.log2_floor(19));
 
-        Assert.AreEqual(30, math_2.log2_floor(int.MaxValue));
-        Assert.AreEqual(16, math_2.log2_floor(1 << 16));
+        Assert.AreEqual(30, CollectionHelper.log2_floor(int.MaxValue));
+        Assert.AreEqual(16, CollectionHelper.log2_floor(1 << 16));
         
-        Assert.AreEqual(-1, math_2.log2_floor(0));
+        Assert.AreEqual(-1, CollectionHelper.log2_floor(0));
     }
 }
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
@@ -52,18 +53,26 @@ namespace Unity.Collections
             return capacity * 2;
         }
 
-        public static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
-            out NativeHashMapData* outBuf)
+        [BurstDiscard]
+        internal static void IsBlittableAndThrow<TKey, TValue>()
             where TKey : struct
             where TValue : struct
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (!UnsafeUtility.IsBlittable<TKey>())
                 throw new ArgumentException(string.Format("{0} used in NativeHashMap<{0},{1}> must be blittable",
                     typeof(TKey), typeof(TValue)));
             if (!UnsafeUtility.IsBlittable<TValue>())
                 throw new ArgumentException(string.Format("{1} used in NativeHashMap<{0},{1}> must be blittable",
                     typeof(TKey), typeof(TValue)));
+        }
+
+        public static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
+            out NativeHashMapData* outBuf)
+            where TKey : struct
+            where TValue : struct
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            IsBlittableAndThrow<TKey, TValue>();
 #endif
 
             NativeHashMapData* data = (NativeHashMapData*) UnsafeUtility.Malloc(sizeof(NativeHashMapData),
@@ -175,8 +184,8 @@ namespace Unity.Collections
             int totalSize = bucketOffset + UnsafeUtility.SizeOf<int>() * bucketLength;
             return totalSize;
         }
-        
-        public static unsafe void GetKeyArray<TKey>(NativeHashMapData* data, NativeArray<TKey> result) 
+
+        public static unsafe void GetKeyArray<TKey>(NativeHashMapData* data, NativeArray<TKey> result)
             where TKey : struct
         {
             var bucketArray = (int*) data->buckets;
@@ -196,8 +205,8 @@ namespace Unity.Collections
 
             Assert.AreEqual(result.Length, o);
         }
-        
-        public static unsafe void GetValueArray<TValue>(NativeHashMapData* data, NativeArray<TValue> result) 
+
+        public static unsafe void GetValueArray<TValue>(NativeHashMapData* data, NativeArray<TValue> result)
             where TValue : struct
         {
             var bucketArray = (int*) data->buckets;
@@ -216,8 +225,8 @@ namespace Unity.Collections
             }
 
             Assert.AreEqual(result.Length, o);
-        }               
-        
+        }
+
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -545,7 +554,7 @@ namespace Unity.Collections
             return true;
         }
     }
-    
+
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerTypeProxy(typeof(NativeHashMapDebuggerTypeProxy<,>))]
@@ -650,7 +659,7 @@ namespace Unity.Collections
 #endif
             return NativeHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out tempIt);
         }
-        
+
         public TValue this [TKey key]
         {
             get
@@ -669,7 +678,7 @@ namespace Unity.Collections
             //@TODO: There is no API to replace values...
         }
 
-        
+
         public bool IsCreated
         {
             get { return m_Buffer != null; }
@@ -716,7 +725,7 @@ namespace Unity.Collections
             NativeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
-        
+
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         public struct Concurrent
@@ -928,7 +937,7 @@ namespace Unity.Collections
             NativeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
-        
+
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         public struct Concurrent

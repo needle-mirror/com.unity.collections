@@ -1,7 +1,5 @@
 using System;
 using System.Diagnostics;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Mathematics;
 using UnityEngine.Assertions;
 
 namespace Unity.Collections.LowLevel.Unsafe
@@ -30,7 +28,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var itemsPerCacheLine = 64 / sizeOf;
                 if(targetCapacity < itemsPerCacheLine)
                     targetCapacity = itemsPerCacheLine;
-                targetCapacity = math.ceilpow2(targetCapacity);
+                targetCapacity = CollectionHelper.CeilPow2(targetCapacity);
             }
             var newCapacity = targetCapacity; 
             if (newCapacity == m_capacity)
