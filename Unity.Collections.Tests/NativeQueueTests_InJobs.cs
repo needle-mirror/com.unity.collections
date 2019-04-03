@@ -50,4 +50,53 @@ public class NativeQueueTests_InJobs
 		queue.Dispose();
 		writeStatus.Dispose();
 	}
+
+    struct EnqueueDequeueJob : IJob
+    {
+        public NativeQueue<int> q;
+        [ReadOnly] public NativeArray<int> arr;
+        public int val;
+
+        public void Execute()
+        {
+            for (int i = 0; i < 10000; ++i)
+            {
+                q.Enqueue(0);
+                val += arr[q.Dequeue()];
+            }
+        }
+
+    }
+
+    [Test]
+	public void EnqueueDequeueMultipleQueuesInMultipleJobs()
+	{
+	    var handles = new NativeArray<JobHandle>(4, Allocator.Temp);
+	    for (int i = 0; i < 10; ++i)
+	    {
+            var q1 = new NativeQueue<int>(Allocator.TempJob);
+            var q2 = new NativeQueue<int>(Allocator.TempJob);
+            var q3 = new NativeQueue<int>(Allocator.TempJob);
+            var q4 = new NativeQueue<int>(Allocator.TempJob);
+            var rangeCheck = new NativeArray<int>(1, Allocator.TempJob);
+            var j1 = new EnqueueDequeueJob {q = q1, arr = rangeCheck, val = 0};
+            var j2 = new EnqueueDequeueJob {q = q2, arr = rangeCheck, val = 0};
+            var j3 = new EnqueueDequeueJob {q = q3, arr = rangeCheck, val = 0};
+            var j4 = new EnqueueDequeueJob {q = q4, arr = rangeCheck, val = 0};
+	        handles[0] = j1.Schedule();
+	        handles[1] = j2.Schedule();
+	        handles[2] = j3.Schedule();
+	        handles[3] = j4.Schedule();
+	        JobHandle.ScheduleBatchedJobs();
+
+	        JobHandle.CombineDependencies(handles).Complete();
+
+            q1.Dispose();
+            q2.Dispose();
+            q3.Dispose();
+            q4.Dispose();
+            rangeCheck.Dispose();
+	    }
+	    handles.Dispose();
+	}
 }

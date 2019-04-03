@@ -1,6 +1,6 @@
 {
   "name": "com.unity.collections",
-  "version": "0.0.9-preview.8",
+  "version": "0.0.9-preview.9",
   "unity": "2018.2",
   "description": "Additional Unity Native Collections. NaitiveQueue, NativeHashMap, NativeMultiHashMap, NativeList.",
   "keywords": [

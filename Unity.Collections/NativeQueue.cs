@@ -18,20 +18,38 @@ namespace Unity.Collections
         internal int allocatedBlocks;
         internal int MaxBlocks;
         internal const int BlockSize = 16*1024;
+        internal int allocLock;
 
         public byte* AllocateBlock()
         {
+            // There can only ever be a single thread allocating an entry from the free list since it needs to
+            // access the content of the block (the next pointer) before doing the CAS.
+            // If there was no lock thread A could read the next pointer, thread B could quickly allocate
+            // the same block then free it with another next pointer before thread A performs the CAS which
+            // leads to an invalid free list potentially causing memory corruption.
+            // Having multiple threads freeing data concurrently to each other while another thread is allocating
+            // is no problems since there is only ever a single thread modifying global data in that case.
+            while (Interlocked.CompareExchange(ref allocLock, 1, 0) != 0)
+            {
+            }
+
+            byte* checkBlock = (byte*)firstBlock;
             byte* block;
             do
             {
-                block = (byte*)firstBlock;
+                block = checkBlock;
                 if (block == null)
                 {
+                    Interlocked.Exchange(ref allocLock, 0);
                     Interlocked.Increment(ref allocatedBlocks);
                     block = (byte*)UnsafeUtility.Malloc(BlockSize, 16, Allocator.Persistent);
                     return block;
                 }
-            } while (Interlocked.CompareExchange(ref firstBlock, (IntPtr)((NativeQueueBlockHeader*)block)->nextBlock, (IntPtr)block) != (IntPtr)block);
+
+                checkBlock = (byte*)Interlocked.CompareExchange(ref firstBlock,
+                    (IntPtr) ((NativeQueueBlockHeader*) block)->nextBlock, (IntPtr) block);
+            } while (checkBlock != block);
+            Interlocked.Exchange(ref allocLock, 0);
             return block;
         }
         public void FreeBlock(byte* block)
@@ -45,10 +63,16 @@ namespace Unity.Collections
                 }
                 Interlocked.Increment(ref allocatedBlocks);
             }
+
+            byte* checkBlock = (byte*) firstBlock;
+            byte* nextPtr;
             do
             {
-                ((NativeQueueBlockHeader*)block)->nextBlock = (byte*)firstBlock;
-            } while (Interlocked.CompareExchange(ref firstBlock, (IntPtr)block, (IntPtr)((NativeQueueBlockHeader*)block)->nextBlock) != (IntPtr)((NativeQueueBlockHeader*)block)->nextBlock);
+                nextPtr = checkBlock;
+                ((NativeQueueBlockHeader*)block)->nextBlock = checkBlock;
+                checkBlock = (byte*)Interlocked.CompareExchange(ref firstBlock, (IntPtr) block,
+                    (IntPtr) checkBlock);
+            } while (checkBlock != nextPtr);
         }
     }
     internal unsafe static class NativeQueueBlockPool
@@ -61,6 +85,7 @@ namespace Unity.Collections
                 if (data.allocatedBlocks == 0)
                 {
                     data.allocatedBlocks = data.MaxBlocks = 256;
+                    data.allocLock = 0;
                     // Allocate MaxBlocks items
                     byte* prev = null;
                     for (int i = 0; i < data.MaxBlocks; ++i)
@@ -68,8 +93,8 @@ namespace Unity.Collections
                         NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)UnsafeUtility.Malloc(NativeQueueBlockPoolData.BlockSize, 16, Allocator.Persistent);
                         block->nextBlock = prev;
                         prev = (byte*)block;
-                        data.firstBlock = (IntPtr)block;
                     }
+                    data.firstBlock = (IntPtr)prev;
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
                 }
                 return (NativeQueueBlockPoolData*)UnsafeUtility.AddressOf<NativeQueueBlockPoolData>(ref data);
@@ -93,7 +118,6 @@ namespace Unity.Collections
     {
         public byte* m_FirstBlock;
         public IntPtr m_LastBlock;
-        public byte* m_FreeBlocks;
 
         public int m_ItemsPerBlock;
 
@@ -115,11 +139,11 @@ namespace Unity.Collections
                 currentWriteBlock = pool->AllocateBlock();
                 ((NativeQueueBlockHeader*)currentWriteBlock)->nextBlock = null;
                 ((NativeQueueBlockHeader*)currentWriteBlock)->itemsInBlock = 0;
-                if (data->m_LastBlock == IntPtr.Zero && Interlocked.CompareExchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock, IntPtr.Zero) == IntPtr.Zero)
+                NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
+                if (prevLast == null)
                     data->m_FirstBlock = currentWriteBlock;
                 else
                 {
-                    NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
                     prevLast->nextBlock = currentWriteBlock;
                 }
                 data->m_CurrentWriteBlockTLS[tlsIdx * IntsPerCacheLine] = currentWriteBlock;
@@ -135,7 +159,6 @@ namespace Unity.Collections
 
             data->m_FirstBlock = null;
             data->m_LastBlock = IntPtr.Zero;
-            data->m_FreeBlocks = null;
             data->m_ItemsPerBlock = (NativeQueueBlockPoolData.BlockSize - UnsafeUtility.SizeOf<NativeQueueBlockHeader>()) / UnsafeUtility.SizeOf<T>();
 
             data->m_CurrentReadIndexInBlock = 0;
@@ -264,8 +287,8 @@ namespace Unity.Collections
             ++m_Buffer->m_CurrentReadIndexInBlock;
             if (m_Buffer->m_CurrentReadIndexInBlock >= ((NativeQueueBlockHeader*)firstBlock)->itemsInBlock)
             {
+                m_Buffer->m_CurrentReadIndexInBlock = 0;
                 m_Buffer->m_FirstBlock = ((NativeQueueBlockHeader*)firstBlock)->nextBlock;
-                m_QueuePool->FreeBlock(firstBlock);
                 if (m_Buffer->m_FirstBlock == null)
                     m_Buffer->m_LastBlock = IntPtr.Zero;
                 for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
@@ -273,7 +296,7 @@ namespace Unity.Collections
                     if (m_Buffer->m_CurrentWriteBlockTLS[tls * NativeQueueData.IntsPerCacheLine] == firstBlock)
                         m_Buffer->m_CurrentWriteBlockTLS[tls * NativeQueueData.IntsPerCacheLine] = null;
                 }
-                m_Buffer->m_CurrentReadIndexInBlock = 0;
+                m_QueuePool->FreeBlock(firstBlock);
             }
             return true;
 		}
