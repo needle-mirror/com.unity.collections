@@ -79,7 +79,9 @@ public class NativeListJobDebuggerTests
 
 		// For that reason casting here is legal, as opposed to AddElementToListFromJobInvalidatesArray case where it is not legal
 		// Since we NativeList is passed to the job
+#pragma warning disable 0219 // assigned but its value is never used
 		NativeArray<int> array = list;
+#pragma warning restore 0219
 
 		writeJobHandle.Complete ();
 		list.Dispose();
@@ -91,7 +93,9 @@ public class NativeListJobDebuggerTests
 		var list = new NativeList<int> (1, Allocator.Persistent);
 
 		var addListJobHandle = new NativeListAddJob(list).Schedule();
+#pragma warning disable 0219 // assigned but its value is never used
 		Assert.Throws<System.InvalidOperationException> (()=> { NativeArray<int> array = list; });
+#pragma warning restore 0219
 
 		addListJobHandle.Complete ();
 		list.Dispose();

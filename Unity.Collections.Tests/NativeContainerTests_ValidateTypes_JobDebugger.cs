@@ -7,29 +7,23 @@ public class NativeContainderTests_ValidateTypes_JobDebugger : NativeContainerTe
 {
 	struct WriteOnlyHashMapParallelForJob : IJobParallelFor
 	{
-#pragma warning disable 0169 // "never used" warning
         [WriteOnly]
 		NativeHashMap<int, int> value;
-#pragma warning restore 0169
 
 		public void Execute(int index) {}
 	}
 	
 	struct ReadWriteMultiHashMapParallelForJob : IJobParallelFor
 	{
-#pragma warning disable 0169 // "never used" warning
 		NativeMultiHashMap<int, int> value;
-#pragma warning restore 0169
 
 		public void Execute(int index) {}
 	}
 	
 	struct DeallocateOnJobCompletionOnUnsupportedType : IJob
 	{
-#pragma warning disable 0169 // "never used" warning
 		[DeallocateOnJobCompletion]
 		NativeList<float> value;
-#pragma warning restore 0169
 
 		public void Execute() {}
 	}

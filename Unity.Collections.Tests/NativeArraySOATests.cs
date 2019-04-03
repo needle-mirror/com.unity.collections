@@ -40,23 +40,17 @@ class NativeArrayChunked8Tests
 
     struct F1
     {
-#pragma warning disable 0169 // "never used" warning
         byte a;
-#pragma warning restore 0169
     }
 
     struct F2
     {
-#pragma warning disable 0169 // "never used" warning
         short a;
-#pragma warning restore 0169
     }
 
     struct F3
     {
-#pragma warning disable 0169 // "never used" warning
         double a;
-#pragma warning restore 0169
     }
 
     [Test]
@@ -178,23 +172,17 @@ class NativeArrayFullSOATests
 
     struct F1
     {
-#pragma warning disable 0169 // "never used" warning
         byte a;
-#pragma warning restore 0169
     }
 
     struct F2
     {
-#pragma warning disable 0169 // "never used" warning
         short a;
-#pragma warning restore 0169
     }
 
     struct F3
     {
-#pragma warning disable 0169 // "never used" warning
         double a;
-#pragma warning restore 0169
     }
 
     [Test]

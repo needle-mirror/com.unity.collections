@@ -28,7 +28,6 @@ public class NativeContainerTests_ValidateTypes : NativeContainerTests_ValidateT
 		public NativeArray<float> 	nativeArrayRO;
 
 		public NativeArray<float> 	nativeArrayRW;
-#pragma warning disable 0169 // "never used" warning
 		GenericStruct<float>	value;
 		Vector3 				vec3;
 		float 					floatVal;
@@ -38,7 +37,6 @@ public class NativeContainerTests_ValidateTypes : NativeContainerTests_ValidateT
 		short 					shortValue;
 		char 					charValue;
 		MyTestEnum 				myEnum;
-#pragma warning restore 0169
 
 		public void Execute() {}
 	}

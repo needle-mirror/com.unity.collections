@@ -6,8 +6,10 @@ public class NativeHashMapTests
 	[Test]
 	public void Non_Blittable_Throws()
 	{
+#pragma warning disable 0219 // assigned but its value is never used
 		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<bool, int>(16, Allocator.Temp); });
 		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<int, bool>(16, Allocator.Temp); });
+#pragma warning restore 0219
 	}
 
 	[Test]
