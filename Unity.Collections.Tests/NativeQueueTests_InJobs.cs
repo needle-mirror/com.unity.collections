@@ -32,7 +32,7 @@ public class NativeQueueTests_InJobs
 		var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
 
 		var enqueueJob = new ConcurrentEnqueue();
-		enqueueJob.queue = queue;
+		enqueueJob.queue = queue.ToConcurrent();
 		enqueueJob.result = writeStatus;
 
 		enqueueJob.Schedule(queueSize, 1).Complete();

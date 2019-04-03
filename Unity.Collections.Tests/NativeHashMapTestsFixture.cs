@@ -7,7 +7,7 @@ public class NativeHashMapTestsFixture
 	
 	public struct HashMapWriteJob : IJob
 	{
-		public NativeHashMap<int, int>.Concurrent 	hashMap;
+		public NativeHashMap<int, int>.Concurrent hashMap;
 		public NativeArray<int> 		status;
 		public int 						keyMod;
 

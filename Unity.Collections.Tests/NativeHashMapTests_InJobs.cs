@@ -14,7 +14,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
         var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap;
+        writeData.hashMap = hashMap.ToConcurrent();
         writeData.status = writeStatus;
         writeData.keyMod = hashMapSize;
 
@@ -45,7 +45,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
         var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap;
+        writeData.hashMap = hashMap.ToConcurrent();
         writeData.status = writeStatus;
         writeData.keyMod = hashMapSize;
         var readData = new HashMapReadParallelForJob();
@@ -85,7 +85,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
         var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap;
+        writeData.hashMap = hashMap.ToConcurrent();
         writeData.status = writeStatus;
         writeData.keyMod = 16;
         var readData = new HashMapReadParallelForJob();
@@ -142,7 +142,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
         var writeJob = new HashMapWriteJob
         {
-            hashMap = hashMap,
+            hashMap = hashMap.ToConcurrent(),
             status = writeStatus,
             keyMod = hashMapSize,
         };

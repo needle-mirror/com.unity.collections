@@ -44,7 +44,7 @@ public class NativeHashMapTests
 		for (int i = 0; i < 16; ++i)
 			Assert.IsTrue(hashMap.TryAdd(i, i), "Failed to add value");
 		// Make sure overallocating throws and exception if using the Concurrent version - normal hash map would grow
-		NativeHashMap<int, int>.Concurrent cHashMap = hashMap;
+		var cHashMap = hashMap.ToConcurrent();
 		Assert.Throws<System.InvalidOperationException> (()=> {cHashMap.TryAdd(100, 100); });
 		hashMap.Dispose ();
 	}

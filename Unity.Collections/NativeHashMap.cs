@@ -630,30 +630,29 @@ namespace Unity.Collections
             m_Buffer = null;
         }
 
+        public Concurrent ToConcurrent()
+        {
+            Concurrent concurrent;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            concurrent.m_Safety = m_Safety;
+#endif
+            concurrent.m_ThreadIndex = 0;
+
+            concurrent.m_Buffer = m_Buffer;
+            return concurrent;
+        }
 
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         public struct Concurrent
         {
-            [NativeDisableUnsafePtrRestriction] NativeHashMapData* m_Buffer;
+            [NativeDisableUnsafePtrRestriction] internal NativeHashMapData* m_Buffer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle m_Safety;
+            internal AtomicSafetyHandle m_Safety;
 #endif
 
-            [NativeSetThreadIndex] int m_ThreadIndex;
-
-            public static implicit operator Concurrent(NativeHashMap<TKey, TValue> hashMap)
-            {
-                Concurrent concurrent;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                concurrent.m_Safety = hashMap.m_Safety;
-#endif
-                concurrent.m_ThreadIndex = 0;
-
-                concurrent.m_Buffer = hashMap.m_Buffer;
-                return concurrent;
-            }
+            [NativeSetThreadIndex] internal int m_ThreadIndex;
 
             public int Capacity
             {
@@ -830,29 +829,29 @@ namespace Unity.Collections
             m_Buffer = null;
         }
 
+        public Concurrent ToConcurrent()
+        {
+            Concurrent concurrent;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            concurrent.m_Safety = m_Safety;
+#endif
+            concurrent.m_ThreadIndex = 0;
+
+            concurrent.m_Buffer = m_Buffer;
+            return concurrent;
+        }
+
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         public struct Concurrent
         {
-            [NativeDisableUnsafePtrRestriction] NativeHashMapData* m_Buffer;
+            [NativeDisableUnsafePtrRestriction] internal NativeHashMapData* m_Buffer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle m_Safety;
+            internal AtomicSafetyHandle m_Safety;
 #endif
 
-            [NativeSetThreadIndex] int m_ThreadIndex;
-
-            public static implicit operator Concurrent(NativeMultiHashMap<TKey, TValue> multiHashMap)
-            {
-                Concurrent concurrent;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                concurrent.m_Safety = multiHashMap.m_Safety;
-#endif
-                concurrent.m_ThreadIndex = 0;
-
-                concurrent.m_Buffer = multiHashMap.m_Buffer;
-                return concurrent;
-            }
+            [NativeSetThreadIndex] internal int m_ThreadIndex;
 
             public int Capacity
             {

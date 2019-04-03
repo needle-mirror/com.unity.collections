@@ -13,7 +13,7 @@ public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 		var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
 		var writeData = new MultiHashMapWriteParallelForJob();
-		writeData.hashMap = hashMap;
+		writeData.hashMap = hashMap.ToConcurrent();
 		writeData.status = writeStatus;
 		writeData.keyMod = hashMapSize;
 		var readData = new MultiHashMapReadParallelForJob();
@@ -43,7 +43,7 @@ public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 		var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
 		var writeData = new MultiHashMapWriteParallelForJob();
-		writeData.hashMap = hashMap;
+		writeData.hashMap = hashMap.ToConcurrent();
 		writeData.status = writeStatus;
 		writeData.keyMod = hashMapSize;
 		var readData = new MultiHashMapReadParallelForJob();
@@ -83,7 +83,7 @@ public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 		var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
 		var writeData = new MultiHashMapWriteParallelForJob();
-		writeData.hashMap = hashMap;
+		writeData.hashMap = hashMap.ToConcurrent();
 		writeData.status = writeStatus;
 		writeData.keyMod = 16;
 		var readData = new MultiHashMapReadParallelForJob();
@@ -123,7 +123,7 @@ public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
             var hashMap = new NativeMultiHashMap<int, int>(count, Allocator.TempJob);
             var addIndexJob = new AddMultiIndex
             {
-                hashMap = hashMap
+                hashMap = hashMap.ToConcurrent()
             };
             var addIndexJobHandle = addIndexJob.Schedule(count, 64);
             addIndexJobHandle.Complete();

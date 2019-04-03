@@ -14,7 +14,7 @@ public class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixtur
 		var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
 		var writeData = new MultiHashMapWriteParallelForJob();
-		writeData.hashMap = hashMap;
+		writeData.hashMap = hashMap.ToConcurrent();
 		writeData.status = writeStatus;
 		writeData.keyMod = hashMapSize;
 		var readData = new MultiHashMapReadParallelForJob();

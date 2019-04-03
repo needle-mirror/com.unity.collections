@@ -315,36 +315,37 @@ namespace Unity.Collections
 			NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
 			m_Buffer = null;
 		}
+
+        public Concurrent ToConcurrent()
+        {
+            NativeQueue<T>.Concurrent concurrent;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+			AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+			concurrent.m_Safety = m_Safety;
+			AtomicSafetyHandle.UseSecondaryVersion(ref concurrent.m_Safety);
+#endif
+            
+            concurrent.m_Buffer = m_Buffer;
+            concurrent.m_QueuePool = m_QueuePool;
+            concurrent.m_ThreadIndex = 0;
+            return concurrent;
+        }
+
 		[NativeContainer]
 		[NativeContainerIsAtomicWriteOnly]
 		unsafe public struct Concurrent
 		{
 			[NativeDisableUnsafePtrRestriction]
-			NativeQueueData* 	m_Buffer;
+			internal NativeQueueData* 	m_Buffer;
 			[NativeDisableUnsafePtrRestriction]
-			NativeQueueBlockPoolData* 	m_QueuePool;
+			internal NativeQueueBlockPoolData* 	m_QueuePool;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-			AtomicSafetyHandle m_Safety;
+			internal AtomicSafetyHandle m_Safety;
 #endif
 
 		    [NativeSetThreadIndex]
-			int m_ThreadIndex;
-
-			unsafe public static implicit operator NativeQueue<T>.Concurrent (NativeQueue<T> queue)
-			{
-				NativeQueue<T>.Concurrent concurrent;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-				AtomicSafetyHandle.CheckWriteAndThrow(queue.m_Safety);
-				concurrent.m_Safety = queue.m_Safety;
-				AtomicSafetyHandle.UseSecondaryVersion(ref concurrent.m_Safety);
-#endif
-
-				concurrent.m_Buffer = queue.m_Buffer;
-                concurrent.m_QueuePool = queue.m_QueuePool;
-				concurrent.m_ThreadIndex = 0;
-				return concurrent;
-			}
+			internal int m_ThreadIndex;
 
 			unsafe public void Enqueue(T entry)
 			{

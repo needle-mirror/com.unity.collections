@@ -22,7 +22,7 @@ public class NativeQueueTests
 	public void ConcurrentEnqueue_Dequeue()
 	{
 		var queue = new NativeQueue<int> (Allocator.Temp);
-		NativeQueue<int>.Concurrent cQueue = queue;
+		var cQueue = queue.ToConcurrent();
 		Assert.AreEqual(0, queue.Count);
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		for (int i = 0; i < 16; ++i)
@@ -126,7 +126,7 @@ public class NativeQueueTests
 	public void ConcurrentEnqueue_Wrap()
 	{
 		var queue = new NativeQueue<int> (Allocator.Temp);
-		NativeQueue<int>.Concurrent cQueue = queue;
+		var cQueue = queue.ToConcurrent();
 		Assert.AreEqual(0, queue.Count);
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		for (int i = 0; i < 256; ++i)
