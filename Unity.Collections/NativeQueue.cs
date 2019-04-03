@@ -187,7 +187,11 @@ namespace Unity.Collections
 			NativeQueueData.AllocateQueue<T>(label, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+			DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+#else
 			DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0);
+#endif
 #endif
 		}
 
@@ -301,7 +305,11 @@ namespace Unity.Collections
 		public void Dispose()
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#else
             DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
 
 			NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);

@@ -64,12 +64,22 @@ namespace Unity.Collections
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
 
+#if UNITY_2018_3_OR_NEWER
+        public NativeBufferSentinel(int stackDepth, Allocator allocator)
+        {
+            AtomicSafetyHandle tempASH;
+            DisposeSentinel.Create(out tempASH, out m_DisposeSentinel, stackDepth, allocator);
+            if (allocator != Allocator.Temp)
+                AtomicSafetyHandle.Release(tempASH);
+        }
+#else
         public NativeBufferSentinel(int stackDepth)
         {
             AtomicSafetyHandle tempASH;
             DisposeSentinel.Create(out tempASH, out m_DisposeSentinel, stackDepth);
             AtomicSafetyHandle.Release(tempASH);
         }
+#endif
 
         public void Dispose()
         {

@@ -26,9 +26,14 @@ namespace Unity.Collections
 	    unsafe NativeList(int capacity, Allocator i_label, int stackDepth)
 	    {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+	        var guardian = new NativeBufferSentinel(stackDepth, i_label);
+	        m_Safety = (i_label == Allocator.Temp) ? AtomicSafetyHandle.GetTempMemoryHandle() : AtomicSafetyHandle.Create();
+#else
 	        var guardian = new NativeBufferSentinel(stackDepth);
-	        m_Impl = new NativeListImpl<T, DefaultMemoryManager, NativeBufferSentinel>(capacity, i_label, guardian);
 	        m_Safety = AtomicSafetyHandle.Create();
+#endif
+	        m_Impl = new NativeListImpl<T, DefaultMemoryManager, NativeBufferSentinel>(capacity, i_label, guardian);
 #else
             m_Impl = new NativeListImpl<T, DefaultMemoryManager>(capacity, i_label);
 #endif
@@ -118,6 +123,10 @@ namespace Unity.Collections
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		    AtomicSafetyHandle.CheckDeallocateAndThrow(m_Safety);
+#if UNITY_2018_3_OR_NEWER
+		    if (AtomicSafetyHandle.IsTempMemoryHandle(m_Safety))
+		        m_Safety = AtomicSafetyHandle.Create();
+#endif
 		    AtomicSafetyHandle.Release(m_Safety);
 #endif
 		    m_Impl.Dispose();
@@ -225,7 +234,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             return nativeList.m_Safety;
         }
-#endif	    
+#endif
 
         public static unsafe void* GetInternalListDataPtrUnchecked<T>(ref NativeList<T> nativeList) where T : struct
         {

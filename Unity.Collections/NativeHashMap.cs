@@ -62,7 +62,7 @@ namespace Unity.Collections
             if (!UnsafeUtility.IsBlittable<TKey>())
                 throw new ArgumentException(string.Format("{0} used in NativeHashMap<{0},{1}> must be blittable",
                     typeof(TKey), typeof(TValue)));
-            if (!UnsafeUtility.IsBlittable<TKey>())
+            if (!UnsafeUtility.IsBlittable<TValue>())
                 throw new ArgumentException(string.Format("{1} used in NativeHashMap<{0},{1}> must be blittable",
                     typeof(TKey), typeof(TValue)));
 #endif
@@ -526,7 +526,11 @@ namespace Unity.Collections
             NativeHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, label, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+#else
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0);
+#endif
 #endif
 
             Clear();
@@ -616,7 +620,11 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#else
             DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
 
             NativeHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
@@ -694,7 +702,11 @@ namespace Unity.Collections
             NativeHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, label, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+#else
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0);
+#endif
 #endif
 
             Clear();
@@ -808,7 +820,11 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#else
             DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
 
             NativeHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);

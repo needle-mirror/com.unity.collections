@@ -74,7 +74,7 @@ namespace Unity.Collections.Experimental
 
                     if (field.FieldType.IsPointer)
                         sizeOf = UnsafeUtility.SizeOf<IntPtr>();
-                    else 
+                    else
                         sizeOf = UnsafeUtility.SizeOf(field.FieldType);
 
                     if ((sizeOf & (sizeOf - 1)) != 0)
@@ -97,7 +97,7 @@ namespace Unity.Collections.Experimental
         }
     }
 
-    public unsafe struct NativeArraySOA<T> : IDisposable where T : struct
+    public unsafe struct NativeArrayChunked8<T> : IDisposable where T : struct
     {
         private static StructLayoutData4 ms_CachedLayout;
 
@@ -120,7 +120,7 @@ namespace Unity.Collections.Experimental
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
             if ((uint)index >= (uint)m_Length)
-                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArraySOA of '{1}' Length.", index, m_Length));
+                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArrayChunked8 of '{1}' Length.", index, m_Length));
 #endif
         }
 
@@ -130,15 +130,15 @@ namespace Unity.Collections.Experimental
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
             if ((uint)index >= (uint)m_Length)
-                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArraySOA of '{1}' Length.", index, m_Length));
+                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArrayChunked8 of '{1}' Length.", index, m_Length));
 #endif
         }
 
-        public NativeArraySOA(int length, Allocator label)
+        public NativeArrayChunked8(int length, Allocator label)
             : this(length, label, 1)
         {}
 
-        public NativeArraySOA(int length, Allocator label, int stackDepth)
+        public NativeArrayChunked8(int length, Allocator label, int stackDepth)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (!UnsafeUtility.IsBlittable<T>())
@@ -151,19 +151,27 @@ namespace Unity.Collections.Experimental
                 ms_CachedLayout = new StructLayoutData4(typeof(T));
             }
 
-            m_Base = (byte*) UnsafeUtility.Malloc(StructLayoutData4.ChunkSizeBytes * ms_CachedLayout.ChunksNeeded(length), StructLayoutData4.ChunkSizeBytes, Allocator.Temp);
+            m_Base = (byte*) UnsafeUtility.Malloc(StructLayoutData4.ChunkSizeBytes * ms_CachedLayout.ChunksNeeded(length) * ms_CachedLayout.FieldCount, StructLayoutData4.ChunkSizeBytes, label);
             m_Length = length;
             m_Allocator = label;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, label);
+#else
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth);
+#endif
 #endif
         }
 
         public void Dispose()
         {
 			#if ENABLE_UNITY_COLLECTIONS_CHECKS
+			#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+			#else
             DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
+			#endif
 			#endif
 
             if (m_Base != null)
@@ -215,6 +223,133 @@ namespace Unity.Collections.Experimental
                     var fieldInfo = ms_CachedLayout.GetFieldInfo(field);
                     *target = bp[fieldInfo.Offset / 4];
                     target += StructLayoutData4.ElementsPerChunk;
+                }
+            }
+        }
+    }
+
+    public unsafe struct NativeArrayFullSOA<T> : IDisposable where T : struct
+    {
+        private static StructLayoutData4 ms_CachedLayout;
+
+        private byte* m_Base;
+        private int   m_Length;
+        private Allocator m_Allocator;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+		internal AtomicSafetyHandle 	m_Safety;
+		[NativeSetClassTypeToNullOnSchedule]
+		DisposeSentinel					m_DisposeSentinel;
+#endif
+
+        public int Length => m_Length;
+        public Allocator Allocator => m_Allocator;
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckReadAccess(int index)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+            if ((uint)index >= (uint)m_Length)
+                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArrayFullSOA of '{1}' Length.", index, m_Length));
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWriteAccess(int index)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+            if ((uint)index >= (uint)m_Length)
+                throw new System.IndexOutOfRangeException(string.Format("Index {0} is out of range in NativeArrayFullSOA of '{1}' Length.", index, m_Length));
+#endif
+        }
+
+        public NativeArrayFullSOA(int length, Allocator label)
+            : this(length, label, 1)
+        {}
+
+        public NativeArrayFullSOA(int length, Allocator label, int stackDepth)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!UnsafeUtility.IsBlittable<T>())
+            {
+                throw new ArgumentException($"{typeof(T)} is not blittable");
+            }
+#endif
+            if (!ms_CachedLayout.IsCreated)
+            {
+                ms_CachedLayout = new StructLayoutData4(typeof(T));
+            }
+
+            m_Base = (byte*) UnsafeUtility.Malloc(4 * length * ms_CachedLayout.FieldCount, StructLayoutData4.ChunkSizeBytes, label);
+            m_Length = length;
+            m_Allocator = label;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, label);
+#else
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth);
+#endif
+#endif
+        }
+
+        public void Dispose()
+        {
+			#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            #if UNITY_2018_3_OR_NEWER
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+            #else
+            DisposeSentinel.Dispose(m_Safety, ref m_DisposeSentinel);
+            #endif
+			#endif
+
+            if (m_Base != null)
+            {
+                UnsafeUtility.Free((void*)m_Base, m_Allocator);
+            }
+        }
+
+        public T this [int index]
+        {
+            get
+            {
+                CheckReadAccess(index);
+
+                T result = default(T);
+                uint* target = (uint*) UnsafeUtility.AddressOf(ref result);
+
+                int fieldCount = ms_CachedLayout.FieldCount;
+                int stride = m_Length;
+
+                uint* bp = (uint*) (m_Base + 4 * index);
+                for (int field = 0; field < fieldCount; ++field)
+                {
+                    var fieldInfo = ms_CachedLayout.GetFieldInfo(field);
+                    target[fieldInfo.Offset / 4] = *bp;
+                    bp += stride;
+                }
+
+                return result;
+            }
+
+            set
+            {
+                CheckWriteAccess(index);
+
+                int fieldCount = ms_CachedLayout.FieldCount;
+
+                int stride = m_Length;
+
+                uint* bp = (uint*)UnsafeUtility.AddressOf(ref value);
+                uint* target = (uint*)(m_Base + 4 * index);
+
+                for (int field = 0; field < fieldCount; ++field)
+                {
+                    var fieldInfo = ms_CachedLayout.GetFieldInfo(field);
+                    *target = bp[fieldInfo.Offset / 4];
+                    target += stride;
                 }
             }
         }

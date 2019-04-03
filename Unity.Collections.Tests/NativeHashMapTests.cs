@@ -4,6 +4,13 @@ using Unity.Collections;
 public class NativeHashMapTests
 {
 	[Test]
+	public void Non_Blittable_Throws()
+	{
+		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<bool, int>(16, Allocator.Temp); });
+		Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<int, bool>(16, Allocator.Temp); });
+	}
+
+	[Test]
 	public void TryAdd_TryGetValue_Clear()
 	{
 		var hashMap = new NativeHashMap<int, int> (16, Allocator.Temp);
