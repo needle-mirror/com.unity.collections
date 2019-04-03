@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Collections.LowLevel.Unsafe;
@@ -195,6 +196,28 @@ namespace Unity.Collections
 
             Assert.AreEqual(result.Length, o);
         }
+        
+        public static unsafe void GetValueArray<TValue>(NativeHashMapData* data, NativeArray<TValue> result) 
+            where TValue : struct
+        {
+            var bucketArray = (int*) data->buckets;
+            var bucketNext = (int*) data->next;
+
+            int o = 0;
+            for (int i = 0; i <= data->bucketCapacityMask; ++i)
+            {
+                int b = bucketArray[i];
+
+                while (b != -1)
+                {
+                    result[o++] = UnsafeUtility.ReadArrayElement<TValue>(data->values, b);
+                    b = bucketNext[b];
+                }
+            }
+
+            Assert.AreEqual(result.Length, o);
+        }               
+        
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -522,9 +545,10 @@ namespace Unity.Collections
             return true;
         }
     }
-
+    
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
+    [DebuggerTypeProxy(typeof(NativeHashMapDebuggerTypeProxy<,>))]
     public unsafe struct NativeHashMap<TKey, TValue> : IDisposable
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -682,6 +706,16 @@ namespace Unity.Collections
             NativeHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
+
+        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            var result = new NativeArray<TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            NativeHashMapData.GetValueArray(m_Buffer, result);
+            return result;
+        }
         
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
@@ -721,6 +755,7 @@ namespace Unity.Collections
 
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
+    [DebuggerTypeProxy(typeof(NativeMultiHashMapDebuggerTypeProxy<,>))]
     public unsafe struct NativeMultiHashMap<TKey, TValue> : IDisposable
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -874,6 +909,26 @@ namespace Unity.Collections
             return concurrent;
         }
 
+        public NativeArray<TKey> GetKeyArray(Allocator allocator)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            var result = new NativeArray<TKey>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            NativeHashMapData.GetKeyArray(m_Buffer, result);
+            return result;
+        }
+
+        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            var result = new NativeArray<TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            NativeHashMapData.GetValueArray(m_Buffer, result);
+            return result;
+        }
+        
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         public struct Concurrent
@@ -909,6 +964,7 @@ namespace Unity.Collections
         }
     }
 
+    [JobProducerType(typeof(JobNativeMultiHashMapUniqueHashExtensions.NativeMultiHashMapUniqueHashJobStruct<>))]
     public interface IJobNativeMultiHashMapMergedSharedKeyIndices
     {
         void ExecuteFirst(int index);
@@ -917,30 +973,26 @@ namespace Unity.Collections
 
     public static class JobNativeMultiHashMapUniqueHashExtensions
     {
-        struct NativeMultiHashMapUniqueHashJobStruct<TJob, TKey>
+        public struct NativeMultiHashMapUniqueHashJobStruct<TJob>
             where TJob : struct, IJobNativeMultiHashMapMergedSharedKeyIndices
-            where TKey : struct, IEquatable<TKey>
         {
-            internal struct JobMultiHashMap
-            {
-                [ReadOnly] public NativeMultiHashMap<TKey, int> HashMap;
-                public TJob JobData;
-            }
+            [ReadOnly] public NativeMultiHashMap<int, int> HashMap;
+            public TJob JobData;
 
             private static IntPtr jobReflectionData;
 
             public static IntPtr Initialize()
             {
                 if (jobReflectionData == IntPtr.Zero)
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(JobMultiHashMap), typeof(TJob),
+                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(NativeMultiHashMapUniqueHashJobStruct<TJob>), typeof(TJob),
                         JobType.ParallelFor, (ExecuteJobFunction) Execute);
                 return jobReflectionData;
             }
 
-            private delegate void ExecuteJobFunction(ref JobMultiHashMap fullData, IntPtr additionalPtr,
+            private delegate void ExecuteJobFunction(ref NativeMultiHashMapUniqueHashJobStruct<TJob> fullData, IntPtr additionalPtr,
                 IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
-            private static unsafe void Execute(ref JobMultiHashMap fullData, IntPtr additionalPtr,
+            public static unsafe void Execute(ref NativeMultiHashMapUniqueHashJobStruct<TJob> fullData, IntPtr additionalPtr,
                 IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
@@ -962,11 +1014,11 @@ namespace Unity.Collections
 
                         while (entryIndex != -1)
                         {
-                            var key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
+                            var key = UnsafeUtility.ReadArrayElement<int>(keys, entryIndex);
                             var value = UnsafeUtility.ReadArrayElement<int>(values, entryIndex);
                             int firstValue;
 
-                            NativeMultiHashMapIterator<TKey> it;
+                            NativeMultiHashMapIterator<int> it;
                             fullData.HashMap.TryGetFirstValue(key, out firstValue, out it);
 
                             // [macton] Didn't expect a usecase for this with multiple same values
@@ -1001,25 +1053,25 @@ namespace Unity.Collections
             }
         }
 
-        public static unsafe JobHandle Schedule<TJob, TKey>(this TJob jobData, NativeMultiHashMap<TKey, int> hashMap,
+        public static unsafe JobHandle Schedule<TJob>(this TJob jobData, NativeMultiHashMap<int, int> hashMap,
             int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobNativeMultiHashMapMergedSharedKeyIndices
-            where TKey : struct, IEquatable<TKey>
         {
-            var fullData = new NativeMultiHashMapUniqueHashJobStruct<TJob, TKey>.JobMultiHashMap
+            var fullData = new NativeMultiHashMapUniqueHashJobStruct<TJob>
             {
                 HashMap = hashMap,
                 JobData = jobData
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref fullData),
-                NativeMultiHashMapUniqueHashJobStruct<TJob, TKey>.Initialize(), dependsOn, ScheduleMode.Batched);
+                NativeMultiHashMapUniqueHashJobStruct<TJob>.Initialize(), dependsOn, ScheduleMode.Batched);
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1,
                 minIndicesPerJobCount);
         }
     }
 
 
+    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyValue.NativeMultiHashMapVisitKeyValueJobStruct<,,>))]
     public interface IJobNativeMultiHashMapVisitKeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1029,31 +1081,28 @@ namespace Unity.Collections
 
     public static class JobNativeMultiHashMapVisitKeyValue
     {
-        struct NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
+        internal struct NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
             where TJob : struct, IJobNativeMultiHashMapVisitKeyValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            internal struct JobMultiHashMap
-            {
-                [ReadOnly] public NativeMultiHashMap<TKey, TValue> HashMap;
-                public TJob JobData;
-            }
+            [ReadOnly] public NativeMultiHashMap<TKey, TValue> HashMap;
+            public TJob JobData;
 
             private static IntPtr jobReflectionData;
 
             public static IntPtr Initialize()
             {
                 if (jobReflectionData == IntPtr.Zero)
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(JobMultiHashMap), typeof(TJob),
+                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>), typeof(TJob),
                         JobType.ParallelFor, (ExecuteJobFunction) Execute);
                 return jobReflectionData;
             }
 
-            private delegate void ExecuteJobFunction(ref JobMultiHashMap fullData, IntPtr additionalPtr,
+            public delegate void ExecuteJobFunction(ref NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr,
                 IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
-            private static unsafe void Execute(ref JobMultiHashMap fullData, IntPtr additionalPtr,
+            public static unsafe void Execute(ref NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr,
                 IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
@@ -1093,7 +1142,7 @@ namespace Unity.Collections
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            var fullData = new NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.JobMultiHashMap
+            var fullData = new NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
             {
                 HashMap = hashMap,
                 JobData = jobData
@@ -1101,6 +1150,116 @@ namespace Unity.Collections
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref fullData),
                 NativeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.Initialize(), dependsOn, ScheduleMode.Batched);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1,
+                minIndicesPerJobCount);
+        }
+    }
+
+#if !UNITY_ZEROPLAYER
+    public static class NativeHashMapExtensions
+    {
+        public static int Unique<T>(this NativeArray<T> array) where T: struct, IEquatable<T>
+        {
+            int first = 0;
+            int last = array.Length;
+            var result = first;
+            while (++first != last)
+            {
+                if(!array[result].Equals(array[first]))
+                    array[++result] = array[first];
+            }
+            return ++result;
+        }
+        public static Tuple<NativeArray<TKey>, int> GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap, Allocator allocator) where TKey : struct, IEquatable<TKey>, IComparable<TKey> where TValue : struct
+        {
+            var withDuplicates = hashMap.GetKeyArray(allocator);
+            withDuplicates.Sort();
+            int uniques = withDuplicates.Unique();
+            return new Tuple<NativeArray<TKey>, int>(withDuplicates, uniques);
+        }
+
+    }
+#endif
+
+    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyMutableValue.NativeMultiHashMapVisitKeyMutableValueJobStruct<,,>))]
+    public interface IJobNativeMultiHashMapVisitKeyMutableValue<TKey, TValue>
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        void ExecuteNext(TKey key, ref TValue value);
+    }
+
+    public static class JobNativeMultiHashMapVisitKeyMutableValue
+    {
+        internal struct NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>
+            where TJob : struct, IJobNativeMultiHashMapVisitKeyMutableValue<TKey, TValue>
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            [NativeDisableContainerSafetyRestriction]
+            public NativeMultiHashMap<TKey, TValue> HashMap;
+            public TJob JobData;
+
+            private static IntPtr jobReflectionData;
+
+            public static IntPtr Initialize()
+            {
+                if (jobReflectionData == IntPtr.Zero)
+                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>), typeof(TJob),
+                        JobType.ParallelFor, (ExecuteJobFunction) Execute);
+                return jobReflectionData;
+            }
+
+            public delegate void ExecuteJobFunction(ref NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr,
+                IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
+
+            public static unsafe void Execute(ref NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr,
+                IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
+            {
+                while (true)
+                {
+                    int begin;
+                    int end;
+
+                    if (!JobsUtility.GetWorkStealingRange(ref ranges, jobIndex, out begin, out end))
+                        return;
+
+                    var buckets = (int*) fullData.HashMap.m_Buffer->buckets;
+                    var nextPtrs = (int*) fullData.HashMap.m_Buffer->next;
+                    var keys = fullData.HashMap.m_Buffer->keys;
+                    var values = fullData.HashMap.m_Buffer->values;
+
+                    for (int i = begin; i < end; i++)
+                    {
+                        int entryIndex = buckets[i];
+
+                        while (entryIndex != -1)
+                        {
+                            var key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
+
+                            fullData.JobData.ExecuteNext(key, ref UnsafeUtilityEx.ArrayElementAsRef<TValue>(values, entryIndex));
+
+                            entryIndex = nextPtrs[entryIndex];
+                        }
+                    }
+                }
+            }
+        }
+
+        public static unsafe JobHandle Schedule<TJob, TKey, TValue>(this TJob jobData, NativeMultiHashMap<TKey, TValue> hashMap,
+            int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
+            where TJob : struct, IJobNativeMultiHashMapVisitKeyMutableValue<TKey, TValue>
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            var fullData = new NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>
+            {
+                HashMap = hashMap,
+                JobData = jobData
+            };
+
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref fullData),
+                NativeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>.Initialize(), dependsOn, ScheduleMode.Batched);
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1,
                 minIndicesPerJobCount);
         }

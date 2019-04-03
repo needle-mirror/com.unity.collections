@@ -2,37 +2,84 @@
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using System.Diagnostics;
+using Unity.Burst;
 
 namespace Unity.Collections
 {
-	[StructLayout (LayoutKind.Sequential)]
+    /// <summary>
+    /// What is this : struct that contains the data for a native list, that gets allocated using native memory allocation.
+    /// Motivation(s): Need a single container struct to hold a native lists collection data.
+    /// </summary>
+    unsafe struct NativeListData
+    {
+        public void*                            buffer;
+        public int								length;
+        public int								capacity;
+    }
+
+    [StructLayout (LayoutKind.Sequential)]
 	[NativeContainer]
 	[DebuggerDisplay("Length = {Length}")]
 	[DebuggerTypeProxy(typeof(NativeListDebugView < >))]
-	public struct NativeList<T> : IDisposable
+	public unsafe struct NativeList<T> : IDisposable
         where T : struct
 	{
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-	    internal NativeListImpl<T, DefaultMemoryManager, NativeBufferSentinel> m_Impl;
 	    internal AtomicSafetyHandle m_Safety;
-#else
-	    internal NativeListImpl<T, DefaultMemoryManager> m_Impl;
+        [NativeSetClassTypeToNullOnSchedule]
+        DisposeSentinel m_DisposeSentinel;
 #endif
+        [NativeDisableUnsafePtrRestriction]
+        internal NativeListData* m_ListData;
+        private Allocator m_Allocator;
+
 
         public unsafe NativeList(Allocator i_label) : this (1, i_label, 2) { }
 	    public unsafe NativeList(int capacity, Allocator i_label) : this (capacity, i_label, 2) { }
 
 	    unsafe NativeList(int capacity, Allocator i_label, int stackDepth)
-	    {
+        {
+            //@TODO: Find out why this is needed?
+            capacity = Math.Max(1, capacity);
+
+            var totalSize = UnsafeUtility.SizeOf<T>() * (long)capacity;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-	        var guardian = new NativeBufferSentinel(stackDepth, i_label);
-	        m_Safety = (i_label == Allocator.Temp) ? AtomicSafetyHandle.GetTempMemoryHandle() : AtomicSafetyHandle.Create();
-	        m_Impl = new NativeListImpl<T, DefaultMemoryManager, NativeBufferSentinel>(capacity, i_label, guardian);
-#else
-            m_Impl = new NativeListImpl<T, DefaultMemoryManager>(capacity, i_label);
+            // Native allocation is only valid for Temp, Job and Persistent.
+            if (i_label <= Allocator.None)
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(i_label));
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity must be >= 0");
+
+            IsBlittableAndThrow();
+
+            // Make sure we cannot allocate more than int.MaxValue (2,147,483,647 bytes)
+            // because the underlying UnsafeUtility.Malloc is expecting a int.
+            // TODO: change UnsafeUtility.Malloc to accept a UIntPtr length instead to match C++ API
+            if (totalSize > int.MaxValue)
+                throw new ArgumentOutOfRangeException(nameof(capacity), $"Capacity * sizeof(T) cannot exceed {int.MaxValue} bytes");
+#endif
+            m_Allocator = i_label;
+            m_ListData = (NativeListData*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<NativeListData>(), UnsafeUtility.AlignOf<NativeListData>(), m_Allocator);
+
+            m_ListData->buffer = UnsafeUtility.Malloc (totalSize, UnsafeUtility.AlignOf<T>(), m_Allocator);
+
+            m_ListData->length = 0;
+            m_ListData->capacity = capacity;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, stackDepth, m_Allocator);
 #endif
 	    }
+
+        [BurstDiscard]
+        internal static void IsBlittableAndThrow()
+        {
+            if (!UnsafeUtility.IsBlittable<T>())
+            {
+                throw new ArgumentException(string.Format("{0} used in NativeList<{0}> must be blittable", typeof(T)));
+            }
+        }
 
 	    public T this [int index]
 		{
@@ -40,17 +87,19 @@ namespace Unity.Collections
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+                if ((uint)index >= (uint)m_ListData->length)
+                    throw new IndexOutOfRangeException($"Index {index} is out of range in NativeList of '{m_ListData->length}' Length.");
 #endif
-                return m_Impl[index];
-
+                return UnsafeUtility.ReadArrayElement<T>(m_ListData->buffer, index);
             }
 	        set
 	        {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+                if ((uint)index >= (uint)m_ListData->length)
+                    throw new IndexOutOfRangeException($"Index {index} is out of range in NativeList of '{m_ListData->length}' Length.");
 #endif
-	            m_Impl[index] = value;
-
+                UnsafeUtility.WriteArrayElement(m_ListData->buffer, index, value);
 	        }
 		}
 
@@ -61,7 +110,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-	            return m_Impl.Length;
+                return m_ListData->length;
 	        }
 	    }
 
@@ -72,15 +121,25 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-	            return m_Impl.Capacity;
+                return m_ListData->capacity;
 	        }
 
 	        set
 	        {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+                if (value < m_ListData->length)
+                    throw new ArgumentException("Capacity must be larger than the length of the NativeList.");
 #endif
-	            m_Impl.Capacity = value;
+
+                if (m_ListData->capacity == value)
+                    return;
+
+                void* newData = UnsafeUtility.Malloc (value * UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), m_Allocator);
+                UnsafeUtility.MemCpy (newData, m_ListData->buffer, m_ListData->length * UnsafeUtility.SizeOf<T>());
+                UnsafeUtility.Free (m_ListData->buffer, m_Allocator);
+                m_ListData->buffer = newData;
+                m_ListData->capacity = value;
 	        }
 	    }
 
@@ -89,7 +148,10 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		    AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-		    m_Impl.Add(element);
+            if (m_ListData->length >= m_ListData->capacity)
+                Capacity = m_ListData->length + m_ListData->capacity * 2;
+
+            this[m_ListData->length++] = element;
 		}
 
         public void AddRange(NativeArray<T> elements)
@@ -97,13 +159,18 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-
-            m_Impl.AddRange(elements);
+            AddRange(elements.GetUnsafeReadOnlyPtr(), elements.Length);
         }
 
         public unsafe void AddRange(void* elements, int count)
         {
-            m_Impl.AddRange(elements, count);
+            if (m_ListData->length + count > m_ListData->capacity)
+                Capacity = m_ListData->length + count * 2;
+
+            var sizeOf = UnsafeUtility.SizeOf<T> ();
+            UnsafeUtility.MemCpy((byte*)m_ListData->buffer + m_ListData->length * sizeOf, elements, sizeOf * count);
+
+            m_ListData->length += count;
         }
 
 		public void RemoveAtSwapBack(int index)
@@ -114,20 +181,31 @@ namespace Unity.Collections
             if( index < 0 || index >= Length )
                 throw new ArgumentOutOfRangeException(index.ToString());
 #endif
-			m_Impl.RemoveAtSwapBack(index);
+            var newLength = m_ListData->length - 1;
+            this[index] = this[newLength];
+            m_ListData->length = newLength;
 		}
 
-		public bool IsCreated => !m_Impl.IsNull;
+		public bool IsCreated => m_ListData != null;
 
 	    public void Dispose()
 		{
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-		    AtomicSafetyHandle.CheckDeallocateAndThrow(m_Safety);
-		    if (AtomicSafetyHandle.IsTempMemoryHandle(m_Safety))
-		        m_Safety = AtomicSafetyHandle.Create();
-		    AtomicSafetyHandle.Release(m_Safety);
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
 #endif
-		    m_Impl.Dispose();
+            if (m_ListData != null)
+            {
+                UnsafeUtility.Free(m_ListData->buffer, m_Allocator);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                m_ListData->buffer = (void*)0xDEADF00D;
+#endif
+                UnsafeUtility.Free(m_ListData, m_Allocator);
+                m_ListData = null;
+            }
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            else
+                throw new Exception("NativeList has yet to be allocated or has been dealocated!");
+#endif
 		}
 
 		public void Clear()
@@ -135,8 +213,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		    AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-
-		    m_Impl.Clear();
+            ResizeUninitialized(0);
 		}
 
 	    public static implicit operator NativeArray<T> (NativeList<T> nativeList)
@@ -152,15 +229,15 @@ namespace Unity.Collections
 	        AtomicSafetyHandle.UseSecondaryVersion(ref arraySafety);
 #endif
 
-	        var array = m_Impl.AsNativeArray();
+	        var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T> (m_ListData->buffer, m_ListData->length, Collections.Allocator.Invalid);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 	        NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, arraySafety);
 #endif
 	        return array;
 	    }
-	    
-	    
+
+
 	    [Obsolete("Please use AsDeferredJobArray")]
 	    public NativeArray<T> ToDeferredJobArray()
 	    {
@@ -173,7 +250,7 @@ namespace Unity.Collections
 	        AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
 #endif
 
-	        byte* buffer = (byte*)m_Impl.GetListData();
+	        byte* buffer = (byte*)m_ListData;
 	        // We use the first bit of the pointer to infer that the array is in list mode
 	        // Thus the job scheduling code will need to patch it.
 	        buffer += 1;
@@ -185,7 +262,7 @@ namespace Unity.Collections
 
 	        return array;
 	    }
-	    
+
 
 		public T[] ToArray()
 		{
@@ -213,7 +290,8 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		    AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-			m_Impl.ResizeUninitialized(length);
+            Capacity = Math.Max(length, Capacity);
+            m_ListData->length = length;
 		}
 	}
 
@@ -239,7 +317,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(nativeList.m_Safety);
 #endif
-            var data = nativeList.m_Impl.GetListData();
+            var data = nativeList.m_ListData;
             return data->buffer;
         }
 
@@ -252,7 +330,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         public static unsafe void* GetInternalListDataPtrUnchecked<T>(ref NativeList<T> nativeList) where T : struct
         {
-            return nativeList.m_Impl.GetListData();
+            return nativeList.m_ListData;
         }
     }
 }

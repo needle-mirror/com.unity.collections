@@ -6,7 +6,7 @@ using Unity.BuildSystem.NativeProgramSupport;
 [CSharpProgramForModule("Unity.Collections")]
 class CSharpProgramForCollections : CSharpProgramForAsmDef
 {
-    public CSharpProgramForCollections(bool forceExe, JObject json, NPath asmDef) : base(forceExe, json, asmDef)
+    public CSharpProgramForCollections(bool forceExe, JObject json, NPath asmDef, bool tinyCorlib) : base(forceExe, json, asmDef, tinyCorlib)
     {
     }
 

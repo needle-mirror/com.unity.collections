@@ -231,7 +231,7 @@ public class NativeHashMapTests
 	}
 
 	[Test]
-	public void GetKeys()
+	public void NativeHashMapGetKeys()
 	{
 		var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
 	    for (int i = 0; i < 30; ++i)
@@ -250,6 +250,88 @@ public class NativeHashMapTests
 		keys.Dispose ();
 	}
 
+    [Test]
+    public void NativeHashMapGetValues()
+    {
+        var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.TryAdd(i, 2 * i);
+        }
+        var values = hashMap.GetValueArray(Allocator.Temp);
+        hashMap.Dispose();
+
+        Assert.AreEqual(30, values.Length);
+        NativeSortExtension.Sort(values);
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(2 * i, values[i]);
+        }
+        values.Dispose();
+    }
+    
+    [Test]
+    public void NativeMultiHashMapGetKeys()
+    {
+        var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.Add(i, 2 * i);
+            hashMap.Add(i, 3 * i);
+        }
+        var keys = hashMap.GetKeyArray(Allocator.Temp);
+        hashMap.Dispose();
+
+        Assert.AreEqual(60, keys.Length);
+        NativeSortExtension.Sort(keys);
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(i, keys[i * 2 + 0]);
+            Assert.AreEqual(i, keys[i * 2 + 1]);
+        }
+        keys.Dispose ();
+    }
+
+    [Test]
+    public void NativeMultiHashMapGetUniqueKeys()
+    {
+        var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.Add(i, 2 * i);
+            hashMap.Add(i, 3 * i);
+        }
+        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
+        hashMap.Dispose();
+        Assert.AreEqual(30, keys.Item2);
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(i, keys.Item1[i]);
+        }
+        keys.Item1.Dispose();
+    }
+    
+    [Test]
+    public void NativeMultiHashMapGetValues()
+    {
+        var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.Add(i, 30 + i);
+            hashMap.Add(i, 60 + i);
+        }
+        var values = hashMap.GetValueArray(Allocator.Temp);
+        hashMap.Dispose();
+
+        Assert.AreEqual(60, values.Length);
+        NativeSortExtension.Sort(values);
+        for (int i = 0; i < 60; ++i)
+        {
+            Assert.AreEqual(30  + i, values[i]);
+        }
+        values.Dispose();
+    }
+            
     public struct EntityGuid : IEquatable<EntityGuid>, IComparable<EntityGuid>
     {
         public ulong a;
