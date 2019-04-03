@@ -936,7 +936,10 @@ namespace Unity.Collections
                             NativeMultiHashMapIterator<TKey> it;
                             fullData.HashMap.TryGetFirstValue(key, out firstValue, out it);
 
-                            if (firstValue == value)
+                            // [macton] Didn't expect a usecase for this with multiple same values
+                            // (since it's intended use was for unique indices.)
+                            // https://forum.unity.com/threads/ijobnativemultihashmapmergedsharedkeyindices-unexpected-behavior.569107/#post-3788170
+                            if (entryIndex == it.EntryIndex)
                             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 
