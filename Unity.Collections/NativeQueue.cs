@@ -96,14 +96,14 @@ namespace Unity.Collections
                     }
                     data.firstBlock = (IntPtr)prev;
 
-#if !UNITY_CSHARP_TINY
+#if !NET_DOTS
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
 #endif
                 }
                 return (NativeQueueBlockPoolData*)UnsafeUtility.AddressOf<NativeQueueBlockPoolData>(ref data);
             }
         }
-#if !UNITY_CSHARP_TINY
+#if !NET_DOTS
         static void OnDomainUnload(object sender, EventArgs e)
         {
             while (data.firstBlock != IntPtr.Zero)

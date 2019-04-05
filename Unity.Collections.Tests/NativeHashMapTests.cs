@@ -318,6 +318,16 @@ public class NativeHashMapTests
     }
 
     [Test]
+    public void NativeMultiHashMapGetUniqueKeysEmpty()
+    {
+        var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
+        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
+
+        Assert.AreEqual(0, keys.Item1.Length);
+        Assert.AreEqual(0, keys.Item2);
+    }
+
+    [Test]
     public void NativeMultiHashMapGetUniqueKeys()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);

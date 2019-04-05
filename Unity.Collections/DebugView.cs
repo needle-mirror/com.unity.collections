@@ -14,7 +14,7 @@ namespace Unity.Collections
             key = k;
             value = v;
         }
-#if !UNITY_CSHARP_TINY        
+#if !NET_DOTS        
         public override string ToString()
         {
             return $"{key} = {value}";
@@ -23,7 +23,7 @@ namespace Unity.Collections
     }
 
 // Tiny does not contains an IList definition (or even ICollection)
-#if !UNITY_CSHARP_TINY
+#if !NET_DOTS
     internal struct ListPair<Key, Value> where Value : IList
     {
         public Key key;
@@ -53,7 +53,7 @@ namespace Unity.Collections
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-#if !UNITY_CSHARP_TINY
+#if !NET_DOTS
         private NativeHashMap<TKey, TValue> m_target;        
         public NativeHashMapDebuggerTypeProxy(NativeHashMap<TKey, TValue> target)
         {
@@ -79,7 +79,7 @@ namespace Unity.Collections
         where TKey : struct, IEquatable<TKey>, IComparable<TKey>
         where TValue : struct
     {
-#if !UNITY_CSHARP_TINY   
+#if !NET_DOTS   
         private NativeMultiHashMap<TKey, TValue> m_target;        
         public NativeMultiHashMapDebuggerTypeProxy(NativeMultiHashMap<TKey, TValue> target)
         {

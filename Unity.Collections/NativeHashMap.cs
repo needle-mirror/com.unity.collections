@@ -1164,6 +1164,9 @@ namespace Unity.Collections
     {
         public static int Unique<T>(this NativeArray<T> array) where T: struct, IEquatable<T>
         {
+            if (array.Length == 0)
+                return 0;
+
             int first = 0;
             int last = array.Length;
             var result = first;
