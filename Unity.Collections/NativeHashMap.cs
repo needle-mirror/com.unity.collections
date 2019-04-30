@@ -1159,7 +1159,7 @@ namespace Unity.Collections
         }
     }
 
-#if !UNITY_ZEROPLAYER
+#if !UNITY_DOTSPLAYER
     public static class NativeHashMapExtensions
     {
         public static int Unique<T>(this NativeArray<T> array) where T: struct, IEquatable<T>

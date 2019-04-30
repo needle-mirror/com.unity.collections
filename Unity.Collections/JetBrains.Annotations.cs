@@ -1,4 +1,4 @@
-#if UNITY_ZEROPLAYER
+#if UNITY_DOTSPLAYER
 /* MIT License
 
 Copyright (c) 2016 JetBrains http://www.jetbrains.com

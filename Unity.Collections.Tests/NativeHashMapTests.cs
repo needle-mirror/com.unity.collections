@@ -317,6 +317,7 @@ public class NativeHashMapTests
         keys.Dispose ();
     }
 
+#if !UNITY_DOTSPLAYER
     [Test]
     public void NativeMultiHashMapGetUniqueKeysEmpty()
     {
@@ -345,7 +346,7 @@ public class NativeHashMapTests
         }
         keys.Item1.Dispose();
     }
-
+#endif
     [Test]
     public void NativeMultiHashMapGetValues()
     {

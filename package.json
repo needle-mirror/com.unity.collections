@@ -1,9 +1,13 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "0.0.9-preview.17",
+  "version": "0.0.9-preview.18",
   "unity": "2019.1",
-  "description": "Additional Unity Native Collections. NaitiveQueue, NativeHashMap, NativeMultiHashMap, NativeList.",
+  "unityRelease": "0f1",
+  "dependencies": {
+    "com.unity.test-framework.performance": "1.0.6-preview"
+  },
+  "description": "Additional Unity Native Collections. NativeQueue, NativeHashMap, NativeMultiHashMap, NativeList.",
   "keywords": [
     "unity"
   ]

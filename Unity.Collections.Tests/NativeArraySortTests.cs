@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.PerformanceTesting;
 
 public class MathTests
 {
@@ -285,6 +286,116 @@ public class NativeArraySortTests
 
         Assert.DoesNotThrow(() => slice.Sort());
         Assert.Throws<InvalidOperationException>(() => sliceWithCustomStride.Sort());
+
+        array.Dispose();
+    }
+}
+
+
+public class NativeSliceTests
+{
+    [Test]
+    public void NativeSlice_CopyTo()
+    {
+        NativeArray<int> array = new NativeArray<int>(1000, Allocator.Persistent);
+
+        for (int i = 0; i < array.Length; ++i)
+        {
+            array[i] = i;
+        }
+
+        var copyToArray = new int[600];
+
+        for (int i = 0; i < copyToArray.Length; ++i)
+        {
+            copyToArray[i] = 0x12345678;
+        }
+
+        var slice = new NativeSlice<int>(array, 200, 600);
+        slice.CopyTo(copyToArray);
+
+        for (var i = 0; i < 600; ++i)
+        {
+            Assert.AreEqual(copyToArray[i], array[i + 200]);
+        }
+
+        array.Dispose();
+    }
+
+    #if UNITY_2019_2_OR_NEWER
+    [Test, Performance]
+    #else
+    [PerformanceTest]
+    #endif
+    public void NativeSlice_Performace_CopyTo()
+    {
+        const int numElements = 16 << 10;
+
+        NativeArray<int> array = new NativeArray<int>(numElements, Allocator.Persistent);
+        var slice = new NativeSlice<int>(array, 0, numElements);
+
+        var copyToArray = new int[numElements];
+
+        Measure.Method(() =>
+            {
+                slice.CopyTo(copyToArray);
+            })
+            .WarmupCount(100)
+            .MeasurementCount(1000)
+            .Run();
+
+        array.Dispose();
+    }
+
+    [Test]
+    public void NativeSlice_CopyFrom()
+    {
+        NativeArray<int> array = new NativeArray<int>(1000, Allocator.Persistent);
+
+        for (int i = 0; i < array.Length; ++i)
+        {
+            array[i] = i;
+        }
+
+        var copyFromArray = new int[600];
+
+        for (int i = 0; i < copyFromArray.Length; ++i)
+        {
+            copyFromArray[i] = 0x12345678;
+        }
+
+        var slice = new NativeSlice<int>(array, 200, 600);
+        slice.CopyFrom(copyFromArray);
+
+        for (var i = 0; i < 600; ++i)
+        {
+            Assert.AreEqual(slice[i], 0x12345678);
+        }
+
+        array.Dispose();
+    }
+
+    #if UNITY_2019_2_OR_NEWER
+    [Test, Performance]
+    #else
+    [PerformanceTest]
+    #endif
+    public void NativeSlice_Performace_CopyFrom()
+    {
+        const int numElements = 16 << 10;
+
+        NativeArray<int> array = new NativeArray<int>(numElements, Allocator.Persistent);
+        var slice = new NativeSlice<int>(array, 0, numElements);
+
+        var copyToArray = new int[numElements];
+
+        Measure.Method(() =>
+            {
+                slice.CopyFrom(copyToArray);
+            })
+            .WarmupCount(100)
+            .MeasurementCount(1000)
+            .Run();
 
         array.Dispose();
     }

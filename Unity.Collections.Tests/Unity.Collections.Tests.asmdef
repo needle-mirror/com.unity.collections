@@ -1,7 +1,8 @@
 {
     "name": "Unity.Collections.Tests",
     "references": [
-        "Unity.Collections"
+        "Unity.Collections",
+        "Unity.PerformanceTesting"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

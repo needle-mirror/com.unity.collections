@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using Unity.Jobs;
+﻿using Unity.Jobs;
 using NUnit.Framework;
 using Unity.Collections;
 
@@ -20,6 +19,16 @@ public class NativeContainerTests_ValidateTypes : NativeContainerTests_ValidateT
 	enum MyTestEnum
 	{
 		HellWorld
+	}
+	
+	struct Vector3
+	{
+		public float x, y, z;
+	}
+
+	struct Matrix4x4
+	{
+		public float m0, m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, m13, m14, m15;
 	}
 
 	struct StructWithVariousStructsAndValueTypesJob : IJob

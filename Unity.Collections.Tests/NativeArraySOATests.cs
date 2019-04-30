@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !UNITY_DOTSPLAYER
+using NUnit.Framework;
 using System;
 using Unity.Collections;
 using Unity.Collections.Experimental;
@@ -266,3 +267,4 @@ class NativeArrayFullSOATests
         a.Dispose();
     }
 }
+#endif
