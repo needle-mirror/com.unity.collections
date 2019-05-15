@@ -267,7 +267,7 @@ public class NativeHashMapTests
 	    hashMap.Dispose();
 
 	    Assert.AreEqual(30, keys.Length);
-	    NativeSortExtension.Sort(keys);
+	    keys.Sort();
 	    for (int i = 0; i < 30; ++i)
 	    {
 	        Assert.AreEqual(i, keys[i]);
@@ -287,7 +287,7 @@ public class NativeHashMapTests
         hashMap.Dispose();
 
         Assert.AreEqual(30, values.Length);
-        NativeSortExtension.Sort(values);
+        values.Sort();
         for (int i = 0; i < 30; ++i)
         {
             Assert.AreEqual(2 * i, values[i]);
@@ -308,7 +308,7 @@ public class NativeHashMapTests
         hashMap.Dispose();
 
         Assert.AreEqual(60, keys.Length);
-        NativeSortExtension.Sort(keys);
+        keys.Sort();
         for (int i = 0; i < 30; ++i)
         {
             Assert.AreEqual(i, keys[i * 2 + 0]);
@@ -360,7 +360,7 @@ public class NativeHashMapTests
         hashMap.Dispose();
 
         Assert.AreEqual(60, values.Length);
-        NativeSortExtension.Sort(values);
+        values.Sort();
         for (int i = 0; i < 60; ++i)
         {
             Assert.AreEqual(30  + i, values[i]);

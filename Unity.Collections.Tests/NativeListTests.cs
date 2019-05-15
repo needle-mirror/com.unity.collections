@@ -85,7 +85,6 @@ public class NativeListTests
 	}
 
 	[Test]
-	[Ignore("Fails currently")]
 	public void NativeArrayFromNativeListmayNotDeallocate()
 	{
 		var list = new NativeList<int> (Allocator.Persistent);
@@ -112,6 +111,8 @@ public class NativeListTests
 
 		list.Dispose();
 	}
+    
+    
 
     #if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]

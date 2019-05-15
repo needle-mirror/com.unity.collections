@@ -10,12 +10,21 @@ namespace Unity.Collections
         {
             public int Compare(T x, T y) => x.CompareTo(y);
         }
+        
+        unsafe public static void Sort<T>(T* array, int length) where T : unmanaged, IComparable<T>
+        {
+            Sort<T, DefaultComparer<T>>(array, length, new DefaultComparer<T>());
+        }
+        unsafe public static void Sort<T, U>(T* array, int length, U comp) where T : unmanaged where U : IComparer<T>
+        {
+            IntroSort<T, U>(array, 0, length - 1, 2 * CollectionHelper.log2_floor(length), comp);
+        }
+
 
         unsafe public static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
         {
             array.Sort(new DefaultComparer<T>());
         }
-
         unsafe public static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
         {
             
@@ -26,7 +35,6 @@ namespace Unity.Collections
         {
             slice.Sort(new DefaultComparer<T>());
         }
-
         unsafe public static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

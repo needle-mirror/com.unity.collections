@@ -31,6 +31,8 @@ public class NativeListJobDebuggerTests
 		{
 		}
 	}
+	    
+
 
 	[Test]
 	public void AddElementToListFromJobInvalidatesArray()
@@ -216,6 +218,38 @@ public class NativeListJobDebuggerTests
             Assert.Throws<InvalidOperationException> (() => { array[0] = 5; } );
         }
     }
+    
+    
+    [Test]
+    public void DiposeJobWorks()
+    {
+        var list = new NativeList<int> (Allocator.Persistent);
+        var deps = new NativeListAddJob(list).Schedule();
+        deps = list.Dispose(deps);
+        Assert.IsFalse(list.IsCreated);
+
+        deps.Complete();
+    }
+
+    [Test]
+    public void DisposeJobWithMissingDependencyThrows()
+    {
+        var list = new NativeList<int> (Allocator.Persistent);
+        var deps = new NativeListAddJob(list).Schedule();
+        Assert.Throws<InvalidOperationException> (() => { list.Dispose(default(JobHandle)); } );
+        deps.Complete();
+        list.Dispose();
+    }
+
+    [Test]
+    public void DisposeJobListCantBeScheduled()
+    {
+        var list = new NativeList<int> (Allocator.Persistent);
+        var deps = list.Dispose(default(JobHandle));
+        Assert.Throws<InvalidOperationException> (() => { new NativeListAddJob(list).Schedule(deps); } );
+        deps.Complete();
+    }
+
 
     [Test]
     [Ignore("Inside Jobs atomic safety handles are effectively disabled...")]

@@ -8,7 +8,7 @@ namespace Unity.Collections
 {
     unsafe struct NativeQueueBlockHeader
     {
-        public byte* nextBlock;
+        public void* nextBlock;
         public int itemsInBlock;
     }
     [StructLayout(LayoutKind.Sequential)]
@@ -121,46 +121,74 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct NativeQueueData
     {
-        public byte* m_FirstBlock;
+        public void*  m_FirstBlock;
         public IntPtr m_LastBlock;
+        public int    m_ItemsPerBlock;
+        public int    m_CurrentReadIndexInBlock;
+        public byte*  m_CurrentWriteBlockTLS;
 
-        public int m_ItemsPerBlock;
+        internal void* GetCurrentWriteBlockTLS(int threadIndex)
+        {
+            var data = (void**)&m_CurrentWriteBlockTLS[threadIndex * JobsUtility.CacheLineSize];
+            return *data;
+        }
 
-        public int m_CurrentReadIndexInBlock;
-
-        public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
-
-        public byte** m_CurrentWriteBlockTLS;
+        internal void SetCurrentWriteBlockTLS(int threadIndex, void* currentWriteBlock)
+        {
+            var data = (void**)&m_CurrentWriteBlockTLS[threadIndex * JobsUtility.CacheLineSize];
+            *data = currentWriteBlock;
+        }
 
         public static byte* AllocateWriteBlockMT<T>(NativeQueueData* data, NativeQueueBlockPoolData* pool, int threadIndex) where T : struct
         {
             int tlsIdx = threadIndex;
 
-            byte* currentWriteBlock = data->m_CurrentWriteBlockTLS[tlsIdx * IntsPerCacheLine];
-            if (currentWriteBlock != null && ((NativeQueueBlockHeader*)currentWriteBlock)->itemsInBlock == data->m_ItemsPerBlock)
+            NativeQueueBlockHeader* currentWriteBlock = (NativeQueueBlockHeader*)data->GetCurrentWriteBlockTLS(tlsIdx);
+            if (currentWriteBlock != null
+            &&  currentWriteBlock->itemsInBlock == data->m_ItemsPerBlock)
+            {
                 currentWriteBlock = null;
+            }
+
             if (currentWriteBlock == null)
             {
-                currentWriteBlock = pool->AllocateBlock();
-                ((NativeQueueBlockHeader*)currentWriteBlock)->nextBlock = null;
-                ((NativeQueueBlockHeader*)currentWriteBlock)->itemsInBlock = 0;
+                currentWriteBlock = (NativeQueueBlockHeader*)pool->AllocateBlock();
+                currentWriteBlock->nextBlock = null;
+                currentWriteBlock->itemsInBlock = 0;
                 NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
+
                 if (prevLast == null)
+                {
                     data->m_FirstBlock = currentWriteBlock;
+                }
                 else
                 {
                     prevLast->nextBlock = currentWriteBlock;
                 }
-                data->m_CurrentWriteBlockTLS[tlsIdx * IntsPerCacheLine] = currentWriteBlock;
+
+                data->SetCurrentWriteBlockTLS(tlsIdx, currentWriteBlock);
             }
-            return currentWriteBlock;
+
+            return (byte*)currentWriteBlock;
+        }
+
+        internal static int Align(int size, int alignmentPowerOfTwo)
+        {
+            return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
         }
 
         public unsafe static void AllocateQueue<T>(Allocator label, out NativeQueueData* outBuf) where T : struct
         {
-            var data = (NativeQueueData*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<NativeQueueData>() + UnsafeUtility.SizeOf<IntPtr>()*JobsUtility.MaxJobThreadCount * IntsPerCacheLine, UnsafeUtility.AlignOf<NativeQueueData>(), label);
+            var queueDataSize = Align(UnsafeUtility.SizeOf<NativeQueueData>(), JobsUtility.CacheLineSize);
 
-            data->m_CurrentWriteBlockTLS = (byte**)(((byte*)data) + UnsafeUtility.SizeOf<NativeQueueData>());
+            var data = (NativeQueueData*)UnsafeUtility.Malloc(
+                  queueDataSize
+                + JobsUtility.CacheLineSize * JobsUtility.MaxJobThreadCount
+                , JobsUtility.CacheLineSize
+                , label
+                );
+
+            data->m_CurrentWriteBlockTLS = (((byte*)data) + queueDataSize);
 
             data->m_FirstBlock = null;
             data->m_LastBlock = IntPtr.Zero;
@@ -168,7 +196,9 @@ namespace Unity.Collections
 
             data->m_CurrentReadIndexInBlock = 0;
             for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
-                data->m_CurrentWriteBlockTLS[tls * IntsPerCacheLine] = null;
+            {
+                data->SetCurrentWriteBlockTLS(tls, null);
+            }
 
             outBuf = data;
         }
@@ -289,11 +319,16 @@ namespace Unity.Collections
                 m_Buffer->m_CurrentReadIndexInBlock = 0;
                 m_Buffer->m_FirstBlock = ((NativeQueueBlockHeader*)firstBlock)->nextBlock;
                 if (m_Buffer->m_FirstBlock == null)
+                {
                     m_Buffer->m_LastBlock = IntPtr.Zero;
+                }
+
                 for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
                 {
-                    if (m_Buffer->m_CurrentWriteBlockTLS[tls * NativeQueueData.IntsPerCacheLine] == firstBlock)
-                        m_Buffer->m_CurrentWriteBlockTLS[tls * NativeQueueData.IntsPerCacheLine] = null;
+                    if (m_Buffer->GetCurrentWriteBlockTLS(tls) == firstBlock)
+                    {
+                        m_Buffer->SetCurrentWriteBlockTLS(tls, null);
+                    }
                 }
                 m_QueuePool->FreeBlock(firstBlock);
             }
@@ -316,7 +351,9 @@ namespace Unity.Collections
             m_Buffer->m_LastBlock = IntPtr.Zero;
             m_Buffer->m_CurrentReadIndexInBlock = 0;
             for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
-                m_Buffer->m_CurrentWriteBlockTLS[tls * NativeQueueData.IntsPerCacheLine] = null;
+            {
+                m_Buffer->SetCurrentWriteBlockTLS(tls, null);
+            }
 		}
 
 		public bool IsCreated
