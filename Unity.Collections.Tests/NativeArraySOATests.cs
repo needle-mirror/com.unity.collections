@@ -3,6 +3,8 @@ using NUnit.Framework;
 using System;
 using Unity.Collections;
 using Unity.Collections.Experimental;
+using Unity.Jobs;
+using Unity.Burst;
 
 class NativeArrayChunked8Tests
 {
@@ -266,5 +268,34 @@ class NativeArrayFullSOATests
 
         a.Dispose();
     }
+
+    [BurstCompile(CompileSynchronously = true)]
+    struct NativeArrayFullSOATestJob : IJob
+    {
+        internal NativeArrayFullSOA<T4> array;
+
+        public void Execute()
+        {
+            T4 t4 = new T4();
+            for (int i = 0; i < array.Length; i++)
+            {
+                t4.A.A = i;
+                array[i] = t4;
+            }
+        }
+    }
+
+    [Test]
+    public void WorksInBurstJob()
+    {
+        const int kLength = 100;
+        var array = new NativeArrayFullSOA<T4>(kLength, Allocator.Persistent);
+        var job = new NativeArrayFullSOATestJob { array = array };
+        job.Schedule().Complete();
+        for (int i = 0; i < kLength; ++i)
+            Assert.AreEqual(i, array[i].A.A, "NativeArrayFullSOA failed to write values from within Burst job.");
+        array.Dispose();
+    }
+
 }
 #endif

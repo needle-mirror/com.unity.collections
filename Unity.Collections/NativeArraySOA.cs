@@ -221,6 +221,7 @@ namespace Unity.Collections.Experimental
     {
         private static StructLayoutData4 ms_CachedLayout;
 
+        [NativeDisableUnsafePtrRestriction]
         private byte* m_Base;
         private int   m_Length;
         private Allocator m_Allocator;

@@ -1,5 +1,13 @@
 # Change log
 
+
+## [0.0.9-preview.20] - 2019-05-24
+
+### Changes
+
+* Updated dependencies for `Unity.Collections.Tests` 
+
+
 ## [0.0.9-preview.19] - 2019-05-16
 
 ### New Features

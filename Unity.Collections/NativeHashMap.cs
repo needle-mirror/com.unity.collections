@@ -21,22 +21,36 @@ namespace Unity.Collections
         internal int EntryIndex;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct NativeHashMapData
     {
+        [FieldOffset(0)]
         public byte* values;
+        // 4-byte padding on 32-bit architectures here
+
+        [FieldOffset(8)]
         public byte* keys;
+        // 4-byte padding on 32-bit architectures here
+
+        [FieldOffset(16)]
         public byte* next;
+        // 4-byte padding on 32-bit architectures here
+
+        [FieldOffset(24)]
         public byte* buckets;
+        // 4-byte padding on 32-bit architectures here
+
+        [FieldOffset(32)]
         public int keyCapacity;
 
+        [FieldOffset(36)]
         public int bucketCapacityMask; // = bucket capacity - 1
 
-        // Add padding between fields to ensure they are on separate cache-lines
-        private fixed byte padding1[60];
-
-        public fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
+        [FieldOffset(40)]
         public int allocatedIndexLength;
+
+        [FieldOffset(JobsUtility.CacheLineSize < 64 ? 64 : JobsUtility.CacheLineSize)]
+        public fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
 
         // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
         public const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);

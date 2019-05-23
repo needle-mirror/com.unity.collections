@@ -1,6 +1,8 @@
 ﻿using NUnit.Framework;
 using System;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
 
 public class NativeListTests
 {
@@ -111,8 +113,34 @@ public class NativeListTests
 
 		list.Dispose();
 	}
+
+    [BurstCompile(CompileSynchronously = true)]
+    struct TempListInJob : IJob
+    {
+        public NativeArray<int> Output;
+        public void Execute()
+        {
+            var list = new NativeList<int>(Allocator.Temp);
+
+            list.Add(17);
+
+            Output[0] = list[0];
+
+            list.Dispose();
+        }
+    }
+
     
-    
+    [Test]
+    [Ignore("Not supported yet, requires a fix in DisposeSentinel")]
+    public void TempListInBurstJob()
+    {
+        var job = new TempListInJob() { Output = new NativeArray<int>(1, Allocator.TempJob) };
+        job.Schedule().Complete();
+        Assert.AreEqual(17, job.Output[0]);
+        
+        job.Output.Dispose();
+    }
 
     #if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]

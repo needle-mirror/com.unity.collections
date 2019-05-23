@@ -526,7 +526,7 @@ namespace Unity.Collections
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// Utilities for unsafe access to a <see cref="NativeList"/>.
+    /// Utilities for unsafe access to a <see cref="NativeList{T}"/>.
     /// </summary>
     public unsafe static class NativeListUnsafeUtility
     {

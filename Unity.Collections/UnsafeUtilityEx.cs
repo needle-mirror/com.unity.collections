@@ -29,11 +29,15 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         public static void MemSet(void* destination, byte value, int count)
         {
-            if(value == 0)
+#if  UNITY_2019_3_OR_NEWER
+            UnsafeUtility.MemSet(destination, value, count);
+#else
+            if (value == 0)
                 UnsafeUtility.MemClear(destination, count);
             else
                 for (int i = 0; i < count; ++i)
                     ((byte*) destination)[i] = value;
+#endif
         }
 
         public static bool IsUnmanaged<T>()

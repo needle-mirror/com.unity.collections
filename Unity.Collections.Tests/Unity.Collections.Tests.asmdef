@@ -2,7 +2,8 @@
     "name": "Unity.Collections.Tests",
     "references": [
         "Unity.Collections",
-        "Unity.PerformanceTesting"
+        "Unity.PerformanceTesting",
+        "Unity.Burst"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
@@ -10,5 +11,11 @@
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
 }
