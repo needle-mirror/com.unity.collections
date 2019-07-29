@@ -51,16 +51,32 @@ namespace Unity.Collections
             return i + 1;
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [BurstDiscard]
+        public static void CheckIntPositivePowerOfTwo(int value)
+        {
+            var valid = (value > 0) && ((value & (value - 1)) == 0);
+            if (!valid)
+                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+        }
+
+        public static int Align(int size, int alignmentPowerOfTwo)
+        {
+            CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+
+            return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
+        }
+
         /// <summary>
         /// Returns hash value of memory block. Function is using djb2 (non-cryptographic hash).
         /// </summary>
-        public unsafe static uint hash(void *pointer, int bytes)
+        public static unsafe uint hash(void* pointer, int bytes)
         {
             // djb2 - Dan Bernstein hash function
             // http://web.archive.org/web/20190508211657/http://www.cse.yorku.ca/~oz/hash.html
-            byte* str = (byte*) pointer;
+            byte* str = (byte*)pointer;
             ulong hash = 5381;
-            while(bytes > 0)
+            while (bytes > 0)
             {
                 ulong c = str[--bytes];
                 hash = ((hash << 5) + hash) + c;
@@ -72,8 +88,12 @@ namespace Unity.Collections
         [BurstDiscard]
         public static void CheckIsUnmanaged<T>()
         {
-            if (!UnsafeUtilityEx.IsUnmanaged<T>())
-                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable or primitive");
+#if UNITY_2019_3_OR_NEWER
+            if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
+#else
+            if (!UnsafeUtility.IsUnmanaged<T>())
+#endif
+                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
         }
 
         internal static void WriteLayout(Type type)

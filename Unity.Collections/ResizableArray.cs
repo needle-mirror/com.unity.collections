@@ -25,7 +25,8 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"NewCount {newCount} is out of range of '{Capacity}' Capacity.");
         }
 
-        [WriteAccessRequired] public void* GetUnsafePointer()
+        [WriteAccessRequired]
+        public void* GetUnsafePointer()
         {
             fixed (void* b = m_Buffer)
                 return b;
@@ -43,7 +44,8 @@ namespace Unity.Collections
         public int Length
         {
             get => m_Length;
-            [WriteAccessRequired] set
+            [WriteAccessRequired]
+            set
             {
                 CheckResize(value);
                 m_Length = value;
@@ -64,14 +66,15 @@ namespace Unity.Collections
                 fixed (void* b = m_Buffer)
                     return UnsafeUtility.ReadArrayElement<T>(b, index);
             }
-            [WriteAccessRequired] set
+            [WriteAccessRequired]
+            set
             {
                 CheckElementAccess(index);
                 fixed (void* b = m_Buffer)
                     UnsafeUtility.WriteArrayElement(b, index, value);
             }
         }
-        
+
         // ReSharper disable once NonReadonlyMemberInGetHashCode
         public override int GetHashCode()
         {
@@ -91,7 +94,8 @@ namespace Unity.Collections
                 return UnsafeUtility.MemCmp(ba, bb, LengthBytes) == 0;
         }
 
-        [WriteAccessRequired] public void Add(T value) =>
+        [WriteAccessRequired]
+        public void Add(T value) =>
             this[Length++] = value;
 
         public ResizableArray64Byte(T value)

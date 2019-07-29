@@ -18,11 +18,12 @@ public class NativeQueueTests
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		queue.Dispose ();
 	}
+
 	[Test]
 	public void ConcurrentEnqueue_Dequeue()
 	{
 		var queue = new NativeQueue<int> (Allocator.Temp);
-		var cQueue = queue.ToConcurrent();
+		var cQueue = queue.AsParallelWriter();
 		Assert.AreEqual(0, queue.Count);
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		for (int i = 0; i < 16; ++i)
@@ -122,11 +123,12 @@ public class NativeQueueTests
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		queue.Dispose ();
 	}
+
 	[Test]
 	public void ConcurrentEnqueue_Wrap()
 	{
 		var queue = new NativeQueue<int> (Allocator.Temp);
-		var cQueue = queue.ToConcurrent();
+		var cQueue = queue.AsParallelWriter();
 		Assert.AreEqual(0, queue.Count);
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		for (int i = 0; i < 256; ++i)
@@ -147,4 +149,12 @@ public class NativeQueueTests
 		Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
 		queue.Dispose ();
 	}
+
+    [Test]
+    public void DisposeJob()
+    {
+        var container = new NativeQueue<int>(Allocator.Persistent);
+        var disposeJob = container.Dispose(default);
+        disposeJob.Complete();
+    }
 }

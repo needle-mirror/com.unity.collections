@@ -6,6 +6,14 @@ using Unity.Jobs;
 
 public class NativeListTests
 {
+    [Test]
+    public void NullListThrow()
+    {
+        var list = new NativeList<int> ();
+        Assert.Throws<NullReferenceException> (()=> list[0] = 5 );
+        Assert.Throws<InvalidOperationException> (()=> list.Add(1) );
+    }
+    
 	[Test]
 	public void NativeList_Allocate_Deallocate_Read_Write()
 	{
@@ -18,7 +26,7 @@ public class NativeListTests
 		Assert.AreEqual (1, list[0]);
 		Assert.AreEqual (2, list[1]);
 
-		list.Dispose ();
+		list.Dispose();
 	}
 
 	[Test]
@@ -51,7 +59,7 @@ public class NativeListTests
 
 		list.Add(1000);
 
-		Assert.AreEqual (2, list.Capacity);
+		Assert.AreEqual (2, list.Length);
 		Assert.Throws<System.InvalidOperationException> (()=> { array[0] = 1; });
 
 		list.Dispose();
@@ -65,7 +73,7 @@ public class NativeListTests
 
 		NativeArray<int> array = list;
 
-		Assert.AreEqual (1, list.Capacity);
+		Assert.AreEqual (1, list.Length);
 		list.Capacity = 10;
 
 		Assert.AreEqual (1, array.Length);
@@ -106,8 +114,6 @@ public class NativeListTests
 
 		Assert.AreEqual (42, listCpy[0]);
 		Assert.AreEqual (42, list[0]);
-		Assert.AreEqual (1, listCpy.Capacity);
-		Assert.AreEqual (1, list.Capacity);
 		Assert.AreEqual (1, listCpy.Length);
 		Assert.AreEqual (1, list.Length);
 
@@ -142,12 +148,12 @@ public class NativeListTests
         job.Output.Dispose();
     }
 
-    #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]
     public void SetCapacityLessThanLength()
     {
         var list = new NativeList<int> (Allocator.Persistent);
-        list.ResizeUninitialized(10);
+        list.Resize(10, NativeArrayOptions.UninitializedMemory);
         Assert.Throws<ArgumentException>(() => { list.Capacity = 5; });
 
         list.Dispose();
@@ -164,5 +170,13 @@ public class NativeListTests
 
 		list.Dispose();
 	}
-    #endif
+#endif
+
+    [Test]
+    public void DisposeJob()
+    {
+        var container = new NativeList<int>(Allocator.Persistent);
+        var disposeJob = container.Dispose(default);
+        disposeJob.Complete();
+    }
 }

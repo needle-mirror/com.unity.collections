@@ -7,7 +7,7 @@ public class NativeMultiHashMapTestsFixture
 
 	public struct MultiHashMapSimpleWriteJob : IJob
 	{
-		public NativeMultiHashMap<int, int>.Concurrent hashMap;
+		public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
 
 		public void Execute()
 		{
@@ -17,7 +17,7 @@ public class NativeMultiHashMapTestsFixture
 
 	public struct MultiHashMapWriteParallelForJob : IJobParallelFor
 	{
-		public NativeMultiHashMap<int, int>.Concurrent hashMap;
+		public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
 		public NativeArray<int> status;
 
 		public int keyMod;

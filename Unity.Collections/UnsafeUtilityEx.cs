@@ -36,13 +36,8 @@ namespace Unity.Collections.LowLevel.Unsafe
                 UnsafeUtility.MemClear(destination, count);
             else
                 for (int i = 0; i < count; ++i)
-                    ((byte*) destination)[i] = value;
+                    ((byte*)destination)[i] = value;
 #endif
-        }
-
-        public static bool IsUnmanaged<T>()
-        {
-            return UnsafeUtility.IsUnmanaged<T>();
         }
     }
 }

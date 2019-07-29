@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Unity.Collections
 {
-    internal struct Pair<Key, Value> 
+    internal struct Pair<Key, Value>
     {
         public Key key;
         public Value value;
@@ -22,7 +22,7 @@ namespace Unity.Collections
 #endif
     }
 
-// Tiny does not contains an IList definition (or even ICollection)
+    // Tiny does not contains an IList definition (or even ICollection)
 #if !NET_DOTS
     internal struct ListPair<Key, Value> where Value : IList
     {
@@ -48,13 +48,13 @@ namespace Unity.Collections
         }
     }
 #endif
-    
+
     sealed internal class NativeHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
 #if !NET_DOTS
-        private NativeHashMap<TKey, TValue> m_target;        
+        private NativeHashMap<TKey, TValue> m_target;
         public NativeHashMapDebuggerTypeProxy(NativeHashMap<TKey, TValue> target)
         {
             m_target = target;
@@ -66,13 +66,13 @@ namespace Unity.Collections
                 var result = new List<Pair<TKey, TValue>>();
                 using (var keys = m_target.GetKeyArray(Allocator.Temp))
                 {
-                    for(var k = 0; k < keys.Length; ++k)
-                        if(m_target.TryGetValue(keys[k], out var value))
-                            result.Add(new Pair<TKey,TValue>(keys[k], value));
+                    for (var k = 0; k < keys.Length; ++k)
+                        if (m_target.TryGetValue(keys[k], out var value))
+                            result.Add(new Pair<TKey, TValue>(keys[k], value));
                 }
                 return result;
             }
-        }        
+        }
 #endif
     }
     sealed internal class NativeMultiHashMapDebuggerTypeProxy<TKey, TValue>
@@ -80,7 +80,7 @@ namespace Unity.Collections
         where TValue : struct
     {
 #if !NET_DOTS   
-        private NativeMultiHashMap<TKey, TValue> m_target;        
+        private NativeMultiHashMap<TKey, TValue> m_target;
         public NativeMultiHashMapDebuggerTypeProxy(NativeMultiHashMap<TKey, TValue> target)
         {
             m_target = target;
@@ -91,7 +91,7 @@ namespace Unity.Collections
             {
                 var result = new List<ListPair<TKey, List<TValue>>>();
                 var keys = m_target.GetUniqueKeyArray(Allocator.Temp);
-                using(keys.Item1)
+                using (keys.Item1)
                 {
                     for (var k = 0; k < keys.Item2; ++k)
                     {
@@ -103,13 +103,13 @@ namespace Unity.Collections
                                 values.Add(value);
                             } while (m_target.TryGetNextValue(out value, ref iterator));
                         }
-                        result.Add(new ListPair<TKey, List<TValue>>(keys.Item1[k],values));
+                        result.Add(new ListPair<TKey, List<TValue>>(keys.Item1[k], values));
                     }
                 }
                 return result;
             }
-        }        
+        }
 #endif
     }
-    
+
 }
