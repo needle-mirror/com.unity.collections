@@ -9,19 +9,19 @@ public class MathTests
     [Test]
     public void Tests()
     {
-        Assert.AreEqual(0, CollectionHelper.log2_floor(1));
-        Assert.AreEqual(1, CollectionHelper.log2_floor(2));
-        Assert.AreEqual(1, CollectionHelper.log2_floor(3));
-        Assert.AreEqual(2, CollectionHelper.log2_floor(4));
+        Assert.AreEqual(0, CollectionHelper.Log2Floor(1));
+        Assert.AreEqual(1, CollectionHelper.Log2Floor(2));
+        Assert.AreEqual(1, CollectionHelper.Log2Floor(3));
+        Assert.AreEqual(2, CollectionHelper.Log2Floor(4));
         
-        Assert.AreEqual(3, CollectionHelper.log2_floor(15));
-        Assert.AreEqual(4, CollectionHelper.log2_floor(16));
-        Assert.AreEqual(4, CollectionHelper.log2_floor(19));
+        Assert.AreEqual(3, CollectionHelper.Log2Floor(15));
+        Assert.AreEqual(4, CollectionHelper.Log2Floor(16));
+        Assert.AreEqual(4, CollectionHelper.Log2Floor(19));
 
-        Assert.AreEqual(30, CollectionHelper.log2_floor(int.MaxValue));
-        Assert.AreEqual(16, CollectionHelper.log2_floor(1 << 16));
+        Assert.AreEqual(30, CollectionHelper.Log2Floor(int.MaxValue));
+        Assert.AreEqual(16, CollectionHelper.Log2Floor(1 << 16));
         
-        Assert.AreEqual(-1, CollectionHelper.log2_floor(0));
+        Assert.AreEqual(-1, CollectionHelper.Log2Floor(0));
     }
 }
 

@@ -201,6 +201,14 @@ namespace Unity.Collections
                 // Block should be freed once last reader calls Release.
                 Interlocked.Decrement(ref firstBlock->m_NumReaders);
 
+                for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
+                {
+                    if (data->GetCurrentWriteBlockTLS(threadIndex) == firstBlock)
+                    {
+                        data->SetCurrentWriteBlockTLS(threadIndex, null);
+                    }
+                }
+
                 firstBlock = nextBlock;
 
                 data->m_FirstBlock = (IntPtr)nextBlock;
@@ -368,7 +376,7 @@ namespace Unity.Collections
         unsafe public bool TryDequeue(out T item)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             NativeQueueBlockHeader* firstBlock = NativeQueueData.GetFirstBlock(m_Buffer, m_QueuePool);
 
@@ -410,10 +418,7 @@ namespace Unity.Collections
             }
         }
 
-        public bool IsCreated
-        {
-            get { return m_Buffer != null; }
-        }
+        public bool IsCreated => m_Buffer != null;
 
         void Deallocate()
         {

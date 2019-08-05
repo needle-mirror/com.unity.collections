@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace Unity.Collections
 {
-    internal static class CollectionHelper
+    public static class CollectionHelper
     {
         [StructLayout(LayoutKind.Explicit)]
         internal struct LongDoubleUnion
@@ -32,9 +32,14 @@ namespace Unity.Collections
             return 0x41E - (int)(u.longValue >> 52);
         }
 
-        public static int log2_floor(int value)
+        public static int Log2Floor(int value)
         {
             return 31 - lzcnt((uint)value);
+        }
+        
+        public static int Log2Ceil(int value)
+        {
+            return 32 - lzcnt((uint)value-1);
         }
 
         /// <summary>
@@ -62,6 +67,9 @@ namespace Unity.Collections
 
         public static int Align(int size, int alignmentPowerOfTwo)
         {
+            if (alignmentPowerOfTwo == 0)
+                return size;
+            
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
 
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
@@ -70,7 +78,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns hash value of memory block. Function is using djb2 (non-cryptographic hash).
         /// </summary>
-        public static unsafe uint hash(void* pointer, int bytes)
+        public static unsafe uint Hash(void* pointer, int bytes)
         {
             // djb2 - Dan Bernstein hash function
             // http://web.archive.org/web/20190508211657/http://www.cse.yorku.ca/~oz/hash.html
@@ -113,5 +121,10 @@ namespace Unity.Collections
             _ = type;
 #endif
         }
+
+        public static bool IsPowerOfTwo(int value)
+        {
+            return (value & (value - 1)) == 0;
+        }   
     }
 }

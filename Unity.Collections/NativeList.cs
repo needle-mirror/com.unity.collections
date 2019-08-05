@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using System.Diagnostics;
@@ -15,7 +18,7 @@ namespace Unity.Collections
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}")]
     [DebuggerTypeProxy(typeof(NativeListDebugView<>))]
-    public unsafe struct NativeList<T> : IDisposable
+    public unsafe struct NativeList<T> : IEnumerable<T>, IDisposable
         where T : struct
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -26,9 +29,9 @@ namespace Unity.Collections
 #endif
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeList* m_ListData;
-        
+
         //@TODO: Unity.Physics currently relies on the specific layout of NativeList in order to
-        //       workaround a bug in 19.1 & 19.2 with atomic safety handle in jobified Dispose.  
+        //       workaround a bug in 19.1 & 19.2 with atomic safety handle in jobified Dispose.
         internal Allocator m_DeprecatedAllocator;
 
         /// <summary>
@@ -417,6 +420,17 @@ namespace Unity.Collections
             return array;
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        #if UNITY_2019_3_OR_NEWER
+        [Obsolete("Please use AsDeferredJobArray instead. (RemovedAfter 2019-11-02) (UnityUpgradable) -> AsDeferredJobArray()")]
+        #else
+        [Obsolete("Please use AsDeferredJobArray instead. (RemovedAfter 2019-11-02)")]
+        #endif
+        public NativeArray<T> ToDeferredJobArray()
+        {
+            return AsDeferredJobArray();
+        }
+
         /// <summary>
         /// A copy of this list as a [NativeArray](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html).
         /// </summary>
@@ -439,6 +453,16 @@ namespace Unity.Collections
             result.CopyFrom(this);
             return result;
         }
+
+        public NativeArray<T>.Enumerator GetEnumerator()
+        {
+            var array = AsArray();
+            return new NativeArray<T>.Enumerator(ref array);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+
 
         /// <summary>
         /// Overwrites this list with the elements of an array.

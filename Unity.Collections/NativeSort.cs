@@ -63,7 +63,7 @@ namespace Unity.Collections
 
         unsafe static void IntroSort<T, U>(void* array, int length, U comp) where T : struct where U : IComparer<T>
         {
-            IntroSort<T, U>(array, 0, length - 1, 2 * CollectionHelper.log2_floor(length), comp);
+            IntroSort<T, U>(array, 0, length - 1, 2 * CollectionHelper.Log2Floor(length), comp);
         }
 
         const int k_IntrosortSizeThreshold = 16;

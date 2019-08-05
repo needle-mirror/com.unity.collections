@@ -157,4 +157,34 @@ public class NativeQueueTests
         var disposeJob = container.Dispose(default);
         disposeJob.Complete();
     }
+
+    [Test]
+    public void TryDequeue_OnEmptyQueueWhichHadElements_RetainsValidState()
+    {
+        using (var queue = new NativeQueue<int>(Allocator.Temp))
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                queue.Enqueue(i);
+                Assert.AreEqual(1, queue.Count);
+                int value;
+                while (queue.TryDequeue(out value))
+                {
+                    Assert.AreEqual(i, value);
+                }
+                Assert.AreEqual(0, queue.Count);
+            }
+        }
+    }
+
+    [Test]
+    public void TryDequeue_OnEmptyQueue_RetainsValidState()
+    {
+        using (var queue = new NativeQueue<int>(Allocator.Temp))
+        {
+            Assert.IsFalse(queue.TryDequeue(out _));
+            queue.Enqueue(1);
+            Assert.AreEqual(1, queue.Count);
+        }
+    }
 }

@@ -1,5 +1,21 @@
 # Change log
 
+## [0.1.1-preview] - 2019-08-06
+
+### Fixes
+
+* `NativeHashMap.Remove(TKey key, TValueEQ value)` is now supported in bursted code.
+* Adding deprecated `NativeList.ToDeferredJobArray()` back in - Use `AsDeferredJobArray()`
+  instead. The deprecated function will be removed in 3 months. This can not be auto-upgraded
+  prior to Unity `2019.3`.
+* Fixing bug where `TryDequeue` on an empty `NativeQueue` that previously had enqueued elements could leave it in
+  an invalid state where `Enqueue` would fail silently afterwards.
+
+### Changes
+
+* Updated dependencies for this package.
+
+
 ## [0.1.0-preview] - 2019-07-30
 
 ### New Features
@@ -8,11 +24,14 @@
   all key & value pairs from the hashmap.
 * Added ability to dispose containers from job (DisposeJob).
 * Added UnsafeList.AddNoResize, and UnsafeList.AddRangeNoResize.
+* BlobString for storing string data in a blob
 
 ### Upgrade guide
 
 * `Native*.Concurrent` is renamed to `Native*.ParallelWriter`.
 * `Native*.ToConcurrent()` function is renamed to `Native*.AsParallelWriter()`.
+* `NativeStreamReader/Writer` structs are subclassed and renamed to
+  `NativeStream.Reader/Writer` (note: changelot entry added retroactively).
 
 ### Changes
 

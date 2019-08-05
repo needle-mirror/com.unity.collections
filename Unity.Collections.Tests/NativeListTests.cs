@@ -2,6 +2,7 @@
 using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Jobs;
 
 public class NativeListTests
@@ -178,5 +179,31 @@ public class NativeListTests
         var container = new NativeList<int>(Allocator.Persistent);
         var disposeJob = container.Dispose(default);
         disposeJob.Complete();
+    }
+    
+    [Test]
+    public void ForEachWorks()
+    {
+        var container = new NativeList<int>(Allocator.Persistent);
+        container.Add(10);
+        container.Add(20);
+
+        int sum = 0;
+        int count = 0;
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            sum = 0;
+            count = 0;
+            foreach (var p in container)
+            {
+                sum += p;
+                count++;
+            }
+        });
+        
+        Assert.AreEqual(30, sum);
+        Assert.AreEqual(2, count);
+
+        container.Dispose();
     }
 }

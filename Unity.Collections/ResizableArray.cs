@@ -79,7 +79,7 @@ namespace Unity.Collections
         public override int GetHashCode()
         {
             fixed (void* b = m_Buffer)
-                return (int)CollectionHelper.hash(b, LengthBytes);
+                return (int)CollectionHelper.Hash(b, LengthBytes);
         }
 
         public override bool Equals(object other) =>

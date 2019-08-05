@@ -1004,19 +1004,25 @@ namespace Unity.Collections
             NativeHashMapBase<TKey, TValue>.Remove(m_Buffer, key, true);
         }
 
+        [BurstDiscard]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckValueEQ<TValueEQ>()
+            where TValueEQ : struct, IEquatable<TValueEQ>
+        {
+            if (typeof(TValueEQ) != typeof(TValue))
+                throw new System.ArgumentException($"value is type '{typeof(TValueEQ)}' but must match the HashMap value type '{typeof(TValue)}'.");
+        }
+
         public void Remove<TValueEQ>(TKey key, TValueEQ value)
             where TValueEQ : struct, IEquatable<TValueEQ>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
-            if (typeof(TValueEQ) != typeof(TValue))
-                throw new System.ArgumentException($"value is type '{typeof(TValueEQ)}' but must match the HashMap value type '{typeof(TValue)}'.");
+            CheckValueEQ<TValueEQ>();
 #endif
 
             NativeHashMapBase<TKey, TValueEQ>.RemoveKeyValue(m_Buffer, key, value);
         }
-
 
         public void Remove(NativeMultiHashMapIterator<TKey> it)
         {
