@@ -82,7 +82,6 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-#if UNITY_2019_3_OR_NEWER
     [Test]
     public void AccessAfter()
     {
@@ -97,7 +96,6 @@ public class NativeListJobDebuggerTests
 
         list.Dispose();
     }
-#endif
 
     [Test]
     public void ScheduleDerivedArrayAllowDerivingArrayAgain()
@@ -279,7 +277,6 @@ public class NativeListJobDebuggerTests
         deps.Complete();
     }
 
-#if UNITY_2019_3_OR_NEWER       
     struct InvalidArrayAccessFromListJob : IJob
     {
         public NativeList<int> list;
@@ -300,7 +297,6 @@ public class NativeListJobDebuggerTests
         job.Schedule().Complete();
         job.list.Dispose();
     }
-#endif
 
     [Test]
     public void DisposeAliasedArrayThrows()

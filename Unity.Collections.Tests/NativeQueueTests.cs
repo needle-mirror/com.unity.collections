@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Unity.Collections;
 
 public class NativeQueueTests
@@ -151,10 +152,16 @@ public class NativeQueueTests
 	}
 
     [Test]
-    public void DisposeJob()
+    public void NativeQueue_DisposeJob()
     {
         var container = new NativeQueue<int>(Allocator.Persistent);
+        Assert.True(container.IsCreated);
+        Assert.DoesNotThrow(() => { container.Enqueue(0); });
+
         var disposeJob = container.Dispose(default);
+        Assert.False(container.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container.Enqueue(0); });
+
         disposeJob.Complete();
     }
 

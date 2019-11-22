@@ -1,6 +1,42 @@
 # Change log
 
-## [0.1.1-preview] - 2019-08-06
+## [0.2.0] - 2019-11-22
+
+**This version requires Unity 2019.3 0b11+**
+
+### New Features
+
+* Added fixed-size UTF-8 NativeString in sizes of 32, 64, 128, 512, and 4096 bytes.
+* Added HPC# functions for float-to-string and string-to-float.
+* Added HPC# functions for int-to-string and string-to-int.
+* Added HPC# functions for UTF16-to-UTF8 and UTF8-to-UTF16.
+* New `Native(Multi)HashMap.GetKeyValueArrays` that will query keys and values
+  at the same time into parallel arrays.
+* Added `UnsafeStream`, `UnsafeHashMap`, and `UnsafeMultiHashMap`, providing
+  functionality of `NativeStream` container but without any safety mechanism
+  (intended for advanced users only).
+* Added `AddNoResize` methods to `NativeList`. When it's known ahead of time that
+  list won't grow, these methods won't try to resize. Rather exception will be
+  thrown if capacity is insufficient.
+* Added `ParallelWriter` support for `UnsafeList`.
+* Added `UnsafeList.TrimExcess` to set capacity to actual number of elements in
+  the container.
+* Added convenience blittable `UnsafeList<T>` managed container with unmanaged T
+  constraint.
+
+### Changes
+
+* `UnsafeList.Resize` now doesn't resize to lower capacity. User must call
+  `UnsafeList.SetCapacity` to lower capacity of the list. This applies to all other
+  containers based on `UnsafeList`.
+* Updated dependencies for this package.
+
+### Fixes
+
+* Fixed NativeQueue pool leak.
+
+
+## [0.1.1] - 2019-08-06
 
 ### Fixes
 
@@ -16,7 +52,7 @@
 * Updated dependencies for this package.
 
 
-## [0.1.0-preview] - 2019-07-30
+## [0.1.0] - 2019-07-30
 
 ### New Features
 

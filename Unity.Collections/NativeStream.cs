@@ -1,23 +1,21 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Jobs;
-using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine.Assertions;
 
 namespace Unity.Collections
 {
     /// <summary>
-    ///  A deterministic data streaming supporting parallel reading and parallel writing. Allows you to write different types or arrays into a single stream.
+    /// A deterministic data streaming supporting parallel reading and parallel writing.
+    /// Allows you to write different types or arrays into a single stream.
     /// </summary>
     [NativeContainer]
     public unsafe struct NativeStream : IDisposable
     {
-        [NativeDisableUnsafePtrRestriction]
-        BlockStreamData* m_Block;
-        Allocator m_AllocatorLabel;
+        UnsafeStream m_Stream;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
@@ -26,13 +24,25 @@ namespace Unity.Collections
         DisposeSentinel m_DisposeSentinel;
 #endif
 
+        /// <summary>
+        /// Constructs a new NativeStream using the specified type of memory allocation.
+        /// </summary>
+        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         public NativeStream(int foreachCount, Allocator allocator)
         {
             AllocateBlock(out this, allocator);
-            AllocateForEach(foreachCount);
+            m_Stream.AllocateForEach(foreachCount);
         }
 
-        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator = Allocator.TempJob)
+        /// <summary>
+        /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
+        /// </summary>
+        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
             AllocateBlock(out stream, allocator);
@@ -40,154 +50,86 @@ namespace Unity.Collections
             return jobData.Schedule(dependency);
         }
 
-        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator = Allocator.TempJob)
+        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Please specify the Allocator parameter explicitly. (RemovedAfter 2020-01-29)")]
+        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency)
+            where T : struct
+        {
+            return ScheduleConstruct(out stream, forEachCountFromList, dependency, Allocator.TempJob);
+        }
+
+        /// <summary>
+        /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
             var jobData = new ConstructJob { Length = lengthFromIndex0, Container = stream };
             return jobData.Schedule(dependency);
         }
 
-        static void AllocateBlock(out NativeStream stream, Allocator allocator)
+        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Please specify the Allocator parameter explicitly. (RemovedAfter 2020-01-29)")]
+        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (allocator <= Allocator.None)
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", "allocator");
-#endif
-
-            int blockCount = JobsUtility.MaxJobThreadCount;
-
-            int allocationSize = sizeof(BlockStreamData) + sizeof(Block*) * blockCount;
-            byte* buffer = (byte*)UnsafeUtility.Malloc(allocationSize, 16, allocator);
-            UnsafeUtility.MemClear(buffer, allocationSize);
-
-            var block = (BlockStreamData*)buffer;
-
-            stream.m_Block = block;
-            stream.m_AllocatorLabel = allocator;
-
-            block->Allocator = allocator;
-            block->BlockCount = blockCount;
-            block->Blocks = (Block**)(buffer + sizeof(BlockStreamData));
-
-            block->Ranges = null;
-            block->RangeCount = 0;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator);
-#endif
+            return ScheduleConstruct(out stream, lengthFromIndex0, dependency, Allocator.TempJob);
         }
 
-        void AllocateForEach(int forEachCount)
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (forEachCount <= 0)
-                throw new ArgumentException("foreachCount must be > 0", "foreachCount");
+        /// <summary>
+        /// Reports whether memory for the container is allocated.
+        /// </summary>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>Note that the container storage is not created if you use the default constructor.</remarks>
+        public bool IsCreated => m_Stream.IsCreated;
 
-            Assert.IsTrue(m_Block->Ranges == null);
-            Assert.AreEqual(0, m_Block->RangeCount);
-            Assert.AreNotEqual(0, m_Block->BlockCount);
-#endif
-
-            long allocationSize = sizeof(Range) * forEachCount;
-            m_Block->Ranges = (Range*)UnsafeUtility.Malloc(allocationSize, 16, m_AllocatorLabel);
-            m_Block->RangeCount = forEachCount;
-            UnsafeUtility.MemClear(m_Block->Ranges, allocationSize);
-        }
-
-        public bool IsCreated => m_Block != null;
-
+        /// <summary>
+        /// </summary>
         public int ForEachCount
         {
             get
             {
                 CheckReadAccess();
-                return m_Block->RangeCount;
+                return m_Stream.ForEachCount;
             }
         }
 
+        /// <summary>
+        /// Returns reader instance.
+        /// </summary>
         public Reader AsReader()
         {
             return new Reader(ref this);
         }
 
+        /// <summary>
+        /// Returns writer instance.
+        /// </summary>
         public Writer AsWriter()
         {
             return new Writer(ref this);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckReadAccess()
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckWriteAccess()
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-#endif
-        }
-
+        /// <summary>
+        /// Compute item count.
+        /// </summary>
+        /// <returns>Item count.</returns>
         public int ComputeItemCount()
         {
             CheckReadAccess();
-
-            int itemCount = 0;
-
-            for (int i = 0; i != m_Block->RangeCount; i++)
-            {
-                itemCount += m_Block->Ranges[i].ElementCount;
-            }
-
-            return itemCount;
+            return m_Stream.ComputeItemCount();
         }
 
+        /// <summary>
+        /// Copies stream data into NativeArray.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
+        /// <remarks>The array is a copy of stream data.</remarks>
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
             CheckReadAccess();
-
-            var array = new NativeArray<T>(ComputeItemCount(), allocator, NativeArrayOptions.UninitializedMemory);
-            var reader = AsReader();
-
-            int offset = 0;
-            for (int i = 0; i != reader.ForEachCount; i++)
-            {
-                reader.BeginForEachIndex(i);
-                int rangeItemCount = reader.RemainingItemCount;
-                for (int j = 0; j < rangeItemCount; ++j)
-                {
-                    array[offset] = reader.Read<T>();
-                    offset++;
-                }
-                reader.EndForEachIndex();
-            }
-
-            return array;
-        }
-
-        void Deallocate()
-        {
-            if (m_Block == null)
-                return;
-
-            for (int i = 0; i != m_Block->BlockCount; i++)
-            {
-                Block* block = m_Block->Blocks[i];
-                while (block != null)
-                {
-                    Block* next = block->Next;
-                    UnsafeUtility.Free(block, m_AllocatorLabel);
-                    block = next;
-                }
-            }
-
-            UnsafeUtility.Free(m_Block->Ranges, m_AllocatorLabel);
-            UnsafeUtility.Free(m_Block, m_AllocatorLabel);
-            m_Block = null;
-            m_AllocatorLabel = Allocator.Invalid;
+            return m_Stream.ToNativeArray<T>(allocator);
         }
 
         /// <summary>
@@ -198,7 +140,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
 #endif
-            Deallocate();
+            m_Stream.Dispose();
         }
 
         /// <summary>
@@ -209,10 +151,10 @@ namespace Unity.Collections
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        public JobHandle Dispose(JobHandle inputDeps)
+        public JobHandle Dispose(JobHandle dependency)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
@@ -221,89 +163,12 @@ namespace Unity.Collections
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-            var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
+            var jobHandle = m_Stream.Dispose(dependency);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(m_Safety);
 #endif
-            m_Block = null;
-
             return jobHandle;
-        }
-
-        [BurstCompile]
-        struct DisposeJob : IJob
-        {
-            public NativeStream Container;
-
-            public void Execute()
-            {
-                Container.Deallocate();
-            }
-        }
-
-        public struct Range
-        {
-            public Block* Block;
-            public int OffsetInFirstBlock;
-            public int ElementCount;
-
-            /// One byte past the end of the last byte written
-            public int LastOffset;
-            public int NumberOfBlocks;
-        }
-
-        public struct BlockStreamData
-        {
-            public const int AllocationSize = 4 * 1024;
-            public Allocator Allocator;
-
-            public Block** Blocks;
-            public int BlockCount;
-
-            public Range* Ranges;
-            public int RangeCount;
-
-            public Block* Allocate(Block* oldBlock, int threadIndex)
-            {
-                Assert.IsTrue(threadIndex < BlockCount && threadIndex >= 0);
-
-                Block* block = (Block*)UnsafeUtility.Malloc(AllocationSize, 16, Allocator);
-                block->Next = null;
-
-                if (oldBlock == null)
-                {
-                    if (Blocks[threadIndex] == null)
-                    {
-                        Blocks[threadIndex] = block;
-                    }
-                    else
-                    {
-                        // Walk the linked list and append our new block to the end.
-                        // Otherwise, we leak memory.
-                        Block* head = Blocks[threadIndex];
-                        while (head->Next != null)
-                        {
-                            head = head->Next;
-                        }
-
-                        head->Next = block;
-                    }
-                }
-                else
-                {
-                    oldBlock->Next = block;
-                }
-
-                return block;
-            }
-        }
-
-        public struct Block
-        {
-            public Block* Next;
-
-            public fixed byte Data[1];
         }
 
         [BurstCompile]
@@ -335,33 +200,60 @@ namespace Unity.Collections
             }
         }
 
+        static void AllocateBlock(out NativeStream stream, Allocator allocator)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (allocator <= Allocator.None)
+            {
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", "allocator");
+            }
+#endif
+            UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator);
+#endif
+        }
+
+        void AllocateForEach(int forEachCount)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (forEachCount <= 0)
+            {
+                throw new ArgumentException("foreachCount must be > 0", "foreachCount");
+            }
+
+            Assert.IsTrue(m_Stream.m_Block->Ranges == null);
+            Assert.AreEqual(0, m_Stream.m_Block->RangeCount);
+            Assert.AreNotEqual(0, m_Stream.m_Block->BlockCount);
+#endif
+
+            m_Stream.AllocateForEach(forEachCount);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckReadAccess()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWriteAccess()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+        }
+
+        /// <summary>
+        /// </summary>
         [NativeContainer]
         [NativeContainerSupportsMinMaxWriteRestriction]
         public unsafe struct Writer
         {
-            [NativeDisableUnsafePtrRestriction]
-            BlockStreamData* m_BlockStream;
-
-            [NativeDisableUnsafePtrRestriction]
-            Block* m_CurrentBlock;
-
-            [NativeDisableUnsafePtrRestriction]
-            byte* m_CurrentPtr;
-
-            [NativeDisableUnsafePtrRestriction]
-            byte* m_CurrentBlockEnd;
-
-            int m_ForeachIndex;
-            int m_ElementCount;
-
-            [NativeDisableUnsafePtrRestriction]
-            Block* m_FirstBlock;
-
-            int m_FirstOffset;
-            int m_NumberOfBlocks;
-
-            [NativeSetThreadIndex]
-            int m_ThreadIndex;
+            UnsafeStream.Writer m_Writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle m_Safety;
@@ -377,16 +269,7 @@ namespace Unity.Collections
 
             internal Writer(ref NativeStream stream)
             {
-                m_BlockStream = stream.m_Block;
-                m_ForeachIndex = int.MinValue;
-                m_ElementCount = -1;
-                m_CurrentBlock = null;
-                m_CurrentBlockEnd = null;
-                m_CurrentPtr = null;
-                m_FirstBlock = null;
-                m_NumberOfBlocks = 0;
-                m_FirstOffset = 0;
-                m_ThreadIndex = 0;
+                m_Writer = stream.m_Stream.AsWriter();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = stream.m_Safety;
@@ -397,6 +280,8 @@ namespace Unity.Collections
 #endif
             }
 
+            /// <summary>
+            /// </summary>
             public int ForEachCount
             {
                 get
@@ -404,10 +289,12 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                    return m_BlockStream->RangeCount;
+                    return m_Writer.ForEachCount;
                 }
             }
 
+            /// <summary>
+            /// </summary>
             public void PatchMinMaxRange(int foreEachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -416,40 +303,47 @@ namespace Unity.Collections
 #endif
             }
 
+            /// <summary>
+            /// Begin reading data at the iteration index.
+            /// </summary>
+            /// <param name="foreachIndex"></param>
+            /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
+            /// <returns>The number of elements at this index.</returns>
             public void BeginForEachIndex(int foreachIndex)
             {
                 //@TODO: Check that no one writes to the same for each index multiple times...
                 BeginForEachIndexChecks(foreachIndex);
-
-                m_ForeachIndex = foreachIndex;
-                m_ElementCount = 0;
-                m_NumberOfBlocks = 0;
-                m_FirstBlock = m_CurrentBlock;
-                m_FirstOffset = (int)(m_CurrentPtr - (byte*)m_CurrentBlock);
+                m_Writer.BeginForEachIndex(foreachIndex);
             }
 
+            /// <summary>
+            /// Ensures that all data has been read for the active iteration index.
+            /// </summary>
+            /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
             public void EndForEachIndex()
             {
                 EndForEachIndexChecks();
-
-                m_BlockStream->Ranges[m_ForeachIndex].ElementCount = m_ElementCount;
-                m_BlockStream->Ranges[m_ForeachIndex].OffsetInFirstBlock = m_FirstOffset;
-                m_BlockStream->Ranges[m_ForeachIndex].Block = m_FirstBlock;
-
-                m_BlockStream->Ranges[m_ForeachIndex].LastOffset = (int)(m_CurrentPtr - (byte*)m_CurrentBlock);
-                m_BlockStream->Ranges[m_ForeachIndex].NumberOfBlocks = m_NumberOfBlocks;
+                m_Writer.EndForEachIndex();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                m_ForeachIndex = int.MinValue;
+                m_Writer.m_ForeachIndex = int.MinValue;
 #endif
             }
 
+            /// <summary>
+            /// Write data.
+            /// </summary>
+            /// <typeparam name="T">The type of value.</typeparam>
             public void Write<T>(T value) where T : struct
             {
                 ref T dst = ref Allocate<T>();
                 dst = value;
             }
 
+            /// <summary>
+            /// Allocate space for data.
+            /// </summary>
+            /// <typeparam name="T">The type of value.</typeparam>
             public ref T Allocate<T>() where T : struct
             {
                 IsUnmanagedAndThrow<T>();
@@ -457,43 +351,19 @@ namespace Unity.Collections
                 return ref UnsafeUtilityEx.AsRef<T>(Allocate(size));
             }
 
+            /// <summary>
+            /// Allocate space for data.
+            /// </summary>
+            /// <param name="size">Size in bytes.</param>
             public byte* Allocate(int size)
             {
                 AllocateChecks(size);
-
-                byte* ptr = m_CurrentPtr;
-                m_CurrentPtr += size;
-
-                if (m_CurrentPtr > m_CurrentBlockEnd)
-                {
-                    Block* oldBlock = m_CurrentBlock;
-
-                    m_CurrentBlock = m_BlockStream->Allocate(oldBlock, m_ThreadIndex);
-                    m_CurrentPtr = m_CurrentBlock->Data;
-
-                    if (m_FirstBlock == null)
-                    {
-                        m_FirstOffset = (int)(m_CurrentPtr - (byte*)m_CurrentBlock);
-                        m_FirstBlock = m_CurrentBlock;
-                    }
-                    else
-                    {
-                        m_NumberOfBlocks++;
-                    }
-
-                    m_CurrentBlockEnd = (byte*)m_CurrentBlock + BlockStreamData.AllocationSize;
-                    ptr = m_CurrentPtr;
-                    m_CurrentPtr += size;
-                }
-
-                m_ElementCount++;
-
-                return ptr;
+                return m_Writer.Allocate(size);
             }
 
             [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            internal static void IsUnmanagedAndThrow<T>() where T : struct
+            static void IsUnmanagedAndThrow<T>() where T : struct
             {
                 if (!UnsafeUtility.IsUnmanaged<T>())
                 {
@@ -506,11 +376,12 @@ namespace Unity.Collections
             void BeginForEachIndexChecks(int foreachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
                 if (m_PassByRefCheck == null)
+                {
                     m_PassByRefCheck = UnsafeUtility.AddressOf(ref this);
+                }
 
                 if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
                 {
@@ -520,20 +391,26 @@ namespace Unity.Collections
                     if (m_MinIndex == int.MinValue && m_MaxIndex == int.MinValue)
                     {
                         m_MinIndex = 0;
-                        m_MaxIndex = m_BlockStream->RangeCount - 1;
+                        m_MaxIndex = m_Writer.m_BlockStream->RangeCount - 1;
                     }
 
                     if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
+                    {
                         throw new ArgumentException($"Index {foreachIndex} is out of restricted IJobParallelFor range [{m_MinIndex}...{m_MaxIndex}] in BlockStream.");
+                    }
                 }
 
-                if (m_ForeachIndex != int.MinValue)
+                if (m_Writer.m_ForeachIndex != int.MinValue)
+                {
                     throw new ArgumentException($"BeginForEachIndex must always be balanced by a EndForEachIndex call");
+                }
 
-                if (0 != m_BlockStream->Ranges[foreachIndex].ElementCount)
+                if (0 != m_Writer.m_BlockStream->Ranges[foreachIndex].ElementCount)
+                {
                     throw new ArgumentException($"BeginForEachIndex can only be called once for the same index ({foreachIndex}).");
+                }
 
-                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < m_BlockStream->RangeCount);
+                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < m_Writer.m_BlockStream->RangeCount);
 #endif
             }
 
@@ -544,8 +421,10 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
-                if (m_ForeachIndex == int.MinValue)
+                if (m_Writer.m_ForeachIndex == int.MinValue)
+                {
                     throw new System.ArgumentException("EndForEachIndex must always be called balanced by a BeginForEachIndex or AppendForEachIndex call");
+                }
 #endif
             }
 
@@ -557,35 +436,30 @@ namespace Unity.Collections
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
                 if (m_PassByRefCheck != UnsafeUtility.AddressOf(ref this))
+                {
                     throw new ArgumentException("NativeStream.Writer must be passed by ref once it is in use");
+                }
 
-                if (m_ForeachIndex == int.MinValue)
+                if (m_Writer.m_ForeachIndex == int.MinValue)
+                {
                     throw new ArgumentException("Allocate must be called within BeginForEachIndex / EndForEachIndex");
+                }
 
-                if (size > BlockStreamData.AllocationSize - sizeof(void*))
+                if (size > UnsafeStreamBlockData.AllocationSize - sizeof(void*))
+                {
                     throw new ArgumentException("Allocation size is too large");
+                }
 #endif
             }
         }
 
+        /// <summary>
+        /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public unsafe struct Reader
         {
-            [NativeDisableUnsafePtrRestriction]
-            BlockStreamData* m_BlockStream;
-
-            [NativeDisableUnsafePtrRestriction]
-            Block* m_CurrentBlock;
-
-            [NativeDisableUnsafePtrRestriction]
-            byte* m_CurrentPtr;
-
-            [NativeDisableUnsafePtrRestriction]
-            byte* m_CurrentBlockEnd;
-
-            int m_RemainingItemCount;
-            int m_LastBlockSize;
+            UnsafeStream.Reader m_Reader;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             int m_RemainingBlocks;
@@ -594,12 +468,7 @@ namespace Unity.Collections
 
             internal Reader(ref NativeStream stream)
             {
-                m_BlockStream = stream.m_Block;
-                m_CurrentBlock = null;
-                m_CurrentPtr = null;
-                m_CurrentBlockEnd = null;
-                m_RemainingItemCount = 0;
-                m_LastBlockSize = 0;
+                m_Reader = stream.m_Stream.AsReader();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_RemainingBlocks = 0;
@@ -608,121 +477,132 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Begin reading data at the iteration index
+            /// Begin reading data at the iteration index.
             /// </summary>
             /// <param name="foreachIndex"></param>
-            /// <returns> The number of elements at this index</returns>
+            /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
+            /// <returns>The number of elements at this index.</returns>
             public int BeginForEachIndex(int foreachIndex)
             {
                 BeginForEachIndexChecks(foreachIndex);
 
-                m_RemainingItemCount = m_BlockStream->Ranges[foreachIndex].ElementCount;
-                m_LastBlockSize = m_BlockStream->Ranges[foreachIndex].LastOffset;
-
-                m_CurrentBlock = m_BlockStream->Ranges[foreachIndex].Block;
-                m_CurrentPtr = (byte*)m_CurrentBlock + m_BlockStream->Ranges[foreachIndex].OffsetInFirstBlock;
-                m_CurrentBlockEnd = (byte*)m_CurrentBlock + BlockStreamData.AllocationSize;
+                var remainingItemCount = m_Reader.BeginForEachIndex(foreachIndex);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                m_RemainingBlocks = m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;
+                m_RemainingBlocks = m_Reader.m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;
                 if (m_RemainingBlocks == 0)
-                    m_CurrentBlockEnd = (byte*)m_CurrentBlock + m_LastBlockSize;
+                {
+                    m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + m_Reader.m_LastBlockSize;
+                }
 #endif
 
-                return m_RemainingItemCount;
+                return remainingItemCount;
             }
 
             /// <summary>
-            /// EndForEachIndex() ensures that all data has been read for the active ForEach index.
+            /// Ensures that all data has been read for the active iteration index.
             /// </summary>
-            /// <returns> The number of elements at this index</returns>
-            [BurstDiscard]
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
             public void EndForEachIndex()
             {
-                if (m_RemainingItemCount != 0)
-                    throw new System.ArgumentException("Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
-
-                if (m_CurrentBlockEnd != m_CurrentPtr)
-                    throw new System.ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
+                m_Reader.EndForEachIndex();
+                EndForEachIndexChecks();
             }
 
+            /// <summary>
+            /// </summary>
             public int ForEachCount
             {
                 get
                 {
                     CheckAccess();
-                    return m_BlockStream->RangeCount;
+                    return m_Reader.ForEachCount;
                 }
             }
 
-            public int RemainingItemCount => m_RemainingItemCount;
+            /// <summary>
+            /// Returns remaining item count.
+            /// </summary>
+            public int RemainingItemCount { get { return m_Reader.RemainingItemCount; } }
 
+            /// <summary>
+            /// Returns pointer to data.
+            /// </summary>
             public byte* ReadUnsafePtr(int size)
             {
                 ReadChecks(size);
 
-                m_RemainingItemCount--;
+                m_Reader.m_RemainingItemCount--;
 
-                byte* ptr = m_CurrentPtr;
-                m_CurrentPtr += size;
+                byte* ptr = m_Reader.m_CurrentPtr;
+                m_Reader.m_CurrentPtr += size;
 
-                if (m_CurrentPtr > m_CurrentBlockEnd)
+                if (m_Reader.m_CurrentPtr > m_Reader.m_CurrentBlockEnd)
                 {
-                    m_CurrentBlock = m_CurrentBlock->Next;
-                    m_CurrentPtr = m_CurrentBlock->Data;
+                    m_Reader.m_CurrentBlock = m_Reader.m_CurrentBlock->Next;
+                    m_Reader.m_CurrentPtr = m_Reader.m_CurrentBlock->Data;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_RemainingBlocks--;
 
                     if (m_RemainingBlocks < 0)
+                    {
                         throw new System.ArgumentException("Reading out of bounds");
+                    }
 
-                    if (m_RemainingBlocks == 0 && size + sizeof(void*) > m_LastBlockSize)
+                    if (m_RemainingBlocks == 0 && size + sizeof(void*) > m_Reader.m_LastBlockSize)
+                    {
                         throw new System.ArgumentException("Reading out of bounds");
+                    }
 
                     if (m_RemainingBlocks <= 0)
-                        m_CurrentBlockEnd = (byte*)m_CurrentBlock + m_LastBlockSize;
+                    {
+                        m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + m_Reader.m_LastBlockSize;
+                    }
                     else
-                        m_CurrentBlockEnd = (byte*)m_CurrentBlock + BlockStreamData.AllocationSize;
+                    {
+                        m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + UnsafeStreamBlockData.AllocationSize;
+                    }
 #else
-                m_CurrentBlockEnd = (byte*)m_CurrentBlock + BlockStreamData.AllocationSize;
+                    m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + UnsafeStreamBlockData.AllocationSize;
 #endif
-
-                    ptr = m_CurrentPtr;
-                    m_CurrentPtr += size;
+                    ptr = m_Reader.m_CurrentPtr;
+                    m_Reader.m_CurrentPtr += size;
                 }
 
                 return ptr;
             }
 
+            /// <summary>
+            /// Read data.
+            /// </summary>
+            /// <typeparam name="T">The type of value.</typeparam>
             public ref T Read<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtilityEx.AsRef<T>(ReadUnsafePtr(size));
             }
 
+            /// <summary>
+            /// Peek into data.
+            /// </summary>
+            /// <typeparam name="T">The type of value.</typeparam>
             public ref T Peek<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
                 ReadChecks(size);
 
-                byte* ptr = m_CurrentPtr;
-                if (ptr + size > m_CurrentBlockEnd)
-                    ptr = m_CurrentBlock->Next->Data;
-
-                return ref UnsafeUtilityEx.AsRef<T>(ptr);
+                return ref m_Reader.Peek<T>();
             }
 
+            /// <summary>
+            /// Compute item count.
+            /// </summary>
+            /// <returns>Item count.</returns>
             public int ComputeItemCount()
             {
                 CheckAccess();
-
-                int itemCount = 0;
-                for (int i = 0; i != m_BlockStream->RangeCount; i++)
-                    itemCount += m_BlockStream->Ranges[i].ElementCount;
-
-                return itemCount;
+                return m_Reader.ComputeItemCount();
             }
 
             [BurstDiscard]
@@ -741,9 +621,11 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 
-                Assert.IsTrue(size <= BlockStreamData.AllocationSize - (sizeof(void*)));
-                if (m_RemainingItemCount < 1)
+                Assert.IsTrue(size <= UnsafeStreamBlockData.AllocationSize - (sizeof(void*)));
+                if (m_Reader.m_RemainingItemCount < 1)
+                {
                     throw new ArgumentException("There are no more items left to be read.");
+                }
 #endif
             }
 
@@ -754,19 +636,36 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 
-                if ((uint)forEachIndex >= (uint)m_BlockStream->RangeCount)
-                    throw new System.ArgumentOutOfRangeException(nameof(forEachIndex), $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {m_BlockStream->RangeCount}");
+                if ((uint)forEachIndex >= (uint)m_Reader.m_BlockStream->RangeCount)
+                {
+                    throw new System.ArgumentOutOfRangeException(nameof(forEachIndex), $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {m_Reader.m_BlockStream->RangeCount}");
+                }
 #endif
+            }
+
+            [BurstDiscard]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void EndForEachIndexChecks()
+            {
+                if (m_Reader.m_RemainingItemCount != 0)
+                {
+                    throw new System.ArgumentException("Not all elements (Count) have been read. If this is intentional, simply skip calling EndForEachIndex();");
+                }
+
+                if (m_Reader.m_CurrentBlockEnd != m_Reader.m_CurrentPtr)
+                {
+                    throw new System.ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
+                }
             }
         }
     }
 
-    [Obsolete("NativeStreamReader is deprecated, use NativeStream.Reader instead. (RemovedAfter 2019-10-25) (UnityUpgradable) -> NativeStream/Reader", true)]
+    [Obsolete("NativeStreamReader is deprecated, use NativeStream.Reader instead. (RemovedAfter 2019-11-30) (UnityUpgradable) -> NativeStream/Reader", true)]
     public unsafe struct NativeStreamReader
     {
     }
 
-    [Obsolete("NativeStreamWriter is deprecated, use NativeStream.Writer instead. (RemovedAfter 2019-10-25) (UnityUpgradable) -> NativeStream/Writer", true)]
+    [Obsolete("NativeStreamWriter is deprecated, use NativeStream.Writer instead. (RemovedAfter 2019-11-30) (UnityUpgradable) -> NativeStream/Writer", true)]
     public unsafe struct NativeStreamWriter
     {
     }

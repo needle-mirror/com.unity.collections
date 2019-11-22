@@ -6,21 +6,26 @@ using Unity.Collections;
 public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {
     [Test]
-    public void Read_And_Write()
+    public void NativeHashMap_Read_And_Write()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize, Allocator.TempJob);
         var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
-        var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap.AsParallelWriter();
-        writeData.status = writeStatus;
-        writeData.keyMod = hashMapSize;
+        var writeData = new HashMapWriteJob()
+        {
+            hashMap = hashMap.AsParallelWriter(),
+            status = writeStatus,
+            keyMod = hashMapSize,
+        };
 
-        var readData = new HashMapReadParallelForJob();
-        readData.hashMap = hashMap;
-        readData.values = readValues;
-        readData.keyMod = writeData.keyMod;
+        var readData = new HashMapReadParallelForJob()
+        {
+            hashMap = hashMap,
+            values = readValues,
+            keyMod = writeData.keyMod,
+        };
+
         var writeJob = writeData.Schedule();
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
@@ -37,20 +42,26 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void Read_And_Write_Full()
+    public void NativeHashMap_Read_And_Write_Full()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize/2, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
         var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
-        var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap.AsParallelWriter();
-        writeData.status = writeStatus;
-        writeData.keyMod = hashMapSize;
-        var readData = new HashMapReadParallelForJob();
-        readData.hashMap = hashMap;
-        readData.values = readValues;
-        readData.keyMod = writeData.keyMod;
+        var writeData = new HashMapWriteJob()
+        {
+            hashMap = hashMap.AsParallelWriter(),
+            status = writeStatus,
+            keyMod = hashMapSize,
+        };
+
+        var readData = new HashMapReadParallelForJob()
+        {
+            hashMap = hashMap,
+            values = readValues,
+            keyMod = writeData.keyMod,
+        };
+
         var writeJob = writeData.Schedule();
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
@@ -69,7 +80,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
                 Assert.AreEqual(i, readValues[i], "Job failed to read from hash map");
             }
         }
-        Assert.AreEqual(hashMapSize - hashMapSize/2, missing.Count, "Wrong indices written to hash map");
+        Assert.AreEqual(hashMapSize - hashMapSize / 2, missing.Count, "Wrong indices written to hash map");
 
         hashMap.Dispose();
         writeStatus.Dispose();
@@ -77,20 +88,26 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void Key_Collisions()
+    public void NativeHashMap_Key_Collisions()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize, Allocator.TempJob);
         var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
         var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
 
-        var writeData = new HashMapWriteJob();
-        writeData.hashMap = hashMap.AsParallelWriter();
-        writeData.status = writeStatus;
-        writeData.keyMod = 16;
-        var readData = new HashMapReadParallelForJob();
-        readData.hashMap = hashMap;
-        readData.values = readValues;
-        readData.keyMod = writeData.keyMod;
+        var writeData = new HashMapWriteJob()
+        {
+            hashMap = hashMap.AsParallelWriter(),
+            status = writeStatus,
+            keyMod = 16,
+        };
+
+        var readData = new HashMapReadParallelForJob()
+        {
+            hashMap = hashMap,
+            values = readValues,
+            keyMod = writeData.keyMod,
+        };
+
         var writeJob = writeData.Schedule();
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
@@ -127,7 +144,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void Clear_And_Write()
+    public void NativeHashMap_Clear_And_Write()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize/2, Allocator.TempJob);
         var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
@@ -155,8 +172,11 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
     struct MergeSharedValues : IJobNativeMultiHashMapMergedSharedKeyIndices
     {
-        [NativeDisableParallelForRestriction] public NativeArray<int> sharedCount;
-        [NativeDisableParallelForRestriction] public NativeArray<int> sharedIndices;
+        [NativeDisableParallelForRestriction]
+        public NativeArray<int> sharedCount;
+
+        [NativeDisableParallelForRestriction]
+        public NativeArray<int> sharedIndices;
 
         public void ExecuteFirst(int index)
         {
@@ -171,7 +191,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void NativeHashMapMergeCountShared()
+    public void NativeHashMap_MergeCountShared()
     {
         var count = 1024;
         var sharedKeyCount = 16;
@@ -191,6 +211,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
             sharedCount = sharedCount,
             sharedIndices = sharedIndices,
         };
+
         var mergetedSharedValuesJobHandle = mergeSharedValuesJob.Schedule(hashMap, 64);
         mergetedSharedValuesJobHandle.Complete();
 
@@ -204,5 +225,4 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         totalSharedCount.Dispose();
         hashMap.Dispose();
     }
-
 }

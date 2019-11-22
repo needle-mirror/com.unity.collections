@@ -5,7 +5,7 @@ using Unity.Collections.Tests;
 
 public class NativeHashMapTests
 {
-#pragma warning disable 0649 // always defaul value
+#pragma warning disable 0649 // always default value
     struct NonBlittableStruct : IEquatable<NonBlittableStruct>
     {
          object o;
@@ -29,7 +29,7 @@ public class NativeHashMapTests
 #pragma warning restore 0649
 
     [Test]
-    public void Non_Blittable_Throws()
+    public void NativeHashMap_Non_Blittable_Throws()
     {
 #pragma warning disable 0219 // assigned but its value is never used
         Assert.Throws<System.ArgumentException> (() => { var hashMap = new NativeHashMap<NonBlittableStruct, int>(16, Allocator.Temp); });
@@ -38,7 +38,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void TryAdd_TryGetValue_Clear()
+    public void NativeHashMap_TryAdd_TryGetValue_Clear()
     {
         var hashMap = new NativeHashMap<int, int> (16, Allocator.Temp);
         int iSquared;
@@ -64,7 +64,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void Full_HashMap_Throws()
+    public void NativeHashMap_Full_HashMap_Throws()
     {
         var hashMap = new NativeHashMap<int, int> (16, Allocator.Temp);
         // Fill the hash map
@@ -77,7 +77,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void Double_Deallocate_Throws()
+    public void NativeHashMap_Double_Deallocate_Throws()
     {
         var hashMap = new NativeHashMap<int, int> (16, Allocator.TempJob);
         hashMap.Dispose ();
@@ -85,7 +85,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void Key_Collisions()
+    public void NativeHashMap_Key_Collisions()
     {
         var hashMap = new NativeHashMap<int, int> (16, Allocator.Temp);
         int iSquared;
@@ -110,9 +110,9 @@ public class NativeHashMapTests
         }
         hashMap.Dispose ();
     }
-
+    
     [Test]
-    public void HashMapSupportsAutomaticCapacityChange()
+    public void NativeHashMap_HashMapSupportsAutomaticCapacityChange()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         int iSquared;
@@ -130,16 +130,23 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void HashMapSameKey()
+    public void NativeHashMap_HashMapSameKey()
     {
-        var hashMap = new NativeHashMap<int, int> (0, Allocator.Persistent);
-        hashMap.TryAdd (0, 0);
-        hashMap.TryAdd (0, 0);
-        hashMap.Dispose ();//@TODO CHECKS
+        using (var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent))
+        {
+            Assert.DoesNotThrow(() => hashMap.Add(0, 0));
+            Assert.Throws<ArgumentException>(() => hashMap.Add(0, 0));
+        }
+        
+        using (var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent))
+        {
+            Assert.IsTrue(hashMap.TryAdd(0, 0));
+            Assert.IsFalse(hashMap.TryAdd(0, 0));
+        }
     }
 
     [Test]
-    public void HashMapEmptyCapacity()
+    public void NativeHashMap_HashMapEmptyCapacity()
     {
         var hashMap = new NativeHashMap<int, int> (0, Allocator.Persistent);
         hashMap.TryAdd (0, 0);
@@ -149,7 +156,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void Remove()
+    public void NativeHashMap_Remove()
     {
         var hashMap = new NativeHashMap<int, int> (8, Allocator.Temp);
         int iSquared;
@@ -165,7 +172,7 @@ public class NativeHashMapTests
         }
         for (int rm = 0; rm < 8; ++rm)
         {
-            hashMap.Remove(rm);
+            Assert.IsTrue(hashMap.Remove(rm));
             Assert.IsFalse(hashMap.TryGetValue(rm, out iSquared), "Failed to remove value from hash table");
             for (int i = rm+1; i < 8; ++i)
             {
@@ -179,8 +186,9 @@ public class NativeHashMapTests
         Assert.AreEqual(8, hashMap.Capacity, "HashMap grew larger than expected");
         hashMap.Dispose ();
     }
+
     [Test]
-    public void RemoveFromMultiHashMap()
+    public void NativeHashMap_RemoveFromMultiHashMap()
     {
         var hashMap = new NativeMultiHashMap<int, int> (16, Allocator.Temp);
         int iSquared;
@@ -201,7 +209,7 @@ public class NativeHashMapTests
         }
         for (int rm = 0; rm < 8; ++rm)
         {
-            hashMap.Remove(rm);
+            Assert.AreEqual(2, hashMap.Remove(rm));
             NativeMultiHashMapIterator<int> it;
             Assert.IsFalse(hashMap.TryGetFirstValue(rm, out iSquared, out it), "Failed to remove value from hash table");
             for (int i = rm+1; i < 8; ++i)
@@ -232,9 +240,8 @@ public class NativeHashMapTests
         list.Dispose();
     }
 
-
     [Test]
-    public void TryAddScalability()
+    public void NativeHashMap_TryAddScalability()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Persistent);
         for (int i = 0; i != 1000 * 100; i++)
@@ -256,7 +263,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void GetKeysEmpty()
+    public void NativeHashMap_GetKeysEmpty()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         var keys = hashMap.GetKeyArray(Allocator.Temp);
@@ -267,7 +274,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void NativeHashMapGetKeys()
+    public void NativeHashMap_GetKeys()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
@@ -287,7 +294,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void NativeHashMapGetValues()
+    public void NativeHashMap_GetValues()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
@@ -307,7 +314,42 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void NativeMultiHashMapGetKeys()
+    public void NativeHashMap_GetKeysAndValues()
+    {
+        var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.TryAdd(i, 2 * i);
+        }
+        var keysValues = hashMap.GetKeyValueArrays(Allocator.Temp);
+        hashMap.Dispose();
+
+        Assert.AreEqual(30, keysValues.Keys.Length);
+        Assert.AreEqual(30, keysValues.Values.Length);
+
+        // ensure keys and matching values are aligned
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(2 * keysValues.Keys[i], keysValues.Values[i]);
+        }
+
+        keysValues.Keys.Sort();
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(i, keysValues.Keys[i]);
+        }
+
+        keysValues.Values.Sort();
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(2 * i, keysValues.Values[i]);
+        }
+
+        keysValues.Dispose();
+    }
+
+    [Test]
+    public void NativeMultiHashMap_GetKeys()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
@@ -330,7 +372,7 @@ public class NativeHashMapTests
 
 #if !UNITY_DOTSPLAYER
     [Test]
-    public void NativeMultiHashMapGetUniqueKeysEmpty()
+    public void NativeMultiHashMap_GetUniqueKeysEmpty()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
@@ -340,7 +382,7 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void NativeMultiHashMapGetUniqueKeys()
+    public void NativeMultiHashMap_GetUniqueKeys()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
@@ -358,8 +400,9 @@ public class NativeHashMapTests
         keys.Item1.Dispose();
     }
 #endif
+
     [Test]
-    public void NativeMultiHashMapGetValues()
+    public void NativeMultiHashMap_GetValues()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
@@ -379,12 +422,59 @@ public class NativeHashMapTests
         values.Dispose();
     }
 
-    public struct EntityGuid : IEquatable<EntityGuid>, IComparable<EntityGuid>
+    [Test]
+    public void NativeMultiHashMap_GetKeysAndValues()
+    {
+        var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            hashMap.Add(i, 30 + i);
+            hashMap.Add(i, 60 + i);
+        }
+        var keysValues = hashMap.GetKeyValueArrays(Allocator.Temp);
+        hashMap.Dispose();
+
+        Assert.AreEqual(60, keysValues.Keys.Length);
+        Assert.AreEqual(60, keysValues.Values.Length);
+
+        // ensure keys and matching values are aligned (though unordered)
+        for (int i = 0; i < 30; ++i)
+        {
+            var k0 = keysValues.Keys[i * 2 + 0];
+            var k1 = keysValues.Keys[i * 2 + 1];
+            var v0 = keysValues.Values[i * 2 + 0];
+            var v1 = keysValues.Values[i * 2 + 1];
+
+            if (v0 > v1)
+                (v0, v1) = (v1, v0);
+
+            Assert.AreEqual(k0, k1);
+            Assert.AreEqual(30 + k0, v0);
+            Assert.AreEqual(60 + k0, v1);
+        }
+
+        keysValues.Keys.Sort();
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(i, keysValues.Keys[i * 2 + 0]);
+            Assert.AreEqual(i, keysValues.Keys[i * 2 + 1]);
+        }
+
+        keysValues.Values.Sort();
+        for (int i = 0; i < 60; ++i)
+        {
+            Assert.AreEqual(30  + i, keysValues.Values[i]);
+        }
+
+        keysValues.Dispose();
+    }
+
+    public struct TestEntityGuid : IEquatable<TestEntityGuid>, IComparable<TestEntityGuid>
     {
         public ulong a;
         public ulong b;
 
-        public bool Equals(EntityGuid other)
+        public bool Equals(TestEntityGuid other)
         {
             return a == other.a && b == other.b;
         }
@@ -397,7 +487,7 @@ public class NativeHashMapTests
             }
         }
 
-        public int CompareTo(EntityGuid other)
+        public int CompareTo(TestEntityGuid other)
         {
             var aComparison = a.CompareTo(other.a);
             if (aComparison != 0) return aComparison;
@@ -405,14 +495,13 @@ public class NativeHashMapTests
         }
     }
 
-
     [Test]
-    public void GetKeysGuid()
+    public void NativeHashMap_GetKeysGuid()
     {
-        var hashMap = new NativeHashMap<EntityGuid, int> (1, Allocator.Temp);
+        var hashMap = new NativeHashMap<TestEntityGuid, int> (1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
-            var didAdd = hashMap.TryAdd(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, 2 * i);
+            var didAdd = hashMap.TryAdd(new TestEntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, 2 * i);
             Assert.IsTrue(didAdd);
         }
 
@@ -421,7 +510,7 @@ public class NativeHashMapTests
         for (int i = 0; i < 30; ++i)
         {
             int output;
-            var exists = hashMap.TryGetValue(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, out output);
+            var exists = hashMap.TryGetValue(new TestEntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, out output);
             Assert.IsTrue(exists);
             Assert.AreEqual(2 * i, output);
         }
@@ -433,7 +522,7 @@ public class NativeHashMapTests
         keys.Sort();
         for (int i = 0; i < 30; ++i)
         {
-            Assert.AreEqual(new EntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, keys[i]);
+            Assert.AreEqual(new TestEntityGuid() { a = (ulong)i * 5, b = 3 * (ulong)i }, keys[i]);
         }
 
         hashMap.Dispose();
@@ -441,7 +530,7 @@ public class NativeHashMapTests
     }
     
     [Test]
-    public void IndexerWorks()
+    public void NativeHashMap_IndexerWorks()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         hashMap[5] = 7;
@@ -453,9 +542,8 @@ public class NativeHashMapTests
         hashMap.Dispose();
     }
     
-    
     [Test]
-    public void ContainsKeyHashMap()
+    public void NativeHashMap_ContainsKeyHashMap()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         hashMap[5] = 7;
@@ -467,7 +555,7 @@ public class NativeHashMapTests
     }
     
     [Test]
-    public void ContainsKeyMultiHashMap()
+    public void NativeHashMap_ContainsKeyMultiHashMap()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         hashMap.Add(5, 7);
@@ -483,7 +571,7 @@ public class NativeHashMapTests
     }
     
     [Test]
-    public void CountValuesForKey()
+    public void NativeMultiHashMap_CountValuesForKey()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         hashMap.Add(5, 7);
@@ -498,7 +586,7 @@ public class NativeHashMapTests
     }
     
     [Test]
-    public void RemoveKeyAndValue()
+    public void NativeMultiHashMap_RemoveKeyAndValue()
     {
         var hashMap = new NativeMultiHashMap<int, long> (1, Allocator.Temp);
         hashMap.Add(10, 0);
@@ -528,7 +616,7 @@ public class NativeHashMapTests
     
 
     [Test]
-    public void MultiHashMapValueIterator()
+    public void NativeMultiHashMap_ValueIterator()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         hashMap.Add(5, 0);
@@ -555,16 +643,31 @@ public class NativeHashMapTests
     }
 
     [Test]
-    public void DisposeJob()
+    public void NativeHashMap_DisposeJob()
     {
         var container0 = new NativeHashMap<int, int>(1, Allocator.Persistent);
+        Assert.True(container0.IsCreated);
+        Assert.DoesNotThrow(() => { container0.Add(0, 1); });
+        Assert.True(container0.ContainsKey(0));
+
         var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
-        var disposeJob = container1.Dispose(container0.Dispose(default));
+        Assert.True(container1.IsCreated);
+        Assert.DoesNotThrow(() => { container1.Add(1, 2); });
+        Assert.True(container1.ContainsKey(1));
+
+        var disposeJob0 = container0.Dispose(default);
+        Assert.False(container0.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container0.ContainsKey(0); });
+
+        var disposeJob = container1.Dispose(disposeJob0);
+        Assert.False(container1.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container1.ContainsKey(1); });
+
         disposeJob.Complete();
     }
     
     [Test]
-    public void RemoveKeyValueDoesntDeallocate()
+    public void NativeMultiHashMap_RemoveKeyValueDoesntDeallocate()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         hashMap.Add(5, 1);
@@ -577,5 +680,20 @@ public class NativeHashMapTests
         
         hashMap.Dispose();
     }
-    
+
+    [Test]
+    public void NativeMultiHashMap_Double_Deallocate_Throws()
+    {
+        var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.TempJob);
+        hashMap.Dispose();
+        Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(); });
+    }
+
+    [Test]
+    public void NativeMultiHashMap_RemoveKeyValueThrowsInvalidParam()
+    {
+        var hashMap = new NativeMultiHashMap<int, long>(1, Allocator.Temp);
+        Assert.Throws<ArgumentException>(() => hashMap.Remove(5, 5));
+        hashMap.Dispose();
+    }
 }

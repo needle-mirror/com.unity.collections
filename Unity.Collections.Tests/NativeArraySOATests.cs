@@ -111,7 +111,7 @@ class NativeArrayChunked8Tests
     {
         var a = new NativeArrayChunked8<T4>(150, Allocator.Temp);
 
-        for (int i = a.Length - 1; i >= 0; --i)
+        for (int i = 0; i < a.Length; ++i)
         {
             a[i] = new T4
             {
@@ -243,7 +243,7 @@ class NativeArrayFullSOATests
     {
         var a = new NativeArrayFullSOA<T4>(150, Allocator.Temp);
 
-        for (int i = a.Length - 1; i >= 0; --i)
+        for (int i = 0; i < a.Length; ++i)
         {
             a[i] = new T4
             {

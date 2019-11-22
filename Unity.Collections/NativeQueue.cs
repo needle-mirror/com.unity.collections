@@ -12,7 +12,6 @@ namespace Unity.Collections
     {
         public NativeQueueBlockHeader* m_NextBlock;
         public int m_NumItems;
-        public int m_NumReaders;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -107,7 +106,6 @@ namespace Unity.Collections
                         block->m_NextBlock = prev;
                         prev = block;
                     }
-
                     data.m_FirstBlock = (IntPtr)prev;
 #if !NET_DOTS
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
@@ -167,7 +165,6 @@ namespace Unity.Collections
                 currentWriteBlock = pool->AllocateBlock();
                 currentWriteBlock->m_NextBlock = null;
                 currentWriteBlock->m_NumItems = 0;
-                currentWriteBlock->m_NumReaders = 1;
                 NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
 
                 if (prevLast == null)
@@ -183,59 +180,6 @@ namespace Unity.Collections
             }
 
             return currentWriteBlock;
-        }
-
-        public static NativeQueueBlockHeader* GetFirstBlock(NativeQueueData* data, NativeQueueBlockPoolData* pool)
-        {
-            NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)data->m_FirstBlock;
-
-            if (firstBlock == null)
-            {
-                return null;
-            }
-
-            if (data->m_CurrentRead >= firstBlock->m_NumItems)
-            {
-                var nextBlock = firstBlock->m_NextBlock;
-
-                // Block should be freed once last reader calls Release.
-                Interlocked.Decrement(ref firstBlock->m_NumReaders);
-
-                for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
-                {
-                    if (data->GetCurrentWriteBlockTLS(threadIndex) == firstBlock)
-                    {
-                        data->SetCurrentWriteBlockTLS(threadIndex, null);
-                    }
-                }
-
-                firstBlock = nextBlock;
-
-                data->m_FirstBlock = (IntPtr)nextBlock;
-                data->m_CurrentRead = 0;
-
-                if (nextBlock == null)
-                {
-                    data->m_LastBlock = IntPtr.Zero;
-                }
-            }
-
-            if (firstBlock == null)
-            {
-                return null;
-            }
-
-            Interlocked.Increment(ref firstBlock->m_NumReaders);
-
-            return firstBlock;
-        }
-
-        public unsafe static void Release(NativeQueueBlockHeader* block, NativeQueueBlockPoolData* pool)
-        {
-            if (0 == Interlocked.Decrement(ref block->m_NumReaders))
-            {
-                pool->FreeBlock(block);
-            }
         }
 
         public unsafe static void AllocateQueue<T>(Allocator label, out NativeQueueData* outBuf) where T : struct
@@ -378,7 +322,8 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            NativeQueueBlockHeader* firstBlock = NativeQueueData.GetFirstBlock(m_Buffer, m_QueuePool);
+
+            NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
 
             if (firstBlock == null)
             {
@@ -389,7 +334,26 @@ namespace Unity.Collections
             var currentRead = m_Buffer->m_CurrentRead++;
             item = UnsafeUtility.ReadArrayElement<T>(firstBlock + 1, currentRead);
 
-            NativeQueueData.Release(firstBlock, m_QueuePool);
+            if (m_Buffer->m_CurrentRead >= firstBlock->m_NumItems)
+            {
+                m_Buffer->m_CurrentRead = 0;
+                m_Buffer->m_FirstBlock = (IntPtr)firstBlock->m_NextBlock;
+
+                if (m_Buffer->m_FirstBlock == IntPtr.Zero)
+                {
+                    m_Buffer->m_LastBlock = IntPtr.Zero;
+                }
+
+                for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
+                {
+                    if (m_Buffer->GetCurrentWriteBlockTLS(threadIndex) == firstBlock)
+                    {
+                        m_Buffer->SetCurrentWriteBlockTLS(threadIndex, null);
+                    }
+                }
+
+                m_QueuePool->FreeBlock(firstBlock);
+            }
 
             return true;
         }
@@ -478,7 +442,7 @@ namespace Unity.Collections
             }
         }
 
-        [Obsolete("NativeQueue<T>.ToConcurrent() is deprecated, use NativeQueue<T>.AsParallelWriter() instead. (RemovedAfter 2019-10-25)", false)]
+        [Obsolete("NativeQueue<T>.ToConcurrent() is deprecated, use NativeQueue<T>.AsParallelWriter() instead. (RemovedAfter 2019-11-30)", false)]
         public Concurrent ToConcurrent()
         {
             Concurrent concurrent;
@@ -486,7 +450,7 @@ namespace Unity.Collections
             return concurrent;
         }
 
-        [Obsolete("NativeQueue<T>.Concurrent is deprecated, use NativeQueue<T>.ParallelWriter instead. (RemovedAfter 2019-10-25)", false)]
+        [Obsolete("NativeQueue<T>.Concurrent is deprecated, use NativeQueue<T>.ParallelWriter instead. (RemovedAfter 2019-11-30)", false)]
         public unsafe struct Concurrent
         {
             public ParallelWriter writer;
@@ -506,11 +470,6 @@ namespace Unity.Collections
             writer.m_Buffer = m_Buffer;
             writer.m_QueuePool = m_QueuePool;
             writer.m_ThreadIndex = 0;
-
-            for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
-            {
-                m_Buffer->SetCurrentWriteBlockTLS(threadIndex, null);
-            }
 
             return writer;
         }

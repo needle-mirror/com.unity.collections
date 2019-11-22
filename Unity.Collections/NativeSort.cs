@@ -4,6 +4,7 @@ using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 namespace Unity.Collections
 {
@@ -15,41 +16,54 @@ namespace Unity.Collections
         }
 
         // Default Comparer
-        unsafe public static void Sort<T>(T* array, int length) where T : unmanaged, IComparable<T>
+        public unsafe static void Sort<T>(T* array, int length) where T : unmanaged, IComparable<T>
         {
             IntroSort<T, DefaultComparer<T>>(array, length, new DefaultComparer<T>());
         }
-        unsafe public static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
+
+        public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
         {
             IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
         }
-        unsafe public static void Sort<T>(this NativeList<T> list) where T : struct, IComparable<T>
+
+        public unsafe static void Sort<T>(this NativeList<T> list) where T : struct, IComparable<T>
         {
             list.Sort(new DefaultComparer<T>());
         }
 
+        public unsafe static void Sort<T>(this UnsafeList list) where T : struct, IComparable<T>
+        {
+            list.Sort<T, DefaultComparer<T>>(new DefaultComparer<T>());
+        }
+
         // Explicit comparer
-        unsafe public static void Sort<T, U>(T* array, int length, U comp) where T : unmanaged where U : IComparer<T>
+        public unsafe static void Sort<T, U>(T* array, int length, U comp) where T : unmanaged where U : IComparer<T>
         {
             IntroSort<T, U>(array, length, comp);
         }
-        unsafe public static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
+
+        public unsafe static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(array.GetUnsafePtr(), array.Length, comp);
         }
-        unsafe public static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
+
+        public unsafe static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(list.GetUnsafePtr(), list.Length, comp);
         }
 
-
+        public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
+        {
+            IntroSort<T, U>(list.Ptr, list.Length, comp);
+        }
 
         // Native slice
-        unsafe public static void Sort<T>(this NativeSlice<T> slice) where T : struct, IComparable<T>
+        public unsafe static void Sort<T>(this NativeSlice<T> slice) where T : struct, IComparable<T>
         {
             slice.Sort(new DefaultComparer<T>());
         }
-        unsafe public static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
+
+        public unsafe static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (slice.Stride != UnsafeUtility.SizeOf<T>())
@@ -223,7 +237,7 @@ namespace Unity.Collections
             }
         }
         
-    //    [BurstCompile] // @macton Crashes with burst 26-Jul-2019
+        [BurstCompile] 
         unsafe struct SegmentSortMerge<T> : IJob
             where T : unmanaged, IComparable<T>
         {
@@ -235,6 +249,7 @@ namespace Unity.Collections
             {
                 var segmentCount = (Length + (SegmentWidth-1)) / SegmentWidth;
                 var segmentIndex = stackalloc int[segmentCount];
+
                 var resultCopy = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
                 
                 for (int sortIndex=0;sortIndex < Length;sortIndex++)
@@ -270,18 +285,25 @@ namespace Unity.Collections
             }
         }
         
-        unsafe public static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
+        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
         {
             return SortJob((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, inputDeps);
         }
 
-        unsafe public static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
+        public unsafe static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
         {
             if (length == 0)
                 return inputDeps;
             
             var segmentCount = (length + 1023) / 1024;
-            var workerSegmentCount = segmentCount / JobsUtility.MaxJobThreadCount; // .JobsWorkerCount 
+
+#if UNITY_2019_3_OR_NEWER || UNITY_DOTSPLAYER
+            var workerCount = JobsUtility.JobWorkerCount;
+#else
+            var workerCount = JobsUtility.MaxJobThreadCount;
+#endif
+            workerCount = math.max(1, workerCount);
+            var workerSegmentCount = segmentCount / workerCount;
             var segmentSortJob = new SegmentSort<T> {Data = array, Length = length, SegmentWidth = 1024};
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
             var segmentSortMergeJob = new SegmentSortMerge<T>{Data = array, Length = length, SegmentWidth = 1024};

@@ -17,6 +17,17 @@ public class UnsafeAppendBufferTests
         var buffer = new UnsafeAppendBuffer(0, 8, Allocator.Temp);
         buffer.Dispose();
     }
+
+    [Test]
+    unsafe public void DisposeExternal()
+    {
+        var data = stackalloc int[1];
+        var buffer = new UnsafeAppendBuffer(data, sizeof(int));
+        buffer.Add(5);
+        buffer.Dispose();
+        Assert.AreEqual(5, data[0]);
+    }
+
     
     [Test]
     public void ThrowZeroAlignment()
@@ -69,7 +80,7 @@ public class UnsafeAppendBufferTests
                 PayloadSize = packetSize
             });
             
-            UnsafeUtilityEx.MemSet(scratchPayload,(byte)(i & 0xff), packetSize);
+            UnsafeUtility.MemSet(scratchPayload,(byte)(i & 0xff), packetSize);
             
             buffer.Add(scratchPayload, i);
         }
@@ -116,5 +127,7 @@ public class UnsafeAppendBufferTests
         Assert.AreEqual(765, buffer.Pop<int>());
         Assert.AreEqual(876, buffer.Pop<int>());
         Assert.AreEqual(987, buffer.Pop<int>());
+        
+        buffer.Dispose();
     }
 }

@@ -122,5 +122,23 @@ namespace Unity.Collections
 
             return result;
         }
+
+        /// <summary>
+        /// Returns true if the Length & the content of the two NativeArray's are the same
+        /// </summary>
+        public static bool ArraysEqual<T>(this NativeArray<T> array, NativeArray<T> other) where T : struct, IEquatable<T>
+        {
+            if (array.Length != other.Length)
+                return false;
+
+            for (int i = 0; i != array.Length; i++)
+            {
+                if (!array[i].Equals(other[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
     }
 }

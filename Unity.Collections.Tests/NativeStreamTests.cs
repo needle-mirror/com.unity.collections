@@ -108,14 +108,15 @@ public class NativeStreamTests
     }
 
     [Test]
-    public void DisposeAfterSchedule()
+    public void NativeStream_DisposeJob()
     {
         var stream = new NativeStream(100, Allocator.TempJob);
+        Assert.IsTrue(stream.IsCreated);
+
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         var writerJob = fillInts.Schedule(100, 16);
 
         var disposeJob = stream.Dispose(writerJob);
-
         Assert.IsFalse(stream.IsCreated);
 
         disposeJob.Complete();
@@ -142,7 +143,7 @@ public class NativeStreamTests
         list.Add(2);
 
         NativeStream stream;
-        var jobHandle = NativeStream.ScheduleConstruct(out stream, list, default(JobHandle));
+        var jobHandle = NativeStream.ScheduleConstruct(out stream, list, default, Allocator.TempJob);
 
         Assert.Throws<InvalidOperationException>(() => Debug.Log(stream.ForEachCount));
 

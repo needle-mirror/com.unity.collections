@@ -174,10 +174,17 @@ public class NativeListTests
 #endif
 
     [Test]
-    public void DisposeJob()
+    public void NativeList_DisposeJob()
     {
         var container = new NativeList<int>(Allocator.Persistent);
+        Assert.True(container.IsCreated);
+        Assert.DoesNotThrow(() => { container.Add(0); });
+        Assert.DoesNotThrow(() => { container.Contains(0); });
+
         var disposeJob = container.Dispose(default);
+        Assert.False(container.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container.Contains(0); });
+
         disposeJob.Complete();
     }
     

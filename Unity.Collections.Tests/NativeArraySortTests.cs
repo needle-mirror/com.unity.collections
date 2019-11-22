@@ -322,11 +322,7 @@ public class NativeSliceTests
         array.Dispose();
     }
 
-    #if UNITY_2019_2_OR_NEWER
     [Test, Performance]
-    #else
-    [PerformanceTest]
-    #endif
     [Category("Performance")]
     public void NativeSlice_Performance_CopyTo()
     {
@@ -376,11 +372,7 @@ public class NativeSliceTests
         array.Dispose();
     }
 
-    #if UNITY_2019_2_OR_NEWER
     [Test, Performance]
-    #else
-    [PerformanceTest]
-    #endif
     [Category("Performance")]
     public void NativeSlice_Performance_CopyFrom()
     {

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
-
+using Unity.Jobs.LowLevel.Unsafe;
 #if !NET_DOTS
 using System.Reflection;
 #endif
@@ -12,6 +12,8 @@ namespace Unity.Collections
 {
     public static class CollectionHelper
     {
+        public const int CacheLineSize = JobsUtility.CacheLineSize;
+
         [StructLayout(LayoutKind.Explicit)]
         internal struct LongDoubleUnion
         {
@@ -75,6 +77,18 @@ namespace Unity.Collections
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
         }
 
+        public static unsafe bool IsAligned(void* p, int alignmentPowerOfTwo)
+        {
+            CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+            return ((ulong)p & ((ulong)alignmentPowerOfTwo - 1)) == 0;
+        }
+
+        public static unsafe bool IsAligned(ulong offset, int alignmentPowerOfTwo)
+        {
+            CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+            return (offset & ((ulong)alignmentPowerOfTwo - 1)) == 0;
+        }
+
         /// <summary>
         /// Returns hash value of memory block. Function is using djb2 (non-cryptographic hash).
         /// </summary>
@@ -96,11 +110,11 @@ namespace Unity.Collections
         [BurstDiscard]
         public static void CheckIsUnmanaged<T>()
         {
-#if UNITY_2019_3_OR_NEWER
+#if !UNITY_DOTSPLAYER // todo: enable when this is supported
             if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
 #else
             if (!UnsafeUtility.IsUnmanaged<T>())
-#endif
+        #endif
                 throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
         }
 

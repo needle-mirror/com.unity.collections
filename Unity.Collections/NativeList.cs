@@ -81,7 +81,7 @@ namespace Unity.Collections
             m_ListData = UnsafeList.Create(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), initialCapacity, allocator);
             m_DeprecatedAllocator = allocator;
 
-#if UNITY_2019_3_OR_NEWER && ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
@@ -162,16 +162,64 @@ namespace Unity.Collections
         /// <summary>
         /// Adds an element to the list.
         /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="value">The value to be added at the end of the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddNoResize(T value)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            m_ListData->AddNoResize(value);
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize(void* ptr, int length)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            m_ListData->AddRangeNoResize<T>(ptr, length);
+        }
+
+        /// <summary>
+        /// Adds elements from a list to this list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize(NativeList<T> list)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+            m_ListData->AddRangeNoResize<T>(*list.m_ListData);
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
         /// <param name="element">The struct to be added at the end of the list.</param>
         /// <remarks>If the list has reached its current capacity, it copies the original, internal array to
         /// a new, larger array, and then deallocates the original.
         /// </remarks>
-        public void Add(T element)
+        public void Add(T value)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-            m_ListData->Add(element);
+            m_ListData->Add(value);
         }
 
         /// <summary>
@@ -421,11 +469,11 @@ namespace Unity.Collections
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        #if UNITY_2019_3_OR_NEWER
+    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+        [Obsolete("Please use AsDeferredJobArray instead. If you see this in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE from the collections assembly definition file.")]
+    #else
         [Obsolete("Please use AsDeferredJobArray instead. (RemovedAfter 2019-11-02) (UnityUpgradable) -> AsDeferredJobArray()")]
-        #else
-        [Obsolete("Please use AsDeferredJobArray instead. (RemovedAfter 2019-11-02)")]
-        #endif
+    #endif
         public NativeArray<T> ToDeferredJobArray()
         {
             return AsDeferredJobArray();
