@@ -377,23 +377,6 @@ namespace Unity.Collections
                 return m_Writer.TryAdd(key, item);
             }
         }
-
-        [Obsolete("NativeHashMap<TKey, TValue>.ToConcurrent is deprecated, use NativeHashMap<TKey, TValue>.AsParallelWriter instead. (RemovedAfter 2019-11-30)", false)]
-        public Concurrent ToConcurrent()
-        {
-            Concurrent concurrent;
-            concurrent.writer = AsParallelWriter();
-            return concurrent;
-        }
-
-        [Obsolete("NativeHashMap<TKey, TValue>.Concurrent is deprecated, use NativeHashMap<TKey, TValue>.ParallelWriter instead. (RemovedAfter 2019-11-30)", false)]
-        public unsafe struct Concurrent
-        {
-            public ParallelWriter writer;
-
-            public int Capacity => writer.Capacity;
-            public bool TryAdd(TKey key, TValue item) => writer.TryAdd(key, item);
-        }
     }
 
     internal sealed class NativeHashMapDebuggerTypeProxy<TKey, TValue>
@@ -864,23 +847,6 @@ namespace Unity.Collections
 #endif
                 m_Writer.Add(key, item);
             }
-        }
-
-        [Obsolete("NativeMultiHashMap<TKey, TValue>.ToConcurrent() is deprecated, use NativeMultiHashMap<TKey, TValue>.AsParallelWriter() instead. (RemovedAfter 2019-11-30)", false)]
-        public Concurrent ToConcurrent()
-        {
-            Concurrent concurrent;
-            concurrent.writer = AsParallelWriter();
-            return concurrent;
-        }
-
-        [Obsolete("NativeMultiHashMap<TKey, TValue>.Concurrent is deprecated, use NativeMultiHashMap<TKey, TValue>.ParallelWriter instead. (RemovedAfter 2019-11-30)", false)]
-        public unsafe struct Concurrent
-        {
-            public ParallelWriter writer;
-
-            public int Capacity => writer.Capacity;
-            public void Add(TKey key, TValue item) => writer.Add(key, item);
         }
     }
 

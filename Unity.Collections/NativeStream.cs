@@ -659,14 +659,4 @@ namespace Unity.Collections
             }
         }
     }
-
-    [Obsolete("NativeStreamReader is deprecated, use NativeStream.Reader instead. (RemovedAfter 2019-11-30) (UnityUpgradable) -> NativeStream/Reader", true)]
-    public unsafe struct NativeStreamReader
-    {
-    }
-
-    [Obsolete("NativeStreamWriter is deprecated, use NativeStream.Writer instead. (RemovedAfter 2019-11-30) (UnityUpgradable) -> NativeStream/Writer", true)]
-    public unsafe struct NativeStreamWriter
-    {
-    }
 }

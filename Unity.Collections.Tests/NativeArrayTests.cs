@@ -4,7 +4,6 @@ using Unity.Collections;
 
 public class NativeArrayTests
 {
-#if UNITY_2020_1_OR_NEWER
     [Test]
     public void NativeArray_DisposeJob()
     {
@@ -18,5 +17,4 @@ public class NativeArrayTests
 
         disposeJob.Complete();
     }
-#endif
 }

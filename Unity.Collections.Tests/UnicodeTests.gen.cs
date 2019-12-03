@@ -16,9 +16,10 @@ using System;
 using System.Globalization;
 using System.Threading;
 using NUnit.Framework;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-namespace Unity.Collections.Tests
+namespace NativeStringTests
 {
 
 [TestFixture("en-US")]

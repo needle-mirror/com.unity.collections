@@ -31,7 +31,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 #endif
         }
 
-        [Obsolete("RestrictNoAlias has been deprecated by the Burst compiler, and its usage is a no-op. (RemovedAfter 2019-11-30)")]
+        [Obsolete("RestrictNoAlias has been deprecated by the Burst compiler, and its usage is a no-op. (RemovedAfter 2020-01-22)")]
         public static void* RestrictNoAlias(void* ptr)
         {
             return ptr;

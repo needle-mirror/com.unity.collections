@@ -468,17 +468,6 @@ namespace Unity.Collections
             return array;
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-        [Obsolete("Please use AsDeferredJobArray instead. If you see this in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE from the collections assembly definition file.")]
-    #else
-        [Obsolete("Please use AsDeferredJobArray instead. (RemovedAfter 2019-11-02) (UnityUpgradable) -> AsDeferredJobArray()")]
-    #endif
-        public NativeArray<T> ToDeferredJobArray()
-        {
-            return AsDeferredJobArray();
-        }
-
         /// <summary>
         /// A copy of this list as a [NativeArray](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html).
         /// </summary>

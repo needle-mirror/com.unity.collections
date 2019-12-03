@@ -442,22 +442,6 @@ namespace Unity.Collections
             }
         }
 
-        [Obsolete("NativeQueue<T>.ToConcurrent() is deprecated, use NativeQueue<T>.AsParallelWriter() instead. (RemovedAfter 2019-11-30)", false)]
-        public Concurrent ToConcurrent()
-        {
-            Concurrent concurrent;
-            concurrent.writer = AsParallelWriter();
-            return concurrent;
-        }
-
-        [Obsolete("NativeQueue<T>.Concurrent is deprecated, use NativeQueue<T>.ParallelWriter instead. (RemovedAfter 2019-11-30)", false)]
-        public unsafe struct Concurrent
-        {
-            public ParallelWriter writer;
-
-            public void Enqueue(T entry) => writer.Enqueue(entry);
-        }
-
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;

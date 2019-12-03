@@ -1,5 +1,20 @@
 # Change log
 
+## [0.3.0] - 2019-12-03
+
+### New Features
+
+* Added fixed-size BitField32/64 bit array.
+
+### Changes
+
+Removed the following deprecated API as announced in/before `0.1.1-preview`:
+
+* Removed `struct Concurrent` and `ToConcurrent()` for `NativeHashMap`, `NativeMultiHashMap` and `NativeQueue` (replaced by the *ParallelWriter* API).
+* From NativeStream.cs: `struct NativeStreamReader` and `struct NativeStreamWriter`, replaced by `struct NativeStream.Reader` and `struct NativeStream.Writer`.
+* From NativeList.cs: `ToDeferredJobArray()` (replaced by `AsDeferredJobArray()` API).
+
+
 ## [0.2.0] - 2019-11-22
 
 **This version requires Unity 2019.3 0b11+**
@@ -108,16 +123,18 @@
 Change tracking started with this version.
 
 <!-- Template for version sections
-## [0.0.0-preview.0]
+
+## [Unreleased]
 
 ### New Features
 
-
 ### Upgrade guide
-
 
 ### Changes
 
-
 ### Fixes
+
+### Known Issues
+
+
 -->
