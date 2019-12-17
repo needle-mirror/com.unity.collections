@@ -671,6 +671,12 @@ namespace Unity.Collections
         
     }
 
+    [StructLayout(LayoutKind.Explicit, Size=1)]
+    public struct Bytes1
+    {   
+        [FieldOffset(0)] public byte byte0000;
+    }
+
     [StructLayout(LayoutKind.Explicit, Size=16)]
     public struct Bytes16
     {
@@ -721,6 +727,33 @@ namespace Unity.Collections
         public const int MaxLength = <#=MAXLENGTH#>;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes<#=MAXLENGTH#> buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes<#=MAXLENGTH#>* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {

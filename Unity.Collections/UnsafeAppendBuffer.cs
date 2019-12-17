@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
@@ -67,7 +68,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (targetCapacity < 64)
                 targetCapacity = 64;
             else
-                targetCapacity = CollectionHelper.CeilPow2(targetCapacity);
+                targetCapacity = math.ceilpow2(targetCapacity);
             
             var newPtr = (byte*) UnsafeUtility.Malloc(targetCapacity, Alignment, Allocator);
             if (Ptr != null)

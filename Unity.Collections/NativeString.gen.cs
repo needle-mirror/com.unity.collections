@@ -666,6 +666,12 @@ namespace Unity.Collections
         
     }
 
+    [StructLayout(LayoutKind.Explicit, Size=1)]
+    public struct Bytes1
+    {   
+        [FieldOffset(0)] public byte byte0000;
+    }
+
     [StructLayout(LayoutKind.Explicit, Size=16)]
     public struct Bytes16
     {
@@ -714,6 +720,33 @@ namespace Unity.Collections
         public const int MaxLength = 30;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes30 buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes30* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {
@@ -1055,6 +1088,33 @@ namespace Unity.Collections
         public const int MaxLength = 62;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes62 buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes62* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {
@@ -1400,6 +1460,33 @@ namespace Unity.Collections
         public const int MaxLength = 126;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes126 buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes126* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {
@@ -1769,6 +1856,33 @@ namespace Unity.Collections
         public const int MaxLength = 510;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes510 buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes510* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {
@@ -2362,6 +2476,33 @@ namespace Unity.Collections
         public const int MaxLength = 4094;
         [FieldOffset(0)] public ushort LengthInBytes;
         [FieldOffset(2)] public Bytes4094 buffer;        
+        
+        /// <summary>
+        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        public int Utf8BufferLengthInBytes 
+        {
+            get
+            {
+                return LengthInBytes;
+            }
+            set 
+            {
+                LengthInBytes = (ushort)value;
+            }
+        }
+        
+        /// <summary>
+        /// When the address of the UTF-8 buffer is needed, please use this property.
+        /// </summary>        
+        unsafe public ref Bytes1 Utf8Buffer
+        {
+            get 
+            {
+                fixed(Bytes4094* b = &buffer)
+                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+            }
+        }
                 
         public ParseError Parse(ref int offset, ref int output)
         {

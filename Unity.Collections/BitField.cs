@@ -1,12 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Unity.Burst;
+using Unity.Mathematics;
 
 namespace Unity.Collections
 {
     internal struct Bitwise
     {
+        internal static int AlignDown(int value, int alignPow2)
+        {
+            return value & ~(alignPow2 - 1);
+        }
+
+        internal static int AlignUp(int value, int alignPow2)
+        {
+            return AlignDown(value + alignPow2 - 1, alignPow2);
+        }
+
         internal static int FromBool(bool value)
         {
             return value ? 1 : 0;
@@ -32,57 +42,6 @@ namespace Unity.Collections
             return ReplaceBits(input, pos, mask, (uint)-FromBool(value));
         }
 
-        internal static int CountBits(uint input)
-        {
-            var tmp0 = input >> 1;
-            var tmp1 = tmp0 & 0x55555555u;
-            var tmp2 = input - tmp1;
-            var tmp3 = tmp2 & 0xc30c30c3u;
-            var tmp4 = tmp2 >> 2;
-            var tmp5 = tmp4 & 0xc30c30c3u;
-            var tmp6 = tmp2 >> 4;
-            var tmp7 = tmp6 & 0xc30c30c3;
-            var tmp8 = tmp3 + tmp5;
-            var tmp9 = tmp7 + tmp8;
-            var tmpA = tmp9 >> 6;
-            var tmpB = tmp9 + tmpA;
-            var tmpC = tmpB >> 12;
-            var tmpD = tmpB >> 24;
-            var tmpE = tmpB + tmpC;
-            var tmpF = tmpD + tmpE;
-            var result = tmpF & 0x3f;
-
-            return (int)result;
-        }
-
-        internal static int CountLeadingZeros(uint input)
-        {
-            var tmp0 = input >> 1;
-            var tmp1 = tmp0 | input;
-            var tmp2 = tmp1 >> 2;
-            var tmp3 = tmp2 | tmp1;
-            var tmp4 = tmp3 >> 4;
-            var tmp5 = tmp4 | tmp3;
-            var tmp6 = tmp5 >> 8;
-            var tmp7 = tmp6 | tmp5;
-            var tmp8 = tmp7 >> 16;
-            var tmp9 = tmp8 | tmp7;
-            var tmpA = ~tmp9;
-            var result = CountBits(tmpA);
-
-            return result;
-        }
-
-        internal static int CountTrailingZeros(uint input)
-        {
-            var tmp0 = ~input;
-            var tmp1 = input - 1;
-            var tmp2 = tmp0 & tmp1;
-            var result = CountBits(tmp2);
-
-            return result;
-        }
-
         // 64-bit ulong
 
         internal static ulong ExtractBits(ulong input, int pos, ulong mask)
@@ -101,31 +60,6 @@ namespace Unity.Collections
         internal static ulong SetBits(ulong input, int pos, ulong mask, bool value)
         {
             return ReplaceBits(input, pos, mask, (ulong)-(long)FromBool(value));
-        }
-
-        internal static int CountBits(ulong input)
-        {
-            uint lo = (uint)(input & 0xffffffff);
-            uint hi = (uint)(input >> 32);
-
-            return CountBits(lo) + CountBits(hi);
-        }
-
-        internal static int CountLeadingZeros(ulong input)
-        {
-            return 0 != (input & 0xffffffff00000000ul)
-                 ? CountLeadingZeros((uint)(input >> 32))
-                 : CountLeadingZeros((uint)(input)) + 32
-                 ;
-
-        }
-
-        internal static int CountTrailingZeros(ulong input)
-        {
-            return 0 != (input & 0xfffffffful)
-                ? CountTrailingZeros((uint)(input))
-                : CountTrailingZeros((uint)(input >> 32)) + 32
-                ;
         }
     }
 
@@ -155,12 +89,23 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Set single bit to desired boolean value.
+        /// </summary>
+        /// <param name="pos">Position in bitfield (must be 0-31).</param>
+        /// <param name="value">Value of bits to set.</param>
+        public void SetBits(int pos, bool value)
+        {
+            CheckArgs(pos, 1);
+            Value = Bitwise.SetBits(Value, pos, 1, value);
+        }
+
+        /// <summary>
         /// Set bits to desired boolean value.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
         /// <param name="value">Value of bits to set.</param>
         /// <param name="numBits">Number of bits to set (must be 1-32).</param>
-        public void SetBits(int pos, bool value, int numBits = 1)
+        public void SetBits(int pos, bool value, int numBits)
         {
             CheckArgs(pos, numBits);
             var mask = 0xffffffffu >> (32-numBits);
@@ -171,8 +116,8 @@ namespace Unity.Collections
         /// Returns all bits in range as uint.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-32).</param>
-        /// <returns></returns>
+        /// <param name="numBits">Number of bits to get (must be 1-32).</param>
+        /// <returns>Returns requested range of bits.</returns>
         public uint GetBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -184,7 +129,7 @@ namespace Unity.Collections
         /// Returns true is bit at position is set.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <returns></returns>
+        /// <returns>Returns true if bit is set.</returns>
         public bool IsSet(int pos)
         {
             return 0 != GetBits(pos);
@@ -194,8 +139,8 @@ namespace Unity.Collections
         /// Returns true if none of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-32).</param>
-        /// <returns></returns>
+        /// <param name="numBits">Number of bits to test (must be 1-32).</param>
+        /// <returns>Returns true if none of bits are set.</returns>
         public bool TestNone(int pos, int numBits = 1)
         {
             return 0u == GetBits(pos, numBits);
@@ -205,8 +150,8 @@ namespace Unity.Collections
         /// Returns true if any of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-32).</param>
-        /// <returns></returns>
+        /// <param name="numBits">Number of bits to test (must be 1-32).</param>
+        /// <returns>Returns true if at least one bit is set.</returns>
         public bool TestAny(int pos, int numBits = 1)
         {
             return 0u != GetBits(pos, numBits);
@@ -216,22 +161,22 @@ namespace Unity.Collections
         /// Returns true if all of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-32).</param>
-        /// <returns></returns>
+        /// <param name="numBits">Number of bits to test (must be 1-32).</param>
+        /// <returns>Returns true if all bits are set.</returns>
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
             var mask = 0xffffffffu >> (32 - numBits);
             return mask == Bitwise.ExtractBits(Value, pos, mask);
         }
-       
+
         /// <summary>
         /// Calculate number of set bits.
         /// </summary>
         /// <returns>Number of set bits.</returns>
         public int CountBits()
         {
-            return Bitwise.CountBits(Value);
+            return math.countbits(Value);
         }
 
         /// <summary>
@@ -240,7 +185,7 @@ namespace Unity.Collections
         /// <returns>Number of leading zeros</returns>
         public int CountLeadingZeros()
         {
-            return Bitwise.CountLeadingZeros(Value);
+            return math.lzcnt(Value);
         }
 
         /// <summary>
@@ -249,7 +194,7 @@ namespace Unity.Collections
         /// <returns>Number of trailing zeros</returns>
         public int CountTrailingZeros()
         {
-            return Bitwise.CountTrailingZeros(Value);
+            return math.tzcnt(Value);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -332,7 +277,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-63).</param>
         /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns></returns>
+        /// <returns>Returns requested range of bits.</returns>
         public ulong GetBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -344,7 +289,7 @@ namespace Unity.Collections
         /// Returns true is bit at position is set.
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <returns></returns>
+        /// <returns>Returns true if bit is set.</returns>
         public bool IsSet(int pos)
         {
             return 0ul != GetBits(pos);
@@ -355,7 +300,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-63).</param>
         /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns></returns>
+        /// <returns>Returns true if none of bits are set.</returns>
         public bool TestNone(int pos, int numBits = 1)
         {
             return 0ul == GetBits(pos, numBits);
@@ -366,7 +311,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-63).</param>
         /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns></returns>
+        /// <returns>Returns true if at least one bit is set.</returns>
         public bool TestAny(int pos, int numBits = 1)
         {
             return 0ul != GetBits(pos, numBits);
@@ -377,7 +322,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="pos">Position in bitfield (must be 0-63).</param>
         /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns></returns>
+        /// <returns>Returns true if all bits are set.</returns>
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -391,7 +336,7 @@ namespace Unity.Collections
         /// <returns>Number of set bits.</returns>
         public int CountBits()
         {
-            return Bitwise.CountBits(Value);
+            return math.countbits(Value);
         }
 
         /// <summary>
@@ -400,7 +345,7 @@ namespace Unity.Collections
         /// <returns>Number of leading zeros</returns>
         public int CountLeadingZeros()
         {
-            return Bitwise.CountLeadingZeros(Value);
+            return math.lzcnt(Value);
         }
 
         /// <summary>
@@ -409,7 +354,7 @@ namespace Unity.Collections
         /// <returns>Number of trailing zeros</returns>
         public int CountTrailingZeros()
         {
-            return Bitwise.CountTrailingZeros(Value);
+            return math.tzcnt(Value);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -417,9 +362,9 @@ namespace Unity.Collections
         private static void CheckArgs(int pos, int numBits)
         {
             if (pos > 63
-            || numBits == 0
-            || numBits > 64
-            || pos + numBits > 64)
+            ||  numBits == 0
+            ||  numBits > 64
+            ||  pos + numBits > 64)
             {
                 throw new ArgumentException($"BitField32 invalid arguments: pos {pos} (must be 0-63), numBits {numBits} (must be 1-64).");
             }
@@ -428,11 +373,11 @@ namespace Unity.Collections
 
     sealed class BitField64DebugView
     {
-        BitField64 BitField;
+        BitField64 Data;
 
-        public BitField64DebugView(BitField64 bitfield)
+        public BitField64DebugView(BitField64 data)
         {
-            BitField = bitfield;
+            Data = data;
         }
 
         public bool[] Bits
@@ -442,7 +387,7 @@ namespace Unity.Collections
                 var array = new bool[64];
                 for (int i = 0; i < 64; ++i)
                 {
-                    array[i] = BitField.IsSet(i);
+                    array[i] = Data.IsSet(i);
                 }
                 return array;
             }

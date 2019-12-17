@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Burst;
+using Unity.Mathematics;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine.Assertions;
@@ -79,7 +80,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             UnsafeHashMapData* data = (UnsafeHashMapData*)UnsafeUtility.Malloc(sizeof(UnsafeHashMapData), UnsafeUtility.AlignOf<UnsafeHashMapData>(), label);
 
-            bucketLength = CollectionHelper.CeilPow2(bucketLength);
+            bucketLength = math.ceilpow2(bucketLength);
 
             data->keyCapacity = length;
             data->bucketCapacityMask = bucketLength - 1;
@@ -99,7 +100,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             where TKey : struct
             where TValue : struct
         {
-            newBucketCapacity = CollectionHelper.CeilPow2(newBucketCapacity);
+            newBucketCapacity = math.ceilpow2(newBucketCapacity);
 
             if (data->keyCapacity == newCapacity && (data->bucketCapacityMask + 1) == newBucketCapacity)
             {

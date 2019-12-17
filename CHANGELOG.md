@@ -1,10 +1,25 @@
 # Change log
 
+## [0.4.0] - 2019-12-16
+
+**This version requires Unity 2019.3.0f1+**
+
+### New Features
+
+* Adding `FixedListTN` as a non-generic replacement for `ResizableArrayN<T>`.
+* Added `UnsafeBitArray` providing arbitrary sized bit array functionality.
+
+### Fixes
+
+* Updated performance package dependency to 1.3.2 which fixes an obsoletion warning
+* Adding `[NativeDisableUnsafePtrRestriction]` to `UnsafeList` to allow burst compilation.
+
+
 ## [0.3.0] - 2019-12-03
 
 ### New Features
 
-* Added fixed-size BitField32/64 bit array.
+* Added fixed-size `BitField32` and `BitField64` bit array.
 
 ### Changes
 

@@ -1,9 +1,11 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Mathematics;
 #if !NET_DOTS
 using System.Reflection;
 #endif
@@ -23,30 +25,34 @@ namespace Unity.Collections
             public double doubleValue;
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+        [Obsolete("Use math.lzcnt from Unity.Mathematics instead. (RemovedAfter 2020-03-02). If you see this message in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define from the Entities assembly definition file.")]
+    #else
+        [Obsolete("Use math.lzcnt from Unity.Mathematics instead. (RemovedAfter 2020-03-02) (UnityUpgradable) -> Unity.Mathematics.math.lzcnt(*)")]
+    #endif
         public static int lzcnt(uint x)
         {
-            if (x == 0)
-                return 32;
-            LongDoubleUnion u;
-            u.doubleValue = 0.0;
-            u.longValue = 0x4330000000000000L + x;
-            u.doubleValue -= 4503599627370496.0;
-            return 0x41E - (int)(u.longValue >> 52);
+            return math.lzcnt(x);
         }
 
         public static int Log2Floor(int value)
         {
-            return 31 - lzcnt((uint)value);
+            return 31 - math.lzcnt((uint)value);
         }
         
         public static int Log2Ceil(int value)
         {
-            return 32 - lzcnt((uint)value-1);
+            return 32 - math.lzcnt((uint)value-1);
         }
 
-        /// <summary>
-        /// Returns the smallest power of two that is greater than or equal to the given integer
-        /// </summary>
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+        [Obsolete("Use math.ceilpow2 from Unity.Mathematics instead. (RemovedAfter 2020-03-02). If you see this message in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define from the Entities assembly definition file.")]
+    #else
+        [Obsolete("Use math.ceilpow2 from Unity.Mathematics instead. (RemovedAfter 2020-03-02) (UnityUpgradable) -> Unity.Mathematics.math.ceilpow2(*)")]
+    #endif
         public static int CeilPow2(int i)
         {
             i -= 1;

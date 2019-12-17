@@ -4,21 +4,24 @@ using System.Diagnostics;
 using System.Threading;
 using Unity.Burst;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
     /// An unmanaged, untyped, resizable list, without any thread safety check features.
     /// </summary>
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     public unsafe struct UnsafeList
     {
+        [NativeDisableUnsafePtrRestriction]
         public void* Ptr;
         public int Length;
         public int Capacity;
         public Allocator Allocator;
 
         /// <summary>
-        /// Constructs a new list using the specified type of memory allocation.
+        /// Constructs a new container using the specified type of memory allocation.
         /// </summary>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
@@ -33,8 +36,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs list as view into memory.
+        /// Constructs container as view into memory.
         /// </summary>
+        /// <param name="ptr">Pointer to data.</param>
+        /// <param name="length">Lenght of data in bytes.</param>
         public unsafe UnsafeList(void* ptr, int length)
         {
             Ptr = ptr;
@@ -44,7 +49,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs a new list with the specified initial capacity and type of memory allocation.
+        /// Constructs a new container with the specified initial capacity and type of memory allocation.
         /// </summary>
         /// <param name="sizeOf">Size of element.</param>
         /// <param name="alignOf">Alignment of element.</param>
@@ -73,7 +78,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Creates a new list with the specified initial capacity and type of memory allocation.
+        /// Creates a new container with the specified initial capacity and type of memory allocation.
         /// </summary>
         /// <param name="sizeOf">Size of element.</param>
         /// <param name="alignOf">Alignment of element.</param>
@@ -104,7 +109,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Destroys list.
+        /// Destroys container.
         /// </summary>
         public static void Destroy(UnsafeList* listData)
         {
@@ -120,11 +125,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether memory for the list is allocated.
+        /// Reports whether memory for the container is allocated.
         /// </summary>
-        /// <value>True if this list object's internal storage  has been allocated.</value>
-        /// <remarks>Note that the list storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable NativeList.</remarks>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.</remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -264,7 +269,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         void SetCapacity(int sizeOf, int alignOf, int capacity)
         {
             var newCapacity = Math.Max(capacity, 64 / sizeOf);
-            newCapacity = CollectionHelper.CeilPow2(newCapacity);
+            newCapacity = math.ceilpow2(newCapacity);
 
             if (newCapacity == Capacity)
             {
@@ -602,6 +607,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// An managed, resizable list, without any thread safety check features.
     /// </summary>
     /// <typeparam name="T">Source type of elements</typeparam>
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
+    [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
     public unsafe struct UnsafeList<T>
         where T : unmanaged, IEquatable<T>
     {
@@ -639,6 +646,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             var sizeOf = UnsafeUtility.SizeOf<T>();
             this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
         }
+
+        /// <summary>
+        /// Reports whether memory for the list is allocated.
+        /// </summary>
+        /// <value>True if this list object's internal storage  has been allocated.</value>
+        /// <remarks>Note that the list storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable UnsafeList.</remarks>
+        public bool IsCreated => Ptr != null;
 
         /// <summary>
         /// Disposes of this container and deallocates its memory immediately.
@@ -851,12 +866,40 @@ namespace Unity.Collections.LowLevel.Unsafe
         public static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged, IEquatable<T> => ref UnsafeUtilityEx.As<UnsafeList<T>, UnsafeList>(ref from);
     }
 
+    internal sealed class UnsafeListTDebugView<T>
+        where T : unmanaged, IEquatable<T>
+    {
+        UnsafeList<T> Data;
+
+        public UnsafeListTDebugView(UnsafeList<T> data)
+        {
+            Data = data;
+        }
+
+        public unsafe T[] Items
+        {
+            get
+            {
+                T[] result = new T[Data.Length];
+
+                for (var i = 0; i < result.Length; ++i)
+                {
+                    result[i] = Data.Ptr[i];
+                }
+
+                return result;
+            }
+        }
+    }
+
     /// <summary>
     /// An unmanaged, resizable list, without any thread safety check features.
     /// </summary>
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
     public unsafe struct UnsafePtrList
     {
+        [NativeDisableUnsafePtrRestriction]
         public readonly void** Ptr;
         public readonly int Length;
         public readonly int Capacity;
@@ -934,6 +977,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             listData->Dispose();
             UnsafeUtility.Free(listData, allocator);
         }
+
+        /// <summary>
+        /// Reports whether memory for the list is allocated.
+        /// </summary>
+        /// <value>True if this list object's internal storage  has been allocated.</value>
+        /// <remarks>Note that the list storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable UnsafeList.</remarks>
+        public bool IsCreated => Ptr != null;
 
         /// <summary>
         /// Disposes of this container and deallocates its memory immediately.
@@ -1199,24 +1250,24 @@ namespace Unity.Collections.LowLevel.Unsafe
         public static ref UnsafeList ListData(ref this UnsafePtrList from) => ref UnsafeUtilityEx.As<UnsafePtrList, UnsafeList>(ref from);
     }
 
-    sealed class UnsafePtrListDebugView
+    internal sealed class UnsafePtrListDebugView
     {
-        private UnsafePtrList m_UnsafePtrList;
+        private UnsafePtrList Data;
 
-        public UnsafePtrListDebugView(UnsafePtrList UnsafePtrList)
+        public UnsafePtrListDebugView(UnsafePtrList data)
         {
-            m_UnsafePtrList = UnsafePtrList;
+            Data = data;
         }
 
         public unsafe IntPtr[] Items
         {
             get
             {
-                IntPtr[] result = new IntPtr[m_UnsafePtrList.Length];
+                IntPtr[] result = new IntPtr[Data.Length];
 
                 for (var i = 0; i < result.Length; ++i)
                 {
-                    result[i] = (IntPtr)m_UnsafePtrList.Ptr[i];
+                    result[i] = (IntPtr)Data.Ptr[i];
                 }
 
                 return result;

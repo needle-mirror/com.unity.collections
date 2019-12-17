@@ -9,6 +9,7 @@ namespace Unity.Collections
     // for times when you need a struct member that is a small but resizable array of T,
     // but you don't want to visit the heap or do everything by hand with naked primitives.
     [PublicAPI]
+    [Obsolete("ResizableArray64Byte<T> has been superseded by FixedList and will be (RemovedAfter 2020-03-02).")]
     public unsafe struct ResizableArray64Byte<T> where T : struct
     {
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

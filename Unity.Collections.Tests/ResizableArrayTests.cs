@@ -5,6 +5,8 @@ using Unity.Collections;
 
 public class ResizableArrayTests
 {
+#pragma warning disable CS0618 // 'ResizableArray64Byte<int>' is obsolete: 'ResizableArray64Byte<T> has been superseded by FixedList and will be (RemovedAfter 2020-03-02).'
+
     [Test]
     public void TestResizableArray64Byte()
     {
