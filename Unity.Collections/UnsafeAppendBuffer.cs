@@ -231,6 +231,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
             
+            public void* ReadNextArray<T>(out int length) where T : struct
+            {
+                length = ReadNext<int>();
+                return ReadNext(length * UnsafeUtility.SizeOf<T>());
+            }
+
 #if !NET_DOTS
             public void ReadNext(out string value)
             {

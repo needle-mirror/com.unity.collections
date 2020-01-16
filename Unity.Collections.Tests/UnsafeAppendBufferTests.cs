@@ -130,4 +130,23 @@ public class UnsafeAppendBufferTests
         
         buffer.Dispose();
     }
+
+    [Test]
+    public unsafe void ReadNextArray()
+    {
+        var values = new NativeArray<int>(new[] {123, 234, 345}, Allocator.Temp);
+        var buffer = new UnsafeAppendBuffer(0, 8, Allocator.Temp);
+        buffer.Add(values);
+
+        var array = (int*)buffer.AsReader().ReadNextArray<int>(out var count);
+
+        Assert.AreEqual(values.Length, count);
+        for (int i = 0; i < count; ++i)
+        {
+            Assert.AreEqual(values[i], array[i]);
+        }
+
+        values.Dispose();
+        buffer.Dispose();
+    }
 }

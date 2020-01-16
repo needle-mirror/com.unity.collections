@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Unity.Burst;
@@ -12,7 +11,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// An unmanaged, untyped, resizable list, without any thread safety check features.
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
-    public unsafe struct UnsafeList
+    public unsafe struct UnsafeList : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         public void* Ptr;
@@ -609,8 +608,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="T">Source type of elements</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
-    public unsafe struct UnsafeList<T>
-        where T : unmanaged, IEquatable<T>
+    public unsafe struct UnsafeList<T> : IDisposable
+        where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
         public T* Ptr;
@@ -716,23 +715,40 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Searches for the specified element in list.
+        /// Adds an element to the container.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public int IndexOf(T value)
+        /// <param name="value">The value to be added at the end of the container.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddNoResize(T value)
         {
-            return this.ListData().IndexOf(value);
+            this.ListData().AddNoResize(value);
         }
 
         /// <summary>
-        /// Determines whether an element is in the list.
+        /// Adds the elements to this container.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns>True, if element is found.</returns>
-        public bool Contains(T value)
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize(void* ptr, int length)
         {
-            return this.ListData().Contains(value);
+            this.ListData().AddRangeNoResize<T>(ptr, length);
+        }
+
+        /// <summary>
+        /// Adds elements from a list to this container.
+        /// </summary>
+        /// <param name="list">Other container to copy elements from.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize(UnsafeList<T> list)
+        {
+            this.ListData().AddRangeNoResize<T>(list.ListData());
         }
 
         /// <summary>
@@ -785,32 +801,6 @@ namespace Unity.Collections.LowLevel.Unsafe
                 Ptr = ptr;
                 Length = length;
             }
-
-            /// <summary>
-            /// </summary>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public int IndexOf(T value)
-            {
-                for (int i = 0; i < Length; ++i)
-                {
-                    if (EqualityComparer<T>.Default.Equals(Ptr[i], value))
-                    {
-                        return i;
-                    }
-                }
-
-                return -1;
-            }
-
-            /// <summary>
-            /// </summary>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public bool Contains(T value)
-            {
-                return IndexOf(value) != -1;
-            }
         }
 
         public ParallelWriter AsParallelWriter()
@@ -861,9 +851,59 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-    internal static class UnsafeListExtensions
+    internal unsafe static class UnsafeListExtensions
     {
-        public static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged, IEquatable<T> => ref UnsafeUtilityEx.As<UnsafeList<T>, UnsafeList>(ref from);
+        public static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged => ref UnsafeUtilityEx.As<UnsafeList<T>, UnsafeList>(ref from);
+
+        /// Type parameter has the same name as the type parameter from outer type
+        /// <summary>
+        /// Searches for the specified element in the container.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T">The type of values in the container.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the container.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the container.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// Type parameter has the same name as the type parameter from outer type
+        /// <summary>
+        /// Searches for the specified element in the container.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T">The type of values in the container.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the container.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the container.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
     }
 
     internal sealed class UnsafeListTDebugView<T>
@@ -897,7 +937,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
-    public unsafe struct UnsafePtrList
+    public unsafe struct UnsafePtrList : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         public readonly void** Ptr;

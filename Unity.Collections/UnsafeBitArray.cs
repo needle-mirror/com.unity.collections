@@ -11,7 +11,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
-    public unsafe struct UnsafeBitArray
+    public unsafe struct UnsafeBitArray : IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         public ulong* Ptr;
@@ -42,7 +42,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
@@ -160,7 +160,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxE = end >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (63 - shiftE);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
             var orBits = (ulong)-Bitwise.FromBool(value);
             var orBitsB = maskB & orBits;
             var orBitsE = maskE & orBits;
@@ -171,7 +171,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 var maskBE = maskB & maskE;
                 var cmaskBE = ~maskBE;
-                var orBitsBE = orBitsB | orBitsE;
+                var orBitsBE = orBitsB & orBitsE;
                 Ptr[idxB] = (Ptr[idxB] & cmaskBE) | orBitsBE;
                 return;
             }
@@ -184,6 +184,71 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             Ptr[idxE] = (Ptr[idxE] & cmaskE) | orBitsE;
+        }
+
+        /// <summary>
+        /// Sets bits in range as ulong.
+        /// </summary>
+        /// <param name="pos">Position in bit array.</param>
+        /// <param name="value">Value of bits to set.</param>
+        /// <param name="numBits">Number of bits to get (must be 1-64).</param>
+        public void SetBits(int pos, ulong value, int numBits = 1)
+        {
+            CheckArgs(pos, numBits);
+
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+
+            if (shiftB + numBits < 64)
+            {
+                var mask = 0xfffffffffffffffful >> (64 - numBits);
+                Ptr[idxB] = Bitwise.ReplaceBits(Ptr[idxB], shiftB, mask, value);
+
+                return;
+            }
+
+            var end = math.min(pos + numBits, Length);
+            var idxE = end >> 6;
+            var shiftE = end & 0x3f;
+
+            var maskB = 0xfffffffffffffffful >> shiftB;
+            Ptr[idxB] = Bitwise.ReplaceBits(Ptr[idxB], shiftB, maskB, value);
+
+            var valueE = value >> (64 - shiftB);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+            Ptr[idxE] = Bitwise.ReplaceBits(Ptr[idxE], 0, maskE, valueE);
+        }
+
+        /// <summary>
+        /// Returns all bits in range as ulong.
+        /// </summary>
+        /// <param name="pos">Position in bit array.</param>
+        /// <param name="numBits">Number of bits to get (must be 1-64).</param>
+        /// <returns>Returns requested range of bits.</returns>
+        public ulong GetBits(int pos, int numBits = 1)
+        {
+            CheckArgs(pos, numBits);
+
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+
+            if (shiftB + numBits < 64)
+            {
+                var mask = 0xfffffffffffffffful >> (64 - numBits);
+                return Bitwise.ExtractBits(Ptr[idxB], shiftB, mask);
+            }
+
+            var end = math.min(pos + numBits, Length);
+            var idxE = end >> 6;
+            var shiftE = end & 0x3f;
+
+            var maskB = 0xfffffffffffffffful >> shiftB;
+            ulong valueB = Bitwise.ExtractBits(Ptr[idxB], shiftB, maskB);
+
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+            ulong valueE = Bitwise.ExtractBits(Ptr[idxE], 0, maskE);
+
+            return (valueE << (64 - shiftB)) | valueB;
         }
 
         /// <summary>
@@ -217,7 +282,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxE = end >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (63 - shiftE);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
 
             if (idxB == idxE)
             {
@@ -257,7 +322,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxE = end >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (63 - shiftE);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
 
             if (idxB == idxE)
             {
@@ -297,7 +362,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxE = end >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (63 - shiftE);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
 
             if (idxB == idxE)
             {
@@ -337,7 +402,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxE = end >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (63 - shiftE);
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
 
             if (idxB == idxE)
             {
@@ -365,6 +430,24 @@ namespace Unity.Collections.LowLevel.Unsafe
             ||  pos >= Length)
             {
                 throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length-1}).");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [BurstDiscard]
+        private void CheckArgs(int pos, int numBits)
+        {
+            CheckArgs(pos);
+
+            if (numBits < 1
+            || numBits > 64)
+            {
+                throw new ArgumentException($"BitArray invalid arguments: numBits {numBits} (must be 1-64).");
+            }
+
+            if (pos + numBits > Length)
+            {
+                throw new ArgumentException($"BitArray invalid arguments: Out of bounds pos {pos}, numBits {numBits}, Length {Length}.");
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.PerformanceTesting;
@@ -97,25 +98,26 @@ public class UnsafeListTests
         var sizeOf = UnsafeUtility.SizeOf<int>();
         var alignOf = UnsafeUtility.AlignOf<int>();
 
-        UnsafeList list = new UnsafeList(sizeOf, alignOf, 32, Allocator.Persistent, NativeArrayOptions.ClearMemory);
-        var capacity = list.Capacity;
+        using (var list = new UnsafeList(sizeOf, alignOf, 32, Allocator.Persistent, NativeArrayOptions.ClearMemory))
+        {
+            var capacity = list.Capacity;
 
-        list.Add(1);
-        list.TrimExcess<int>();
-        Assert.AreEqual(1, list.Length);
-        Assert.AreEqual(1, list.Capacity);
+            list.Add(1);
+            list.TrimExcess<int>();
+            Assert.AreEqual(1, list.Length);
+            Assert.AreEqual(1, list.Capacity);
 
-        list.RemoveAtSwapBack<int>(0);
-        Assert.AreEqual(list.Length, 0);
-        list.TrimExcess<int>();
-        Assert.AreEqual(list.Capacity, 0);
+            list.RemoveAtSwapBack<int>(0);
+            Assert.AreEqual(list.Length, 0);
+            list.TrimExcess<int>();
+            Assert.AreEqual(list.Capacity, 0);
 
-        list.Add(1);
-        Assert.AreEqual(list.Length, 1);
-        Assert.AreNotEqual(list.Capacity, 0);
+            list.Add(1);
+            Assert.AreEqual(list.Length, 1);
+            Assert.AreNotEqual(list.Capacity, 0);
 
-        list.Clear();
-        list.Dispose();
+            list.Clear();
+        }
     }
 
     [Test]
@@ -329,7 +331,7 @@ public class UnsafeListTests
                 Assert.AreEqual(i, value);
             }
         }
-        
+
         list.Dispose();
     }
 
@@ -356,5 +358,28 @@ public class UnsafeListTests
             .Run();
 
         list.Dispose();
+    }
+
+    [Test]
+    public unsafe void UnsafeListT_IndexOf()
+    {
+        using (var list = new UnsafeList<int>(10, Allocator.Persistent))
+        {
+            list.Add(123);
+            list.Add(789);
+
+            bool r0 = false, r1 = false, r2 = false;
+
+            GCAllocRecorder.ValidateNoGCAllocs(() =>
+            {
+                r0 = -1 != list.IndexOf(456);
+                r1 = list.Contains(123);
+                r2 = list.Contains(789);
+            });
+
+            Assert.False(r0);
+            Assert.True(r1);
+            Assert.True(r2);
+        }
     }
 }

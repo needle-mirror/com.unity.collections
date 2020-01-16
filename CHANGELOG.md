@@ -1,5 +1,36 @@
 # Change log
 
+## [0.5.0] - 2020-01-16
+
+### Added
+
+ * Added `UnsafeRingQueue<T>` providing fixed-size circular buffer functionality.
+ * Added missing `IDisposable` constraint to `UnsafeList` and `UnsafeBitArray`.
+ * Added `ReadNextArray<T>` to access a raw array (pointer and length) from an `UnsafeAppendBuffer.Reader`.
+ * Added FixedString types, guaranteed binary-layout identical to NativeString types, which they are intended to replace.
+ * Added `FixedList<T>` generic self-contained List struct
+ * Added `BitArray.SetBits` with arbitrary ulong value.
+ * Added `BitArray.GetBits` to retrieve bits as ulong value.
+
+### Changed
+
+ * Changed `UnsafeBitArray` memory initialization option default to `NativeArrayOptions.ClearMemory`.
+ * Changed `FixedList` structs to pad to natural alignment of item held in list
+
+### Deprecated
+
+ * `BlobAssetComputationContext.AssociateBlobAssetWithGameObject(int, GameObject)` replaced by its `UnityEngine.Object` counterpart `BlobAssetComputationContext.AssociateBlobAssetWithUnityObject(int, UnityEngine.Object)` to allow association of BlobAsset with any kind of `UnityEngine.Object` derived types.
+ * Adding removal dates to the API that have been deprecated but did not have the date set.
+
+### Removed
+
+ * Removed `IEquatable` constraint from `UnsafeList<T>`.
+
+### Fixed
+
+ * Fixed `BitArray.SetBits`.
+
+
 ## [0.4.0] - 2019-12-16
 
 **This version requires Unity 2019.3.0f1+**
@@ -136,20 +167,3 @@ Removed the following deprecated API as announced in/before `0.1.1-preview`:
 ## [0.0.9-preview.18] - 2019-05-01
 
 Change tracking started with this version.
-
-<!-- Template for version sections
-
-## [Unreleased]
-
-### New Features
-
-### Upgrade guide
-
-### Changes
-
-### Fixes
-
-### Known Issues
-
-
--->
