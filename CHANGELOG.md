@@ -1,5 +1,13 @@
 # Change log
 
+
+## [0.5.1] - 2020-01-28
+
+### Changed
+
+* Updated dependencies for this package.
+
+
 ## [0.5.0] - 2020-01-16
 
 ### Added
