@@ -740,7 +740,7 @@ namespace Unity.Collections
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
         /// </summary>        
-        unsafe public ref Bytes1 Utf8Buffer
+        public unsafe ref Bytes1 Utf8Buffer
         {
             get 
             {
@@ -1108,7 +1108,7 @@ namespace Unity.Collections
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
         /// </summary>        
-        unsafe public ref Bytes1 Utf8Buffer
+        public unsafe ref Bytes1 Utf8Buffer
         {
             get 
             {
@@ -1480,7 +1480,7 @@ namespace Unity.Collections
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
         /// </summary>        
-        unsafe public ref Bytes1 Utf8Buffer
+        public unsafe ref Bytes1 Utf8Buffer
         {
             get 
             {
@@ -1876,7 +1876,7 @@ namespace Unity.Collections
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
         /// </summary>        
-        unsafe public ref Bytes1 Utf8Buffer
+        public unsafe ref Bytes1 Utf8Buffer
         {
             get 
             {
@@ -2496,7 +2496,7 @@ namespace Unity.Collections
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
         /// </summary>        
-        unsafe public ref Bytes1 Utf8Buffer
+        public unsafe ref Bytes1 Utf8Buffer
         {
             get 
             {

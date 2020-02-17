@@ -1,11 +1,27 @@
 # Change log
 
 
+## [0.5.2] - 2020-02-17
+
+### Changed
+
+* Changed `NativeList<T>` parallel reader/writer to match functionality of `UnsafeList` parallel reader/writer.
+* Updated dependencies of this package.
+ 
+### Removed
+
+* Removed expired API `UnsafeUtilityEx.RestrictNoAlias`
+
+### Fixed
+
+ * Fixed bug in `NativeList.CopyFrom`.
+
+
 ## [0.5.1] - 2020-01-28
 
 ### Changed
 
-* Updated dependencies for this package.
+ * Updated dependencies of this package.
 
 
 ## [0.5.0] - 2020-01-16

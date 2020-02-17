@@ -223,9 +223,13 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// An unmanaged queue.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    unsafe public struct NativeQueue<T> : IDisposable
+    public unsafe struct NativeQueue<T> : IDisposable
         where T : struct
     {
         [NativeDisableUnsafePtrRestriction]
@@ -243,21 +247,29 @@ namespace Unity.Collections
 
         Allocator m_AllocatorLabel;
 
-        public unsafe NativeQueue(Allocator label)
+        /// <summary>
+        /// Constructs a new queue with type of memory allocation.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        public NativeQueue(Allocator allocator)
         {
             CollectionHelper.CheckIsUnmanaged<T>();
 
             m_QueuePool = NativeQueueBlockPool.QueueBlockPool;
-            m_AllocatorLabel = label;
+            m_AllocatorLabel = allocator;
 
-            NativeQueueData.AllocateQueue<T>(label, out m_Buffer);
+            NativeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, label);
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator);
 #endif
         }
 
-        unsafe public int Count
+        /// <summary>
+        ///
+        /// </summary>
+        public int Count
         {
             get
             {
@@ -273,18 +285,28 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         static public int PersistentMemoryBlockCount
         {
             get { return NativeQueueBlockPool.QueueBlockPool->m_MaxBlocks; }
             set { Interlocked.Exchange(ref NativeQueueBlockPool.QueueBlockPool->m_MaxBlocks, value); }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         static public int MemoryBlockSize
         {
             get { return NativeQueueBlockPoolData.m_BlockSize; }
         }
 
-        unsafe public T Peek()
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public T Peek()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -297,17 +319,26 @@ namespace Unity.Collections
             return UnsafeUtility.ReadArrayElement<T>(firstBlock + 1, m_Buffer->m_CurrentRead);
         }
 
-        unsafe public void Enqueue(T entry)
+        /// <summary>
+        /// Enqueue value into the container.
+        /// </summary>
+        /// <param name="value">The value to be appended.</param>
+        public void Enqueue(T value)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             NativeQueueBlockHeader* writeBlock = NativeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, 0);
-            UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, entry);
+            UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
             ++writeBlock->m_NumItems;
         }
 
-        unsafe public T Dequeue()
+        /// <summary>
+        /// Dequeue item from the container.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown if queue is empty <see cref="Count"/>.</exception>
+        /// <returns>Returns item from the container.</returns>
+        public T Dequeue()
         {
             T item;
 
@@ -317,7 +348,12 @@ namespace Unity.Collections
             return item;
         }
 
-        unsafe public bool TryDequeue(out T item)
+        /// <summary>
+        /// Try dequeueing item from the container. If container is empty item won't be changed, and return result will be false.
+        /// </summary>
+        /// <param name="item">Item value if dequeued.</param>
+        /// <returns>Returns true if item was dequeued.</returns>
+        public bool TryDequeue(out T item)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -358,7 +394,10 @@ namespace Unity.Collections
             return true;
         }
 
-        unsafe public void Clear()
+        /// <summary>
+        /// Clears the container.
+        /// </summary>
+        public void Clear()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -373,7 +412,7 @@ namespace Unity.Collections
             }
 
             m_Buffer->m_FirstBlock = IntPtr.Zero;
-            m_Buffer->m_LastBlock  = IntPtr.Zero;
+            m_Buffer->m_LastBlock = IntPtr.Zero;
             m_Buffer->m_CurrentRead = 0;
 
             for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
@@ -382,13 +421,13 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// Reports whether memory for the container is allocated.
+        /// </summary>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.</remarks>
         public bool IsCreated => m_Buffer != null;
-
-        void Deallocate()
-        {
-            NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
-            m_Buffer = null;
-        }
 
         /// <summary>
         /// Disposes of this container and deallocates its memory immediately.
@@ -398,7 +437,8 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
 #endif
-            Deallocate();
+            NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
+            m_Buffer = null;
         }
 
         /// <summary>
@@ -420,28 +460,21 @@ namespace Unity.Collections
             // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-            var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeQueueDisposeJob { Data = new NativeQueueDispose { m_Buffer = m_Buffer, m_QueuePool = m_QueuePool, m_AllocatorLabel = m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
+
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeQueueDisposeJob { Data = new NativeQueueDispose { m_Buffer = m_Buffer, m_QueuePool = m_QueuePool, m_AllocatorLabel = m_AllocatorLabel }  }.Schedule(inputDeps);
 #endif
             m_Buffer = null;
 
             return jobHandle;
         }
 
-        [BurstCompile]
-        struct DisposeJob : IJob
-        {
-            public NativeQueue<T> Container;
-
-            public void Execute()
-            {
-                Container.Deallocate();
-            }
-        }
-
+        /// <summary>
+        /// Returns parallel reader instance.
+        /// </summary>
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;
@@ -477,15 +510,51 @@ namespace Unity.Collections
             [NativeSetThreadIndex]
             internal int m_ThreadIndex;
 
-            unsafe public void Enqueue(T entry)
+            /// <summary>
+            /// Enqueue value into the container.
+            /// </summary>
+            /// <param name="value">The value to be appended.</param>
+            public void Enqueue(T value)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
                 NativeQueueBlockHeader* writeBlock = NativeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, m_ThreadIndex);
-                UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, entry);
+                UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
                 ++writeBlock->m_NumItems;
             }
+        }
+    }
+
+    [NativeContainer]
+    internal unsafe struct NativeQueueDispose
+    {
+        [NativeDisableUnsafePtrRestriction]
+        internal NativeQueueData* m_Buffer;
+
+        [NativeDisableUnsafePtrRestriction]
+        internal NativeQueueBlockPoolData* m_QueuePool;
+
+        internal Allocator m_AllocatorLabel;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal AtomicSafetyHandle m_Safety;
+#endif
+
+        public void Dispose()
+        {
+            NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
+        }
+    }
+
+    [BurstCompile]
+    struct NativeQueueDisposeJob : IJob
+    {
+        public NativeQueueDispose Data;
+
+        public void Execute()
+        {
+            Data.Dispose();
         }
     }
 }

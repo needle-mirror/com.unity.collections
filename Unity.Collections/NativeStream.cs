@@ -79,7 +79,8 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor.</remarks>
+        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.</remarks>
         public bool IsCreated => m_Stream.IsCreated;
 
         /// <summary>

@@ -14,7 +14,7 @@ public class NativeListTests
         Assert.Throws<NullReferenceException> (()=> list[0] = 5 );
         Assert.Throws<InvalidOperationException> (()=> list.Add(1) );
     }
-    
+
 	[Test]
 	public void NativeList_Allocate_Deallocate_Read_Write()
 	{
@@ -121,6 +121,24 @@ public class NativeListTests
 		list.Dispose();
 	}
 
+    [Test]
+    public void NativeList_CopyFrom()
+    {
+        var list = new NativeList<float>(4, Allocator.Persistent);
+        var ar = new float[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        list.CopyFrom(ar);
+        Assert.AreEqual(8, list.Length);
+        Assert.AreEqual(list[0], 1);
+        Assert.AreEqual(list[1], 2);
+        Assert.AreEqual(list[2], 3);
+        Assert.AreEqual(list[3], 4);
+        Assert.AreEqual(list[4], 5);
+        Assert.AreEqual(list[5], 6);
+        Assert.AreEqual(list[6], 7);
+        Assert.AreEqual(list[7], 8);
+        list.Dispose();
+    }
+
     [BurstCompile(CompileSynchronously = true)]
     struct TempListInJob : IJob
     {
@@ -137,7 +155,7 @@ public class NativeListTests
         }
     }
 
-    
+
     [Test]
     [Ignore("Not supported yet, requires a fix in DisposeSentinel")]
     public void TempListInBurstJob()
@@ -145,7 +163,7 @@ public class NativeListTests
         var job = new TempListInJob() { Output = new NativeArray<int>(1, Allocator.TempJob) };
         job.Schedule().Complete();
         Assert.AreEqual(17, job.Output[0]);
-        
+
         job.Output.Dispose();
     }
 
@@ -187,7 +205,7 @@ public class NativeListTests
 
         disposeJob.Complete();
     }
-    
+
     [Test]
     public void ForEachWorks()
     {
@@ -207,10 +225,41 @@ public class NativeListTests
                 count++;
             }
         });
-        
+
         Assert.AreEqual(30, sum);
         Assert.AreEqual(2, count);
 
         container.Dispose();
+    }
+
+    struct NativeQueueAddJob : IJob
+    {
+        NativeQueue<int> queue;
+
+        public NativeQueueAddJob(NativeQueue<int> queue) { this.queue = queue; }
+
+        public void Execute()
+        {
+            queue.Enqueue(1);
+        }
+    }
+
+    [Test]
+    public void NativeQueue_DisposeJobWithMissingDependencyThrows()
+    {
+        var queue = new NativeQueue<int>(Allocator.Persistent);
+        var deps = new NativeQueueAddJob(queue).Schedule();
+        Assert.Throws<InvalidOperationException>(() => { queue.Dispose(default); });
+        deps.Complete();
+        queue.Dispose();
+    }
+
+    [Test]
+    public void NativeQueue_DisposeJobCantBeScheduled()
+    {
+        var queue = new NativeQueue<int>(Allocator.Persistent);
+        var deps = queue.Dispose(default);
+        Assert.Throws<InvalidOperationException>(() => { new NativeQueueAddJob(queue).Schedule(deps); });
+        deps.Complete();
     }
 }

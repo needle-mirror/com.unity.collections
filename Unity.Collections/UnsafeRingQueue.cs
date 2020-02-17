@@ -171,7 +171,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (Allocator != Allocator.Invalid)
             {
-                var jobHandle = new DisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
+                var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
                 Ptr = null;
                 Allocator = Allocator.Invalid;
@@ -181,20 +181,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr = null;
 
-            return default;
-        }
-
-        [BurstCompile]
-        struct DisposeJob : IJob
-        {
-            [NativeDisableUnsafePtrRestriction]
-            public void* Ptr;
-            public Allocator Allocator;
-
-            public void Execute()
-            {
-                UnsafeUtility.Free(Ptr, Allocator);
-            }
+            return inputDeps;
         }
 
         /// <summary>

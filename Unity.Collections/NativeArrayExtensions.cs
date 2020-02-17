@@ -31,6 +31,34 @@ namespace Unity.Collections
             return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.Length, value);
         }
 
+#if UNITY_2020_1_OR_NEWER
+        /// <summary>
+        /// Determines whether an element is in the native array.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="array">Array to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
+        {
+            return IndexOf<T, U>(array.m_Buffer, array.m_Length, value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified element in native array.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="array">Array to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
+        {
+            return IndexOf<T, U>(array.m_Buffer, array.m_Length, value);
+        }
+#endif
+
         /// <summary>
         /// Determines whether an element is in the native list.
         /// </summary>

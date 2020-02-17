@@ -1282,7 +1282,7 @@ namespace Unity.Collections
             // normalize mantissa10                
             while (mantissa10 > 9999999U || mantissa10 % 10 == 0) 
             {
-                mantissa10 = (mantissa10 + 5) / 10;
+                mantissa10 = (mantissa10 + (mantissa10 < 100000000U ? 5u : 0u) ) / 10;
                 ++exponent10;
             }
         }
@@ -1371,12 +1371,15 @@ namespace Unity.Collections
                 if ((error = Format('-')) != FormatError.None)
                     return error;
                 decimalExponent *= -1;
+                decimalExponent -= sourceLength - 1;
             }
             else
+            {
                 if ((error = Format('+')) != FormatError.None)
                     return error;
+                decimalExponent += sourceLength - 1;
+            }
             var ascii = stackalloc char[2];
-            decimalExponent -= sourceLength - 1;
             const int decimalDigits = 2;
             for(var i = 0; i < decimalDigits; ++i)
             {
@@ -2974,6 +2977,11 @@ namespace Unity.Collections
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -3043,14 +3051,26 @@ namespace Unity.Collections
         /// Copy UTF-16 data from a buffer onto this FixedString32.
         /// </summary>
         /// <param name="s">A pointer to the UTF-16 data to copy</param>
-        /// <param name="length">The length, in 16-bit characters, of the UTF-16 data to copy</param>
+        /// <param name="length">The length, in 16-bit words, of the UTF-16 data to copy</param>
         /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
         }
-        
+
+        /// <summary>
+        /// Copy UTF-8 data from a buffer onto this FixedString32.
+        /// </summary>
+        /// <param name="s">A pointer to the UTF-8 data to copy</param>
+        /// <param name="length">The length, in 8-bit bytes, of the UTF-8 data to copy</param>
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
+        public unsafe CopyError CopyFrom(byte* s, ushort length)
+        {
+            fixed (byte* b = &bytes.offset0000.byte0000)
+                return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
+        }
+
         /// <summary>
         /// Copy UTF-16 data from a System.String onto this FixedString32.
         /// </summary>
@@ -4433,6 +4453,11 @@ namespace Unity.Collections
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -4502,14 +4527,26 @@ namespace Unity.Collections
         /// Copy UTF-16 data from a buffer onto this FixedString64.
         /// </summary>
         /// <param name="s">A pointer to the UTF-16 data to copy</param>
-        /// <param name="length">The length, in 16-bit characters, of the UTF-16 data to copy</param>
+        /// <param name="length">The length, in 16-bit words, of the UTF-16 data to copy</param>
         /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
         }
-        
+
+        /// <summary>
+        /// Copy UTF-8 data from a buffer onto this FixedString64.
+        /// </summary>
+        /// <param name="s">A pointer to the UTF-8 data to copy</param>
+        /// <param name="length">The length, in 8-bit bytes, of the UTF-8 data to copy</param>
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
+        public unsafe CopyError CopyFrom(byte* s, ushort length)
+        {
+            fixed (byte* b = &bytes.offset0000.byte0000)
+                return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
+        }
+
         /// <summary>
         /// Copy UTF-16 data from a System.String onto this FixedString64.
         /// </summary>
@@ -5896,6 +5933,11 @@ namespace Unity.Collections
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -5965,14 +6007,26 @@ namespace Unity.Collections
         /// Copy UTF-16 data from a buffer onto this FixedString128.
         /// </summary>
         /// <param name="s">A pointer to the UTF-16 data to copy</param>
-        /// <param name="length">The length, in 16-bit characters, of the UTF-16 data to copy</param>
+        /// <param name="length">The length, in 16-bit words, of the UTF-16 data to copy</param>
         /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
         }
-        
+
+        /// <summary>
+        /// Copy UTF-8 data from a buffer onto this FixedString128.
+        /// </summary>
+        /// <param name="s">A pointer to the UTF-8 data to copy</param>
+        /// <param name="length">The length, in 8-bit bytes, of the UTF-8 data to copy</param>
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
+        public unsafe CopyError CopyFrom(byte* s, ushort length)
+        {
+            fixed (byte* b = &bytes.offset0000.byte0000)
+                return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
+        }
+
         /// <summary>
         /// Copy UTF-16 data from a System.String onto this FixedString128.
         /// </summary>
@@ -7383,6 +7437,11 @@ namespace Unity.Collections
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -7452,14 +7511,26 @@ namespace Unity.Collections
         /// Copy UTF-16 data from a buffer onto this FixedString512.
         /// </summary>
         /// <param name="s">A pointer to the UTF-16 data to copy</param>
-        /// <param name="length">The length, in 16-bit characters, of the UTF-16 data to copy</param>
+        /// <param name="length">The length, in 16-bit words, of the UTF-16 data to copy</param>
         /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
         }
-        
+
+        /// <summary>
+        /// Copy UTF-8 data from a buffer onto this FixedString512.
+        /// </summary>
+        /// <param name="s">A pointer to the UTF-8 data to copy</param>
+        /// <param name="length">The length, in 8-bit bytes, of the UTF-8 data to copy</param>
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
+        public unsafe CopyError CopyFrom(byte* s, ushort length)
+        {
+            fixed (byte* b = &bytes.offset0000.byte0000)
+                return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
+        }
+
         /// <summary>
         /// Copy UTF-16 data from a System.String onto this FixedString512.
         /// </summary>
@@ -9094,6 +9165,11 @@ namespace Unity.Collections
                 return true;
             }
         }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -9163,14 +9239,26 @@ namespace Unity.Collections
         /// Copy UTF-16 data from a buffer onto this FixedString4096.
         /// </summary>
         /// <param name="s">A pointer to the UTF-16 data to copy</param>
-        /// <param name="length">The length, in 16-bit characters, of the UTF-16 data to copy</param>
+        /// <param name="length">The length, in 16-bit words, of the UTF-16 data to copy</param>
         /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
         }
-        
+
+        /// <summary>
+        /// Copy UTF-8 data from a buffer onto this FixedString4096.
+        /// </summary>
+        /// <param name="s">A pointer to the UTF-8 data to copy</param>
+        /// <param name="length">The length, in 8-bit bytes, of the UTF-8 data to copy</param>
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
+        public unsafe CopyError CopyFrom(byte* s, ushort length)
+        {
+            fixed (byte* b = &bytes.offset0000.byte0000)
+                return Generic.Copy(b, out utf8LengthInBytes, UTF8MaxLengthInBytes, s, length);
+        }
+
         /// <summary>
         /// Copy UTF-16 data from a System.String onto this FixedString4096.
         /// </summary>

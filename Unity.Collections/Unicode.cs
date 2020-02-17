@@ -7,7 +7,7 @@ namespace Unity.Collections
 {
     /// <summary>
     /// </summary>
-    public enum FormatError 
+    public enum FormatError
     {
         None,
         Overflow,
@@ -15,7 +15,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// </summary>
-    public enum ParseError 
+    public enum ParseError
     {
         None,
         Syntax,
@@ -53,7 +53,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="ucs"></param>
         /// <returns></returns>
@@ -69,7 +69,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
@@ -79,17 +79,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         static public Rune ReplacementCharacter => new Rune{value = 0xFFFD};
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         static public Rune BadRune => new Rune{value = 0};
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rune"></param>
         /// <param name="buffer"></param>
@@ -139,7 +139,7 @@ namespace Unity.Collections
                     return ConversionError.Overflow;
                 }
                 code =              (buffer[offset+0] & 0b00001111);
-                code = (code<<6) |  (buffer[offset+1] & 0b00111111); 
+                code = (code<<6) |  (buffer[offset+1] & 0b00111111);
                 code = (code<<6) |  (buffer[offset+2] & 0b00111111);
                 if (code < (1<<11) || !IsValidCodePoint(code) || NotTrailer(buffer[offset+1]) || NotTrailer(buffer[offset+2]))
                 {
@@ -159,8 +159,8 @@ namespace Unity.Collections
                     return ConversionError.Overflow;
                 }
                 code =              (buffer[offset+0] & 0b00000111);
-                code = (code<<6) |  (buffer[offset+1] & 0b00111111); 
-                code = (code<<6) |  (buffer[offset+2] & 0b00111111); 
+                code = (code<<6) |  (buffer[offset+1] & 0b00111111);
+                code = (code<<6) |  (buffer[offset+2] & 0b00111111);
                 code = (code<<6) |  (buffer[offset+3] & 0b00111111);
                 if (code < (1 << 16) || !IsValidCodePoint(code) || NotTrailer(buffer[offset+1]) || NotTrailer(buffer[offset+2]) || NotTrailer(buffer[offset+3]))
                 {
@@ -177,7 +177,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="rune"></param>
         /// <param name="buffer"></param>
@@ -216,7 +216,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
@@ -284,7 +284,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
@@ -326,7 +326,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="utf16_buffer"></param>
         /// <param name="utf16_length"></param>
@@ -343,11 +343,11 @@ namespace Unity.Collections
                 if (UcsToUtf8(utf8_buffer, ref utf8_length, utf8_capacity, ucs) == ConversionError.Overflow)
                     return ConversionError.Overflow;
             }
-            return ConversionError.None;            
+            return ConversionError.None;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="src_buffer"></param>
         /// <param name="src_length"></param>
@@ -364,11 +364,11 @@ namespace Unity.Collections
                 if (UcsToUtf8(dest_buffer, ref dest_length, dest_capacity, ucs) == ConversionError.Overflow)
                     return ConversionError.Overflow;
             }
-            return ConversionError.None;            
+            return ConversionError.None;
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="utf8_buffer"></param>
         /// <param name="utf8_length"></param>
@@ -390,7 +390,7 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// A "NativeStringView" does not manage its own memory - it expects some other object to manage its memory
@@ -402,7 +402,7 @@ namespace Unity.Collections
         int length;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="p"></param>
         /// <param name="l"></param>
@@ -413,7 +413,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -422,14 +422,14 @@ namespace Unity.Collections
             get => UnsafeUtility.ReadArrayElement<char>(pointer, index);
             set => UnsafeUtility.WriteArrayElement<char>(pointer, index, value);
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public int Length => length;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -448,7 +448,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode()
@@ -468,7 +468,7 @@ namespace Unity.Collections
         {
             m_wordStorage = wordStorage;
         }
-        
+
         public NativeStringView[] Table
         {
             get
@@ -480,13 +480,13 @@ namespace Unity.Collections
             }
         }
     }
-    
+
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DebuggerTypeProxy(typeof(WordStorageDebugView))]
     public class WordStorage : IDisposable
-    {        
+    {
         NativeArray<ushort> buffer; // all the UTF-16 encoded bytes in one place
         NativeArray<int> offset; // one offset for each text in "buffer"
         NativeArray<ushort> length; // one length for each text in "buffer"
@@ -496,7 +496,7 @@ namespace Unity.Collections
         static WordStorage _Instance;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public static WordStorage Instance
         {
@@ -509,16 +509,16 @@ namespace Unity.Collections
             set { _Instance = value; }
         }
 
-        const int kMaxEntries = 10000;
-        const int kMaxChars = kMaxEntries * 100;
-        
+        const int kMaxEntries = 16<<10;
+        const int kMaxChars = kMaxEntries * 128;
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public const int kMaxCharsPerEntry = 4096;
-        
+
         public int Entries => entries;
-        
+
         void Initialize()
         {
             buffer = new NativeArray<ushort>(kMaxChars, Allocator.Persistent);
@@ -536,7 +536,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public static void Setup()
         {
@@ -544,9 +544,9 @@ namespace Unity.Collections
                 Instance.Dispose();
             Instance.Initialize();
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
@@ -558,9 +558,9 @@ namespace Unity.Collections
             Assert.IsTrue(l <= kMaxCharsPerEntry);
             return new NativeStringView((char*)buffer.GetUnsafePtr() + o, l);
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="h"></param>
         /// <param name="temp"></param>
@@ -586,22 +586,22 @@ namespace Unity.Collections
 
                 }
             } while (hash.TryGetNextValue(out itemIndex, ref iter));
-            return -1;            
+            return -1;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
         public bool Contains(NativeStringView value)
-        {            
+        {
             int h = value.GetHashCode();
             return GetIndex(h, value) != -1;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -612,7 +612,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -633,9 +633,9 @@ namespace Unity.Collections
             hash.Add(h, entries);
             return entries++;
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public void Dispose()
         {
@@ -648,20 +648,24 @@ namespace Unity.Collections
 
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// A "Words" is an integer that refers to 4,096 or fewer chars of UTF-16 text in a global storage blob.
     /// Each should refer to *at most* about one printed page of text.
+    ///
     /// If you need more text, consider using one Words struct for each printed page's worth.
-    /// If you need to store the text of "War and Peace" in a single object, you've come to the wrong place.
+    ///
+    /// Each Words instance that you create is stored in a single, internally-managed WordStorage object,
+    /// which can hold up to 16,384 Words entries. Once added, the entries in WordStorage cannot be modified
+    /// or removed.
     /// </remarks>
     public struct Words
     {
-        int Index;     
+        int Index;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public NativeStringView ToNativeStringView()
@@ -670,7 +674,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -679,32 +683,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         public unsafe void SetString(string value)
         {
             fixed(char *c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));            
+                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
         }
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>
     /// A "NumberedWords" is a "Words", plus possibly a string of leading zeroes, followed by
     /// possibly a positive integer.
     /// The zeroes and integer aren't stored centrally as a string, they're stored as an int.
     /// Therefore, 1,000,000 items with names from FooBarBazBifBoo000000 to FooBarBazBifBoo999999
-    /// Will cost 8MB + a single copy of "FooBarBazBifBoo", instead of ~48MB. 
+    /// Will cost 8MB + a single copy of "FooBarBazBifBoo", instead of ~48MB.
     /// They say that this is a thing, too.
     /// </remarks>
     public struct NumberedWords
     {
         int Index;
         int Suffix;
-        
+
         const int kPositiveNumericSuffixShift = 0;
         const int kPositiveNumericSuffixBits = 29;
         const int kMaxPositiveNumericSuffix = (1 << kPositiveNumericSuffixBits) - 1;
@@ -714,7 +718,7 @@ namespace Unity.Collections
         const int kLeadingZeroesBits = 3;
         const int kMaxLeadingZeroes = (1 << kLeadingZeroesBits) - 1;
         const int kLeadingZeroesMask = (1 << kLeadingZeroesBits) - 1;
-        
+
         int LeadingZeroes
         {
             get => (Suffix >> kLeadingZeroesShift) & kLeadingZeroesMask;
@@ -744,9 +748,9 @@ namespace Unity.Collections
                 temp[i] = c;
             return new string(temp, 0, count);
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -772,9 +776,9 @@ namespace Unity.Collections
                 c[i] = s[offset + i];
             return new string(c, 0, count);
         }
-        
+
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="value"></param>
         public unsafe void SetString(string value)
@@ -788,14 +792,14 @@ namespace Unity.Collections
                 --beginningOfDigits;
 
             // as long as the first digit is a zero, it's not the beginning of the positive integer - it's a leading zero.
-            
+
             var beginningOfPositiveNumericSuffix = beginningOfDigits;
             while (beginningOfPositiveNumericSuffix < value.Length && value[beginningOfPositiveNumericSuffix] == '0')
                 ++beginningOfPositiveNumericSuffix;
 
             // now we know where the leading zeroes begin, and then where the positive integer begins after them.
             // but if there are too many leading zeroes to encode, the excess ones become part of the string.
-            
+
             var leadingZeroes = beginningOfPositiveNumericSuffix - beginningOfDigits;
             if (leadingZeroes > kMaxLeadingZeroes)
             {
@@ -803,7 +807,7 @@ namespace Unity.Collections
                 beginningOfDigits += excessLeadingZeroes;
                 leadingZeroes -= excessLeadingZeroes;
             }
-                        
+
             // if there is a positive integer after the zeroes, here's where we compute it and store it for later.
 
             PositiveNumericSuffix = 0;
@@ -814,32 +818,32 @@ namespace Unity.Collections
                     number *= 10;
                     number += value[i] - '0';
                 }
-                
+
                 // an intrepid user may attempt to encode a positive integer with 20 digits or something.
                 // they are rewarded with a string that is encoded wholesale without any optimizations.
-                
+
                 if(number <= kMaxPositiveNumericSuffix)
-                    PositiveNumericSuffix = number; 
+                    PositiveNumericSuffix = number;
                 else
                 {
-                    beginningOfDigits = value.Length; 
+                    beginningOfDigits = value.Length;
                     leadingZeroes = 0; // and your dog Toto, too.
                 }
             }
 
             // set the leading zero count in the Suffix member.
-            
+
             LeadingZeroes = leadingZeroes;
 
             // truncate the string, if there were digits at the end that we encoded.
-            
+
             if(beginningOfDigits != value.Length)
                 value = Substring(value, 0, beginningOfDigits);
 
             // finally, set the string to its index in the global string blob thing.
 
             fixed(char *c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));      
+                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
         }
     }
 }

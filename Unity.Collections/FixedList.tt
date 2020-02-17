@@ -227,8 +227,9 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="items">The number of items to insert</param>                                
-        public void InsertRange(int begin, int items)
+        public void InsertRange(int begin, int end)
         {
+            int items = end - begin;
             if(items < 1)
                 return;
             int itemsToCopy = length - begin;
@@ -236,7 +237,6 @@ for(var size = 0; size < 5; ++size)
             if(itemsToCopy < 1)
                 return;
             int bytesToCopy = itemsToCopy * UnsafeUtility.SizeOf<T>();
-            int end = begin + items;
             unsafe
             {
                 byte *b = Buffer;
@@ -274,9 +274,10 @@ for(var size = 0; size < 5; ++size)
         /// Removes a number of elements from a <#=TYPENAME#><T> at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the elements should be removed.</param>
-        /// <param name="items">The number of elements to remove</param>                                
-        public void RemoveRange(int begin, int items)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>                                
+        public void RemoveRange(int begin, int end)
         {
+            int items = end - begin;
             if(items < 1)
                 return;
             int itemsToCopy = length - (begin + items);
@@ -284,7 +285,6 @@ for(var size = 0; size < 5; ++size)
             if(itemsToCopy < 1)
                 return;
             int bytesToCopy = itemsToCopy * UnsafeUtility.SizeOf<T>();
-            int end = begin + items;
             unsafe
             { 
                 byte*b = Buffer;
@@ -326,7 +326,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The zero-based index at which to remove the T</param> 
         public void RemoveAt(int index)
         {
-            RemoveRange(index, 1);
+            RemoveRange(index, index+1);
         }
         
         /// <summary>
@@ -512,6 +512,10 @@ for(var size = 0; size < 5; ++size)
             object IEnumerator.Current => Current;
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(ref this);
@@ -714,9 +718,10 @@ for(var size = 0; size < 5; ++size)
         /// Inserts a number of items into a <#=TYPENAME#> at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="items">The number of items to insert</param>                                
-        public void InsertRange(int begin, int items)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>                                
+        public void InsertRange(int begin, int end)
         {
+            int items = end - begin;
             if(items < 1)
                 return;
             int itemsToCopy = length - begin;
@@ -724,7 +729,6 @@ for(var size = 0; size < 5; ++size)
             if(itemsToCopy < 1)
                 return;
             int bytesToCopy = itemsToCopy * sizeof(<#=TYPE#>);
-            int end = begin + items;
             unsafe
             {
                 byte* b = Buffer;
@@ -763,8 +767,9 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the elements should be removed.</param>
         /// <param name="items">The number of elements to remove</param>                                
-        public void RemoveRange(int begin, int items)
+        public void RemoveRange(int begin, int end)
         {
+            int items = end - begin;
             if(items < 1)
                 return;
             int itemsToCopy = length - (begin + items);
@@ -772,7 +777,6 @@ for(var size = 0; size < 5; ++size)
             if(itemsToCopy < 1)
                 return;
             int bytesToCopy = itemsToCopy * sizeof(<#=TYPE#>);
-            int end = begin + items;
             unsafe
             { 
                 byte* b = Buffer;
@@ -814,7 +818,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The zero-based index at which to remove the <#=TYPE#></param> 
         public void RemoveAt(int index)
         {
-            RemoveRange(index, 1);
+            RemoveRange(index, index+1);
         }
         
         /// <summary>
@@ -1007,6 +1011,10 @@ foreach(var OTHERBYTES in SIZES)
             object IEnumerator.Current => Current;
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a container.
+        /// </summary>
+        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(ref this);

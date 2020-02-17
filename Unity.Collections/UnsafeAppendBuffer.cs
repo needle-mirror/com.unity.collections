@@ -105,6 +105,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             Size += structSize;
         }
 
+        public void AddArray<T>(void* data, int count) where T : struct
+        {
+            Add(count);
+            Add(data, count * UnsafeUtility.SizeOf<T>());
+        }
+
         public void Add<T>(NativeArray<T> value) where T : struct
         {
             Add(value.Length);
@@ -188,7 +194,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             void CheckBounds(int structSize)
             {
                 if (Offset + structSize > Size)
-                    throw new ArgumentException("Requested value outside bounds of UnsafeAppendOnlyBuffer. Remaining bytes: {Buffer->Size - m_Offset} Requested: {structSize}");
+                    throw new ArgumentException($"Requested value outside bounds of UnsafeAppendOnlyBuffer. Remaining bytes: {Size - Offset} Requested: {structSize}");
             }
 
             public void ReadNext<T>(out T value) where T : struct

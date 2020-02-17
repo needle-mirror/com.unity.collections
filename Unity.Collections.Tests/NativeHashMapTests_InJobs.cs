@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Collections;
@@ -168,6 +169,49 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
         writeStatus.Dispose();
         hashMap.Dispose();
+    }
+
+    [Test]
+    public void NativeHashMap_DisposeJob()
+    {
+        var container0 = new NativeHashMap<int, int>(1, Allocator.Persistent);
+        Assert.True(container0.IsCreated);
+        Assert.DoesNotThrow(() => { container0.Add(0, 1); });
+        Assert.True(container0.ContainsKey(0));
+
+        var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
+        Assert.True(container1.IsCreated);
+        Assert.DoesNotThrow(() => { container1.Add(1, 2); });
+        Assert.True(container1.ContainsKey(1));
+
+        var disposeJob0 = container0.Dispose(default);
+        Assert.False(container0.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container0.ContainsKey(0); });
+
+        var disposeJob = container1.Dispose(disposeJob0);
+        Assert.False(container1.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container1.ContainsKey(1); });
+
+        disposeJob.Complete();
+    }
+
+    [Test]
+    public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
+    {
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
+        var deps = new Clear { hashMap = hashMap }.Schedule();
+        Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
+        deps.Complete();
+        hashMap.Dispose();
+    }
+
+    [Test]
+    public void NativeHashMap_DisposeJobCantBeScheduled()
+    {
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
+        var deps = hashMap.Dispose(default);
+        Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
+        deps.Complete();
     }
 
     struct MergeSharedValues : IJobNativeMultiHashMapMergedSharedKeyIndices

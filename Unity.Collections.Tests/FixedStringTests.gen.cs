@@ -17,6 +17,7 @@ using System.Threading;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using System.Text;
 
 namespace FixedStringTests
 {
@@ -56,6 +57,20 @@ public class DecimalSeparatorCulture
     }
             
     
+    [TestCase("for whom the bell tolls")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾")] 
+    public void FixedString32CopyFromBytesWorks(String a)
+    {
+        FixedString32 aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
+
     [TestCase("oooooooooooooooooooooooooooooo", CopyError.None)]
     [TestCase("ooooooooooooooooooooooooooooooo", CopyError.Truncation)]
     public void FixedString32AtMaximumSizeWorks(String a, CopyError expectedError)
@@ -179,6 +194,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString32FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
@@ -467,6 +483,20 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
+    [TestCase("Supercalifragilisticexpialidocious")]
+    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    public void FixedString64CopyFromBytesWorks(String a)
+    {
+        FixedString64 aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
+
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.None)]
     [TestCase("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.Truncation)]
     public void FixedString64AtMaximumSizeWorks(String a, CopyError expectedError)
@@ -590,6 +620,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString64FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
@@ -881,6 +912,20 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
+    [TestCase("Supercalifragilisticexpialidocious")]
+    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    public void FixedString128CopyFromBytesWorks(String a)
+    {
+        FixedString128 aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
+
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.None)]
     [TestCase("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.Truncation)]
     public void FixedString128AtMaximumSizeWorks(String a, CopyError expectedError)
@@ -1004,6 +1049,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString128FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
@@ -1297,6 +1343,20 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
+    [TestCase("Supercalifragilisticexpialidocious")]
+    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    public void FixedString512CopyFromBytesWorks(String a)
+    {
+        FixedString512 aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
+
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.None)]
     [TestCase("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.Truncation)]
     public void FixedString512AtMaximumSizeWorks(String a, CopyError expectedError)
@@ -1420,6 +1480,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString512FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
@@ -1714,6 +1775,20 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
+    [TestCase("Supercalifragilisticexpialidocious")]
+    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    public void FixedString4096CopyFromBytesWorks(String a)
+    {
+        FixedString4096 aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
+
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.None)]
     [TestCase("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", CopyError.Truncation)]
     public void FixedString4096AtMaximumSizeWorks(String a, CopyError expectedError)
@@ -1837,6 +1912,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString4096FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);

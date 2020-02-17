@@ -110,7 +110,7 @@ public class NativeHashMapTests
         }
         hashMap.Dispose ();
     }
-    
+
     [Test]
     public void NativeHashMap_HashMapSupportsAutomaticCapacityChange()
     {
@@ -137,7 +137,7 @@ public class NativeHashMapTests
             Assert.DoesNotThrow(() => hashMap.Add(0, 0));
             Assert.Throws<ArgumentException>(() => hashMap.Add(0, 0));
         }
-        
+
         using (var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent))
         {
             Assert.IsTrue(hashMap.TryAdd(0, 0));
@@ -528,7 +528,7 @@ public class NativeHashMapTests
         hashMap.Dispose();
         keys.Dispose ();
     }
-    
+
     [Test]
     public void NativeHashMap_IndexerWorks()
     {
@@ -541,35 +541,35 @@ public class NativeHashMapTests
 
         hashMap.Dispose();
     }
-    
+
     [Test]
     public void NativeHashMap_ContainsKeyHashMap()
     {
         var hashMap = new NativeHashMap<int, int> (1, Allocator.Temp);
         hashMap[5] = 7;
-        
+
         Assert.IsTrue(hashMap.ContainsKey(5));
         Assert.IsFalse(hashMap.ContainsKey(6));
 
         hashMap.Dispose();
     }
-    
+
     [Test]
     public void NativeHashMap_ContainsKeyMultiHashMap()
     {
         var hashMap = new NativeMultiHashMap<int, int> (1, Allocator.Temp);
         hashMap.Add(5, 7);
-        
+
         hashMap.Add(6, 9);
         hashMap.Add(6, 10);
-        
+
         Assert.IsTrue(hashMap.ContainsKey(5));
         Assert.IsTrue(hashMap.ContainsKey(6));
         Assert.IsFalse(hashMap.ContainsKey(4));
 
         hashMap.Dispose();
     }
-    
+
     [Test]
     public void NativeMultiHashMap_CountValuesForKey()
     {
@@ -577,14 +577,14 @@ public class NativeHashMapTests
         hashMap.Add(5, 7);
         hashMap.Add(6, 9);
         hashMap.Add(6, 10);
-        
+
         Assert.AreEqual(1, hashMap.CountValuesForKey(5));
         Assert.AreEqual(2, hashMap.CountValuesForKey(6));
         Assert.AreEqual(0, hashMap.CountValuesForKey(7));
 
         hashMap.Dispose();
     }
-    
+
     [Test]
     public void NativeMultiHashMap_RemoveKeyAndValue()
     {
@@ -602,7 +602,7 @@ public class NativeHashMapTests
         hashMap.Remove(10, 1L);
         ExpectValues(hashMap, 10, new [] { 0L, 2L });
         ExpectValues(hashMap, 20, new [] { 1L, 1L, 2L, 2L, 2L });
-        
+
         hashMap.Remove(20, 2L);
         ExpectValues(hashMap, 10, new [] { 0L, 2L });
         ExpectValues(hashMap, 20, new [] { 1L , 1L});
@@ -613,7 +613,7 @@ public class NativeHashMapTests
 
         hashMap.Dispose();
     }
-    
+
 
     [Test]
     public void NativeMultiHashMap_ValueIterator()
@@ -634,38 +634,14 @@ public class NativeHashMapTests
 
         list.Sort();
         Assert.AreEqual(list.ToArray(), new int[] { 0, 1, 2 });
-        
+
         foreach (var value in hashMap.GetValuesForKey(6))
             Assert.Fail();
-        
+
         list.Dispose();
         hashMap.Dispose();
     }
 
-    [Test]
-    public void NativeHashMap_DisposeJob()
-    {
-        var container0 = new NativeHashMap<int, int>(1, Allocator.Persistent);
-        Assert.True(container0.IsCreated);
-        Assert.DoesNotThrow(() => { container0.Add(0, 1); });
-        Assert.True(container0.ContainsKey(0));
-
-        var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
-        Assert.True(container1.IsCreated);
-        Assert.DoesNotThrow(() => { container1.Add(1, 2); });
-        Assert.True(container1.ContainsKey(1));
-
-        var disposeJob0 = container0.Dispose(default);
-        Assert.False(container0.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container0.ContainsKey(0); });
-
-        var disposeJob = container1.Dispose(disposeJob0);
-        Assert.False(container1.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container1.ContainsKey(1); });
-
-        disposeJob.Complete();
-    }
-    
     [Test]
     public void NativeMultiHashMap_RemoveKeyValueDoesntDeallocate()
     {
@@ -677,7 +653,7 @@ public class NativeHashMapTests
         {
             hashMap.Remove(5, 1);
         });
-        
+
         hashMap.Dispose();
     }
 

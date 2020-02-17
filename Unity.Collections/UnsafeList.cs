@@ -20,7 +20,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public Allocator Allocator;
 
         /// <summary>
-        /// Constructs a new container using the specified type of memory allocation.
+        /// Constructs a new container with the specified initial capacity and type of memory allocation.
         /// </summary>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
@@ -162,7 +162,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (Allocator != Allocator.Invalid)
             {
-                var jobHandle = new DisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
+                var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
                 Ptr = null;
                 Allocator = Allocator.Invalid;
@@ -172,20 +172,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr = null;
 
-            return default;
-        }
-
-        [BurstCompile]
-        struct DisposeJob : IJob
-        {
-            [NativeDisableUnsafePtrRestriction]
-            public void* Ptr;
-            public Allocator Allocator;
-
-            public void Execute()
-            {
-                UnsafeUtility.Free(Ptr, Allocator);
-            }
+            return inputDeps;
         }
 
         /// <summary>
@@ -602,6 +589,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
+    [BurstCompile]
+    internal unsafe struct UnsafeDisposeJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public void* Ptr;
+        public Allocator Allocator;
+
+        public void Execute()
+        {
+            UnsafeUtility.Free(Ptr, Allocator);
+        }
+    }
+
     /// <summary>
     /// An managed, resizable list, without any thread safety check features.
     /// </summary>
@@ -643,15 +643,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             Capacity = 0;
             Allocator = Allocator.Invalid;
             var sizeOf = UnsafeUtility.SizeOf<T>();
-            this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
+            var alignOf = UnsafeUtility.AlignOf<T>();
+            this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
         }
 
         /// <summary>
-        /// Reports whether memory for the list is allocated.
+        /// Reports whether memory for the container is allocated.
         /// </summary>
-        /// <value>True if this list object's internal storage  has been allocated.</value>
-        /// <remarks>Note that the list storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable UnsafeList.</remarks>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.</remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -679,7 +680,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clears the list.
+        /// Clears the container.
         /// </summary>
         /// <remarks>List Capacity remains unchanged.</remarks>
         public void Clear()
@@ -1019,11 +1020,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether memory for the list is allocated.
+        /// Reports whether memory for the container is allocated.
         /// </summary>
-        /// <value>True if this list object's internal storage  has been allocated.</value>
-        /// <remarks>Note that the list storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable UnsafeList.</remarks>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.</remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>

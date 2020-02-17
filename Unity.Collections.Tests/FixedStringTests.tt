@@ -22,6 +22,7 @@ using System.Threading;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using System.Text;
 
 namespace FixedStringTests
 {
@@ -66,6 +67,20 @@ public class DecimalSeparatorCulture
          var ALMOST_TOO_BIG = new String('o', BYTES -2 );
          var TOO_BIG = new String('o', BYTES -1 ); 
        #>
+
+    [TestCase("Supercalifragilisticexpialidocious")]
+    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    public void FixedString<#=BYTES#>CopyFromBytesWorks(String a)
+    {
+        FixedString<#=BYTES#> aa = default;
+        var utf8 = Encoding.UTF8.GetBytes(a);
+        unsafe
+        {
+            fixed(byte *b = utf8)
+                aa.CopyFrom(b, (ushort)utf8.Length);
+        }
+        Assert.AreEqual(a, aa.ToString());          
+    }
 
     [TestCase("<#=ALMOST_TOO_BIG#>", CopyError.None)]
     [TestCase("<#=TOO_BIG#>", CopyError.Truncation)]
@@ -190,6 +205,7 @@ public class DecimalSeparatorCulture
     [TestCase(0.000001f, FormatError.None)]
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
+    [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString<#=BYTES#>FormatFloat(float input, FormatError expectedResult)
     {         
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
