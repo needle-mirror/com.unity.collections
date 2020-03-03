@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Unity.Collections;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS && !UNITY_DOTSPLAYER
 public class NativeContainderTests_ValidateTypes_JobDebugger : NativeContainerTests_ValidateTypesFixture
 {
 	struct WriteOnlyHashMapParallelForJob : IJobParallelFor

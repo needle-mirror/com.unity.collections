@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
 public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {
@@ -195,7 +196,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         disposeJob.Complete();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
@@ -205,7 +206,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeHashMap_DisposeJobCantBeScheduled()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);

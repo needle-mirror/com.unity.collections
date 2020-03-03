@@ -62,7 +62,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             return capacity * 2;
         }
 
-        [BurstDiscard]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal static void IsBlittableAndThrow<TKey, TValue>()
             where TKey : struct
@@ -299,7 +298,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                         if (idx < data->keyCapacity - 1)
                         {
-                            int count = Math.Min(16, data->keyCapacity - idx);
+                            int count = math.min(16, data->keyCapacity - idx);
 
                             for (int i = 1; i < count; ++i)
                             {
@@ -762,7 +761,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                     }
                 }
 
-                return Math.Min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
+                return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
             }
         }
 
@@ -902,7 +901,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -1121,7 +1120,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                     }
                 }
 
-                return Math.Min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
+                return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
             }
         }
 
@@ -1288,7 +1287,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -1452,12 +1451,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             m_Target = target;
         }
 
-        public static Tuple<NativeArray<TKey>, int> GetUniqueKeyArray(ref UnsafeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray(ref UnsafeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
         {
             var withDuplicates = hashMap.GetKeyArray(allocator);
             withDuplicates.Sort();
             int uniques = withDuplicates.Unique();
-            return new Tuple<NativeArray<TKey>, int>(withDuplicates, uniques);
+            return (withDuplicates, uniques);
         }
 
         public List<ListPair<TKey, List<TValue>>> Items
@@ -1587,8 +1586,8 @@ namespace Unity.Collections
                             else
                             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                                var startIndex = Math.Min(firstValue, value);
-                                var lastIndex = Math.Max(firstValue, value);
+                                var startIndex = math.min(firstValue, value);
+                                var lastIndex = math.max(firstValue, value);
                                 var rangeLength = (lastIndex - startIndex) + 1;
 
                                 JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref fullData), startIndex, rangeLength);

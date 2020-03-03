@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Jobs;
 
 public class NativeArrayTests
@@ -43,7 +44,7 @@ public class NativeArrayTests
     }
 #endif
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeArray_DisposeJobCantBeScheduled()
     {
         var array = new NativeArray<int>(1, Allocator.Persistent);

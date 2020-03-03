@@ -2,10 +2,11 @@
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
 public class UnsafeBitArrayTests
 {
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void UnsafeBitArray_Get_Set()
     {
         var numBits = 256;
@@ -43,6 +44,30 @@ public class UnsafeBitArrayTests
         test.SetBits(123, true, 7);
         Assert.True(test.TestAll(123, 7));
 
+        test.Clear();
+        test.SetBits(64, true, 64);
+        Assert.AreEqual(false, test.IsSet(63));
+        Assert.AreEqual(true, test.TestAll(64, 64));
+        Assert.AreEqual(false, test.IsSet(128));
+        Assert.AreEqual(64, test.CountBits(64, 64));
+        Assert.AreEqual(64, test.CountBits(0, numBits));
+
+        test.Clear();
+        test.SetBits(65, true, 62);
+        Assert.AreEqual(false, test.IsSet(64));
+        Assert.AreEqual(true, test.TestAll(65, 62));
+        Assert.AreEqual(false, test.IsSet(127));
+        Assert.AreEqual(62, test.CountBits(64, 64));
+        Assert.AreEqual(62, test.CountBits(0, numBits));
+
+        test.Clear();
+        test.SetBits(66, true, 64);
+        Assert.AreEqual(false, test.IsSet(65));
+        Assert.AreEqual(true, test.TestAll(66, 64));
+        Assert.AreEqual(false, test.IsSet(130));
+        Assert.AreEqual(64, test.CountBits(66, 64));
+        Assert.AreEqual(64, test.CountBits(0, numBits));
+
         test.Dispose();
     }
 
@@ -54,8 +79,13 @@ public class UnsafeBitArrayTests
         using (var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory))
         {
             Assert.DoesNotThrow(() => { test.TestAll(0, numBits); });
+            Assert.DoesNotThrow(() => { test.TestAny(numBits - 1, numBits); });
+
             Assert.Throws<ArgumentException>(() => { test.IsSet(-1); });
             Assert.Throws<ArgumentException>(() => { test.IsSet(numBits); });
+            Assert.Throws<ArgumentException>(() => { test.TestAny(0, 0); });
+            Assert.Throws<ArgumentException>(() => { test.TestAny(numBits, 1); });
+            Assert.Throws<ArgumentException>(() => { test.TestAny(numBits-1, 0); });
 
             // GetBits numBits must be 1-64.
             Assert.Throws<ArgumentException>(() => { test.GetBits(0, 0); });
@@ -74,7 +104,7 @@ public class UnsafeBitArrayTests
         test.Clear();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void UnsafeBitArray_GetBits()
     {
         var numBits = 256;
@@ -86,6 +116,8 @@ public class UnsafeBitArrayTests
         GetBitsTest(ref test, 1, 64);
         GetBitsTest(ref test, 62, 5);
         GetBitsTest(ref test, 127, 3);
+        GetBitsTest(ref test, 250, 6);
+        GetBitsTest(ref test, 254, 2);
 
         test.Dispose();
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
 public class NativeQueueTests_InJobs
 {
@@ -24,7 +25,7 @@ public class NativeQueueTests_InJobs
 		}
 	}
 
-	[Test]
+	[Test, DotsRuntimeIgnore]
 	public void Enqueue()
 	{
 		const int queueSize = 100*1024;

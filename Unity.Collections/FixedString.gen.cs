@@ -1434,16 +1434,22 @@ namespace Unity.Collections
         {
             UintFloatUnion ufu = new UintFloatUnion();
             ufu.floatValue = input;
-            if (ufu.uintValue == 4290772992U)
-                return Format('N', 'a', 'N');
             var sign = ufu.uintValue >> 31;
             ufu.uintValue &= ~(1 << 31);
             FormatError error;
+            if ((ufu.uintValue & 0x7F800000) == 0x7F800000)
+            {
+                if(ufu.uintValue == 0x7F800000)
+                {
+                    if(sign != 0 && ((error = Format('-')) != FormatError.None))
+                        return error;                
+                    return Format( 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y');
+                }
+                return Format('N', 'a', 'N');
+            }
             if (sign != 0 && ufu.uintValue != 0) // C# prints -0 as 0
                 if ((error = Format('-')) != FormatError.None)
                     return error;
-            if(ufu.uintValue == 2139095040U)
-                return Format( 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y');
             ulong decimalMantissa = 0;
             int decimalExponent = 0;
             Base2ToBase10(ref decimalMantissa, ref decimalExponent, ufu.floatValue);

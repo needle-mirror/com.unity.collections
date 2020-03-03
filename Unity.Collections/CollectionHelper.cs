@@ -40,7 +40,7 @@ namespace Unity.Collections
         {
             return 31 - math.lzcnt((uint)value);
         }
-        
+
         public static int Log2Ceil(int value)
         {
             return 32 - math.lzcnt((uint)value-1);
@@ -65,19 +65,20 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
         public static void CheckIntPositivePowerOfTwo(int value)
         {
             var valid = (value > 0) && ((value & (value - 1)) == 0);
             if (!valid)
+            {
                 throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+            }
         }
 
         public static int Align(int size, int alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
                 return size;
-            
+
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
 
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
@@ -145,6 +146,6 @@ namespace Unity.Collections
         public static bool IsPowerOfTwo(int value)
         {
             return (value & (value - 1)) == 0;
-        }   
+        }
     }
 }

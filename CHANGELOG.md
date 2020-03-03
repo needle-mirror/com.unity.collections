@@ -1,5 +1,25 @@
 # Change log
 
+## [0.6.0] - 2020-03-03
+
+### Added
+
+ * Added ability to dispose `UnsafeAppendBuffer` from a `DisposeJob`.
+
+### Changed
+
+ * `UnsafeAppendBuffer` field `Size` renamed to `Length`.
+ * Removed `[BurstDiscard]` from all validation check functions. Validation will
+   be present in code compiled with Burst.
+
+### Removed
+
+* Removed expired overloads for `NativeStream.ScheduleConstruct` without explicit allocators.
+
+### Fixed
+
+ * Fixed `UnsafeBitArray` out-of-bounds access.
+
 
 ## [0.5.2] - 2020-02-17
 
@@ -7,7 +27,7 @@
 
 * Changed `NativeList<T>` parallel reader/writer to match functionality of `UnsafeList` parallel reader/writer.
 * Updated dependencies of this package.
- 
+
 ### Removed
 
 * Removed expired API `UnsafeUtilityEx.RestrictNoAlias`

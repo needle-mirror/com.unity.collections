@@ -4,7 +4,9 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+#if !UNITY_DOTSPLAYER
 using Unity.PerformanceTesting;
+#endif
 
 public class UnsafeListTests
 {
@@ -335,6 +337,7 @@ public class UnsafeListTests
         list.Dispose();
     }
 
+#if !UNITY_DOTSPLAYER
     [Test, Performance]
     [Category("Performance")]
     public void UnsafeList_Performance_Add()
@@ -359,6 +362,7 @@ public class UnsafeListTests
 
         list.Dispose();
     }
+#endif
 
     [Test]
     public unsafe void UnsafeListT_IndexOf()

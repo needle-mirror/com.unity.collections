@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 
@@ -123,7 +124,7 @@ public class NativeStreamTests
     }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void ParallelWriteThrows()
     {
         var stream = new NativeStream(100, Allocator.TempJob);
@@ -136,7 +137,7 @@ public class NativeStreamTests
         stream.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void ScheduleCreateThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -333,7 +334,7 @@ public class NativeStreamTests
     {
         string Value;
     }
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void WriteManagedThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);

@@ -357,6 +357,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public static ConversionError Utf8ToUtf8(byte* src_buffer, int src_length, byte* dest_buffer, out int dest_length, int dest_capacity)
         {
+            if (dest_capacity >= src_length)
+            {
+                UnsafeUtility.MemCpy(dest_buffer, src_buffer, src_length);
+                dest_length = src_length;
+                return ConversionError.None;
+            }
+            // TODO even in this case, it's possible to MemCpy all but the last 3 bytes that fit, and then by looking at only
+            // TODO the high bits of the last 3 bytes that fit, decide how many of the 3 to append. but that requires a
+            // TODO little UNICODE presence of mind that nobody has today. 
             dest_length = 0;
             for(var src_offset = 0; src_offset < src_length;)
             {

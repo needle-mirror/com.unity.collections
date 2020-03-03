@@ -15,59 +15,115 @@ namespace Unity.Collections
             public int Compare(T x, T y) => x.CompareTo(y);
         }
 
-        // Default Comparer
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
         public unsafe static void Sort<T>(T* array, int length) where T : unmanaged, IComparable<T>
         {
             IntroSort<T, DefaultComparer<T>>(array, length, new DefaultComparer<T>());
         }
 
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
         public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
         {
             IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
         }
 
-        public unsafe static void Sort<T>(this NativeList<T> list) where T : struct, IComparable<T>
-        {
-            list.Sort(new DefaultComparer<T>());
-        }
-
-        public unsafe static void Sort<T>(this UnsafeList list) where T : struct, IComparable<T>
-        {
-            list.Sort<T, DefaultComparer<T>>(new DefaultComparer<T>());
-        }
-
-        // Explicit comparer
+        /// <summary>
+        /// Sorts an array using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(T* array, int length, U comp) where T : unmanaged where U : IComparer<T>
         {
             IntroSort<T, U>(array, length, comp);
         }
 
+        /// <summary>
+        /// Sorts an array using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(array.GetUnsafePtr(), array.Length, comp);
         }
 
+        /// <summary>
+        /// Sorts a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        public unsafe static void Sort<T>(this NativeList<T> list) where T : struct, IComparable<T>
+        {
+            list.Sort(new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Sorts a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        public unsafe static void Sort<T>(this UnsafeList list) where T : struct, IComparable<T>
+        {
+            list.Sort<T, DefaultComparer<T>>(new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Sorts a list using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(list.GetUnsafePtr(), list.Length, comp);
         }
 
+        /// <summary>
+        /// Sorts a list using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(list.Ptr, list.Length, comp);
         }
 
-        // Native slice
+        /// <summary>
+        /// Sorts a slice in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="slice">Slice to perform sort.</param>
         public unsafe static void Sort<T>(this NativeSlice<T> slice) where T : struct, IComparable<T>
         {
             slice.Sort(new DefaultComparer<T>());
         }
 
+        /// <summary>
+        /// Sorts a slice using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="slice">List to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (slice.Stride != UnsafeUtility.SizeOf<T>())
+            {
                 throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
+            }
 #endif
 
             IntroSort<T, U>(slice.GetUnsafePtr(), slice.Length, comp);
@@ -218,17 +274,17 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         [BurstCompile]
         unsafe struct SegmentSort<T> : IJobParallelFor
             where T : unmanaged, IComparable<T>
         {
             [NativeDisableUnsafePtrRestriction]
             public T* Data;
-            
+
             public int Length;
             public int SegmentWidth;
-            
+
             public void Execute(int index)
             {
                 var startIndex = index * SegmentWidth;
@@ -236,22 +292,22 @@ namespace Unity.Collections
                 Sort(Data + startIndex, segmentLength);
             }
         }
-        
-        [BurstCompile] 
+
+        [BurstCompile]
         unsafe struct SegmentSortMerge<T> : IJob
             where T : unmanaged, IComparable<T>
         {
             [NativeDisableUnsafePtrRestriction] public T* Data;
             public int Length;
             public int SegmentWidth;
-            
+
             public void Execute()
             {
                 var segmentCount = (Length + (SegmentWidth-1)) / SegmentWidth;
                 var segmentIndex = stackalloc int[segmentCount];
 
                 var resultCopy = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
-                
+
                 for (int sortIndex=0;sortIndex < Length;sortIndex++)
                 {
                     // find next best
@@ -265,7 +321,7 @@ namespace Unity.Collections
                         var segmentLength = ((Length - startIndex) < SegmentWidth) ? (Length - startIndex) : SegmentWidth;
                         if (offset == segmentLength)
                             continue;
-                        
+
                         var nextValue = Data[startIndex + offset];
                         if (bestSegmentIndex != -1)
                         {
@@ -284,25 +340,39 @@ namespace Unity.Collections
                 UnsafeUtility.MemCpy(Data,resultCopy,UnsafeUtility.SizeOf<T>()*Length);
             }
         }
-        
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
         public unsafe static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
         {
             return SortJob((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, inputDeps);
         }
 
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
         public unsafe static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
         {
             if (length == 0)
+            {
                 return inputDeps;
-            
+            }
+
             var segmentCount = (length + 1023) / 1024;
 
-#if UNITY_2019_3_OR_NEWER || UNITY_DOTSPLAYER
-            var workerCount = JobsUtility.JobWorkerCount;
-#else
-            var workerCount = JobsUtility.MaxJobThreadCount;
-#endif
-            workerCount = math.max(1, workerCount);
+            var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
             var workerSegmentCount = segmentCount / workerCount;
             var segmentSortJob = new SegmentSort<T> {Data = array, Length = length, SegmentWidth = 1024};
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);

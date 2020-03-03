@@ -291,7 +291,7 @@ namespace Unity.Collections
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -520,9 +520,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Changes the list length, resizing if necessary, without initializing memory.
+        /// Changes the container length, resizing if necessary, without initializing memory.
         /// </summary>
-        /// <param name="length">The new length of the list.</param>
+        /// <param name="length">The new length of the container.</param>
         public void ResizeUninitialized(int length)
         {
             Resize(length, NativeArrayOptions.UninitializedMemory);

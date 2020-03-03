@@ -20,7 +20,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public Allocator Allocator;
 
         /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// Constructs a new container with type of memory allocation.
         /// </summary>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
@@ -155,7 +155,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -176,9 +176,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clears the list.
+        /// Clears the container.
         /// </summary>
-        /// <remarks>List Capacity remains unchanged.</remarks>
+        /// <remarks>The container capacity remains unchanged.</remarks>
         public void Clear()
         {
             Length = 0;
@@ -239,7 +239,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (Capacity > 0)
                 {
-                    var itemsToCopy = Math.Min(capacity, Capacity);
+                    var itemsToCopy = math.min(capacity, Capacity);
                     var bytesToCopy = itemsToCopy * sizeOf;
                     UnsafeUtility.MemCpy(newPointer, Ptr, bytesToCopy);
                 }
@@ -249,12 +249,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr = newPointer;
             Capacity = capacity;
-            Length = Math.Min(Length, capacity);
+            Length = math.min(Length, capacity);
         }
 
         void SetCapacity(int sizeOf, int alignOf, int capacity)
         {
-            var newCapacity = Math.Max(capacity, 64 / sizeOf);
+            var newCapacity = math.max(capacity, 64 / sizeOf);
             newCapacity = math.ceilpow2(newCapacity);
 
             if (newCapacity == Capacity)
@@ -266,10 +266,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Set the number of items that can fit in the list.
+        /// Set the number of items that can fit in the container.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="capacity">The number of items that the list can hold before it resizes its internal storage.</param>
+        /// <param name="capacity">The number of items that the container can hold before it resizes its internal storage.</param>
         public void SetCapacity<T>(int capacity) where T : struct
         {
             SetCapacity(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), capacity);
@@ -450,10 +450,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
             {
-                int copyFrom = Math.Max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - itemsToRemove, end);
                 void* dst = (byte*)Ptr + begin * sizeOf;
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
-                UnsafeUtility.MemCpy(dst, src, Math.Min(itemsToRemove, Length - copyFrom) * sizeOf);
+                UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
                 Length -= itemsToRemove;
             }
         }
@@ -671,7 +671,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -731,7 +731,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Adds the elements to this container.
         /// </summary>
         /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <param name="length">The number of elements to add to the container.</param>
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
@@ -1043,7 +1043,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)

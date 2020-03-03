@@ -28,7 +28,7 @@ public class NativeHashMapTests
     }
 #pragma warning restore 0649
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeHashMap_Non_Blittable_Throws()
     {
 #pragma warning disable 0219 // assigned but its value is never used
@@ -63,7 +63,7 @@ public class NativeHashMapTests
         hashMap.Dispose ();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeHashMap_Full_HashMap_Throws()
     {
         var hashMap = new NativeHashMap<int, int> (16, Allocator.Temp);

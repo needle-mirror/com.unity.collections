@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "0.5.2-preview.8",
+  "version": "0.6.0-preview.9",
   "unity": "2019.3",
   "unityRelease": "0f1",
   "dependencies": {
@@ -15,9 +15,9 @@
     "unity"
   ],
   "repository": {
-    "footprint": "c3d8064f1a400f10ed3891bfcb19e72153d6d9c4",
+    "footprint": "5d3d12c30f5c34d1bbc1d4e940a54772ffffad0b",
     "type": "git",
     "url": "https://github.com/Unity-Technologies/dots.git",
-    "revision": "b585b3eb08662ea55e2726c6f7d251d25422d16b"
+    "revision": "5da833024adc8fef7af3017a14820e17f248b2f2"
   }
 }

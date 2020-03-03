@@ -82,7 +82,7 @@ for(var size = 0; size < 5; ++size)
         WriteLine("    , IEquatable<{0}<T>>", OTHERTYPENAME);
         WriteLine("    , IComparable<{0}<T>>", OTHERTYPENAME);
     }
-#>    where T : unmanaged, IComparable<T>
+#>    where T : unmanaged
     {
         internal ushort length;     
         internal FixedBytes<#=BUFFER_BYTES#> buffer;
@@ -357,20 +357,10 @@ for(var size = 0; size < 5; ++size)
             }
         }
         
-        /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#><T>.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((T*)Buffer, length);
-            }
-        }
 <#        
     foreach(var OTHERBYTES in SIZES)
     {
-        var OTHER_BUFFER_BYTES = OTHERBYTES - 2;
+        var OTHER_BUFFER_BYTES = OTHERBYTES - 2; 
         var OTHERTYPENAME = String.Format("FixedList{0}", OTHERBYTES);    
 #>
 
@@ -408,14 +398,20 @@ for(var size = 0; size < 5; ++size)
         {
             unsafe
             {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
+                fixed(byte* a = &buffer.offset0000.byte0000)
                 {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
+                    byte* b = &other.buffer.offset0000.byte0000;
+                    var aa = a + FixedList.PaddingBytes<T>();
+                    var bb = b + FixedList.PaddingBytes<T>();
+                    var mini = math.min(Length, other.Length);
+                    for(var i = 0; i < mini; ++i)
+                    {
+                        var j = UnsafeUtility.MemCmp(aa + sizeof(T) * i, bb + sizeof(T) * i, sizeof(T));
+                        if(j != 0)
+                            return j;
+                    }
+                    return Length.CompareTo(other.Length);
                 }
-                return Length.CompareTo(other.Length);
             }
         }
         
@@ -1037,5 +1033,34 @@ foreach(var OTHERBYTES in SIZES)
 <#
 }
 #>
-    
+    public static class Extensions
+    {
+<#
+for(var size = 0; size < 5; ++size)
+{
+    var BYTES = SIZES[size];
+    var BUFFER_BYTES = BYTES - 2;
+    var TYPENAME = String.Format("FixedList{0}", BYTES); 
+#>
+
+        /// <summary>
+        /// Sorts the elements in this <#=TYPENAME#><T>.
+        /// </summary>
+        public static void Sort<T>(this ref <#=TYPENAME#><T> t)
+        where T : unmanaged, IComparable<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &t.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, t.Length);
+                }
+            }
+        }
+
+<#
+}
+#>    
+    }
 }

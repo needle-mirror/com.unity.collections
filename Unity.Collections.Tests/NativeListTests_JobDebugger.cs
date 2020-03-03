@@ -3,6 +3,7 @@ using NUnit.Framework;
 using System;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
 #pragma warning disable 0219
 #pragma warning disable 0414
@@ -32,7 +33,7 @@ public class NativeListJobDebuggerTests
         }
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void AddElementToListFromJobInvalidatesArray()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -67,7 +68,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void AccessBefore()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -82,7 +83,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void AccessAfter()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -114,7 +115,7 @@ public class NativeListJobDebuggerTests
         list.Dispose(writeJobHandle);
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void ScheduleDerivedArrayExceptions()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -128,7 +129,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void ScheduleDerivedArrayExceptions2()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -227,7 +228,7 @@ public class NativeListJobDebuggerTests
         }
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void WriteToArrayFromJobThenReadListFromMainThread()
     {
         var list = new NativeList<float>(1, Allocator.Persistent);
@@ -258,7 +259,7 @@ public class NativeListJobDebuggerTests
         deps.Complete();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeList_DisposeJobWithMissingDependencyThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -268,7 +269,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeList_DisposeJobCantBeScheduled()
     {
         var list = new NativeList<int>(Allocator.Persistent);

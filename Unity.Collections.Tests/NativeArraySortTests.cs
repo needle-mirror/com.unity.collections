@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
+#if !UNITY_DOTSPLAYER
 using Unity.PerformanceTesting;
+#endif
 
 public class MathTests
 {
@@ -13,14 +15,14 @@ public class MathTests
         Assert.AreEqual(1, CollectionHelper.Log2Floor(2));
         Assert.AreEqual(1, CollectionHelper.Log2Floor(3));
         Assert.AreEqual(2, CollectionHelper.Log2Floor(4));
-        
+
         Assert.AreEqual(3, CollectionHelper.Log2Floor(15));
         Assert.AreEqual(4, CollectionHelper.Log2Floor(16));
         Assert.AreEqual(4, CollectionHelper.Log2Floor(19));
 
         Assert.AreEqual(30, CollectionHelper.Log2Floor(int.MaxValue));
         Assert.AreEqual(16, CollectionHelper.Log2Floor(1 << 16));
-        
+
         Assert.AreEqual(-1, CollectionHelper.Log2Floor(0));
     }
 }
@@ -322,6 +324,7 @@ public class NativeSliceTests
         array.Dispose();
     }
 
+#if !UNITY_DOTSPLAYER
     [Test, Performance]
     [Category("Performance")]
     public void NativeSlice_Performance_CopyTo()
@@ -343,6 +346,7 @@ public class NativeSliceTests
 
         array.Dispose();
     }
+#endif
 
     [Test]
     public void NativeSlice_CopyFrom()
@@ -372,6 +376,7 @@ public class NativeSliceTests
         array.Dispose();
     }
 
+#if !UNITY_DOTSPLAYER
     [Test, Performance]
     [Category("Performance")]
     public void NativeSlice_Performance_CopyFrom()
@@ -393,7 +398,8 @@ public class NativeSliceTests
 
         array.Dispose();
     }
-    
+#endif
+
     [Test]
     public void SortJobNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
@@ -417,7 +423,7 @@ public class NativeSliceTests
 
         array.Dispose();
     }
-    
+
     [Test]
     public void SortJbativeArray_SortedInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {

@@ -86,7 +86,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="jobHandle">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
@@ -122,7 +122,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="value">Value of bits to set.</param>
         public void Set(int pos, bool value)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, 1);
 
             var idx = pos >> 6;
             var shift = pos & 0x3f;
@@ -139,12 +139,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="numBits">Number of bits to set.</param>
         public void SetBits(int pos, bool value, int numBits)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             var end = math.min(pos + numBits, Length);
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
             var maskE = 0xfffffffffffffffful >> (64 - shiftE);
@@ -181,7 +181,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="numBits">Number of bits to get (must be 1-64).</param>
         public void SetBits(int pos, ulong value, int numBits = 1)
         {
-            CheckArgs(pos, numBits);
+            CheckArgsUlong(pos, numBits);
 
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
@@ -195,7 +195,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             var end = math.min(pos + numBits, Length);
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
 
             var maskB = 0xfffffffffffffffful >> shiftB;
@@ -214,7 +214,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns requested range of bits.</returns>
         public ulong GetBits(int pos, int numBits = 1)
         {
-            CheckArgs(pos, numBits);
+            CheckArgsUlong(pos, numBits);
 
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
@@ -226,7 +226,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             var end = math.min(pos + numBits, Length);
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
 
             var maskB = 0xfffffffffffffffful >> shiftB;
@@ -245,7 +245,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns true if bit is set.</returns>
         public bool IsSet(int pos)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, 1);
 
             var idx = pos >> 6;
             var shift = pos & 0x3f;
@@ -261,12 +261,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns true if none of bits are set.</returns>
         public bool TestNone(int pos, int numBits = 1)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             var end = math.min(pos + numBits, Length);
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
             var maskE = 0xfffffffffffffffful >> (64 - shiftE);
@@ -301,12 +301,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns true if at least one bit is set.</returns>
         public bool TestAny(int pos, int numBits = 1)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             var end = math.min(pos + numBits, Length);
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
             var maskE = 0xfffffffffffffffful >> (64 - shiftE);
@@ -341,12 +341,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns true if all bits are set.</returns>
         public bool TestAll(int pos, int numBits = 1)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             var end = math.min(pos + numBits, Length);
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
             var maskE = 0xfffffffffffffffful >> (64 - shiftE);
@@ -381,12 +381,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Number of set bits.</returns>
         public int CountBits(int pos, int numBits = 1)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             var end = math.min(pos + numBits, Length);
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
-            var idxE = end >> 6;
+            var idxE = (end - 1) >> 6;
             var shiftE = end & 0x3f;
             var maskB = 0xfffffffffffffffful << shiftB;
             var maskE = 0xfffffffffffffffful >> (64 - shiftE);
@@ -410,24 +410,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
-        private void CheckArgs(int pos)
+        private void CheckArgs(int pos, int numBits)
         {
             if (pos < 0
-            ||  pos >= Length)
+            ||  pos >= Length
+            ||  numBits < 1)
             {
-                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length-1}).");
+                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length-1}), numBits {numBits} (must be greater than 0).");
             }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
-        private void CheckArgs(int pos, int numBits)
+        private void CheckArgsUlong(int pos, int numBits)
         {
-            CheckArgs(pos);
+            CheckArgs(pos, numBits);
 
             if (numBits < 1
-            || numBits > 64)
+            ||  numBits > 64)
             {
                 throw new ArgumentException($"BitArray invalid arguments: numBits {numBits} (must be 1-64).");
             }

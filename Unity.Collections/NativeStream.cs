@@ -50,13 +50,6 @@ namespace Unity.Collections
             return jobData.Schedule(dependency);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Please specify the Allocator parameter explicitly. (RemovedAfter 2020-01-29)")]
-        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency)
-            where T : struct
-        {
-            return ScheduleConstruct(out stream, forEachCountFromList, dependency, Allocator.TempJob);
-        }
-
         /// <summary>
         /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
         /// </summary>
@@ -67,12 +60,6 @@ namespace Unity.Collections
             AllocateBlock(out stream, allocator);
             var jobData = new ConstructJob { Length = lengthFromIndex0, Container = stream };
             return jobData.Schedule(dependency);
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never), Obsolete("Please specify the Allocator parameter explicitly. (RemovedAfter 2020-01-29)")]
-        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency)
-        {
-            return ScheduleConstruct(out stream, lengthFromIndex0, dependency, Allocator.TempJob);
         }
 
         /// <summary>
@@ -362,7 +349,6 @@ namespace Unity.Collections
                 return m_Writer.Allocate(size);
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             static void IsUnmanagedAndThrow<T>() where T : struct
             {
@@ -372,7 +358,6 @@ namespace Unity.Collections
                 }
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void BeginForEachIndexChecks(int foreachIndex)
             {
@@ -415,7 +400,6 @@ namespace Unity.Collections
 #endif
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void EndForEachIndexChecks()
             {
@@ -429,7 +413,6 @@ namespace Unity.Collections
 #endif
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void AllocateChecks(int size)
             {
@@ -606,7 +589,6 @@ namespace Unity.Collections
                 return m_Reader.ComputeItemCount();
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void CheckAccess()
             {
@@ -615,7 +597,6 @@ namespace Unity.Collections
 #endif
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void ReadChecks(int size)
             {
@@ -630,7 +611,6 @@ namespace Unity.Collections
 #endif
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void BeginForEachIndexChecks(int forEachIndex)
             {
@@ -644,7 +624,6 @@ namespace Unity.Collections
 #endif
             }
 
-            [BurstDiscard]
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void EndForEachIndexChecks()
             {

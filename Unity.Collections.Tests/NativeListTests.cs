@@ -7,7 +7,7 @@ using Unity.Jobs;
 
 public class NativeListTests
 {
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NullListThrow()
     {
         var list = new NativeList<int> ();
@@ -244,7 +244,7 @@ public class NativeListTests
         }
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeQueue_DisposeJobWithMissingDependencyThrows()
     {
         var queue = new NativeQueue<int>(Allocator.Persistent);
@@ -254,7 +254,7 @@ public class NativeListTests
         queue.Dispose();
     }
 
-    [Test]
+    [Test, DotsRuntimeIgnore]
     public void NativeQueue_DisposeJobCantBeScheduled()
     {
         var queue = new NativeQueue<int>(Allocator.Persistent);

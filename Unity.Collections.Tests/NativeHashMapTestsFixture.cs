@@ -3,8 +3,12 @@ using Unity.Collections;
 
 public class NativeHashMapTestsFixture
 {
+#if UNITY_DOTSPLAYER
+    protected const int hashMapSize = 1024;
+#else
     protected const int hashMapSize = 10*1024;
-    
+#endif
+
     public struct HashMapWriteJob : IJob
     {
         public NativeHashMap<int, int>.ParallelWriter hashMap;

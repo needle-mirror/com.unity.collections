@@ -198,7 +198,6 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
         private static void CheckArgs(int pos, int numBits)
         {
             if (pos > 31
@@ -358,7 +357,6 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
         private static void CheckArgs(int pos, int numBits)
         {
             if (pos > 63
