@@ -267,18 +267,20 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// The current number of items in the container.
         /// </summary>
         public int Count
         {
             get
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
+            #endif
                 int count = 0;
 
-                for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock; block != null; block = block->m_NextBlock)
+                for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*) m_Buffer->m_FirstBlock;
+                     block != null;
+                     block = block->m_NextBlock)
                     count += block->m_NumItems;
 
                 return count - m_Buffer->m_CurrentRead;
@@ -392,6 +394,40 @@ namespace Unity.Collections
             }
 
             return true;
+        }
+
+
+        /// <summary>
+        /// A copy of this queue as a [NativeArray](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html)
+        /// allocated with the specified type of memory.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>A NativeArray containing copies of all the items in the queue.</returns>
+        public NativeArray<T> ToArray(Allocator allocator)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
+            var outputArray = new NativeArray<T>(Count, allocator);
+
+            NativeQueueBlockHeader* currentBlock = firstBlock;
+            var arrayPtr = (byte*)outputArray.GetUnsafePtr();
+            int size = UnsafeUtility.SizeOf<T>();
+            int dstOffset = 0;
+            int srcOffset = m_Buffer->m_CurrentRead * size;
+            int srcOffsetElements = m_Buffer->m_CurrentRead;
+            while (currentBlock != null)
+            {
+                int bytesToCopy = (currentBlock->m_NumItems - srcOffsetElements) * size;
+                UnsafeUtility.MemCpy(arrayPtr + dstOffset, (byte*)(currentBlock + 1) + srcOffset, bytesToCopy);
+                srcOffset = srcOffsetElements = 0;
+                dstOffset += bytesToCopy;
+                currentBlock = currentBlock->m_NextBlock;
+            }
+
+            return outputArray;
         }
 
         /// <summary>

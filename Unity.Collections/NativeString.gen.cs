@@ -9,7 +9,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-  
+
 // We have defined fixed-size NativeStrings, all of which are value types with zero allocation.
 // You can copy them freely without ever generating garbage or needing to Dispose, but they are limited in size.
 // If you want no size restrictions - if you want one type that works equally well for 1 character or 1,000,000,000 -
@@ -18,7 +18,7 @@
 // NativeString32 - consumes 32 bytes of memory. suitable for short names. cacheline-sized on ARM
 // NativeString64 - consumes 64 bytes of memory. suitable for names and descriptions. cacheline sized on non-ARM
 // NativeString128 - consumes 128 bytes of memory. can hold a line of text.
-// NativeString512 - consumes 512 bytes of memory. 
+// NativeString512 - consumes 512 bytes of memory.
 // NativeString4096 - consumes 4096 bytes of memory. can hold a printed page of text.
 
 using System;
@@ -26,9 +26,13 @@ using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
-{   
+{
     internal unsafe struct NativeString
     {
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             var c = stackalloc char[Length * 2];
@@ -37,11 +41,23 @@ namespace Unity.Collections
             return new String(c, 0, length);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return (int)CollectionHelper.Hash(data, Length);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="aa"></param>
+        /// <param name="b"></param>
+        /// <param name="bb"></param>
+        /// <returns></returns>
         public static unsafe int CompareTo(byte *a, int aa, byte* b, int bb)
         {
             int chars = aa < bb ? aa : bb;
@@ -56,8 +72,17 @@ namespace Unity.Collections
                 return -1;
             if (aa > bb)
                 return 1;
-            return 0;            
-        }        
+            return 0;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="aa"></param>
+        /// <param name="b"></param>
+        /// <param name="bb"></param>
+        /// <returns></returns>
         public static unsafe bool Equals(byte *a, int aa, byte* b, int bb)
         {
             if (aa != bb)
@@ -65,15 +90,33 @@ namespace Unity.Collections
             return UnsafeUtility.MemCmp(a, b, aa) == 0;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public static bool IsDigit(Unicode.Rune c)
         {
             return c.value >= '0' && c.value <= '9';
         }
 
+        /// <summary>
+        /// </summary>
         public int Length;
+
+        /// <summary>
+        /// </summary>
         public int Capacity;
+
+        /// <summary>
+        /// </summary>
         public byte* data;
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public Unicode.Rune Peek(int offset)
         {
             if (offset >= Length)
@@ -81,17 +124,34 @@ namespace Unity.Collections
             Unicode.Utf8ToUcs(out var rune, data, ref offset, Capacity);
             return rune;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public Unicode.Rune Read(ref int offset)
         {
             Unicode.Utf8ToUcs(out var rune, data, ref offset, Capacity);
             return rune;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="rune"></param>
         public void Write(ref int offset, Unicode.Rune rune)
         {
             Unicode.UcsToUtf8(data, ref offset, Capacity, rune);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             long value = 0;
@@ -121,11 +181,14 @@ namespace Unity.Collections
             if(value > Int32.MaxValue)
                 return ParseError.Overflow;
             if (value < Int32.MinValue)
-                return ParseError.Overflow;            
+                return ParseError.Overflow;
             output = (int)value;
             return ParseError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
         [StructLayout(LayoutKind.Explicit)]
         internal struct UintFloatUnion
         {
@@ -134,7 +197,14 @@ namespace Unity.Collections
             [FieldOffset(0)]
             public float floatValue;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="mantissa10"></param>
+        /// <param name="exponent10"></param>
+        /// <returns></returns>
         static ParseError Base10ToBase2(ref float output, ulong mantissa10, int exponent10)
         {
             if (mantissa10 == 0)
@@ -161,7 +231,7 @@ namespace Unity.Collections
             }
             while(exponent10 < 0)
             {
-                while ((mantissa2 & 0x8000000000000000U) == 0) 
+                while ((mantissa2 & 0x8000000000000000U) == 0)
                 {
                     mantissa2 <<= 1;
                     --exponent2;
@@ -183,21 +253,14 @@ namespace Unity.Collections
             return ParseError.None;
         }
 
-        static int tzcnt(uint v)
-        {
-            uint c = 32; // c will be the number of zero bits on the right
-            v &= (uint)-(int)v;
-            if (0 != v) c--;
-            if (0 != (v & 0x0000FFFF)) c -= 16;
-            if (0 != (v & 0x00FF00FF)) c -= 8;
-            if (0 != (v & 0x0F0F0F0F)) c -= 4;
-            if (0 != (v & 0x33333333)) c -= 2;
-            if (0 != (v & 0x55555555)) c -= 1;
-            return (int)c;
-        }        
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="mantissa10"></param>
+        /// <param name="exponent10"></param>
+        /// <param name="input"></param>
         public static void Base2ToBase10(ref ulong mantissa10, ref int exponent10, float input)
-        {          
+        {
             UintFloatUnion ufu = new UintFloatUnion();
             ufu.floatValue = input;
             if(ufu.uintValue == 0)
@@ -208,9 +271,6 @@ namespace Unity.Collections
             }
             var mantissa2 = (ufu.uintValue & ((1<<23)-1)) | (1 << 23);
             var exponent2 = (int) (ufu.uintValue >> 23) - 127 - 23;
-//            var tz = tzcnt((uint)mantissa2);
-//            mantissa2 >>= tz;
-//            exponent2 += tz;
             mantissa10 = mantissa2;
             exponent10 = exponent2;
             if (exponent2 > 0)
@@ -241,14 +301,19 @@ namespace Unity.Collections
                     ++exponent2;
                 }
             }
-            // normalize mantissa10                
-            while (mantissa10 > 9999999U || mantissa10 % 10 == 0) 
+            // normalize mantissa10
+            while (mantissa10 > 9999999U || mantissa10 % 10 == 0)
             {
                 mantissa10 = (mantissa10 + 5) / 10;
                 ++exponent10;
             }
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public FormatError Format(char a)
         {
             if (Length >= Capacity)
@@ -256,7 +321,13 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = a});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b)
         {
             if (Length >= Capacity)
@@ -267,9 +338,16 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = b});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -282,8 +360,20 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c, char d, char e, char f, char g, char h)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -311,6 +401,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="sourceLength"></param>
+        /// <param name="decimalExponent"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError FormatScientific(char *source, int sourceLength, int decimalExponent, char decimalSeparator)
         {
             FormatError error;
@@ -344,14 +442,19 @@ namespace Unity.Collections
             {
                 var decimalDigit = decimalExponent % 10;
                 ascii[1 - i] = (char)('0'+decimalDigit);
-                decimalExponent /= 10;                        
+                decimalExponent /= 10;
             }
             for(var i = 0; i < decimalDigits; ++i)
                 if ((error = Format(ascii[i])) != FormatError.None)
-                    return error;            
-            return FormatError.None;                       
+                    return error;
+            return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             const int maximumDigits = 20;
@@ -381,14 +484,25 @@ namespace Unity.Collections
                 return FormatError.Overflow;
             Length = newLength;
             UnsafeUtility.MemCpy(data, temp + offset, Length);
-            return FormatError.None;            
+            return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             return Format((long)input);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator)
         {
             UintFloatUnion ufu = new UintFloatUnion();
@@ -442,7 +556,7 @@ namespace Unity.Collections
             if (trailingZeroes > 0)
             {
                 if (trailingZeroes > 4)
-                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);                
+                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);
                 for (var i = 0; i < decimalDigits; ++i)
                 {
                     if ((error = Format( ascii[i])) != FormatError.None)
@@ -452,8 +566,8 @@ namespace Unity.Collections
                 {
                     if ((error = Format( '0')) != FormatError.None)
                         return error;
-                    --trailingZeroes;                    
-                }                
+                    --trailingZeroes;
+                }
                 return FormatError.None;
             }
             var indexOfSeparator = decimalDigits + decimalExponent;
@@ -468,6 +582,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c)
         {
             int old = offset;
@@ -479,6 +601,19 @@ namespace Unity.Collections
             return false;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c, char d, char e, char f, char g, char h)
         {
             int old = offset;
@@ -494,7 +629,14 @@ namespace Unity.Collections
             offset = old;
             return false;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator)
         {
             if(Found(ref offset, 'n', 'a', 'n'))
@@ -503,7 +645,7 @@ namespace Unity.Collections
                 ufu.uintValue = 4290772992U;
                 output = ufu.floatValue;
                 return ParseError.None;
-            }            
+            }
             int sign = 1;
             if (offset < Length)
             {
@@ -587,41 +729,89 @@ namespace Unity.Collections
                 if (exponentDigits == 0)
                     return ParseError.Syntax;
             }
-            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;            
+            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;
             var error = Base10ToBase2(ref output, decimalMantissa, decimalExponent);
             if (error != ParseError.None)
                 return error;
             output *= sign;
             return ParseError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destMaxLength, char *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf16ToUtf8(src, srcLength, dest, out destLength, destMaxLength))
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destMaxLength, byte *src, int srcLength)
         {
             destLength = srcLength > destMaxLength ? destMaxLength : srcLength;
             UnsafeUtility.MemCpy(dest, src, destLength);
             return destLength == srcLength ? CopyError.None : CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out int destLength, int destMaxLength, byte *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf8ToUtf16(src, srcLength, dest, out destLength, destMaxLength))
                 return CopyError.None;
             return CopyError.Truncation;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destMaxLength, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest, out var temp, destMaxLength);
             destLength = (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest, out var temp, destMaxLength);
@@ -630,6 +820,16 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest, out var temp, destMaxLength);
@@ -639,14 +839,33 @@ namespace Unity.Collections
             return CopyError.Truncation;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destMaxLength, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
             destLength += (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
@@ -655,6 +874,16 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(char *dest, ref ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
@@ -663,92 +892,172 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
-
-        
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=1)]
     public struct Bytes1
-    {   
+    {
+        /// <summary>
+        /// </summary>
         [FieldOffset(0)] public byte byte0000;
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=16)]
     public struct Bytes16
     {
-      [FieldOffset(0)] public byte byte0000;
-      [FieldOffset(1)] public byte byte0001;
-      [FieldOffset(2)] public byte byte0002;
-      [FieldOffset(3)] public byte byte0003;
-      [FieldOffset(4)] public byte byte0004;
-      [FieldOffset(5)] public byte byte0005;
-      [FieldOffset(6)] public byte byte0006;
-      [FieldOffset(7)] public byte byte0007;
-      [FieldOffset(8)] public byte byte0008;
-      [FieldOffset(9)] public byte byte0009;
-      [FieldOffset(10)] public byte byte0010;
-      [FieldOffset(11)] public byte byte0011;
-      [FieldOffset(12)] public byte byte0012;
-      [FieldOffset(13)] public byte byte0013;
-      [FieldOffset(14)] public byte byte0014;
-      [FieldOffset(15)] public byte byte0015;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public byte byte0014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(15)] public byte byte0015;
     }
 
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=30)]
     public struct Bytes30
     {
-        [FieldOffset(0)] public byte byte0000;            
-        [FieldOffset(1)] public byte byte0001;            
-        [FieldOffset(2)] public byte byte0002;            
-        [FieldOffset(3)] public byte byte0003;            
-        [FieldOffset(4)] public byte byte0004;            
-        [FieldOffset(5)] public byte byte0005;            
-        [FieldOffset(6)] public byte byte0006;            
-        [FieldOffset(7)] public byte byte0007;            
-        [FieldOffset(8)] public byte byte0008;            
-        [FieldOffset(9)] public byte byte0009;            
-        [FieldOffset(10)] public byte byte0010;            
-        [FieldOffset(11)] public byte byte0011;            
-        [FieldOffset(12)] public byte byte0012;            
-        [FieldOffset(13)] public byte byte0013;            
-        [FieldOffset(14)] public Bytes16 byte0014;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public Bytes16 byte0014;
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=32)]
     public struct NativeString32 : IComparable<NativeString32>, IEquatable<NativeString32>
     {
         public const int MaxLength = 30;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes30 buffer;        
-        
+        [FieldOffset(2)] public Bytes30 buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes30* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -756,10 +1065,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -772,6 +1089,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -786,6 +1108,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -800,6 +1127,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -814,6 +1146,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -828,6 +1165,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -842,6 +1185,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -855,161 +1204,271 @@ namespace Unity.Collections
                 }
             }
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString32 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString32 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString64 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString64 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString32(ref NativeString64 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString128 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString128 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString32(ref NativeString128 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString512 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString512 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString32(ref NativeString512 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString4096 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString4096 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString32(ref NativeString4096 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");
         }
-        
-        
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString32(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString32: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString32(string b) => new NativeString32(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString32(string b) => new NativeString32(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -1020,6 +1479,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -1031,7 +1495,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString32 other)
         {
             unsafe
@@ -1043,6 +1511,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString32 other)
         {
             unsafe
@@ -1054,6 +1527,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -1061,62 +1539,108 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=62)]
     public struct Bytes62
     {
-        [FieldOffset(0)] public byte byte0000;            
-        [FieldOffset(1)] public byte byte0001;            
-        [FieldOffset(2)] public byte byte0002;            
-        [FieldOffset(3)] public byte byte0003;            
-        [FieldOffset(4)] public byte byte0004;            
-        [FieldOffset(5)] public byte byte0005;            
-        [FieldOffset(6)] public byte byte0006;            
-        [FieldOffset(7)] public byte byte0007;            
-        [FieldOffset(8)] public byte byte0008;            
-        [FieldOffset(9)] public byte byte0009;            
-        [FieldOffset(10)] public byte byte0010;            
-        [FieldOffset(11)] public byte byte0011;            
-        [FieldOffset(12)] public byte byte0012;            
-        [FieldOffset(13)] public byte byte0013;            
-        [FieldOffset(14)] public Bytes16 byte0014;            
-        [FieldOffset(30)] public Bytes16 byte0030;            
-        [FieldOffset(46)] public Bytes16 byte0046;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public Bytes16 byte0014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(30)] public Bytes16 byte0030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(46)] public Bytes16 byte0046;
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=64)]
     public struct NativeString64 : IComparable<NativeString64>, IEquatable<NativeString64>
     {
         public const int MaxLength = 62;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes62 buffer;        
-        
+        [FieldOffset(2)] public Bytes62 buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes62* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -1124,10 +1648,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -1140,6 +1672,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -1154,6 +1691,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -1168,6 +1710,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -1182,6 +1729,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -1196,6 +1748,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1210,6 +1768,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1223,161 +1787,271 @@ namespace Unity.Collections
                 }
             }
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString32 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString32 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString64(ref NativeString32 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString64 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString64 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString128 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString128 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString64(ref NativeString128 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString512 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString512 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString64(ref NativeString512 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString4096 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString4096 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString64(ref NativeString4096 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");
         }
-        
-        
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString64(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString64: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString64(string b) => new NativeString64(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString64(string b) => new NativeString64(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -1388,6 +2062,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -1399,7 +2078,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString64 other)
         {
             unsafe
@@ -1411,6 +2094,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString64 other)
         {
             unsafe
@@ -1422,6 +2110,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -1429,66 +2122,120 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=126)]
     public struct Bytes126
     {
-        [FieldOffset(0)] public byte byte0000;            
-        [FieldOffset(1)] public byte byte0001;            
-        [FieldOffset(2)] public byte byte0002;            
-        [FieldOffset(3)] public byte byte0003;            
-        [FieldOffset(4)] public byte byte0004;            
-        [FieldOffset(5)] public byte byte0005;            
-        [FieldOffset(6)] public byte byte0006;            
-        [FieldOffset(7)] public byte byte0007;            
-        [FieldOffset(8)] public byte byte0008;            
-        [FieldOffset(9)] public byte byte0009;            
-        [FieldOffset(10)] public byte byte0010;            
-        [FieldOffset(11)] public byte byte0011;            
-        [FieldOffset(12)] public byte byte0012;            
-        [FieldOffset(13)] public byte byte0013;            
-        [FieldOffset(14)] public Bytes16 byte0014;            
-        [FieldOffset(30)] public Bytes16 byte0030;            
-        [FieldOffset(46)] public Bytes16 byte0046;            
-        [FieldOffset(62)] public Bytes16 byte0062;            
-        [FieldOffset(78)] public Bytes16 byte0078;            
-        [FieldOffset(94)] public Bytes16 byte0094;            
-        [FieldOffset(110)] public Bytes16 byte0110;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public Bytes16 byte0014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(30)] public Bytes16 byte0030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(46)] public Bytes16 byte0046;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(62)] public Bytes16 byte0062;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(78)] public Bytes16 byte0078;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(94)] public Bytes16 byte0094;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(110)] public Bytes16 byte0110;
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=128)]
     public struct NativeString128 : IComparable<NativeString128>, IEquatable<NativeString128>
     {
         public const int MaxLength = 126;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes126 buffer;        
-        
+        [FieldOffset(2)] public Bytes126 buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes126* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -1496,10 +2243,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -1512,6 +2267,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -1526,6 +2286,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -1540,6 +2305,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -1554,6 +2324,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -1568,6 +2343,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1582,6 +2363,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1595,161 +2382,271 @@ namespace Unity.Collections
                 }
             }
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString32 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString32 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString128(ref NativeString32 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString64 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString64 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString128(ref NativeString64 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString128 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString128 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString512 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString512 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString128(ref NativeString512 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString4096 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString4096 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString128(ref NativeString4096 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");
         }
-        
-        
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString128(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString128: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString128(string b) => new NativeString128(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString128(string b) => new NativeString128(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -1760,6 +2657,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -1771,7 +2673,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString128 other)
         {
             unsafe
@@ -1783,6 +2689,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString128 other)
         {
             unsafe
@@ -1794,6 +2705,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -1801,90 +2717,192 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=510)]
     public struct Bytes510
     {
-        [FieldOffset(0)] public byte byte0000;            
-        [FieldOffset(1)] public byte byte0001;            
-        [FieldOffset(2)] public byte byte0002;            
-        [FieldOffset(3)] public byte byte0003;            
-        [FieldOffset(4)] public byte byte0004;            
-        [FieldOffset(5)] public byte byte0005;            
-        [FieldOffset(6)] public byte byte0006;            
-        [FieldOffset(7)] public byte byte0007;            
-        [FieldOffset(8)] public byte byte0008;            
-        [FieldOffset(9)] public byte byte0009;            
-        [FieldOffset(10)] public byte byte0010;            
-        [FieldOffset(11)] public byte byte0011;            
-        [FieldOffset(12)] public byte byte0012;            
-        [FieldOffset(13)] public byte byte0013;            
-        [FieldOffset(14)] public Bytes16 byte0014;            
-        [FieldOffset(30)] public Bytes16 byte0030;            
-        [FieldOffset(46)] public Bytes16 byte0046;            
-        [FieldOffset(62)] public Bytes16 byte0062;            
-        [FieldOffset(78)] public Bytes16 byte0078;            
-        [FieldOffset(94)] public Bytes16 byte0094;            
-        [FieldOffset(110)] public Bytes16 byte0110;            
-        [FieldOffset(126)] public Bytes16 byte0126;            
-        [FieldOffset(142)] public Bytes16 byte0142;            
-        [FieldOffset(158)] public Bytes16 byte0158;            
-        [FieldOffset(174)] public Bytes16 byte0174;            
-        [FieldOffset(190)] public Bytes16 byte0190;            
-        [FieldOffset(206)] public Bytes16 byte0206;            
-        [FieldOffset(222)] public Bytes16 byte0222;            
-        [FieldOffset(238)] public Bytes16 byte0238;            
-        [FieldOffset(254)] public Bytes16 byte0254;            
-        [FieldOffset(270)] public Bytes16 byte0270;            
-        [FieldOffset(286)] public Bytes16 byte0286;            
-        [FieldOffset(302)] public Bytes16 byte0302;            
-        [FieldOffset(318)] public Bytes16 byte0318;            
-        [FieldOffset(334)] public Bytes16 byte0334;            
-        [FieldOffset(350)] public Bytes16 byte0350;            
-        [FieldOffset(366)] public Bytes16 byte0366;            
-        [FieldOffset(382)] public Bytes16 byte0382;            
-        [FieldOffset(398)] public Bytes16 byte0398;            
-        [FieldOffset(414)] public Bytes16 byte0414;            
-        [FieldOffset(430)] public Bytes16 byte0430;            
-        [FieldOffset(446)] public Bytes16 byte0446;            
-        [FieldOffset(462)] public Bytes16 byte0462;            
-        [FieldOffset(478)] public Bytes16 byte0478;            
-        [FieldOffset(494)] public Bytes16 byte0494;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public Bytes16 byte0014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(30)] public Bytes16 byte0030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(46)] public Bytes16 byte0046;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(62)] public Bytes16 byte0062;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(78)] public Bytes16 byte0078;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(94)] public Bytes16 byte0094;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(110)] public Bytes16 byte0110;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(126)] public Bytes16 byte0126;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(142)] public Bytes16 byte0142;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(158)] public Bytes16 byte0158;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(174)] public Bytes16 byte0174;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(190)] public Bytes16 byte0190;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(206)] public Bytes16 byte0206;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(222)] public Bytes16 byte0222;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(238)] public Bytes16 byte0238;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(254)] public Bytes16 byte0254;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(270)] public Bytes16 byte0270;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(286)] public Bytes16 byte0286;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(302)] public Bytes16 byte0302;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(318)] public Bytes16 byte0318;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(334)] public Bytes16 byte0334;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(350)] public Bytes16 byte0350;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(366)] public Bytes16 byte0366;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(382)] public Bytes16 byte0382;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(398)] public Bytes16 byte0398;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(414)] public Bytes16 byte0414;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(430)] public Bytes16 byte0430;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(446)] public Bytes16 byte0446;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(462)] public Bytes16 byte0462;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(478)] public Bytes16 byte0478;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(494)] public Bytes16 byte0494;
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=512)]
     public struct NativeString512 : IComparable<NativeString512>, IEquatable<NativeString512>
     {
         public const int MaxLength = 510;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes510 buffer;        
-        
+        [FieldOffset(2)] public Bytes510 buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes510* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -1892,10 +2910,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -1908,6 +2934,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -1922,6 +2953,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -1936,6 +2972,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -1950,6 +2991,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -1964,6 +3010,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1978,6 +3030,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -1991,161 +3049,271 @@ namespace Unity.Collections
                 }
             }
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString32 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString32 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString512(ref NativeString32 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString64 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString64 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString512(ref NativeString64 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString128 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString128 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString512(ref NativeString128 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString512 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString512 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString4096 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString4096 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString512(ref NativeString4096 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");
         }
-        
-        
+
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString512(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString512: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString512(string b) => new NativeString512(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString512(string b) => new NativeString512(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -2156,6 +3324,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -2167,7 +3340,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString512 other)
         {
             unsafe
@@ -2179,6 +3356,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString512 other)
         {
             unsafe
@@ -2190,6 +3372,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -2197,314 +3384,864 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=4094)]
     public struct Bytes4094
     {
-        [FieldOffset(0)] public byte byte0000;            
-        [FieldOffset(1)] public byte byte0001;            
-        [FieldOffset(2)] public byte byte0002;            
-        [FieldOffset(3)] public byte byte0003;            
-        [FieldOffset(4)] public byte byte0004;            
-        [FieldOffset(5)] public byte byte0005;            
-        [FieldOffset(6)] public byte byte0006;            
-        [FieldOffset(7)] public byte byte0007;            
-        [FieldOffset(8)] public byte byte0008;            
-        [FieldOffset(9)] public byte byte0009;            
-        [FieldOffset(10)] public byte byte0010;            
-        [FieldOffset(11)] public byte byte0011;            
-        [FieldOffset(12)] public byte byte0012;            
-        [FieldOffset(13)] public byte byte0013;            
-        [FieldOffset(14)] public Bytes16 byte0014;            
-        [FieldOffset(30)] public Bytes16 byte0030;            
-        [FieldOffset(46)] public Bytes16 byte0046;            
-        [FieldOffset(62)] public Bytes16 byte0062;            
-        [FieldOffset(78)] public Bytes16 byte0078;            
-        [FieldOffset(94)] public Bytes16 byte0094;            
-        [FieldOffset(110)] public Bytes16 byte0110;            
-        [FieldOffset(126)] public Bytes16 byte0126;            
-        [FieldOffset(142)] public Bytes16 byte0142;            
-        [FieldOffset(158)] public Bytes16 byte0158;            
-        [FieldOffset(174)] public Bytes16 byte0174;            
-        [FieldOffset(190)] public Bytes16 byte0190;            
-        [FieldOffset(206)] public Bytes16 byte0206;            
-        [FieldOffset(222)] public Bytes16 byte0222;            
-        [FieldOffset(238)] public Bytes16 byte0238;            
-        [FieldOffset(254)] public Bytes16 byte0254;            
-        [FieldOffset(270)] public Bytes16 byte0270;            
-        [FieldOffset(286)] public Bytes16 byte0286;            
-        [FieldOffset(302)] public Bytes16 byte0302;            
-        [FieldOffset(318)] public Bytes16 byte0318;            
-        [FieldOffset(334)] public Bytes16 byte0334;            
-        [FieldOffset(350)] public Bytes16 byte0350;            
-        [FieldOffset(366)] public Bytes16 byte0366;            
-        [FieldOffset(382)] public Bytes16 byte0382;            
-        [FieldOffset(398)] public Bytes16 byte0398;            
-        [FieldOffset(414)] public Bytes16 byte0414;            
-        [FieldOffset(430)] public Bytes16 byte0430;            
-        [FieldOffset(446)] public Bytes16 byte0446;            
-        [FieldOffset(462)] public Bytes16 byte0462;            
-        [FieldOffset(478)] public Bytes16 byte0478;            
-        [FieldOffset(494)] public Bytes16 byte0494;            
-        [FieldOffset(510)] public Bytes16 byte0510;            
-        [FieldOffset(526)] public Bytes16 byte0526;            
-        [FieldOffset(542)] public Bytes16 byte0542;            
-        [FieldOffset(558)] public Bytes16 byte0558;            
-        [FieldOffset(574)] public Bytes16 byte0574;            
-        [FieldOffset(590)] public Bytes16 byte0590;            
-        [FieldOffset(606)] public Bytes16 byte0606;            
-        [FieldOffset(622)] public Bytes16 byte0622;            
-        [FieldOffset(638)] public Bytes16 byte0638;            
-        [FieldOffset(654)] public Bytes16 byte0654;            
-        [FieldOffset(670)] public Bytes16 byte0670;            
-        [FieldOffset(686)] public Bytes16 byte0686;            
-        [FieldOffset(702)] public Bytes16 byte0702;            
-        [FieldOffset(718)] public Bytes16 byte0718;            
-        [FieldOffset(734)] public Bytes16 byte0734;            
-        [FieldOffset(750)] public Bytes16 byte0750;            
-        [FieldOffset(766)] public Bytes16 byte0766;            
-        [FieldOffset(782)] public Bytes16 byte0782;            
-        [FieldOffset(798)] public Bytes16 byte0798;            
-        [FieldOffset(814)] public Bytes16 byte0814;            
-        [FieldOffset(830)] public Bytes16 byte0830;            
-        [FieldOffset(846)] public Bytes16 byte0846;            
-        [FieldOffset(862)] public Bytes16 byte0862;            
-        [FieldOffset(878)] public Bytes16 byte0878;            
-        [FieldOffset(894)] public Bytes16 byte0894;            
-        [FieldOffset(910)] public Bytes16 byte0910;            
-        [FieldOffset(926)] public Bytes16 byte0926;            
-        [FieldOffset(942)] public Bytes16 byte0942;            
-        [FieldOffset(958)] public Bytes16 byte0958;            
-        [FieldOffset(974)] public Bytes16 byte0974;            
-        [FieldOffset(990)] public Bytes16 byte0990;            
-        [FieldOffset(1006)] public Bytes16 byte1006;            
-        [FieldOffset(1022)] public Bytes16 byte1022;            
-        [FieldOffset(1038)] public Bytes16 byte1038;            
-        [FieldOffset(1054)] public Bytes16 byte1054;            
-        [FieldOffset(1070)] public Bytes16 byte1070;            
-        [FieldOffset(1086)] public Bytes16 byte1086;            
-        [FieldOffset(1102)] public Bytes16 byte1102;            
-        [FieldOffset(1118)] public Bytes16 byte1118;            
-        [FieldOffset(1134)] public Bytes16 byte1134;            
-        [FieldOffset(1150)] public Bytes16 byte1150;            
-        [FieldOffset(1166)] public Bytes16 byte1166;            
-        [FieldOffset(1182)] public Bytes16 byte1182;            
-        [FieldOffset(1198)] public Bytes16 byte1198;            
-        [FieldOffset(1214)] public Bytes16 byte1214;            
-        [FieldOffset(1230)] public Bytes16 byte1230;            
-        [FieldOffset(1246)] public Bytes16 byte1246;            
-        [FieldOffset(1262)] public Bytes16 byte1262;            
-        [FieldOffset(1278)] public Bytes16 byte1278;            
-        [FieldOffset(1294)] public Bytes16 byte1294;            
-        [FieldOffset(1310)] public Bytes16 byte1310;            
-        [FieldOffset(1326)] public Bytes16 byte1326;            
-        [FieldOffset(1342)] public Bytes16 byte1342;            
-        [FieldOffset(1358)] public Bytes16 byte1358;            
-        [FieldOffset(1374)] public Bytes16 byte1374;            
-        [FieldOffset(1390)] public Bytes16 byte1390;            
-        [FieldOffset(1406)] public Bytes16 byte1406;            
-        [FieldOffset(1422)] public Bytes16 byte1422;            
-        [FieldOffset(1438)] public Bytes16 byte1438;            
-        [FieldOffset(1454)] public Bytes16 byte1454;            
-        [FieldOffset(1470)] public Bytes16 byte1470;            
-        [FieldOffset(1486)] public Bytes16 byte1486;            
-        [FieldOffset(1502)] public Bytes16 byte1502;            
-        [FieldOffset(1518)] public Bytes16 byte1518;            
-        [FieldOffset(1534)] public Bytes16 byte1534;            
-        [FieldOffset(1550)] public Bytes16 byte1550;            
-        [FieldOffset(1566)] public Bytes16 byte1566;            
-        [FieldOffset(1582)] public Bytes16 byte1582;            
-        [FieldOffset(1598)] public Bytes16 byte1598;            
-        [FieldOffset(1614)] public Bytes16 byte1614;            
-        [FieldOffset(1630)] public Bytes16 byte1630;            
-        [FieldOffset(1646)] public Bytes16 byte1646;            
-        [FieldOffset(1662)] public Bytes16 byte1662;            
-        [FieldOffset(1678)] public Bytes16 byte1678;            
-        [FieldOffset(1694)] public Bytes16 byte1694;            
-        [FieldOffset(1710)] public Bytes16 byte1710;            
-        [FieldOffset(1726)] public Bytes16 byte1726;            
-        [FieldOffset(1742)] public Bytes16 byte1742;            
-        [FieldOffset(1758)] public Bytes16 byte1758;            
-        [FieldOffset(1774)] public Bytes16 byte1774;            
-        [FieldOffset(1790)] public Bytes16 byte1790;            
-        [FieldOffset(1806)] public Bytes16 byte1806;            
-        [FieldOffset(1822)] public Bytes16 byte1822;            
-        [FieldOffset(1838)] public Bytes16 byte1838;            
-        [FieldOffset(1854)] public Bytes16 byte1854;            
-        [FieldOffset(1870)] public Bytes16 byte1870;            
-        [FieldOffset(1886)] public Bytes16 byte1886;            
-        [FieldOffset(1902)] public Bytes16 byte1902;            
-        [FieldOffset(1918)] public Bytes16 byte1918;            
-        [FieldOffset(1934)] public Bytes16 byte1934;            
-        [FieldOffset(1950)] public Bytes16 byte1950;            
-        [FieldOffset(1966)] public Bytes16 byte1966;            
-        [FieldOffset(1982)] public Bytes16 byte1982;            
-        [FieldOffset(1998)] public Bytes16 byte1998;            
-        [FieldOffset(2014)] public Bytes16 byte2014;            
-        [FieldOffset(2030)] public Bytes16 byte2030;            
-        [FieldOffset(2046)] public Bytes16 byte2046;            
-        [FieldOffset(2062)] public Bytes16 byte2062;            
-        [FieldOffset(2078)] public Bytes16 byte2078;            
-        [FieldOffset(2094)] public Bytes16 byte2094;            
-        [FieldOffset(2110)] public Bytes16 byte2110;            
-        [FieldOffset(2126)] public Bytes16 byte2126;            
-        [FieldOffset(2142)] public Bytes16 byte2142;            
-        [FieldOffset(2158)] public Bytes16 byte2158;            
-        [FieldOffset(2174)] public Bytes16 byte2174;            
-        [FieldOffset(2190)] public Bytes16 byte2190;            
-        [FieldOffset(2206)] public Bytes16 byte2206;            
-        [FieldOffset(2222)] public Bytes16 byte2222;            
-        [FieldOffset(2238)] public Bytes16 byte2238;            
-        [FieldOffset(2254)] public Bytes16 byte2254;            
-        [FieldOffset(2270)] public Bytes16 byte2270;            
-        [FieldOffset(2286)] public Bytes16 byte2286;            
-        [FieldOffset(2302)] public Bytes16 byte2302;            
-        [FieldOffset(2318)] public Bytes16 byte2318;            
-        [FieldOffset(2334)] public Bytes16 byte2334;            
-        [FieldOffset(2350)] public Bytes16 byte2350;            
-        [FieldOffset(2366)] public Bytes16 byte2366;            
-        [FieldOffset(2382)] public Bytes16 byte2382;            
-        [FieldOffset(2398)] public Bytes16 byte2398;            
-        [FieldOffset(2414)] public Bytes16 byte2414;            
-        [FieldOffset(2430)] public Bytes16 byte2430;            
-        [FieldOffset(2446)] public Bytes16 byte2446;            
-        [FieldOffset(2462)] public Bytes16 byte2462;            
-        [FieldOffset(2478)] public Bytes16 byte2478;            
-        [FieldOffset(2494)] public Bytes16 byte2494;            
-        [FieldOffset(2510)] public Bytes16 byte2510;            
-        [FieldOffset(2526)] public Bytes16 byte2526;            
-        [FieldOffset(2542)] public Bytes16 byte2542;            
-        [FieldOffset(2558)] public Bytes16 byte2558;            
-        [FieldOffset(2574)] public Bytes16 byte2574;            
-        [FieldOffset(2590)] public Bytes16 byte2590;            
-        [FieldOffset(2606)] public Bytes16 byte2606;            
-        [FieldOffset(2622)] public Bytes16 byte2622;            
-        [FieldOffset(2638)] public Bytes16 byte2638;            
-        [FieldOffset(2654)] public Bytes16 byte2654;            
-        [FieldOffset(2670)] public Bytes16 byte2670;            
-        [FieldOffset(2686)] public Bytes16 byte2686;            
-        [FieldOffset(2702)] public Bytes16 byte2702;            
-        [FieldOffset(2718)] public Bytes16 byte2718;            
-        [FieldOffset(2734)] public Bytes16 byte2734;            
-        [FieldOffset(2750)] public Bytes16 byte2750;            
-        [FieldOffset(2766)] public Bytes16 byte2766;            
-        [FieldOffset(2782)] public Bytes16 byte2782;            
-        [FieldOffset(2798)] public Bytes16 byte2798;            
-        [FieldOffset(2814)] public Bytes16 byte2814;            
-        [FieldOffset(2830)] public Bytes16 byte2830;            
-        [FieldOffset(2846)] public Bytes16 byte2846;            
-        [FieldOffset(2862)] public Bytes16 byte2862;            
-        [FieldOffset(2878)] public Bytes16 byte2878;            
-        [FieldOffset(2894)] public Bytes16 byte2894;            
-        [FieldOffset(2910)] public Bytes16 byte2910;            
-        [FieldOffset(2926)] public Bytes16 byte2926;            
-        [FieldOffset(2942)] public Bytes16 byte2942;            
-        [FieldOffset(2958)] public Bytes16 byte2958;            
-        [FieldOffset(2974)] public Bytes16 byte2974;            
-        [FieldOffset(2990)] public Bytes16 byte2990;            
-        [FieldOffset(3006)] public Bytes16 byte3006;            
-        [FieldOffset(3022)] public Bytes16 byte3022;            
-        [FieldOffset(3038)] public Bytes16 byte3038;            
-        [FieldOffset(3054)] public Bytes16 byte3054;            
-        [FieldOffset(3070)] public Bytes16 byte3070;            
-        [FieldOffset(3086)] public Bytes16 byte3086;            
-        [FieldOffset(3102)] public Bytes16 byte3102;            
-        [FieldOffset(3118)] public Bytes16 byte3118;            
-        [FieldOffset(3134)] public Bytes16 byte3134;            
-        [FieldOffset(3150)] public Bytes16 byte3150;            
-        [FieldOffset(3166)] public Bytes16 byte3166;            
-        [FieldOffset(3182)] public Bytes16 byte3182;            
-        [FieldOffset(3198)] public Bytes16 byte3198;            
-        [FieldOffset(3214)] public Bytes16 byte3214;            
-        [FieldOffset(3230)] public Bytes16 byte3230;            
-        [FieldOffset(3246)] public Bytes16 byte3246;            
-        [FieldOffset(3262)] public Bytes16 byte3262;            
-        [FieldOffset(3278)] public Bytes16 byte3278;            
-        [FieldOffset(3294)] public Bytes16 byte3294;            
-        [FieldOffset(3310)] public Bytes16 byte3310;            
-        [FieldOffset(3326)] public Bytes16 byte3326;            
-        [FieldOffset(3342)] public Bytes16 byte3342;            
-        [FieldOffset(3358)] public Bytes16 byte3358;            
-        [FieldOffset(3374)] public Bytes16 byte3374;            
-        [FieldOffset(3390)] public Bytes16 byte3390;            
-        [FieldOffset(3406)] public Bytes16 byte3406;            
-        [FieldOffset(3422)] public Bytes16 byte3422;            
-        [FieldOffset(3438)] public Bytes16 byte3438;            
-        [FieldOffset(3454)] public Bytes16 byte3454;            
-        [FieldOffset(3470)] public Bytes16 byte3470;            
-        [FieldOffset(3486)] public Bytes16 byte3486;            
-        [FieldOffset(3502)] public Bytes16 byte3502;            
-        [FieldOffset(3518)] public Bytes16 byte3518;            
-        [FieldOffset(3534)] public Bytes16 byte3534;            
-        [FieldOffset(3550)] public Bytes16 byte3550;            
-        [FieldOffset(3566)] public Bytes16 byte3566;            
-        [FieldOffset(3582)] public Bytes16 byte3582;            
-        [FieldOffset(3598)] public Bytes16 byte3598;            
-        [FieldOffset(3614)] public Bytes16 byte3614;            
-        [FieldOffset(3630)] public Bytes16 byte3630;            
-        [FieldOffset(3646)] public Bytes16 byte3646;            
-        [FieldOffset(3662)] public Bytes16 byte3662;            
-        [FieldOffset(3678)] public Bytes16 byte3678;            
-        [FieldOffset(3694)] public Bytes16 byte3694;            
-        [FieldOffset(3710)] public Bytes16 byte3710;            
-        [FieldOffset(3726)] public Bytes16 byte3726;            
-        [FieldOffset(3742)] public Bytes16 byte3742;            
-        [FieldOffset(3758)] public Bytes16 byte3758;            
-        [FieldOffset(3774)] public Bytes16 byte3774;            
-        [FieldOffset(3790)] public Bytes16 byte3790;            
-        [FieldOffset(3806)] public Bytes16 byte3806;            
-        [FieldOffset(3822)] public Bytes16 byte3822;            
-        [FieldOffset(3838)] public Bytes16 byte3838;            
-        [FieldOffset(3854)] public Bytes16 byte3854;            
-        [FieldOffset(3870)] public Bytes16 byte3870;            
-        [FieldOffset(3886)] public Bytes16 byte3886;            
-        [FieldOffset(3902)] public Bytes16 byte3902;            
-        [FieldOffset(3918)] public Bytes16 byte3918;            
-        [FieldOffset(3934)] public Bytes16 byte3934;            
-        [FieldOffset(3950)] public Bytes16 byte3950;            
-        [FieldOffset(3966)] public Bytes16 byte3966;            
-        [FieldOffset(3982)] public Bytes16 byte3982;            
-        [FieldOffset(3998)] public Bytes16 byte3998;            
-        [FieldOffset(4014)] public Bytes16 byte4014;            
-        [FieldOffset(4030)] public Bytes16 byte4030;            
-        [FieldOffset(4046)] public Bytes16 byte4046;            
-        [FieldOffset(4062)] public Bytes16 byte4062;            
-        [FieldOffset(4078)] public Bytes16 byte4078;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(14)] public Bytes16 byte0014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(30)] public Bytes16 byte0030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(46)] public Bytes16 byte0046;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(62)] public Bytes16 byte0062;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(78)] public Bytes16 byte0078;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(94)] public Bytes16 byte0094;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(110)] public Bytes16 byte0110;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(126)] public Bytes16 byte0126;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(142)] public Bytes16 byte0142;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(158)] public Bytes16 byte0158;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(174)] public Bytes16 byte0174;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(190)] public Bytes16 byte0190;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(206)] public Bytes16 byte0206;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(222)] public Bytes16 byte0222;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(238)] public Bytes16 byte0238;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(254)] public Bytes16 byte0254;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(270)] public Bytes16 byte0270;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(286)] public Bytes16 byte0286;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(302)] public Bytes16 byte0302;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(318)] public Bytes16 byte0318;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(334)] public Bytes16 byte0334;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(350)] public Bytes16 byte0350;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(366)] public Bytes16 byte0366;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(382)] public Bytes16 byte0382;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(398)] public Bytes16 byte0398;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(414)] public Bytes16 byte0414;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(430)] public Bytes16 byte0430;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(446)] public Bytes16 byte0446;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(462)] public Bytes16 byte0462;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(478)] public Bytes16 byte0478;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(494)] public Bytes16 byte0494;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(510)] public Bytes16 byte0510;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(526)] public Bytes16 byte0526;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(542)] public Bytes16 byte0542;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(558)] public Bytes16 byte0558;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(574)] public Bytes16 byte0574;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(590)] public Bytes16 byte0590;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(606)] public Bytes16 byte0606;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(622)] public Bytes16 byte0622;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(638)] public Bytes16 byte0638;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(654)] public Bytes16 byte0654;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(670)] public Bytes16 byte0670;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(686)] public Bytes16 byte0686;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(702)] public Bytes16 byte0702;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(718)] public Bytes16 byte0718;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(734)] public Bytes16 byte0734;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(750)] public Bytes16 byte0750;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(766)] public Bytes16 byte0766;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(782)] public Bytes16 byte0782;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(798)] public Bytes16 byte0798;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(814)] public Bytes16 byte0814;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(830)] public Bytes16 byte0830;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(846)] public Bytes16 byte0846;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(862)] public Bytes16 byte0862;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(878)] public Bytes16 byte0878;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(894)] public Bytes16 byte0894;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(910)] public Bytes16 byte0910;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(926)] public Bytes16 byte0926;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(942)] public Bytes16 byte0942;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(958)] public Bytes16 byte0958;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(974)] public Bytes16 byte0974;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(990)] public Bytes16 byte0990;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1006)] public Bytes16 byte1006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1022)] public Bytes16 byte1022;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1038)] public Bytes16 byte1038;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1054)] public Bytes16 byte1054;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1070)] public Bytes16 byte1070;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1086)] public Bytes16 byte1086;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1102)] public Bytes16 byte1102;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1118)] public Bytes16 byte1118;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1134)] public Bytes16 byte1134;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1150)] public Bytes16 byte1150;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1166)] public Bytes16 byte1166;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1182)] public Bytes16 byte1182;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1198)] public Bytes16 byte1198;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1214)] public Bytes16 byte1214;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1230)] public Bytes16 byte1230;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1246)] public Bytes16 byte1246;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1262)] public Bytes16 byte1262;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1278)] public Bytes16 byte1278;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1294)] public Bytes16 byte1294;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1310)] public Bytes16 byte1310;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1326)] public Bytes16 byte1326;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1342)] public Bytes16 byte1342;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1358)] public Bytes16 byte1358;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1374)] public Bytes16 byte1374;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1390)] public Bytes16 byte1390;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1406)] public Bytes16 byte1406;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1422)] public Bytes16 byte1422;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1438)] public Bytes16 byte1438;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1454)] public Bytes16 byte1454;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1470)] public Bytes16 byte1470;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1486)] public Bytes16 byte1486;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1502)] public Bytes16 byte1502;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1518)] public Bytes16 byte1518;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1534)] public Bytes16 byte1534;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1550)] public Bytes16 byte1550;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1566)] public Bytes16 byte1566;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1582)] public Bytes16 byte1582;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1598)] public Bytes16 byte1598;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1614)] public Bytes16 byte1614;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1630)] public Bytes16 byte1630;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1646)] public Bytes16 byte1646;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1662)] public Bytes16 byte1662;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1678)] public Bytes16 byte1678;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1694)] public Bytes16 byte1694;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1710)] public Bytes16 byte1710;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1726)] public Bytes16 byte1726;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1742)] public Bytes16 byte1742;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1758)] public Bytes16 byte1758;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1774)] public Bytes16 byte1774;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1790)] public Bytes16 byte1790;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1806)] public Bytes16 byte1806;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1822)] public Bytes16 byte1822;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1838)] public Bytes16 byte1838;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1854)] public Bytes16 byte1854;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1870)] public Bytes16 byte1870;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1886)] public Bytes16 byte1886;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1902)] public Bytes16 byte1902;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1918)] public Bytes16 byte1918;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1934)] public Bytes16 byte1934;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1950)] public Bytes16 byte1950;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1966)] public Bytes16 byte1966;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1982)] public Bytes16 byte1982;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(1998)] public Bytes16 byte1998;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2014)] public Bytes16 byte2014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2030)] public Bytes16 byte2030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2046)] public Bytes16 byte2046;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2062)] public Bytes16 byte2062;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2078)] public Bytes16 byte2078;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2094)] public Bytes16 byte2094;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2110)] public Bytes16 byte2110;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2126)] public Bytes16 byte2126;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2142)] public Bytes16 byte2142;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2158)] public Bytes16 byte2158;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2174)] public Bytes16 byte2174;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2190)] public Bytes16 byte2190;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2206)] public Bytes16 byte2206;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2222)] public Bytes16 byte2222;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2238)] public Bytes16 byte2238;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2254)] public Bytes16 byte2254;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2270)] public Bytes16 byte2270;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2286)] public Bytes16 byte2286;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2302)] public Bytes16 byte2302;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2318)] public Bytes16 byte2318;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2334)] public Bytes16 byte2334;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2350)] public Bytes16 byte2350;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2366)] public Bytes16 byte2366;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2382)] public Bytes16 byte2382;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2398)] public Bytes16 byte2398;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2414)] public Bytes16 byte2414;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2430)] public Bytes16 byte2430;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2446)] public Bytes16 byte2446;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2462)] public Bytes16 byte2462;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2478)] public Bytes16 byte2478;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2494)] public Bytes16 byte2494;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2510)] public Bytes16 byte2510;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2526)] public Bytes16 byte2526;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2542)] public Bytes16 byte2542;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2558)] public Bytes16 byte2558;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2574)] public Bytes16 byte2574;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2590)] public Bytes16 byte2590;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2606)] public Bytes16 byte2606;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2622)] public Bytes16 byte2622;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2638)] public Bytes16 byte2638;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2654)] public Bytes16 byte2654;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2670)] public Bytes16 byte2670;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2686)] public Bytes16 byte2686;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2702)] public Bytes16 byte2702;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2718)] public Bytes16 byte2718;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2734)] public Bytes16 byte2734;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2750)] public Bytes16 byte2750;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2766)] public Bytes16 byte2766;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2782)] public Bytes16 byte2782;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2798)] public Bytes16 byte2798;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2814)] public Bytes16 byte2814;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2830)] public Bytes16 byte2830;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2846)] public Bytes16 byte2846;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2862)] public Bytes16 byte2862;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2878)] public Bytes16 byte2878;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2894)] public Bytes16 byte2894;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2910)] public Bytes16 byte2910;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2926)] public Bytes16 byte2926;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2942)] public Bytes16 byte2942;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2958)] public Bytes16 byte2958;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2974)] public Bytes16 byte2974;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(2990)] public Bytes16 byte2990;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3006)] public Bytes16 byte3006;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3022)] public Bytes16 byte3022;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3038)] public Bytes16 byte3038;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3054)] public Bytes16 byte3054;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3070)] public Bytes16 byte3070;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3086)] public Bytes16 byte3086;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3102)] public Bytes16 byte3102;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3118)] public Bytes16 byte3118;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3134)] public Bytes16 byte3134;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3150)] public Bytes16 byte3150;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3166)] public Bytes16 byte3166;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3182)] public Bytes16 byte3182;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3198)] public Bytes16 byte3198;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3214)] public Bytes16 byte3214;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3230)] public Bytes16 byte3230;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3246)] public Bytes16 byte3246;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3262)] public Bytes16 byte3262;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3278)] public Bytes16 byte3278;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3294)] public Bytes16 byte3294;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3310)] public Bytes16 byte3310;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3326)] public Bytes16 byte3326;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3342)] public Bytes16 byte3342;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3358)] public Bytes16 byte3358;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3374)] public Bytes16 byte3374;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3390)] public Bytes16 byte3390;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3406)] public Bytes16 byte3406;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3422)] public Bytes16 byte3422;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3438)] public Bytes16 byte3438;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3454)] public Bytes16 byte3454;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3470)] public Bytes16 byte3470;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3486)] public Bytes16 byte3486;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3502)] public Bytes16 byte3502;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3518)] public Bytes16 byte3518;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3534)] public Bytes16 byte3534;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3550)] public Bytes16 byte3550;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3566)] public Bytes16 byte3566;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3582)] public Bytes16 byte3582;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3598)] public Bytes16 byte3598;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3614)] public Bytes16 byte3614;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3630)] public Bytes16 byte3630;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3646)] public Bytes16 byte3646;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3662)] public Bytes16 byte3662;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3678)] public Bytes16 byte3678;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3694)] public Bytes16 byte3694;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3710)] public Bytes16 byte3710;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3726)] public Bytes16 byte3726;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3742)] public Bytes16 byte3742;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3758)] public Bytes16 byte3758;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3774)] public Bytes16 byte3774;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3790)] public Bytes16 byte3790;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3806)] public Bytes16 byte3806;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3822)] public Bytes16 byte3822;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3838)] public Bytes16 byte3838;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3854)] public Bytes16 byte3854;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3870)] public Bytes16 byte3870;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3886)] public Bytes16 byte3886;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3902)] public Bytes16 byte3902;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3918)] public Bytes16 byte3918;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3934)] public Bytes16 byte3934;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3950)] public Bytes16 byte3950;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3966)] public Bytes16 byte3966;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3982)] public Bytes16 byte3982;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(3998)] public Bytes16 byte3998;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4014)] public Bytes16 byte4014;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4030)] public Bytes16 byte4030;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4046)] public Bytes16 byte4046;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4062)] public Bytes16 byte4062;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(4078)] public Bytes16 byte4078;
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=4096)]
     public struct NativeString4096 : IComparable<NativeString4096>, IEquatable<NativeString4096>
     {
         public const int MaxLength = 4094;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes4094 buffer;        
-        
+        [FieldOffset(2)] public Bytes4094 buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes4094* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -2512,10 +4249,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -2528,6 +4273,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -2542,6 +4292,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -2556,6 +4311,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -2570,6 +4330,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -2584,6 +4349,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -2598,6 +4369,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -2611,161 +4388,271 @@ namespace Unity.Collections
                 }
             }
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString32 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString32 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString4096(ref NativeString32 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString64 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString64 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString4096(ref NativeString64 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString128 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString128 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString4096(ref NativeString128 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString512 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString512 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString4096(ref NativeString512 source)
         {
             LengthInBytes = 0;
             buffer = new Bytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");
         }
-        
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString4096 source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString4096 source)
         {
             fixed (byte* b = &buffer.byte0000)
                 return source.CopyTo(b, out LengthInBytes, MaxLength);
         }
 
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString4096(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString4096: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString4096(string b) => new NativeString4096(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString4096(string b) => new NativeString4096(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -2776,6 +4663,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -2787,7 +4679,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString4096 other)
         {
             unsafe
@@ -2799,6 +4695,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString4096 other)
         {
             unsafe
@@ -2810,6 +4711,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;

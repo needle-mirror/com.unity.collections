@@ -9,13 +9,14 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-  
+
 using System;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine.Internal;
 
 namespace Unity.Collections
-{   
+{
     public struct FixedString
     {
         internal unsafe struct Formatter
@@ -60,14 +61,14 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameter a.</returns>
         public static FixedString128 Format(in FixedString128 format, int a)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
                     Formatter formatter = default;
                     formatter.format = f;
                     formatter.arg0.Format(a);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -83,7 +84,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, int b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -91,7 +92,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -108,7 +109,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, int b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -117,7 +118,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -134,7 +135,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, int b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -143,7 +144,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -160,7 +161,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, int b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -169,7 +170,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -185,7 +186,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, float b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -193,7 +194,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -210,7 +211,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, float b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -219,7 +220,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -236,7 +237,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, float b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -245,7 +246,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -262,7 +263,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, float b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -271,7 +272,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -287,7 +288,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, in FixedString32 b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -295,7 +296,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -312,7 +313,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, in FixedString32 b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -321,7 +322,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -338,7 +339,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, in FixedString32 b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -347,7 +348,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -364,7 +365,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, int a, in FixedString32 b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -373,7 +374,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -388,14 +389,14 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameter a.</returns>
         public static FixedString128 Format(in FixedString128 format, float a)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
                     Formatter formatter = default;
                     formatter.format = f;
                     formatter.arg0.Format(a);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -411,7 +412,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, int b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -419,7 +420,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -436,7 +437,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, int b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -445,7 +446,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -462,7 +463,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, int b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -471,7 +472,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -488,7 +489,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, int b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -497,7 +498,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -513,7 +514,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, float b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -521,7 +522,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -538,7 +539,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, float b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -547,7 +548,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -564,7 +565,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, float b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -573,7 +574,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -590,7 +591,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, float b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -599,7 +600,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -615,7 +616,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, in FixedString32 b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -623,7 +624,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -640,7 +641,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, in FixedString32 b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -649,7 +650,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -666,7 +667,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, in FixedString32 b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -675,7 +676,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -692,7 +693,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, float a, in FixedString32 b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -701,7 +702,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -716,14 +717,14 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameter a.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
                     Formatter formatter = default;
                     formatter.format = f;
                     formatter.arg0.Format(a);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -739,7 +740,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, int b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -747,7 +748,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -764,7 +765,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, int b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -773,7 +774,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -790,7 +791,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, int b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -799,7 +800,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -816,7 +817,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, int b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -825,7 +826,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -841,7 +842,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, float b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -849,7 +850,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -866,7 +867,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, float b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -875,7 +876,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -892,7 +893,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, float b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -901,7 +902,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -918,7 +919,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, float b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -927,7 +928,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -943,7 +944,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a and b.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, in FixedString32 b)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -951,7 +952,7 @@ namespace Unity.Collections
                     formatter.format = f;
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -968,7 +969,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, in FixedString32 b, int c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -977,7 +978,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -994,7 +995,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, in FixedString32 b, float c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -1003,7 +1004,7 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
@@ -1020,7 +1021,7 @@ namespace Unity.Collections
         /// <returns>A string, where the {} directives are replaced by the parameters a, b, and c.</returns>
         public static FixedString128 Format(in FixedString128 format, in FixedString32 a, in FixedString32 b, in FixedString32 c)
         {
-            unsafe 
+            unsafe
             {
                 fixed(FixedString128* f = &format)
                 {
@@ -1029,13 +1030,13 @@ namespace Unity.Collections
                     formatter.arg0.Format(a);
                     formatter.arg1.Format(b);
                     formatter.arg2.Format(c);
-                    formatter.Format();            
+                    formatter.Format();
                     return formatter.result;
                 }
             }
         }
     }
-            
+
     internal unsafe struct Generic
     {
         public override String ToString()
@@ -1050,16 +1051,16 @@ namespace Unity.Collections
         {
             return (int)CollectionHelper.Hash(data, Length);
         }
-        
+
         public static unsafe int IndexOf(byte *a, int aa, byte* b, int bb)
         {
             for(var i = 0; i <= aa - bb; ++i)
             {
                 for(var j = 0; j < bb; ++j)
                     if(a[i+j] != b[j])
-                        goto end_of_loop;                    
-                return i;   
-                end_of_loop: {}                    
+                        goto end_of_loop;
+                return i;
+                end_of_loop: {}
             }
             return -1;
         }
@@ -1070,9 +1071,9 @@ namespace Unity.Collections
             {
                 for(var j = 0; j < bb; ++j)
                     if(a[i+j] != b[j])
-                        goto end_of_loop;                    
-                return i;   
-                end_of_loop: {}                    
+                        goto end_of_loop;
+                return i;
+                end_of_loop: {}
             }
             return -1;
         }
@@ -1091,9 +1092,9 @@ namespace Unity.Collections
                 return -1;
             if (aa > bb)
                 return 1;
-            return 0;            
+            return 0;
         }
-                
+
         public static unsafe bool Equals(byte *a, int aa, byte* b, int bb)
         {
             if(aa != bb)
@@ -1129,7 +1130,7 @@ namespace Unity.Collections
         {
             Unicode.UcsToUtf8(data, ref offset, Capacity, rune);
         }
-        
+
         public ParseError Parse(ref int offset, ref int output)
         {
             long value = 0;
@@ -1159,11 +1160,11 @@ namespace Unity.Collections
             if(value > Int32.MaxValue)
                 return ParseError.Overflow;
             if (value < Int32.MinValue)
-                return ParseError.Overflow;            
+                return ParseError.Overflow;
             output = (int)value;
             return ParseError.None;
         }
-        
+
         [StructLayout(LayoutKind.Explicit)]
         internal struct UintFloatUnion
         {
@@ -1172,7 +1173,7 @@ namespace Unity.Collections
             [FieldOffset(0)]
             public float floatValue;
         }
-        
+
         static ParseError Base10ToBase2(ref float output, ulong mantissa10, int exponent10)
         {
             if (mantissa10 == 0)
@@ -1199,7 +1200,7 @@ namespace Unity.Collections
             }
             while(exponent10 < 0)
             {
-                while ((mantissa2 & 0x8000000000000000U) == 0) 
+                while ((mantissa2 & 0x8000000000000000U) == 0)
                 {
                     mantissa2 <<= 1;
                     --exponent2;
@@ -1221,21 +1222,8 @@ namespace Unity.Collections
             return ParseError.None;
         }
 
-        static int tzcnt(uint v)
-        {
-            uint c = 32; // c will be the number of zero bits on the right
-            v &= (uint)-(int)v;
-            if (0 != v) c--;
-            if (0 != (v & 0x0000FFFF)) c -= 16;
-            if (0 != (v & 0x00FF00FF)) c -= 8;
-            if (0 != (v & 0x0F0F0F0F)) c -= 4;
-            if (0 != (v & 0x33333333)) c -= 2;
-            if (0 != (v & 0x55555555)) c -= 1;
-            return (int)c;
-        }        
-        
         public static void Base2ToBase10(ref ulong mantissa10, ref int exponent10, float input)
-        {          
+        {
             UintFloatUnion ufu = new UintFloatUnion();
             ufu.floatValue = input;
             if(ufu.uintValue == 0)
@@ -1246,9 +1234,6 @@ namespace Unity.Collections
             }
             var mantissa2 = (ufu.uintValue & ((1<<23)-1)) | (1 << 23);
             var exponent2 = (int) (ufu.uintValue >> 23) - 127 - 23;
-//            var tz = tzcnt((uint)mantissa2);
-//            mantissa2 >>= tz;
-//            exponent2 += tz;
             mantissa10 = mantissa2;
             exponent10 = exponent2;
             if (exponent2 > 0)
@@ -1279,14 +1264,19 @@ namespace Unity.Collections
                     ++exponent2;
                 }
             }
-            // normalize mantissa10                
-            while (mantissa10 > 9999999U || mantissa10 % 10 == 0) 
+            // normalize mantissa10
+            while (mantissa10 > 9999999U || mantissa10 % 10 == 0)
             {
                 mantissa10 = (mantissa10 + (mantissa10 < 100000000U ? 5u : 0u) ) / 10;
                 ++exponent10;
             }
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public FormatError Format(char a)
         {
             if (Length >= Capacity)
@@ -1294,7 +1284,13 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = a});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b)
         {
             if (Length >= Capacity)
@@ -1305,9 +1301,16 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = b});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -1320,8 +1323,20 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c, char d, char e, char f, char g, char h)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -1349,6 +1364,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="sourceLength"></param>
+        /// <param name="decimalExponent"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError FormatScientific(char *source, int sourceLength, int decimalExponent, char decimalSeparator)
         {
             FormatError error;
@@ -1385,14 +1408,19 @@ namespace Unity.Collections
             {
                 var decimalDigit = decimalExponent % 10;
                 ascii[1 - i] = (char)('0'+decimalDigit);
-                decimalExponent /= 10;                        
+                decimalExponent /= 10;
             }
             for(var i = 0; i < decimalDigits; ++i)
                 if ((error = Format(ascii[i])) != FormatError.None)
-                    return error;            
-            return FormatError.None;                       
+                    return error;
+            return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             const int maximumDigits = 20;
@@ -1422,14 +1450,25 @@ namespace Unity.Collections
                 return FormatError.Overflow;
             Length = newLength;
             UnsafeUtility.MemCpy(data, temp + offset, Length);
-            return FormatError.None;            
+            return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             return Format((long)input);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator)
         {
             UintFloatUnion ufu = new UintFloatUnion();
@@ -1442,7 +1481,7 @@ namespace Unity.Collections
                 if(ufu.uintValue == 0x7F800000)
                 {
                     if(sign != 0 && ((error = Format('-')) != FormatError.None))
-                        return error;                
+                        return error;
                     return Format( 'I', 'n', 'f', 'i', 'n', 'i', 't', 'y');
                 }
                 return Format('N', 'a', 'N');
@@ -1489,7 +1528,7 @@ namespace Unity.Collections
             if (trailingZeroes > 0)
             {
                 if (trailingZeroes > 4)
-                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);                
+                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);
                 for (var i = 0; i < decimalDigits; ++i)
                 {
                     if ((error = Format( ascii[i])) != FormatError.None)
@@ -1499,8 +1538,8 @@ namespace Unity.Collections
                 {
                     if ((error = Format( '0')) != FormatError.None)
                         return error;
-                    --trailingZeroes;                    
-                }                
+                    --trailingZeroes;
+                }
                 return FormatError.None;
             }
             var indexOfSeparator = decimalDigits + decimalExponent;
@@ -1515,6 +1554,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c)
         {
             int old = offset;
@@ -1526,6 +1573,19 @@ namespace Unity.Collections
             return false;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c, char d, char e, char f, char g, char h)
         {
             int old = offset;
@@ -1541,7 +1601,14 @@ namespace Unity.Collections
             offset = old;
             return false;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator)
         {
             if(Found(ref offset, 'n', 'a', 'n'))
@@ -1550,7 +1617,7 @@ namespace Unity.Collections
                 ufu.uintValue = 4290772992U;
                 output = ufu.floatValue;
                 return ParseError.None;
-            }            
+            }
             int sign = 1;
             if (offset < Length)
             {
@@ -1634,41 +1701,89 @@ namespace Unity.Collections
                 if (exponentDigits == 0)
                     return ParseError.Syntax;
             }
-            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;            
+            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;
             var error = Base10ToBase2(ref output, decimalMantissa, decimalExponent);
             if (error != ParseError.None)
                 return error;
             output *= sign;
             return ParseError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destUTF8MaxLengthInBytes, char *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf16ToUtf8(src, srcLength, dest, out destLength, destUTF8MaxLengthInBytes))
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destUTF8MaxLengthInBytes, byte *src, int srcLength)
         {
             destLength = srcLength > destUTF8MaxLengthInBytes ? destUTF8MaxLengthInBytes : srcLength;
             UnsafeUtility.MemCpy(dest, src, destLength);
             return destLength == srcLength ? CopyError.None : CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out int destLength, int destUTF8MaxLengthInBytes, byte *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf8ToUtf16(src, srcLength, dest, out destLength, destUTF8MaxLengthInBytes))
                 return CopyError.None;
             return CopyError.Truncation;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destUTF8MaxLengthInBytes, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest, out var temp, destUTF8MaxLengthInBytes);
             destLength = (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destUTF8MaxLengthInBytes, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest, out var temp, destUTF8MaxLengthInBytes);
@@ -1677,6 +1792,16 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out ushort destLength, ushort destUTF8MaxLengthInBytes, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest, out var temp, destUTF8MaxLengthInBytes);
@@ -1686,6 +1811,15 @@ namespace Unity.Collections
             return CopyError.Truncation;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destUTF8MaxLengthInBytes, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest + destLength, out var temp, destUTF8MaxLengthInBytes - destLength);
@@ -1695,15 +1829,33 @@ namespace Unity.Collections
             return CopyError.Truncation;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destUTF8MaxLengthInBytes, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest + destLength, out var temp, destUTF8MaxLengthInBytes - destLength);
             destLength += (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destUTF8MaxLengthInBytes"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(char *dest, ref ushort destLength, ushort destUTF8MaxLengthInBytes, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest + destLength, out var temp, destUTF8MaxLengthInBytes - destLength);
@@ -1712,8 +1864,6 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
-
-        
     }
 
     [StructLayout(LayoutKind.Explicit, Size=16)]
@@ -1741,29 +1891,29 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=30)]
     internal struct FixedBytes30
     {
-        [FieldOffset(0)] internal FixedBytes16 offset0000;            
-        [FieldOffset(16)] internal byte byte0016;            
-        [FieldOffset(17)] internal byte byte0017;            
-        [FieldOffset(18)] internal byte byte0018;            
-        [FieldOffset(19)] internal byte byte0019;            
-        [FieldOffset(20)] internal byte byte0020;            
-        [FieldOffset(21)] internal byte byte0021;            
-        [FieldOffset(22)] internal byte byte0022;            
-        [FieldOffset(23)] internal byte byte0023;            
-        [FieldOffset(24)] internal byte byte0024;            
-        [FieldOffset(25)] internal byte byte0025;            
-        [FieldOffset(26)] internal byte byte0026;            
-        [FieldOffset(27)] internal byte byte0027;            
-        [FieldOffset(28)] internal byte byte0028;            
-        [FieldOffset(29)] internal byte byte0029;            
+        [FieldOffset(0)] internal FixedBytes16 offset0000;
+        [FieldOffset(16)] internal byte byte0016;
+        [FieldOffset(17)] internal byte byte0017;
+        [FieldOffset(18)] internal byte byte0018;
+        [FieldOffset(19)] internal byte byte0019;
+        [FieldOffset(20)] internal byte byte0020;
+        [FieldOffset(21)] internal byte byte0021;
+        [FieldOffset(22)] internal byte byte0022;
+        [FieldOffset(23)] internal byte byte0023;
+        [FieldOffset(24)] internal byte byte0024;
+        [FieldOffset(25)] internal byte byte0025;
+        [FieldOffset(26)] internal byte byte0026;
+        [FieldOffset(27)] internal byte byte0027;
+        [FieldOffset(28)] internal byte byte0028;
+        [FieldOffset(29)] internal byte byte0029;
     }
-    
+
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
     /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs 
+    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
     /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
     ///
     /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
@@ -1771,10 +1921,10 @@ namespace Unity.Collections
     /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
     ///
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often. 
+    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=32)]
-    public struct FixedString32 
+    public struct FixedString32
     : IComparable<String>
     , IEquatable<String>
     , IEquatable<FixedString32>
@@ -1782,13 +1932,12 @@ namespace Unity.Collections
     , IEquatable<FixedString128>
     , IEquatable<FixedString512>
     , IEquatable<FixedString4096>
-    
-    {        
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;        
-        [FieldOffset(2)] internal FixedBytes30 bytes;        
+    {
+        [FieldOffset(0)] internal ushort utf8LengthInBytes;
+        [FieldOffset(2)] internal FixedBytes30 bytes;
 
         /// <summary>
-        /// The maximum length of the string, in bytes. 
+        /// The maximum length of the string, in bytes.
         /// </summary>
         public const int UTF8MaxLengthInBytes = 30;
 
@@ -1812,14 +1961,14 @@ namespace Unity.Collections
                 {
                     fixed(FixedString32* t = &this)
                         return ref UnsafeUtilityEx.AsRef<FixedListByte32>(t);
-                }            
+                }
             }
         }
-                                
+
         /// <summary>
         /// Returns the effective size of this struct in bytes, considering only the bytes that
         /// are actually used to hold data. Since the string may be shorter or longer, the
-        /// effective size may be smaller than the UnsafeUtility.SizeOf<FixedString32>() size. FixedBytes at the
+        /// effective size may be smaller than the UnsafeUtility.SizeOf&lt;FixedString32&gt;() size. FixedBytes at the
         /// end of the structure outside of the effective size, may contain any value, but
         /// typically contain the value 0.
         /// </summary>
@@ -1828,7 +1977,7 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + utf8LengthInBytes;
         }
-        
+
         /// <summary>
         /// Parse an integer from this FixedString32, at the byte offset indicated from the beginning
         /// of the FixedString32.
@@ -1843,7 +1992,7 @@ namespace Unity.Collections
                 fixed (byte* b = &bytes.offset0000.byte0000)
                 {
                     Generic temp = new Generic{data = b, Length = utf8LengthInBytes, Capacity = UTF8MaxLengthInBytes};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
@@ -1986,7 +2135,7 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a FixedString32 that is a single Unicode.Rune, repeated multiple times.
         /// </summary>
@@ -2006,12 +2155,12 @@ namespace Unity.Collections
                         var error = Unicode.UcsToUtf8(b, ref offset, UTF8MaxLengthInBytes, rune);
                         if(error != ConversionError.None)
                             throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
-                        utf8LengthInBytes = (ushort)offset;             
+                        utf8LengthInBytes = (ushort)offset;
                     }
                 }
-            }            
+            }
         }
-                
+
         /// <summary>
         /// Construct a FixedString32 that is a single UCS-2 character, repeated multiple times.
         /// Keep in mind that UCS-2 is incapable of expressing emoji, rare Chinese characters, and various other things.
@@ -2022,7 +2171,7 @@ namespace Unity.Collections
         : this(new Unicode.Rune{value=c}, count)
         {
         }
-                
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString32 with the UTF-8 representation of a given long integer.
@@ -2054,7 +2203,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString32 onto this FixedString32.
         /// </summary>
@@ -2068,14 +2217,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int IndexOf(in FixedString32 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -2100,14 +2249,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int LastIndexOf(in FixedString32 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -2133,7 +2282,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return whether the FixedString32 was found or not.   
+        /// and return whether the FixedString32 was found or not.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <returns>
@@ -2147,7 +2296,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2165,7 +2314,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2173,26 +2322,28 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString32 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString32 a, in FixedString32 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString32 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString32 a, in FixedString32 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
 
         /// <summary>
@@ -2225,7 +2376,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString64 onto this FixedString32.
         /// </summary>
@@ -2239,14 +2390,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int IndexOf(in FixedString64 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -2271,14 +2422,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int LastIndexOf(in FixedString64 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -2304,7 +2455,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return whether the FixedString64 was found or not.   
+        /// and return whether the FixedString64 was found or not.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <returns>
@@ -2318,7 +2469,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2336,7 +2487,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2344,28 +2495,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString64 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString32 a, in FixedString64 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString64 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString32 a, in FixedString64 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString32 from a FixedString64
         /// </summary>
@@ -2376,15 +2529,16 @@ namespace Unity.Collections
             bytes = new FixedBytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString64 to FixedString32.
         /// </summary>
         /// <param name="b">The FixedString64 object to convert to a FixedString32</param>
-        public static implicit operator FixedString32(in FixedString64 source) => new FixedString32(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString32(in FixedString64 source) => new FixedString32(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString32 with the UTF-8 representation of a given long integer.
@@ -2416,7 +2570,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString128 onto this FixedString32.
         /// </summary>
@@ -2430,14 +2584,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int IndexOf(in FixedString128 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -2462,14 +2616,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int LastIndexOf(in FixedString128 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -2495,7 +2649,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return whether the FixedString128 was found or not.   
+        /// and return whether the FixedString128 was found or not.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <returns>
@@ -2509,7 +2663,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2527,7 +2681,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2535,28 +2689,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString128 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString32 a, in FixedString128 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString128 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString32 a, in FixedString128 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString32 from a FixedString128
         /// </summary>
@@ -2567,15 +2723,16 @@ namespace Unity.Collections
             bytes = new FixedBytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString128 to FixedString32.
         /// </summary>
         /// <param name="b">The FixedString128 object to convert to a FixedString32</param>
-        public static implicit operator FixedString32(in FixedString128 source) => new FixedString32(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString32(in FixedString128 source) => new FixedString32(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString32 with the UTF-8 representation of a given long integer.
@@ -2607,7 +2764,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString512 onto this FixedString32.
         /// </summary>
@@ -2621,14 +2778,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int IndexOf(in FixedString512 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -2653,14 +2810,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int LastIndexOf(in FixedString512 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -2686,7 +2843,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return whether the FixedString512 was found or not.   
+        /// and return whether the FixedString512 was found or not.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <returns>
@@ -2700,7 +2857,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2718,7 +2875,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2726,28 +2883,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString512 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString32 a, in FixedString512 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString512 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString32 a, in FixedString512 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString32 from a FixedString512
         /// </summary>
@@ -2758,15 +2917,16 @@ namespace Unity.Collections
             bytes = new FixedBytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString512 to FixedString32.
         /// </summary>
         /// <param name="b">The FixedString512 object to convert to a FixedString32</param>
-        public static implicit operator FixedString32(in FixedString512 source) => new FixedString32(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString32(in FixedString512 source) => new FixedString32(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString32 with the UTF-8 representation of a given long integer.
@@ -2798,7 +2958,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString4096 onto this FixedString32.
         /// </summary>
@@ -2812,14 +2972,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int IndexOf(in FixedString4096 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -2844,14 +3004,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int LastIndexOf(in FixedString4096 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -2877,7 +3037,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return whether the FixedString4096 was found or not.   
+        /// and return whether the FixedString4096 was found or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <returns>
@@ -2891,7 +3051,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2909,7 +3069,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -2917,28 +3077,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString4096 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString32 a, in FixedString4096 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 and FixedString4096 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString32 a, in FixedString4096 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString32 from a FixedString4096
         /// </summary>
@@ -2949,16 +3111,18 @@ namespace Unity.Collections
             bytes = new FixedBytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString4096 to FixedString32.
         /// </summary>
         /// <param name="b">The FixedString4096 object to convert to a FixedString32</param>
-        public static implicit operator FixedString32(in FixedString4096 source) => new FixedString32(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString32(in FixedString4096 source) => new FixedString32(source);
 
+
+        [ExcludeFromDocs]
         public struct Enumerator
         {
             FixedString32 target;
@@ -2995,45 +3159,45 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Uniode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int IndexOf(Unicode.Rune other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return IndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Search this string for the last occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Unicode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int LastIndexOf(Unicode.Rune other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return LastIndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Compare this FixedString32 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted. 
+        /// and return which of the two strings would come first if sorted.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted, 
+        /// -1 if this FixedString32 would appear first if sorted,
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
@@ -3044,7 +3208,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString32 with a System.String,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -3052,7 +3216,7 @@ namespace Unity.Collections
         {
             return ToString().Equals(other);
         }
-        
+
         /// <summary>
         /// Copy UTF-16 data from a buffer onto this FixedString32.
         /// </summary>
@@ -3088,11 +3252,11 @@ namespace Unity.Collections
             {
                 utf8LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
         }
-                
+
         /// <summary>
         /// Copy this FixedString32 into a buffer of UTF-8 data.
         /// </summary>
@@ -3105,20 +3269,20 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Copy this FixedString32 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data copied to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that will be copied to the destination buffer</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-                
+
         /// <summary>
         /// Append this FixedString32 into a buffer of UTF-8 data.
         /// </summary>
@@ -3131,14 +3295,14 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Append(d, ref length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Append this FixedString32 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data appended to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that the destination buffer can hold</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>                        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
@@ -3155,19 +3319,20 @@ namespace Unity.Collections
             bytes = new FixedBytes30{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
         }
-                
+
         /// <summary>
         /// Enable implicit conversion of System.String to FixedString32.
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString32</param>
-        public static implicit operator FixedString32(string b) => new FixedString32(b);        
-                
+        /// <returns></returns>
+        public static implicit operator FixedString32(string b) => new FixedString32(b);
+
         /// <summary>
         /// Convert this FixedString32 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString32</returns>                        
+        /// <returns>A System.String with a copy of this FixedString32</returns>
         public override String ToString()
         {
             unsafe
@@ -3178,12 +3343,12 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Compute a hash code of this FixedString32: an integer that is likely to be different for
         /// two FixedString32, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString32</returns>                                
+        /// <returns>A hash code of this FixedString32</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -3194,11 +3359,11 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString32 has the same value as some other object.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param> 
+        /// <param name="obj">The object to compare for equality</param>
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -3215,31 +3380,31 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=62)]
     internal struct FixedBytes62
     {
-        [FieldOffset(0)] internal FixedBytes16 offset0000;            
-        [FieldOffset(16)] internal FixedBytes16 offset0016;            
-        [FieldOffset(32)] internal FixedBytes16 offset0032;            
-        [FieldOffset(48)] internal byte byte0048;            
-        [FieldOffset(49)] internal byte byte0049;            
-        [FieldOffset(50)] internal byte byte0050;            
-        [FieldOffset(51)] internal byte byte0051;            
-        [FieldOffset(52)] internal byte byte0052;            
-        [FieldOffset(53)] internal byte byte0053;            
-        [FieldOffset(54)] internal byte byte0054;            
-        [FieldOffset(55)] internal byte byte0055;            
-        [FieldOffset(56)] internal byte byte0056;            
-        [FieldOffset(57)] internal byte byte0057;            
-        [FieldOffset(58)] internal byte byte0058;            
-        [FieldOffset(59)] internal byte byte0059;            
-        [FieldOffset(60)] internal byte byte0060;            
-        [FieldOffset(61)] internal byte byte0061;            
+        [FieldOffset(0)] internal FixedBytes16 offset0000;
+        [FieldOffset(16)] internal FixedBytes16 offset0016;
+        [FieldOffset(32)] internal FixedBytes16 offset0032;
+        [FieldOffset(48)] internal byte byte0048;
+        [FieldOffset(49)] internal byte byte0049;
+        [FieldOffset(50)] internal byte byte0050;
+        [FieldOffset(51)] internal byte byte0051;
+        [FieldOffset(52)] internal byte byte0052;
+        [FieldOffset(53)] internal byte byte0053;
+        [FieldOffset(54)] internal byte byte0054;
+        [FieldOffset(55)] internal byte byte0055;
+        [FieldOffset(56)] internal byte byte0056;
+        [FieldOffset(57)] internal byte byte0057;
+        [FieldOffset(58)] internal byte byte0058;
+        [FieldOffset(59)] internal byte byte0059;
+        [FieldOffset(60)] internal byte byte0060;
+        [FieldOffset(61)] internal byte byte0061;
     }
-    
+
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
     /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs 
+    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
     /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
     ///
     /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
@@ -3247,10 +3412,10 @@ namespace Unity.Collections
     /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
     ///
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often. 
+    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=64)]
-    public struct FixedString64 
+    public struct FixedString64
     : IComparable<String>
     , IEquatable<String>
     , IEquatable<FixedString32>
@@ -3258,13 +3423,12 @@ namespace Unity.Collections
     , IEquatable<FixedString128>
     , IEquatable<FixedString512>
     , IEquatable<FixedString4096>
-    
-    {        
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;        
-        [FieldOffset(2)] internal FixedBytes62 bytes;        
+    {
+        [FieldOffset(0)] internal ushort utf8LengthInBytes;
+        [FieldOffset(2)] internal FixedBytes62 bytes;
 
         /// <summary>
-        /// The maximum length of the string, in bytes. 
+        /// The maximum length of the string, in bytes.
         /// </summary>
         public const int UTF8MaxLengthInBytes = 62;
 
@@ -3288,14 +3452,14 @@ namespace Unity.Collections
                 {
                     fixed(FixedString64* t = &this)
                         return ref UnsafeUtilityEx.AsRef<FixedListByte64>(t);
-                }            
+                }
             }
         }
-                                
+
         /// <summary>
         /// Returns the effective size of this struct in bytes, considering only the bytes that
         /// are actually used to hold data. Since the string may be shorter or longer, the
-        /// effective size may be smaller than the UnsafeUtility.SizeOf<FixedString64>() size. FixedBytes at the
+        /// effective size may be smaller than the UnsafeUtility.SizeOf&lt;FixedString64&gt;() size. FixedBytes at the
         /// end of the structure outside of the effective size, may contain any value, but
         /// typically contain the value 0.
         /// </summary>
@@ -3304,7 +3468,7 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + utf8LengthInBytes;
         }
-        
+
         /// <summary>
         /// Parse an integer from this FixedString64, at the byte offset indicated from the beginning
         /// of the FixedString64.
@@ -3319,7 +3483,7 @@ namespace Unity.Collections
                 fixed (byte* b = &bytes.offset0000.byte0000)
                 {
                     Generic temp = new Generic{data = b, Length = utf8LengthInBytes, Capacity = UTF8MaxLengthInBytes};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
@@ -3462,7 +3626,7 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a FixedString64 that is a single Unicode.Rune, repeated multiple times.
         /// </summary>
@@ -3482,12 +3646,12 @@ namespace Unity.Collections
                         var error = Unicode.UcsToUtf8(b, ref offset, UTF8MaxLengthInBytes, rune);
                         if(error != ConversionError.None)
                             throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
-                        utf8LengthInBytes = (ushort)offset;             
+                        utf8LengthInBytes = (ushort)offset;
                     }
                 }
-            }            
+            }
         }
-                
+
         /// <summary>
         /// Construct a FixedString64 that is a single UCS-2 character, repeated multiple times.
         /// Keep in mind that UCS-2 is incapable of expressing emoji, rare Chinese characters, and various other things.
@@ -3498,7 +3662,7 @@ namespace Unity.Collections
         : this(new Unicode.Rune{value=c}, count)
         {
         }
-                
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString64 with the UTF-8 representation of a given long integer.
@@ -3530,7 +3694,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString32 onto this FixedString64.
         /// </summary>
@@ -3544,14 +3708,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int IndexOf(in FixedString32 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -3576,14 +3740,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int LastIndexOf(in FixedString32 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -3609,7 +3773,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return whether the FixedString32 was found or not.   
+        /// and return whether the FixedString32 was found or not.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <returns>
@@ -3623,7 +3787,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -3641,7 +3805,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -3649,28 +3813,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString32 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString64 a, in FixedString32 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString32 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString64 a, in FixedString32 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString64 from a FixedString32
         /// </summary>
@@ -3681,15 +3847,16 @@ namespace Unity.Collections
             bytes = new FixedBytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString32 to FixedString64.
         /// </summary>
         /// <param name="b">The FixedString32 object to convert to a FixedString64</param>
-        public static implicit operator FixedString64(in FixedString32 source) => new FixedString64(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString64(in FixedString32 source) => new FixedString64(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString64 with the UTF-8 representation of a given long integer.
@@ -3721,7 +3888,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString64 onto this FixedString64.
         /// </summary>
@@ -3735,14 +3902,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int IndexOf(in FixedString64 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -3767,14 +3934,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int LastIndexOf(in FixedString64 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -3800,7 +3967,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return whether the FixedString64 was found or not.   
+        /// and return whether the FixedString64 was found or not.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <returns>
@@ -3814,7 +3981,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -3832,7 +3999,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -3840,26 +4007,28 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString64 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString64 a, in FixedString64 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString64 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString64 a, in FixedString64 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
 
         /// <summary>
@@ -3892,7 +4061,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString128 onto this FixedString64.
         /// </summary>
@@ -3906,14 +4075,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int IndexOf(in FixedString128 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -3938,14 +4107,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int LastIndexOf(in FixedString128 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -3971,7 +4140,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return whether the FixedString128 was found or not.   
+        /// and return whether the FixedString128 was found or not.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <returns>
@@ -3985,7 +4154,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4003,7 +4172,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4011,28 +4180,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString128 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString64 a, in FixedString128 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString128 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString64 a, in FixedString128 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString64 from a FixedString128
         /// </summary>
@@ -4043,15 +4214,16 @@ namespace Unity.Collections
             bytes = new FixedBytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString128 to FixedString64.
         /// </summary>
         /// <param name="b">The FixedString128 object to convert to a FixedString64</param>
-        public static implicit operator FixedString64(in FixedString128 source) => new FixedString64(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString64(in FixedString128 source) => new FixedString64(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString64 with the UTF-8 representation of a given long integer.
@@ -4083,7 +4255,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString512 onto this FixedString64.
         /// </summary>
@@ -4097,14 +4269,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int IndexOf(in FixedString512 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -4129,14 +4301,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int LastIndexOf(in FixedString512 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -4162,7 +4334,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return whether the FixedString512 was found or not.   
+        /// and return whether the FixedString512 was found or not.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <returns>
@@ -4176,7 +4348,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4194,7 +4366,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4202,28 +4374,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString512 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString64 a, in FixedString512 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString512 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString64 a, in FixedString512 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString64 from a FixedString512
         /// </summary>
@@ -4234,15 +4408,16 @@ namespace Unity.Collections
             bytes = new FixedBytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString512 to FixedString64.
         /// </summary>
         /// <param name="b">The FixedString512 object to convert to a FixedString64</param>
-        public static implicit operator FixedString64(in FixedString512 source) => new FixedString64(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString64(in FixedString512 source) => new FixedString64(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString64 with the UTF-8 representation of a given long integer.
@@ -4274,7 +4449,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString4096 onto this FixedString64.
         /// </summary>
@@ -4288,14 +4463,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int IndexOf(in FixedString4096 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -4320,14 +4495,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int LastIndexOf(in FixedString4096 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -4353,7 +4528,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return whether the FixedString4096 was found or not.   
+        /// and return whether the FixedString4096 was found or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <returns>
@@ -4367,7 +4542,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4385,7 +4560,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4393,28 +4568,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString4096 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString64 a, in FixedString4096 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 and FixedString4096 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString64 a, in FixedString4096 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString64 from a FixedString4096
         /// </summary>
@@ -4425,16 +4602,18 @@ namespace Unity.Collections
             bytes = new FixedBytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString4096 to FixedString64.
         /// </summary>
         /// <param name="b">The FixedString4096 object to convert to a FixedString64</param>
-        public static implicit operator FixedString64(in FixedString4096 source) => new FixedString64(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString64(in FixedString4096 source) => new FixedString64(source);
 
+
+        [ExcludeFromDocs]
         public struct Enumerator
         {
             FixedString64 target;
@@ -4471,45 +4650,45 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Uniode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int IndexOf(Unicode.Rune other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return IndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Search this string for the last occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Unicode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int LastIndexOf(Unicode.Rune other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return LastIndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Compare this FixedString64 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted. 
+        /// and return which of the two strings would come first if sorted.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted, 
+        /// -1 if this FixedString64 would appear first if sorted,
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
@@ -4520,7 +4699,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString64 with a System.String,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -4528,7 +4707,7 @@ namespace Unity.Collections
         {
             return ToString().Equals(other);
         }
-        
+
         /// <summary>
         /// Copy UTF-16 data from a buffer onto this FixedString64.
         /// </summary>
@@ -4564,11 +4743,11 @@ namespace Unity.Collections
             {
                 utf8LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
         }
-                
+
         /// <summary>
         /// Copy this FixedString64 into a buffer of UTF-8 data.
         /// </summary>
@@ -4581,20 +4760,20 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Copy this FixedString64 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data copied to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that will be copied to the destination buffer</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-                
+
         /// <summary>
         /// Append this FixedString64 into a buffer of UTF-8 data.
         /// </summary>
@@ -4607,14 +4786,14 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Append(d, ref length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Append this FixedString64 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data appended to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that the destination buffer can hold</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>                        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
@@ -4631,19 +4810,20 @@ namespace Unity.Collections
             bytes = new FixedBytes62{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
-                
+
         /// <summary>
         /// Enable implicit conversion of System.String to FixedString64.
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString64</param>
-        public static implicit operator FixedString64(string b) => new FixedString64(b);        
-                
+        /// <returns></returns>
+        public static implicit operator FixedString64(string b) => new FixedString64(b);
+
         /// <summary>
         /// Convert this FixedString64 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString64</returns>                        
+        /// <returns>A System.String with a copy of this FixedString64</returns>
         public override String ToString()
         {
             unsafe
@@ -4654,12 +4834,12 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Compute a hash code of this FixedString64: an integer that is likely to be different for
         /// two FixedString64, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString64</returns>                                
+        /// <returns>A hash code of this FixedString64</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -4670,11 +4850,11 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString64 has the same value as some other object.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param> 
+        /// <param name="obj">The object to compare for equality</param>
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -4691,35 +4871,35 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=126)]
     internal struct FixedBytes126
     {
-        [FieldOffset(0)] internal FixedBytes16 offset0000;            
-        [FieldOffset(16)] internal FixedBytes16 offset0016;            
-        [FieldOffset(32)] internal FixedBytes16 offset0032;            
-        [FieldOffset(48)] internal FixedBytes16 offset0048;            
-        [FieldOffset(64)] internal FixedBytes16 offset0064;            
-        [FieldOffset(80)] internal FixedBytes16 offset0080;            
-        [FieldOffset(96)] internal FixedBytes16 offset0096;            
-        [FieldOffset(112)] internal byte byte0112;            
-        [FieldOffset(113)] internal byte byte0113;            
-        [FieldOffset(114)] internal byte byte0114;            
-        [FieldOffset(115)] internal byte byte0115;            
-        [FieldOffset(116)] internal byte byte0116;            
-        [FieldOffset(117)] internal byte byte0117;            
-        [FieldOffset(118)] internal byte byte0118;            
-        [FieldOffset(119)] internal byte byte0119;            
-        [FieldOffset(120)] internal byte byte0120;            
-        [FieldOffset(121)] internal byte byte0121;            
-        [FieldOffset(122)] internal byte byte0122;            
-        [FieldOffset(123)] internal byte byte0123;            
-        [FieldOffset(124)] internal byte byte0124;            
-        [FieldOffset(125)] internal byte byte0125;            
+        [FieldOffset(0)] internal FixedBytes16 offset0000;
+        [FieldOffset(16)] internal FixedBytes16 offset0016;
+        [FieldOffset(32)] internal FixedBytes16 offset0032;
+        [FieldOffset(48)] internal FixedBytes16 offset0048;
+        [FieldOffset(64)] internal FixedBytes16 offset0064;
+        [FieldOffset(80)] internal FixedBytes16 offset0080;
+        [FieldOffset(96)] internal FixedBytes16 offset0096;
+        [FieldOffset(112)] internal byte byte0112;
+        [FieldOffset(113)] internal byte byte0113;
+        [FieldOffset(114)] internal byte byte0114;
+        [FieldOffset(115)] internal byte byte0115;
+        [FieldOffset(116)] internal byte byte0116;
+        [FieldOffset(117)] internal byte byte0117;
+        [FieldOffset(118)] internal byte byte0118;
+        [FieldOffset(119)] internal byte byte0119;
+        [FieldOffset(120)] internal byte byte0120;
+        [FieldOffset(121)] internal byte byte0121;
+        [FieldOffset(122)] internal byte byte0122;
+        [FieldOffset(123)] internal byte byte0123;
+        [FieldOffset(124)] internal byte byte0124;
+        [FieldOffset(125)] internal byte byte0125;
     }
-    
+
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
     /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs 
+    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
     /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
     ///
     /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
@@ -4727,10 +4907,10 @@ namespace Unity.Collections
     /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
     ///
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often. 
+    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=128)]
-    public struct FixedString128 
+    public struct FixedString128
     : IComparable<String>
     , IEquatable<String>
     , IEquatable<FixedString32>
@@ -4738,13 +4918,12 @@ namespace Unity.Collections
     , IEquatable<FixedString128>
     , IEquatable<FixedString512>
     , IEquatable<FixedString4096>
-    
-    {        
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;        
-        [FieldOffset(2)] internal FixedBytes126 bytes;        
+    {
+        [FieldOffset(0)] internal ushort utf8LengthInBytes;
+        [FieldOffset(2)] internal FixedBytes126 bytes;
 
         /// <summary>
-        /// The maximum length of the string, in bytes. 
+        /// The maximum length of the string, in bytes.
         /// </summary>
         public const int UTF8MaxLengthInBytes = 126;
 
@@ -4768,14 +4947,14 @@ namespace Unity.Collections
                 {
                     fixed(FixedString128* t = &this)
                         return ref UnsafeUtilityEx.AsRef<FixedListByte128>(t);
-                }            
+                }
             }
         }
-                                
+
         /// <summary>
         /// Returns the effective size of this struct in bytes, considering only the bytes that
         /// are actually used to hold data. Since the string may be shorter or longer, the
-        /// effective size may be smaller than the UnsafeUtility.SizeOf<FixedString128>() size. FixedBytes at the
+        /// effective size may be smaller than the UnsafeUtility.SizeOf&lt;FixedString128&gt;() size. FixedBytes at the
         /// end of the structure outside of the effective size, may contain any value, but
         /// typically contain the value 0.
         /// </summary>
@@ -4784,7 +4963,7 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + utf8LengthInBytes;
         }
-        
+
         /// <summary>
         /// Parse an integer from this FixedString128, at the byte offset indicated from the beginning
         /// of the FixedString128.
@@ -4799,7 +4978,7 @@ namespace Unity.Collections
                 fixed (byte* b = &bytes.offset0000.byte0000)
                 {
                     Generic temp = new Generic{data = b, Length = utf8LengthInBytes, Capacity = UTF8MaxLengthInBytes};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
@@ -4942,7 +5121,7 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a FixedString128 that is a single Unicode.Rune, repeated multiple times.
         /// </summary>
@@ -4962,12 +5141,12 @@ namespace Unity.Collections
                         var error = Unicode.UcsToUtf8(b, ref offset, UTF8MaxLengthInBytes, rune);
                         if(error != ConversionError.None)
                             throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
-                        utf8LengthInBytes = (ushort)offset;             
+                        utf8LengthInBytes = (ushort)offset;
                     }
                 }
-            }            
+            }
         }
-                
+
         /// <summary>
         /// Construct a FixedString128 that is a single UCS-2 character, repeated multiple times.
         /// Keep in mind that UCS-2 is incapable of expressing emoji, rare Chinese characters, and various other things.
@@ -4978,7 +5157,7 @@ namespace Unity.Collections
         : this(new Unicode.Rune{value=c}, count)
         {
         }
-                
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString128 with the UTF-8 representation of a given long integer.
@@ -5010,7 +5189,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString32 onto this FixedString128.
         /// </summary>
@@ -5024,14 +5203,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int IndexOf(in FixedString32 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -5056,14 +5235,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int LastIndexOf(in FixedString32 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -5089,7 +5268,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return whether the FixedString32 was found or not.   
+        /// and return whether the FixedString32 was found or not.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <returns>
@@ -5103,7 +5282,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5121,7 +5300,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5129,28 +5308,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString32 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString128 a, in FixedString32 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString32 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString128 a, in FixedString32 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString128 from a FixedString32
         /// </summary>
@@ -5161,15 +5342,16 @@ namespace Unity.Collections
             bytes = new FixedBytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString32 to FixedString128.
         /// </summary>
         /// <param name="b">The FixedString32 object to convert to a FixedString128</param>
-        public static implicit operator FixedString128(in FixedString32 source) => new FixedString128(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString128(in FixedString32 source) => new FixedString128(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString128 with the UTF-8 representation of a given long integer.
@@ -5201,7 +5383,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString64 onto this FixedString128.
         /// </summary>
@@ -5215,14 +5397,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int IndexOf(in FixedString64 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -5247,14 +5429,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int LastIndexOf(in FixedString64 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -5280,7 +5462,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return whether the FixedString64 was found or not.   
+        /// and return whether the FixedString64 was found or not.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <returns>
@@ -5294,7 +5476,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5312,7 +5494,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5320,28 +5502,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString64 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString128 a, in FixedString64 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString64 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString128 a, in FixedString64 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString128 from a FixedString64
         /// </summary>
@@ -5352,15 +5536,16 @@ namespace Unity.Collections
             bytes = new FixedBytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString64 to FixedString128.
         /// </summary>
         /// <param name="b">The FixedString64 object to convert to a FixedString128</param>
-        public static implicit operator FixedString128(in FixedString64 source) => new FixedString128(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString128(in FixedString64 source) => new FixedString128(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString128 with the UTF-8 representation of a given long integer.
@@ -5392,7 +5577,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString128 onto this FixedString128.
         /// </summary>
@@ -5406,14 +5591,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int IndexOf(in FixedString128 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -5438,14 +5623,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int LastIndexOf(in FixedString128 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -5471,7 +5656,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return whether the FixedString128 was found or not.   
+        /// and return whether the FixedString128 was found or not.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <returns>
@@ -5485,7 +5670,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5503,7 +5688,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5511,26 +5696,28 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString128 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString128 a, in FixedString128 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString128 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString128 a, in FixedString128 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
 
         /// <summary>
@@ -5563,7 +5750,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString512 onto this FixedString128.
         /// </summary>
@@ -5577,14 +5764,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int IndexOf(in FixedString512 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -5609,14 +5796,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int LastIndexOf(in FixedString512 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -5642,7 +5829,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return whether the FixedString512 was found or not.   
+        /// and return whether the FixedString512 was found or not.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <returns>
@@ -5656,7 +5843,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5674,7 +5861,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5682,28 +5869,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString512 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString128 a, in FixedString512 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString512 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString128 a, in FixedString512 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString128 from a FixedString512
         /// </summary>
@@ -5714,15 +5903,16 @@ namespace Unity.Collections
             bytes = new FixedBytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString512 to FixedString128.
         /// </summary>
         /// <param name="b">The FixedString512 object to convert to a FixedString128</param>
-        public static implicit operator FixedString128(in FixedString512 source) => new FixedString128(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString128(in FixedString512 source) => new FixedString128(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString128 with the UTF-8 representation of a given long integer.
@@ -5754,7 +5944,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString4096 onto this FixedString128.
         /// </summary>
@@ -5768,14 +5958,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int IndexOf(in FixedString4096 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -5800,14 +5990,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int LastIndexOf(in FixedString4096 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -5833,7 +6023,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return whether the FixedString4096 was found or not.   
+        /// and return whether the FixedString4096 was found or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <returns>
@@ -5847,7 +6037,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5865,7 +6055,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -5873,28 +6063,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString4096 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString128 a, in FixedString4096 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 and FixedString4096 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString128 a, in FixedString4096 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString128 from a FixedString4096
         /// </summary>
@@ -5905,16 +6097,18 @@ namespace Unity.Collections
             bytes = new FixedBytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString4096 to FixedString128.
         /// </summary>
         /// <param name="b">The FixedString4096 object to convert to a FixedString128</param>
-        public static implicit operator FixedString128(in FixedString4096 source) => new FixedString128(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString128(in FixedString4096 source) => new FixedString128(source);
 
+
+        [ExcludeFromDocs]
         public struct Enumerator
         {
             FixedString128 target;
@@ -5951,45 +6145,45 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Uniode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int IndexOf(Unicode.Rune other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return IndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Search this string for the last occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Unicode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int LastIndexOf(Unicode.Rune other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return LastIndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Compare this FixedString128 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted. 
+        /// and return which of the two strings would come first if sorted.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted, 
+        /// -1 if this FixedString128 would appear first if sorted,
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
@@ -6000,7 +6194,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString128 with a System.String,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -6008,7 +6202,7 @@ namespace Unity.Collections
         {
             return ToString().Equals(other);
         }
-        
+
         /// <summary>
         /// Copy UTF-16 data from a buffer onto this FixedString128.
         /// </summary>
@@ -6044,11 +6238,11 @@ namespace Unity.Collections
             {
                 utf8LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
         }
-                
+
         /// <summary>
         /// Copy this FixedString128 into a buffer of UTF-8 data.
         /// </summary>
@@ -6061,20 +6255,20 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Copy this FixedString128 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data copied to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that will be copied to the destination buffer</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-                
+
         /// <summary>
         /// Append this FixedString128 into a buffer of UTF-8 data.
         /// </summary>
@@ -6087,14 +6281,14 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Append(d, ref length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Append this FixedString128 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data appended to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that the destination buffer can hold</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>                        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
@@ -6111,19 +6305,20 @@ namespace Unity.Collections
             bytes = new FixedBytes126{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
-                
+
         /// <summary>
         /// Enable implicit conversion of System.String to FixedString128.
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString128</param>
-        public static implicit operator FixedString128(string b) => new FixedString128(b);        
-                
+        /// <returns></returns>
+        public static implicit operator FixedString128(string b) => new FixedString128(b);
+
         /// <summary>
         /// Convert this FixedString128 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString128</returns>                        
+        /// <returns>A System.String with a copy of this FixedString128</returns>
         public override String ToString()
         {
             unsafe
@@ -6134,12 +6329,12 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Compute a hash code of this FixedString128: an integer that is likely to be different for
         /// two FixedString128, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString128</returns>                                
+        /// <returns>A hash code of this FixedString128</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -6150,11 +6345,11 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString128 has the same value as some other object.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param> 
+        /// <param name="obj">The object to compare for equality</param>
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -6171,59 +6366,59 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=510)]
     internal struct FixedBytes510
     {
-        [FieldOffset(0)] internal FixedBytes16 offset0000;            
-        [FieldOffset(16)] internal FixedBytes16 offset0016;            
-        [FieldOffset(32)] internal FixedBytes16 offset0032;            
-        [FieldOffset(48)] internal FixedBytes16 offset0048;            
-        [FieldOffset(64)] internal FixedBytes16 offset0064;            
-        [FieldOffset(80)] internal FixedBytes16 offset0080;            
-        [FieldOffset(96)] internal FixedBytes16 offset0096;            
-        [FieldOffset(112)] internal FixedBytes16 offset0112;            
-        [FieldOffset(128)] internal FixedBytes16 offset0128;            
-        [FieldOffset(144)] internal FixedBytes16 offset0144;            
-        [FieldOffset(160)] internal FixedBytes16 offset0160;            
-        [FieldOffset(176)] internal FixedBytes16 offset0176;            
-        [FieldOffset(192)] internal FixedBytes16 offset0192;            
-        [FieldOffset(208)] internal FixedBytes16 offset0208;            
-        [FieldOffset(224)] internal FixedBytes16 offset0224;            
-        [FieldOffset(240)] internal FixedBytes16 offset0240;            
-        [FieldOffset(256)] internal FixedBytes16 offset0256;            
-        [FieldOffset(272)] internal FixedBytes16 offset0272;            
-        [FieldOffset(288)] internal FixedBytes16 offset0288;            
-        [FieldOffset(304)] internal FixedBytes16 offset0304;            
-        [FieldOffset(320)] internal FixedBytes16 offset0320;            
-        [FieldOffset(336)] internal FixedBytes16 offset0336;            
-        [FieldOffset(352)] internal FixedBytes16 offset0352;            
-        [FieldOffset(368)] internal FixedBytes16 offset0368;            
-        [FieldOffset(384)] internal FixedBytes16 offset0384;            
-        [FieldOffset(400)] internal FixedBytes16 offset0400;            
-        [FieldOffset(416)] internal FixedBytes16 offset0416;            
-        [FieldOffset(432)] internal FixedBytes16 offset0432;            
-        [FieldOffset(448)] internal FixedBytes16 offset0448;            
-        [FieldOffset(464)] internal FixedBytes16 offset0464;            
-        [FieldOffset(480)] internal FixedBytes16 offset0480;            
-        [FieldOffset(496)] internal byte byte0496;            
-        [FieldOffset(497)] internal byte byte0497;            
-        [FieldOffset(498)] internal byte byte0498;            
-        [FieldOffset(499)] internal byte byte0499;            
-        [FieldOffset(500)] internal byte byte0500;            
-        [FieldOffset(501)] internal byte byte0501;            
-        [FieldOffset(502)] internal byte byte0502;            
-        [FieldOffset(503)] internal byte byte0503;            
-        [FieldOffset(504)] internal byte byte0504;            
-        [FieldOffset(505)] internal byte byte0505;            
-        [FieldOffset(506)] internal byte byte0506;            
-        [FieldOffset(507)] internal byte byte0507;            
-        [FieldOffset(508)] internal byte byte0508;            
-        [FieldOffset(509)] internal byte byte0509;            
+        [FieldOffset(0)] internal FixedBytes16 offset0000;
+        [FieldOffset(16)] internal FixedBytes16 offset0016;
+        [FieldOffset(32)] internal FixedBytes16 offset0032;
+        [FieldOffset(48)] internal FixedBytes16 offset0048;
+        [FieldOffset(64)] internal FixedBytes16 offset0064;
+        [FieldOffset(80)] internal FixedBytes16 offset0080;
+        [FieldOffset(96)] internal FixedBytes16 offset0096;
+        [FieldOffset(112)] internal FixedBytes16 offset0112;
+        [FieldOffset(128)] internal FixedBytes16 offset0128;
+        [FieldOffset(144)] internal FixedBytes16 offset0144;
+        [FieldOffset(160)] internal FixedBytes16 offset0160;
+        [FieldOffset(176)] internal FixedBytes16 offset0176;
+        [FieldOffset(192)] internal FixedBytes16 offset0192;
+        [FieldOffset(208)] internal FixedBytes16 offset0208;
+        [FieldOffset(224)] internal FixedBytes16 offset0224;
+        [FieldOffset(240)] internal FixedBytes16 offset0240;
+        [FieldOffset(256)] internal FixedBytes16 offset0256;
+        [FieldOffset(272)] internal FixedBytes16 offset0272;
+        [FieldOffset(288)] internal FixedBytes16 offset0288;
+        [FieldOffset(304)] internal FixedBytes16 offset0304;
+        [FieldOffset(320)] internal FixedBytes16 offset0320;
+        [FieldOffset(336)] internal FixedBytes16 offset0336;
+        [FieldOffset(352)] internal FixedBytes16 offset0352;
+        [FieldOffset(368)] internal FixedBytes16 offset0368;
+        [FieldOffset(384)] internal FixedBytes16 offset0384;
+        [FieldOffset(400)] internal FixedBytes16 offset0400;
+        [FieldOffset(416)] internal FixedBytes16 offset0416;
+        [FieldOffset(432)] internal FixedBytes16 offset0432;
+        [FieldOffset(448)] internal FixedBytes16 offset0448;
+        [FieldOffset(464)] internal FixedBytes16 offset0464;
+        [FieldOffset(480)] internal FixedBytes16 offset0480;
+        [FieldOffset(496)] internal byte byte0496;
+        [FieldOffset(497)] internal byte byte0497;
+        [FieldOffset(498)] internal byte byte0498;
+        [FieldOffset(499)] internal byte byte0499;
+        [FieldOffset(500)] internal byte byte0500;
+        [FieldOffset(501)] internal byte byte0501;
+        [FieldOffset(502)] internal byte byte0502;
+        [FieldOffset(503)] internal byte byte0503;
+        [FieldOffset(504)] internal byte byte0504;
+        [FieldOffset(505)] internal byte byte0505;
+        [FieldOffset(506)] internal byte byte0506;
+        [FieldOffset(507)] internal byte byte0507;
+        [FieldOffset(508)] internal byte byte0508;
+        [FieldOffset(509)] internal byte byte0509;
     }
-    
+
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
     /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs 
+    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
     /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
     ///
     /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
@@ -6231,10 +6426,10 @@ namespace Unity.Collections
     /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
     ///
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often. 
+    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=512)]
-    public struct FixedString512 
+    public struct FixedString512
     : IComparable<String>
     , IEquatable<String>
     , IEquatable<FixedString32>
@@ -6242,13 +6437,12 @@ namespace Unity.Collections
     , IEquatable<FixedString128>
     , IEquatable<FixedString512>
     , IEquatable<FixedString4096>
-    
-    {        
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;        
-        [FieldOffset(2)] internal FixedBytes510 bytes;        
+    {
+        [FieldOffset(0)] internal ushort utf8LengthInBytes;
+        [FieldOffset(2)] internal FixedBytes510 bytes;
 
         /// <summary>
-        /// The maximum length of the string, in bytes. 
+        /// The maximum length of the string, in bytes.
         /// </summary>
         public const int UTF8MaxLengthInBytes = 510;
 
@@ -6272,14 +6466,14 @@ namespace Unity.Collections
                 {
                     fixed(FixedString512* t = &this)
                         return ref UnsafeUtilityEx.AsRef<FixedListByte512>(t);
-                }            
+                }
             }
         }
-                                
+
         /// <summary>
         /// Returns the effective size of this struct in bytes, considering only the bytes that
         /// are actually used to hold data. Since the string may be shorter or longer, the
-        /// effective size may be smaller than the UnsafeUtility.SizeOf<FixedString512>() size. FixedBytes at the
+        /// effective size may be smaller than the UnsafeUtility.SizeOf&lt;FixedString512&gt;() size. FixedBytes at the
         /// end of the structure outside of the effective size, may contain any value, but
         /// typically contain the value 0.
         /// </summary>
@@ -6288,7 +6482,7 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + utf8LengthInBytes;
         }
-        
+
         /// <summary>
         /// Parse an integer from this FixedString512, at the byte offset indicated from the beginning
         /// of the FixedString512.
@@ -6303,7 +6497,7 @@ namespace Unity.Collections
                 fixed (byte* b = &bytes.offset0000.byte0000)
                 {
                     Generic temp = new Generic{data = b, Length = utf8LengthInBytes, Capacity = UTF8MaxLengthInBytes};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
@@ -6446,7 +6640,7 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a FixedString512 that is a single Unicode.Rune, repeated multiple times.
         /// </summary>
@@ -6466,12 +6660,12 @@ namespace Unity.Collections
                         var error = Unicode.UcsToUtf8(b, ref offset, UTF8MaxLengthInBytes, rune);
                         if(error != ConversionError.None)
                             throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
-                        utf8LengthInBytes = (ushort)offset;             
+                        utf8LengthInBytes = (ushort)offset;
                     }
                 }
-            }            
+            }
         }
-                
+
         /// <summary>
         /// Construct a FixedString512 that is a single UCS-2 character, repeated multiple times.
         /// Keep in mind that UCS-2 is incapable of expressing emoji, rare Chinese characters, and various other things.
@@ -6482,7 +6676,7 @@ namespace Unity.Collections
         : this(new Unicode.Rune{value=c}, count)
         {
         }
-                
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString512 with the UTF-8 representation of a given long integer.
@@ -6514,7 +6708,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString32 onto this FixedString512.
         /// </summary>
@@ -6528,14 +6722,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int IndexOf(in FixedString32 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -6560,14 +6754,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int LastIndexOf(in FixedString32 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -6593,7 +6787,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return whether the FixedString32 was found or not.   
+        /// and return whether the FixedString32 was found or not.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <returns>
@@ -6607,7 +6801,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -6625,7 +6819,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -6633,28 +6827,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString32 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString512 a, in FixedString32 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString32 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString512 a, in FixedString32 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString512 from a FixedString32
         /// </summary>
@@ -6665,15 +6861,16 @@ namespace Unity.Collections
             bytes = new FixedBytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString32 to FixedString512.
         /// </summary>
         /// <param name="b">The FixedString32 object to convert to a FixedString512</param>
-        public static implicit operator FixedString512(in FixedString32 source) => new FixedString512(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString512(in FixedString32 source) => new FixedString512(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString512 with the UTF-8 representation of a given long integer.
@@ -6705,7 +6902,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString64 onto this FixedString512.
         /// </summary>
@@ -6719,14 +6916,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int IndexOf(in FixedString64 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -6751,14 +6948,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int LastIndexOf(in FixedString64 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -6784,7 +6981,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return whether the FixedString64 was found or not.   
+        /// and return whether the FixedString64 was found or not.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <returns>
@@ -6798,7 +6995,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -6816,7 +7013,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -6824,28 +7021,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString64 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString512 a, in FixedString64 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString64 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString512 a, in FixedString64 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString512 from a FixedString64
         /// </summary>
@@ -6856,15 +7055,16 @@ namespace Unity.Collections
             bytes = new FixedBytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString64 to FixedString512.
         /// </summary>
         /// <param name="b">The FixedString64 object to convert to a FixedString512</param>
-        public static implicit operator FixedString512(in FixedString64 source) => new FixedString512(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString512(in FixedString64 source) => new FixedString512(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString512 with the UTF-8 representation of a given long integer.
@@ -6896,7 +7096,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString128 onto this FixedString512.
         /// </summary>
@@ -6910,14 +7110,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int IndexOf(in FixedString128 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -6942,14 +7142,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int LastIndexOf(in FixedString128 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -6975,7 +7175,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return whether the FixedString128 was found or not.   
+        /// and return whether the FixedString128 was found or not.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <returns>
@@ -6989,7 +7189,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7007,7 +7207,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7015,28 +7215,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString128 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString512 a, in FixedString128 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString128 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString512 a, in FixedString128 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString512 from a FixedString128
         /// </summary>
@@ -7047,15 +7249,16 @@ namespace Unity.Collections
             bytes = new FixedBytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString128 to FixedString512.
         /// </summary>
         /// <param name="b">The FixedString128 object to convert to a FixedString512</param>
-        public static implicit operator FixedString512(in FixedString128 source) => new FixedString512(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString512(in FixedString128 source) => new FixedString512(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString512 with the UTF-8 representation of a given long integer.
@@ -7087,7 +7290,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString512 onto this FixedString512.
         /// </summary>
@@ -7101,14 +7304,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int IndexOf(in FixedString512 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -7133,14 +7336,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int LastIndexOf(in FixedString512 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -7166,7 +7369,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return whether the FixedString512 was found or not.   
+        /// and return whether the FixedString512 was found or not.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <returns>
@@ -7180,7 +7383,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7198,7 +7401,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7206,26 +7409,28 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString512 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString512 a, in FixedString512 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString512 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString512 a, in FixedString512 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
 
         /// <summary>
@@ -7258,7 +7463,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString4096 onto this FixedString512.
         /// </summary>
@@ -7272,14 +7477,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int IndexOf(in FixedString4096 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -7304,14 +7509,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int LastIndexOf(in FixedString4096 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -7337,7 +7542,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return whether the FixedString4096 was found or not.   
+        /// and return whether the FixedString4096 was found or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <returns>
@@ -7351,7 +7556,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7369,7 +7574,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7377,28 +7582,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString4096 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString512 a, in FixedString4096 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 and FixedString4096 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString512 a, in FixedString4096 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString512 from a FixedString4096
         /// </summary>
@@ -7409,16 +7616,18 @@ namespace Unity.Collections
             bytes = new FixedBytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString4096 to FixedString512.
         /// </summary>
         /// <param name="b">The FixedString4096 object to convert to a FixedString512</param>
-        public static implicit operator FixedString512(in FixedString4096 source) => new FixedString512(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString512(in FixedString4096 source) => new FixedString512(source);
 
+
+        [ExcludeFromDocs]
         public struct Enumerator
         {
             FixedString512 target;
@@ -7455,45 +7664,45 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Uniode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int IndexOf(Unicode.Rune other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return IndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Search this string for the last occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Unicode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int LastIndexOf(Unicode.Rune other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return LastIndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Compare this FixedString512 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted. 
+        /// and return which of the two strings would come first if sorted.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted, 
+        /// -1 if this FixedString512 would appear first if sorted,
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
@@ -7504,7 +7713,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString512 with a System.String,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -7512,7 +7721,7 @@ namespace Unity.Collections
         {
             return ToString().Equals(other);
         }
-        
+
         /// <summary>
         /// Copy UTF-16 data from a buffer onto this FixedString512.
         /// </summary>
@@ -7548,11 +7757,11 @@ namespace Unity.Collections
             {
                 utf8LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
         }
-                
+
         /// <summary>
         /// Copy this FixedString512 into a buffer of UTF-8 data.
         /// </summary>
@@ -7565,20 +7774,20 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Copy this FixedString512 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data copied to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that will be copied to the destination buffer</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-                
+
         /// <summary>
         /// Append this FixedString512 into a buffer of UTF-8 data.
         /// </summary>
@@ -7591,14 +7800,14 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Append(d, ref length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Append this FixedString512 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data appended to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that the destination buffer can hold</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>                        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
@@ -7615,19 +7824,20 @@ namespace Unity.Collections
             bytes = new FixedBytes510{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
-                
+
         /// <summary>
         /// Enable implicit conversion of System.String to FixedString512.
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString512</param>
-        public static implicit operator FixedString512(string b) => new FixedString512(b);        
-                
+        /// <returns></returns>
+        public static implicit operator FixedString512(string b) => new FixedString512(b);
+
         /// <summary>
         /// Convert this FixedString512 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString512</returns>                        
+        /// <returns>A System.String with a copy of this FixedString512</returns>
         public override String ToString()
         {
             unsafe
@@ -7638,12 +7848,12 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Compute a hash code of this FixedString512: an integer that is likely to be different for
         /// two FixedString512, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString512</returns>                                
+        /// <returns>A hash code of this FixedString512</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -7654,11 +7864,11 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString512 has the same value as some other object.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param> 
+        /// <param name="obj">The object to compare for equality</param>
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -7675,283 +7885,283 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=4094)]
     internal struct FixedBytes4094
     {
-        [FieldOffset(0)] internal FixedBytes16 offset0000;            
-        [FieldOffset(16)] internal FixedBytes16 offset0016;            
-        [FieldOffset(32)] internal FixedBytes16 offset0032;            
-        [FieldOffset(48)] internal FixedBytes16 offset0048;            
-        [FieldOffset(64)] internal FixedBytes16 offset0064;            
-        [FieldOffset(80)] internal FixedBytes16 offset0080;            
-        [FieldOffset(96)] internal FixedBytes16 offset0096;            
-        [FieldOffset(112)] internal FixedBytes16 offset0112;            
-        [FieldOffset(128)] internal FixedBytes16 offset0128;            
-        [FieldOffset(144)] internal FixedBytes16 offset0144;            
-        [FieldOffset(160)] internal FixedBytes16 offset0160;            
-        [FieldOffset(176)] internal FixedBytes16 offset0176;            
-        [FieldOffset(192)] internal FixedBytes16 offset0192;            
-        [FieldOffset(208)] internal FixedBytes16 offset0208;            
-        [FieldOffset(224)] internal FixedBytes16 offset0224;            
-        [FieldOffset(240)] internal FixedBytes16 offset0240;            
-        [FieldOffset(256)] internal FixedBytes16 offset0256;            
-        [FieldOffset(272)] internal FixedBytes16 offset0272;            
-        [FieldOffset(288)] internal FixedBytes16 offset0288;            
-        [FieldOffset(304)] internal FixedBytes16 offset0304;            
-        [FieldOffset(320)] internal FixedBytes16 offset0320;            
-        [FieldOffset(336)] internal FixedBytes16 offset0336;            
-        [FieldOffset(352)] internal FixedBytes16 offset0352;            
-        [FieldOffset(368)] internal FixedBytes16 offset0368;            
-        [FieldOffset(384)] internal FixedBytes16 offset0384;            
-        [FieldOffset(400)] internal FixedBytes16 offset0400;            
-        [FieldOffset(416)] internal FixedBytes16 offset0416;            
-        [FieldOffset(432)] internal FixedBytes16 offset0432;            
-        [FieldOffset(448)] internal FixedBytes16 offset0448;            
-        [FieldOffset(464)] internal FixedBytes16 offset0464;            
-        [FieldOffset(480)] internal FixedBytes16 offset0480;            
-        [FieldOffset(496)] internal FixedBytes16 offset0496;            
-        [FieldOffset(512)] internal FixedBytes16 offset0512;            
-        [FieldOffset(528)] internal FixedBytes16 offset0528;            
-        [FieldOffset(544)] internal FixedBytes16 offset0544;            
-        [FieldOffset(560)] internal FixedBytes16 offset0560;            
-        [FieldOffset(576)] internal FixedBytes16 offset0576;            
-        [FieldOffset(592)] internal FixedBytes16 offset0592;            
-        [FieldOffset(608)] internal FixedBytes16 offset0608;            
-        [FieldOffset(624)] internal FixedBytes16 offset0624;            
-        [FieldOffset(640)] internal FixedBytes16 offset0640;            
-        [FieldOffset(656)] internal FixedBytes16 offset0656;            
-        [FieldOffset(672)] internal FixedBytes16 offset0672;            
-        [FieldOffset(688)] internal FixedBytes16 offset0688;            
-        [FieldOffset(704)] internal FixedBytes16 offset0704;            
-        [FieldOffset(720)] internal FixedBytes16 offset0720;            
-        [FieldOffset(736)] internal FixedBytes16 offset0736;            
-        [FieldOffset(752)] internal FixedBytes16 offset0752;            
-        [FieldOffset(768)] internal FixedBytes16 offset0768;            
-        [FieldOffset(784)] internal FixedBytes16 offset0784;            
-        [FieldOffset(800)] internal FixedBytes16 offset0800;            
-        [FieldOffset(816)] internal FixedBytes16 offset0816;            
-        [FieldOffset(832)] internal FixedBytes16 offset0832;            
-        [FieldOffset(848)] internal FixedBytes16 offset0848;            
-        [FieldOffset(864)] internal FixedBytes16 offset0864;            
-        [FieldOffset(880)] internal FixedBytes16 offset0880;            
-        [FieldOffset(896)] internal FixedBytes16 offset0896;            
-        [FieldOffset(912)] internal FixedBytes16 offset0912;            
-        [FieldOffset(928)] internal FixedBytes16 offset0928;            
-        [FieldOffset(944)] internal FixedBytes16 offset0944;            
-        [FieldOffset(960)] internal FixedBytes16 offset0960;            
-        [FieldOffset(976)] internal FixedBytes16 offset0976;            
-        [FieldOffset(992)] internal FixedBytes16 offset0992;            
-        [FieldOffset(1008)] internal FixedBytes16 offset1008;            
-        [FieldOffset(1024)] internal FixedBytes16 offset1024;            
-        [FieldOffset(1040)] internal FixedBytes16 offset1040;            
-        [FieldOffset(1056)] internal FixedBytes16 offset1056;            
-        [FieldOffset(1072)] internal FixedBytes16 offset1072;            
-        [FieldOffset(1088)] internal FixedBytes16 offset1088;            
-        [FieldOffset(1104)] internal FixedBytes16 offset1104;            
-        [FieldOffset(1120)] internal FixedBytes16 offset1120;            
-        [FieldOffset(1136)] internal FixedBytes16 offset1136;            
-        [FieldOffset(1152)] internal FixedBytes16 offset1152;            
-        [FieldOffset(1168)] internal FixedBytes16 offset1168;            
-        [FieldOffset(1184)] internal FixedBytes16 offset1184;            
-        [FieldOffset(1200)] internal FixedBytes16 offset1200;            
-        [FieldOffset(1216)] internal FixedBytes16 offset1216;            
-        [FieldOffset(1232)] internal FixedBytes16 offset1232;            
-        [FieldOffset(1248)] internal FixedBytes16 offset1248;            
-        [FieldOffset(1264)] internal FixedBytes16 offset1264;            
-        [FieldOffset(1280)] internal FixedBytes16 offset1280;            
-        [FieldOffset(1296)] internal FixedBytes16 offset1296;            
-        [FieldOffset(1312)] internal FixedBytes16 offset1312;            
-        [FieldOffset(1328)] internal FixedBytes16 offset1328;            
-        [FieldOffset(1344)] internal FixedBytes16 offset1344;            
-        [FieldOffset(1360)] internal FixedBytes16 offset1360;            
-        [FieldOffset(1376)] internal FixedBytes16 offset1376;            
-        [FieldOffset(1392)] internal FixedBytes16 offset1392;            
-        [FieldOffset(1408)] internal FixedBytes16 offset1408;            
-        [FieldOffset(1424)] internal FixedBytes16 offset1424;            
-        [FieldOffset(1440)] internal FixedBytes16 offset1440;            
-        [FieldOffset(1456)] internal FixedBytes16 offset1456;            
-        [FieldOffset(1472)] internal FixedBytes16 offset1472;            
-        [FieldOffset(1488)] internal FixedBytes16 offset1488;            
-        [FieldOffset(1504)] internal FixedBytes16 offset1504;            
-        [FieldOffset(1520)] internal FixedBytes16 offset1520;            
-        [FieldOffset(1536)] internal FixedBytes16 offset1536;            
-        [FieldOffset(1552)] internal FixedBytes16 offset1552;            
-        [FieldOffset(1568)] internal FixedBytes16 offset1568;            
-        [FieldOffset(1584)] internal FixedBytes16 offset1584;            
-        [FieldOffset(1600)] internal FixedBytes16 offset1600;            
-        [FieldOffset(1616)] internal FixedBytes16 offset1616;            
-        [FieldOffset(1632)] internal FixedBytes16 offset1632;            
-        [FieldOffset(1648)] internal FixedBytes16 offset1648;            
-        [FieldOffset(1664)] internal FixedBytes16 offset1664;            
-        [FieldOffset(1680)] internal FixedBytes16 offset1680;            
-        [FieldOffset(1696)] internal FixedBytes16 offset1696;            
-        [FieldOffset(1712)] internal FixedBytes16 offset1712;            
-        [FieldOffset(1728)] internal FixedBytes16 offset1728;            
-        [FieldOffset(1744)] internal FixedBytes16 offset1744;            
-        [FieldOffset(1760)] internal FixedBytes16 offset1760;            
-        [FieldOffset(1776)] internal FixedBytes16 offset1776;            
-        [FieldOffset(1792)] internal FixedBytes16 offset1792;            
-        [FieldOffset(1808)] internal FixedBytes16 offset1808;            
-        [FieldOffset(1824)] internal FixedBytes16 offset1824;            
-        [FieldOffset(1840)] internal FixedBytes16 offset1840;            
-        [FieldOffset(1856)] internal FixedBytes16 offset1856;            
-        [FieldOffset(1872)] internal FixedBytes16 offset1872;            
-        [FieldOffset(1888)] internal FixedBytes16 offset1888;            
-        [FieldOffset(1904)] internal FixedBytes16 offset1904;            
-        [FieldOffset(1920)] internal FixedBytes16 offset1920;            
-        [FieldOffset(1936)] internal FixedBytes16 offset1936;            
-        [FieldOffset(1952)] internal FixedBytes16 offset1952;            
-        [FieldOffset(1968)] internal FixedBytes16 offset1968;            
-        [FieldOffset(1984)] internal FixedBytes16 offset1984;            
-        [FieldOffset(2000)] internal FixedBytes16 offset2000;            
-        [FieldOffset(2016)] internal FixedBytes16 offset2016;            
-        [FieldOffset(2032)] internal FixedBytes16 offset2032;            
-        [FieldOffset(2048)] internal FixedBytes16 offset2048;            
-        [FieldOffset(2064)] internal FixedBytes16 offset2064;            
-        [FieldOffset(2080)] internal FixedBytes16 offset2080;            
-        [FieldOffset(2096)] internal FixedBytes16 offset2096;            
-        [FieldOffset(2112)] internal FixedBytes16 offset2112;            
-        [FieldOffset(2128)] internal FixedBytes16 offset2128;            
-        [FieldOffset(2144)] internal FixedBytes16 offset2144;            
-        [FieldOffset(2160)] internal FixedBytes16 offset2160;            
-        [FieldOffset(2176)] internal FixedBytes16 offset2176;            
-        [FieldOffset(2192)] internal FixedBytes16 offset2192;            
-        [FieldOffset(2208)] internal FixedBytes16 offset2208;            
-        [FieldOffset(2224)] internal FixedBytes16 offset2224;            
-        [FieldOffset(2240)] internal FixedBytes16 offset2240;            
-        [FieldOffset(2256)] internal FixedBytes16 offset2256;            
-        [FieldOffset(2272)] internal FixedBytes16 offset2272;            
-        [FieldOffset(2288)] internal FixedBytes16 offset2288;            
-        [FieldOffset(2304)] internal FixedBytes16 offset2304;            
-        [FieldOffset(2320)] internal FixedBytes16 offset2320;            
-        [FieldOffset(2336)] internal FixedBytes16 offset2336;            
-        [FieldOffset(2352)] internal FixedBytes16 offset2352;            
-        [FieldOffset(2368)] internal FixedBytes16 offset2368;            
-        [FieldOffset(2384)] internal FixedBytes16 offset2384;            
-        [FieldOffset(2400)] internal FixedBytes16 offset2400;            
-        [FieldOffset(2416)] internal FixedBytes16 offset2416;            
-        [FieldOffset(2432)] internal FixedBytes16 offset2432;            
-        [FieldOffset(2448)] internal FixedBytes16 offset2448;            
-        [FieldOffset(2464)] internal FixedBytes16 offset2464;            
-        [FieldOffset(2480)] internal FixedBytes16 offset2480;            
-        [FieldOffset(2496)] internal FixedBytes16 offset2496;            
-        [FieldOffset(2512)] internal FixedBytes16 offset2512;            
-        [FieldOffset(2528)] internal FixedBytes16 offset2528;            
-        [FieldOffset(2544)] internal FixedBytes16 offset2544;            
-        [FieldOffset(2560)] internal FixedBytes16 offset2560;            
-        [FieldOffset(2576)] internal FixedBytes16 offset2576;            
-        [FieldOffset(2592)] internal FixedBytes16 offset2592;            
-        [FieldOffset(2608)] internal FixedBytes16 offset2608;            
-        [FieldOffset(2624)] internal FixedBytes16 offset2624;            
-        [FieldOffset(2640)] internal FixedBytes16 offset2640;            
-        [FieldOffset(2656)] internal FixedBytes16 offset2656;            
-        [FieldOffset(2672)] internal FixedBytes16 offset2672;            
-        [FieldOffset(2688)] internal FixedBytes16 offset2688;            
-        [FieldOffset(2704)] internal FixedBytes16 offset2704;            
-        [FieldOffset(2720)] internal FixedBytes16 offset2720;            
-        [FieldOffset(2736)] internal FixedBytes16 offset2736;            
-        [FieldOffset(2752)] internal FixedBytes16 offset2752;            
-        [FieldOffset(2768)] internal FixedBytes16 offset2768;            
-        [FieldOffset(2784)] internal FixedBytes16 offset2784;            
-        [FieldOffset(2800)] internal FixedBytes16 offset2800;            
-        [FieldOffset(2816)] internal FixedBytes16 offset2816;            
-        [FieldOffset(2832)] internal FixedBytes16 offset2832;            
-        [FieldOffset(2848)] internal FixedBytes16 offset2848;            
-        [FieldOffset(2864)] internal FixedBytes16 offset2864;            
-        [FieldOffset(2880)] internal FixedBytes16 offset2880;            
-        [FieldOffset(2896)] internal FixedBytes16 offset2896;            
-        [FieldOffset(2912)] internal FixedBytes16 offset2912;            
-        [FieldOffset(2928)] internal FixedBytes16 offset2928;            
-        [FieldOffset(2944)] internal FixedBytes16 offset2944;            
-        [FieldOffset(2960)] internal FixedBytes16 offset2960;            
-        [FieldOffset(2976)] internal FixedBytes16 offset2976;            
-        [FieldOffset(2992)] internal FixedBytes16 offset2992;            
-        [FieldOffset(3008)] internal FixedBytes16 offset3008;            
-        [FieldOffset(3024)] internal FixedBytes16 offset3024;            
-        [FieldOffset(3040)] internal FixedBytes16 offset3040;            
-        [FieldOffset(3056)] internal FixedBytes16 offset3056;            
-        [FieldOffset(3072)] internal FixedBytes16 offset3072;            
-        [FieldOffset(3088)] internal FixedBytes16 offset3088;            
-        [FieldOffset(3104)] internal FixedBytes16 offset3104;            
-        [FieldOffset(3120)] internal FixedBytes16 offset3120;            
-        [FieldOffset(3136)] internal FixedBytes16 offset3136;            
-        [FieldOffset(3152)] internal FixedBytes16 offset3152;            
-        [FieldOffset(3168)] internal FixedBytes16 offset3168;            
-        [FieldOffset(3184)] internal FixedBytes16 offset3184;            
-        [FieldOffset(3200)] internal FixedBytes16 offset3200;            
-        [FieldOffset(3216)] internal FixedBytes16 offset3216;            
-        [FieldOffset(3232)] internal FixedBytes16 offset3232;            
-        [FieldOffset(3248)] internal FixedBytes16 offset3248;            
-        [FieldOffset(3264)] internal FixedBytes16 offset3264;            
-        [FieldOffset(3280)] internal FixedBytes16 offset3280;            
-        [FieldOffset(3296)] internal FixedBytes16 offset3296;            
-        [FieldOffset(3312)] internal FixedBytes16 offset3312;            
-        [FieldOffset(3328)] internal FixedBytes16 offset3328;            
-        [FieldOffset(3344)] internal FixedBytes16 offset3344;            
-        [FieldOffset(3360)] internal FixedBytes16 offset3360;            
-        [FieldOffset(3376)] internal FixedBytes16 offset3376;            
-        [FieldOffset(3392)] internal FixedBytes16 offset3392;            
-        [FieldOffset(3408)] internal FixedBytes16 offset3408;            
-        [FieldOffset(3424)] internal FixedBytes16 offset3424;            
-        [FieldOffset(3440)] internal FixedBytes16 offset3440;            
-        [FieldOffset(3456)] internal FixedBytes16 offset3456;            
-        [FieldOffset(3472)] internal FixedBytes16 offset3472;            
-        [FieldOffset(3488)] internal FixedBytes16 offset3488;            
-        [FieldOffset(3504)] internal FixedBytes16 offset3504;            
-        [FieldOffset(3520)] internal FixedBytes16 offset3520;            
-        [FieldOffset(3536)] internal FixedBytes16 offset3536;            
-        [FieldOffset(3552)] internal FixedBytes16 offset3552;            
-        [FieldOffset(3568)] internal FixedBytes16 offset3568;            
-        [FieldOffset(3584)] internal FixedBytes16 offset3584;            
-        [FieldOffset(3600)] internal FixedBytes16 offset3600;            
-        [FieldOffset(3616)] internal FixedBytes16 offset3616;            
-        [FieldOffset(3632)] internal FixedBytes16 offset3632;            
-        [FieldOffset(3648)] internal FixedBytes16 offset3648;            
-        [FieldOffset(3664)] internal FixedBytes16 offset3664;            
-        [FieldOffset(3680)] internal FixedBytes16 offset3680;            
-        [FieldOffset(3696)] internal FixedBytes16 offset3696;            
-        [FieldOffset(3712)] internal FixedBytes16 offset3712;            
-        [FieldOffset(3728)] internal FixedBytes16 offset3728;            
-        [FieldOffset(3744)] internal FixedBytes16 offset3744;            
-        [FieldOffset(3760)] internal FixedBytes16 offset3760;            
-        [FieldOffset(3776)] internal FixedBytes16 offset3776;            
-        [FieldOffset(3792)] internal FixedBytes16 offset3792;            
-        [FieldOffset(3808)] internal FixedBytes16 offset3808;            
-        [FieldOffset(3824)] internal FixedBytes16 offset3824;            
-        [FieldOffset(3840)] internal FixedBytes16 offset3840;            
-        [FieldOffset(3856)] internal FixedBytes16 offset3856;            
-        [FieldOffset(3872)] internal FixedBytes16 offset3872;            
-        [FieldOffset(3888)] internal FixedBytes16 offset3888;            
-        [FieldOffset(3904)] internal FixedBytes16 offset3904;            
-        [FieldOffset(3920)] internal FixedBytes16 offset3920;            
-        [FieldOffset(3936)] internal FixedBytes16 offset3936;            
-        [FieldOffset(3952)] internal FixedBytes16 offset3952;            
-        [FieldOffset(3968)] internal FixedBytes16 offset3968;            
-        [FieldOffset(3984)] internal FixedBytes16 offset3984;            
-        [FieldOffset(4000)] internal FixedBytes16 offset4000;            
-        [FieldOffset(4016)] internal FixedBytes16 offset4016;            
-        [FieldOffset(4032)] internal FixedBytes16 offset4032;            
-        [FieldOffset(4048)] internal FixedBytes16 offset4048;            
-        [FieldOffset(4064)] internal FixedBytes16 offset4064;            
-        [FieldOffset(4080)] internal byte byte4080;            
-        [FieldOffset(4081)] internal byte byte4081;            
-        [FieldOffset(4082)] internal byte byte4082;            
-        [FieldOffset(4083)] internal byte byte4083;            
-        [FieldOffset(4084)] internal byte byte4084;            
-        [FieldOffset(4085)] internal byte byte4085;            
-        [FieldOffset(4086)] internal byte byte4086;            
-        [FieldOffset(4087)] internal byte byte4087;            
-        [FieldOffset(4088)] internal byte byte4088;            
-        [FieldOffset(4089)] internal byte byte4089;            
-        [FieldOffset(4090)] internal byte byte4090;            
-        [FieldOffset(4091)] internal byte byte4091;            
-        [FieldOffset(4092)] internal byte byte4092;            
-        [FieldOffset(4093)] internal byte byte4093;            
+        [FieldOffset(0)] internal FixedBytes16 offset0000;
+        [FieldOffset(16)] internal FixedBytes16 offset0016;
+        [FieldOffset(32)] internal FixedBytes16 offset0032;
+        [FieldOffset(48)] internal FixedBytes16 offset0048;
+        [FieldOffset(64)] internal FixedBytes16 offset0064;
+        [FieldOffset(80)] internal FixedBytes16 offset0080;
+        [FieldOffset(96)] internal FixedBytes16 offset0096;
+        [FieldOffset(112)] internal FixedBytes16 offset0112;
+        [FieldOffset(128)] internal FixedBytes16 offset0128;
+        [FieldOffset(144)] internal FixedBytes16 offset0144;
+        [FieldOffset(160)] internal FixedBytes16 offset0160;
+        [FieldOffset(176)] internal FixedBytes16 offset0176;
+        [FieldOffset(192)] internal FixedBytes16 offset0192;
+        [FieldOffset(208)] internal FixedBytes16 offset0208;
+        [FieldOffset(224)] internal FixedBytes16 offset0224;
+        [FieldOffset(240)] internal FixedBytes16 offset0240;
+        [FieldOffset(256)] internal FixedBytes16 offset0256;
+        [FieldOffset(272)] internal FixedBytes16 offset0272;
+        [FieldOffset(288)] internal FixedBytes16 offset0288;
+        [FieldOffset(304)] internal FixedBytes16 offset0304;
+        [FieldOffset(320)] internal FixedBytes16 offset0320;
+        [FieldOffset(336)] internal FixedBytes16 offset0336;
+        [FieldOffset(352)] internal FixedBytes16 offset0352;
+        [FieldOffset(368)] internal FixedBytes16 offset0368;
+        [FieldOffset(384)] internal FixedBytes16 offset0384;
+        [FieldOffset(400)] internal FixedBytes16 offset0400;
+        [FieldOffset(416)] internal FixedBytes16 offset0416;
+        [FieldOffset(432)] internal FixedBytes16 offset0432;
+        [FieldOffset(448)] internal FixedBytes16 offset0448;
+        [FieldOffset(464)] internal FixedBytes16 offset0464;
+        [FieldOffset(480)] internal FixedBytes16 offset0480;
+        [FieldOffset(496)] internal FixedBytes16 offset0496;
+        [FieldOffset(512)] internal FixedBytes16 offset0512;
+        [FieldOffset(528)] internal FixedBytes16 offset0528;
+        [FieldOffset(544)] internal FixedBytes16 offset0544;
+        [FieldOffset(560)] internal FixedBytes16 offset0560;
+        [FieldOffset(576)] internal FixedBytes16 offset0576;
+        [FieldOffset(592)] internal FixedBytes16 offset0592;
+        [FieldOffset(608)] internal FixedBytes16 offset0608;
+        [FieldOffset(624)] internal FixedBytes16 offset0624;
+        [FieldOffset(640)] internal FixedBytes16 offset0640;
+        [FieldOffset(656)] internal FixedBytes16 offset0656;
+        [FieldOffset(672)] internal FixedBytes16 offset0672;
+        [FieldOffset(688)] internal FixedBytes16 offset0688;
+        [FieldOffset(704)] internal FixedBytes16 offset0704;
+        [FieldOffset(720)] internal FixedBytes16 offset0720;
+        [FieldOffset(736)] internal FixedBytes16 offset0736;
+        [FieldOffset(752)] internal FixedBytes16 offset0752;
+        [FieldOffset(768)] internal FixedBytes16 offset0768;
+        [FieldOffset(784)] internal FixedBytes16 offset0784;
+        [FieldOffset(800)] internal FixedBytes16 offset0800;
+        [FieldOffset(816)] internal FixedBytes16 offset0816;
+        [FieldOffset(832)] internal FixedBytes16 offset0832;
+        [FieldOffset(848)] internal FixedBytes16 offset0848;
+        [FieldOffset(864)] internal FixedBytes16 offset0864;
+        [FieldOffset(880)] internal FixedBytes16 offset0880;
+        [FieldOffset(896)] internal FixedBytes16 offset0896;
+        [FieldOffset(912)] internal FixedBytes16 offset0912;
+        [FieldOffset(928)] internal FixedBytes16 offset0928;
+        [FieldOffset(944)] internal FixedBytes16 offset0944;
+        [FieldOffset(960)] internal FixedBytes16 offset0960;
+        [FieldOffset(976)] internal FixedBytes16 offset0976;
+        [FieldOffset(992)] internal FixedBytes16 offset0992;
+        [FieldOffset(1008)] internal FixedBytes16 offset1008;
+        [FieldOffset(1024)] internal FixedBytes16 offset1024;
+        [FieldOffset(1040)] internal FixedBytes16 offset1040;
+        [FieldOffset(1056)] internal FixedBytes16 offset1056;
+        [FieldOffset(1072)] internal FixedBytes16 offset1072;
+        [FieldOffset(1088)] internal FixedBytes16 offset1088;
+        [FieldOffset(1104)] internal FixedBytes16 offset1104;
+        [FieldOffset(1120)] internal FixedBytes16 offset1120;
+        [FieldOffset(1136)] internal FixedBytes16 offset1136;
+        [FieldOffset(1152)] internal FixedBytes16 offset1152;
+        [FieldOffset(1168)] internal FixedBytes16 offset1168;
+        [FieldOffset(1184)] internal FixedBytes16 offset1184;
+        [FieldOffset(1200)] internal FixedBytes16 offset1200;
+        [FieldOffset(1216)] internal FixedBytes16 offset1216;
+        [FieldOffset(1232)] internal FixedBytes16 offset1232;
+        [FieldOffset(1248)] internal FixedBytes16 offset1248;
+        [FieldOffset(1264)] internal FixedBytes16 offset1264;
+        [FieldOffset(1280)] internal FixedBytes16 offset1280;
+        [FieldOffset(1296)] internal FixedBytes16 offset1296;
+        [FieldOffset(1312)] internal FixedBytes16 offset1312;
+        [FieldOffset(1328)] internal FixedBytes16 offset1328;
+        [FieldOffset(1344)] internal FixedBytes16 offset1344;
+        [FieldOffset(1360)] internal FixedBytes16 offset1360;
+        [FieldOffset(1376)] internal FixedBytes16 offset1376;
+        [FieldOffset(1392)] internal FixedBytes16 offset1392;
+        [FieldOffset(1408)] internal FixedBytes16 offset1408;
+        [FieldOffset(1424)] internal FixedBytes16 offset1424;
+        [FieldOffset(1440)] internal FixedBytes16 offset1440;
+        [FieldOffset(1456)] internal FixedBytes16 offset1456;
+        [FieldOffset(1472)] internal FixedBytes16 offset1472;
+        [FieldOffset(1488)] internal FixedBytes16 offset1488;
+        [FieldOffset(1504)] internal FixedBytes16 offset1504;
+        [FieldOffset(1520)] internal FixedBytes16 offset1520;
+        [FieldOffset(1536)] internal FixedBytes16 offset1536;
+        [FieldOffset(1552)] internal FixedBytes16 offset1552;
+        [FieldOffset(1568)] internal FixedBytes16 offset1568;
+        [FieldOffset(1584)] internal FixedBytes16 offset1584;
+        [FieldOffset(1600)] internal FixedBytes16 offset1600;
+        [FieldOffset(1616)] internal FixedBytes16 offset1616;
+        [FieldOffset(1632)] internal FixedBytes16 offset1632;
+        [FieldOffset(1648)] internal FixedBytes16 offset1648;
+        [FieldOffset(1664)] internal FixedBytes16 offset1664;
+        [FieldOffset(1680)] internal FixedBytes16 offset1680;
+        [FieldOffset(1696)] internal FixedBytes16 offset1696;
+        [FieldOffset(1712)] internal FixedBytes16 offset1712;
+        [FieldOffset(1728)] internal FixedBytes16 offset1728;
+        [FieldOffset(1744)] internal FixedBytes16 offset1744;
+        [FieldOffset(1760)] internal FixedBytes16 offset1760;
+        [FieldOffset(1776)] internal FixedBytes16 offset1776;
+        [FieldOffset(1792)] internal FixedBytes16 offset1792;
+        [FieldOffset(1808)] internal FixedBytes16 offset1808;
+        [FieldOffset(1824)] internal FixedBytes16 offset1824;
+        [FieldOffset(1840)] internal FixedBytes16 offset1840;
+        [FieldOffset(1856)] internal FixedBytes16 offset1856;
+        [FieldOffset(1872)] internal FixedBytes16 offset1872;
+        [FieldOffset(1888)] internal FixedBytes16 offset1888;
+        [FieldOffset(1904)] internal FixedBytes16 offset1904;
+        [FieldOffset(1920)] internal FixedBytes16 offset1920;
+        [FieldOffset(1936)] internal FixedBytes16 offset1936;
+        [FieldOffset(1952)] internal FixedBytes16 offset1952;
+        [FieldOffset(1968)] internal FixedBytes16 offset1968;
+        [FieldOffset(1984)] internal FixedBytes16 offset1984;
+        [FieldOffset(2000)] internal FixedBytes16 offset2000;
+        [FieldOffset(2016)] internal FixedBytes16 offset2016;
+        [FieldOffset(2032)] internal FixedBytes16 offset2032;
+        [FieldOffset(2048)] internal FixedBytes16 offset2048;
+        [FieldOffset(2064)] internal FixedBytes16 offset2064;
+        [FieldOffset(2080)] internal FixedBytes16 offset2080;
+        [FieldOffset(2096)] internal FixedBytes16 offset2096;
+        [FieldOffset(2112)] internal FixedBytes16 offset2112;
+        [FieldOffset(2128)] internal FixedBytes16 offset2128;
+        [FieldOffset(2144)] internal FixedBytes16 offset2144;
+        [FieldOffset(2160)] internal FixedBytes16 offset2160;
+        [FieldOffset(2176)] internal FixedBytes16 offset2176;
+        [FieldOffset(2192)] internal FixedBytes16 offset2192;
+        [FieldOffset(2208)] internal FixedBytes16 offset2208;
+        [FieldOffset(2224)] internal FixedBytes16 offset2224;
+        [FieldOffset(2240)] internal FixedBytes16 offset2240;
+        [FieldOffset(2256)] internal FixedBytes16 offset2256;
+        [FieldOffset(2272)] internal FixedBytes16 offset2272;
+        [FieldOffset(2288)] internal FixedBytes16 offset2288;
+        [FieldOffset(2304)] internal FixedBytes16 offset2304;
+        [FieldOffset(2320)] internal FixedBytes16 offset2320;
+        [FieldOffset(2336)] internal FixedBytes16 offset2336;
+        [FieldOffset(2352)] internal FixedBytes16 offset2352;
+        [FieldOffset(2368)] internal FixedBytes16 offset2368;
+        [FieldOffset(2384)] internal FixedBytes16 offset2384;
+        [FieldOffset(2400)] internal FixedBytes16 offset2400;
+        [FieldOffset(2416)] internal FixedBytes16 offset2416;
+        [FieldOffset(2432)] internal FixedBytes16 offset2432;
+        [FieldOffset(2448)] internal FixedBytes16 offset2448;
+        [FieldOffset(2464)] internal FixedBytes16 offset2464;
+        [FieldOffset(2480)] internal FixedBytes16 offset2480;
+        [FieldOffset(2496)] internal FixedBytes16 offset2496;
+        [FieldOffset(2512)] internal FixedBytes16 offset2512;
+        [FieldOffset(2528)] internal FixedBytes16 offset2528;
+        [FieldOffset(2544)] internal FixedBytes16 offset2544;
+        [FieldOffset(2560)] internal FixedBytes16 offset2560;
+        [FieldOffset(2576)] internal FixedBytes16 offset2576;
+        [FieldOffset(2592)] internal FixedBytes16 offset2592;
+        [FieldOffset(2608)] internal FixedBytes16 offset2608;
+        [FieldOffset(2624)] internal FixedBytes16 offset2624;
+        [FieldOffset(2640)] internal FixedBytes16 offset2640;
+        [FieldOffset(2656)] internal FixedBytes16 offset2656;
+        [FieldOffset(2672)] internal FixedBytes16 offset2672;
+        [FieldOffset(2688)] internal FixedBytes16 offset2688;
+        [FieldOffset(2704)] internal FixedBytes16 offset2704;
+        [FieldOffset(2720)] internal FixedBytes16 offset2720;
+        [FieldOffset(2736)] internal FixedBytes16 offset2736;
+        [FieldOffset(2752)] internal FixedBytes16 offset2752;
+        [FieldOffset(2768)] internal FixedBytes16 offset2768;
+        [FieldOffset(2784)] internal FixedBytes16 offset2784;
+        [FieldOffset(2800)] internal FixedBytes16 offset2800;
+        [FieldOffset(2816)] internal FixedBytes16 offset2816;
+        [FieldOffset(2832)] internal FixedBytes16 offset2832;
+        [FieldOffset(2848)] internal FixedBytes16 offset2848;
+        [FieldOffset(2864)] internal FixedBytes16 offset2864;
+        [FieldOffset(2880)] internal FixedBytes16 offset2880;
+        [FieldOffset(2896)] internal FixedBytes16 offset2896;
+        [FieldOffset(2912)] internal FixedBytes16 offset2912;
+        [FieldOffset(2928)] internal FixedBytes16 offset2928;
+        [FieldOffset(2944)] internal FixedBytes16 offset2944;
+        [FieldOffset(2960)] internal FixedBytes16 offset2960;
+        [FieldOffset(2976)] internal FixedBytes16 offset2976;
+        [FieldOffset(2992)] internal FixedBytes16 offset2992;
+        [FieldOffset(3008)] internal FixedBytes16 offset3008;
+        [FieldOffset(3024)] internal FixedBytes16 offset3024;
+        [FieldOffset(3040)] internal FixedBytes16 offset3040;
+        [FieldOffset(3056)] internal FixedBytes16 offset3056;
+        [FieldOffset(3072)] internal FixedBytes16 offset3072;
+        [FieldOffset(3088)] internal FixedBytes16 offset3088;
+        [FieldOffset(3104)] internal FixedBytes16 offset3104;
+        [FieldOffset(3120)] internal FixedBytes16 offset3120;
+        [FieldOffset(3136)] internal FixedBytes16 offset3136;
+        [FieldOffset(3152)] internal FixedBytes16 offset3152;
+        [FieldOffset(3168)] internal FixedBytes16 offset3168;
+        [FieldOffset(3184)] internal FixedBytes16 offset3184;
+        [FieldOffset(3200)] internal FixedBytes16 offset3200;
+        [FieldOffset(3216)] internal FixedBytes16 offset3216;
+        [FieldOffset(3232)] internal FixedBytes16 offset3232;
+        [FieldOffset(3248)] internal FixedBytes16 offset3248;
+        [FieldOffset(3264)] internal FixedBytes16 offset3264;
+        [FieldOffset(3280)] internal FixedBytes16 offset3280;
+        [FieldOffset(3296)] internal FixedBytes16 offset3296;
+        [FieldOffset(3312)] internal FixedBytes16 offset3312;
+        [FieldOffset(3328)] internal FixedBytes16 offset3328;
+        [FieldOffset(3344)] internal FixedBytes16 offset3344;
+        [FieldOffset(3360)] internal FixedBytes16 offset3360;
+        [FieldOffset(3376)] internal FixedBytes16 offset3376;
+        [FieldOffset(3392)] internal FixedBytes16 offset3392;
+        [FieldOffset(3408)] internal FixedBytes16 offset3408;
+        [FieldOffset(3424)] internal FixedBytes16 offset3424;
+        [FieldOffset(3440)] internal FixedBytes16 offset3440;
+        [FieldOffset(3456)] internal FixedBytes16 offset3456;
+        [FieldOffset(3472)] internal FixedBytes16 offset3472;
+        [FieldOffset(3488)] internal FixedBytes16 offset3488;
+        [FieldOffset(3504)] internal FixedBytes16 offset3504;
+        [FieldOffset(3520)] internal FixedBytes16 offset3520;
+        [FieldOffset(3536)] internal FixedBytes16 offset3536;
+        [FieldOffset(3552)] internal FixedBytes16 offset3552;
+        [FieldOffset(3568)] internal FixedBytes16 offset3568;
+        [FieldOffset(3584)] internal FixedBytes16 offset3584;
+        [FieldOffset(3600)] internal FixedBytes16 offset3600;
+        [FieldOffset(3616)] internal FixedBytes16 offset3616;
+        [FieldOffset(3632)] internal FixedBytes16 offset3632;
+        [FieldOffset(3648)] internal FixedBytes16 offset3648;
+        [FieldOffset(3664)] internal FixedBytes16 offset3664;
+        [FieldOffset(3680)] internal FixedBytes16 offset3680;
+        [FieldOffset(3696)] internal FixedBytes16 offset3696;
+        [FieldOffset(3712)] internal FixedBytes16 offset3712;
+        [FieldOffset(3728)] internal FixedBytes16 offset3728;
+        [FieldOffset(3744)] internal FixedBytes16 offset3744;
+        [FieldOffset(3760)] internal FixedBytes16 offset3760;
+        [FieldOffset(3776)] internal FixedBytes16 offset3776;
+        [FieldOffset(3792)] internal FixedBytes16 offset3792;
+        [FieldOffset(3808)] internal FixedBytes16 offset3808;
+        [FieldOffset(3824)] internal FixedBytes16 offset3824;
+        [FieldOffset(3840)] internal FixedBytes16 offset3840;
+        [FieldOffset(3856)] internal FixedBytes16 offset3856;
+        [FieldOffset(3872)] internal FixedBytes16 offset3872;
+        [FieldOffset(3888)] internal FixedBytes16 offset3888;
+        [FieldOffset(3904)] internal FixedBytes16 offset3904;
+        [FieldOffset(3920)] internal FixedBytes16 offset3920;
+        [FieldOffset(3936)] internal FixedBytes16 offset3936;
+        [FieldOffset(3952)] internal FixedBytes16 offset3952;
+        [FieldOffset(3968)] internal FixedBytes16 offset3968;
+        [FieldOffset(3984)] internal FixedBytes16 offset3984;
+        [FieldOffset(4000)] internal FixedBytes16 offset4000;
+        [FieldOffset(4016)] internal FixedBytes16 offset4016;
+        [FieldOffset(4032)] internal FixedBytes16 offset4032;
+        [FieldOffset(4048)] internal FixedBytes16 offset4048;
+        [FieldOffset(4064)] internal FixedBytes16 offset4064;
+        [FieldOffset(4080)] internal byte byte4080;
+        [FieldOffset(4081)] internal byte byte4081;
+        [FieldOffset(4082)] internal byte byte4082;
+        [FieldOffset(4083)] internal byte byte4083;
+        [FieldOffset(4084)] internal byte byte4084;
+        [FieldOffset(4085)] internal byte byte4085;
+        [FieldOffset(4086)] internal byte byte4086;
+        [FieldOffset(4087)] internal byte byte4087;
+        [FieldOffset(4088)] internal byte byte4088;
+        [FieldOffset(4089)] internal byte byte4089;
+        [FieldOffset(4090)] internal byte byte4090;
+        [FieldOffset(4091)] internal byte byte4091;
+        [FieldOffset(4092)] internal byte byte4092;
+        [FieldOffset(4093)] internal byte byte4093;
     }
-    
+
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
     /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs 
+    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
     /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
     ///
     /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
@@ -7959,10 +8169,10 @@ namespace Unity.Collections
     /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
     ///
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often. 
+    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=4096)]
-    public struct FixedString4096 
+    public struct FixedString4096
     : IComparable<String>
     , IEquatable<String>
     , IEquatable<FixedString32>
@@ -7970,13 +8180,12 @@ namespace Unity.Collections
     , IEquatable<FixedString128>
     , IEquatable<FixedString512>
     , IEquatable<FixedString4096>
-    
-    {        
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;        
-        [FieldOffset(2)] internal FixedBytes4094 bytes;        
+    {
+        [FieldOffset(0)] internal ushort utf8LengthInBytes;
+        [FieldOffset(2)] internal FixedBytes4094 bytes;
 
         /// <summary>
-        /// The maximum length of the string, in bytes. 
+        /// The maximum length of the string, in bytes.
         /// </summary>
         public const int UTF8MaxLengthInBytes = 4094;
 
@@ -8000,14 +8209,14 @@ namespace Unity.Collections
                 {
                     fixed(FixedString4096* t = &this)
                         return ref UnsafeUtilityEx.AsRef<FixedListByte4096>(t);
-                }            
+                }
             }
         }
-                                
+
         /// <summary>
         /// Returns the effective size of this struct in bytes, considering only the bytes that
         /// are actually used to hold data. Since the string may be shorter or longer, the
-        /// effective size may be smaller than the UnsafeUtility.SizeOf<FixedString4096>() size. FixedBytes at the
+        /// effective size may be smaller than the UnsafeUtility.SizeOf&lt;FixedString4096&gt;() size. FixedBytes at the
         /// end of the structure outside of the effective size, may contain any value, but
         /// typically contain the value 0.
         /// </summary>
@@ -8016,7 +8225,7 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + utf8LengthInBytes;
         }
-        
+
         /// <summary>
         /// Parse an integer from this FixedString4096, at the byte offset indicated from the beginning
         /// of the FixedString4096.
@@ -8031,7 +8240,7 @@ namespace Unity.Collections
                 fixed (byte* b = &bytes.offset0000.byte0000)
                 {
                     Generic temp = new Generic{data = b, Length = utf8LengthInBytes, Capacity = UTF8MaxLengthInBytes};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
@@ -8174,7 +8383,7 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a FixedString4096 that is a single Unicode.Rune, repeated multiple times.
         /// </summary>
@@ -8194,12 +8403,12 @@ namespace Unity.Collections
                         var error = Unicode.UcsToUtf8(b, ref offset, UTF8MaxLengthInBytes, rune);
                         if(error != ConversionError.None)
                             throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
-                        utf8LengthInBytes = (ushort)offset;             
+                        utf8LengthInBytes = (ushort)offset;
                     }
                 }
-            }            
+            }
         }
-                
+
         /// <summary>
         /// Construct a FixedString4096 that is a single UCS-2 character, repeated multiple times.
         /// Keep in mind that UCS-2 is incapable of expressing emoji, rare Chinese characters, and various other things.
@@ -8210,7 +8419,7 @@ namespace Unity.Collections
         : this(new Unicode.Rune{value=c}, count)
         {
         }
-                
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString4096 with the UTF-8 representation of a given long integer.
@@ -8242,7 +8451,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString32 onto this FixedString4096.
         /// </summary>
@@ -8256,14 +8465,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int IndexOf(in FixedString32 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -8288,14 +8497,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString32,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString32 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString32 
+        /// otherwise, the index of the first occurrence of the FixedString32
         /// </returns>
         public int LastIndexOf(in FixedString32 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -8321,7 +8530,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString32,
-        /// and return whether the FixedString32 was found or not.   
+        /// and return whether the FixedString32 was found or not.
         /// </summary>
         /// <param name="other">The FixedString32 to search for</param>
         /// <returns>
@@ -8335,7 +8544,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8353,7 +8562,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString32,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString32 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8361,28 +8570,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString32 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString4096 a, in FixedString32 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString32 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString4096 a, in FixedString32 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString4096 from a FixedString32
         /// </summary>
@@ -8393,15 +8604,16 @@ namespace Unity.Collections
             bytes = new FixedBytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString32 to FixedString4096.
         /// </summary>
         /// <param name="b">The FixedString32 object to convert to a FixedString4096</param>
-        public static implicit operator FixedString4096(in FixedString32 source) => new FixedString4096(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString4096(in FixedString32 source) => new FixedString4096(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString4096 with the UTF-8 representation of a given long integer.
@@ -8433,7 +8645,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString64 onto this FixedString4096.
         /// </summary>
@@ -8447,14 +8659,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int IndexOf(in FixedString64 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -8479,14 +8691,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString64,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString64 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString64 
+        /// otherwise, the index of the first occurrence of the FixedString64
         /// </returns>
         public int LastIndexOf(in FixedString64 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -8512,7 +8724,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString64,
-        /// and return whether the FixedString64 was found or not.   
+        /// and return whether the FixedString64 was found or not.
         /// </summary>
         /// <param name="other">The FixedString64 to search for</param>
         /// <returns>
@@ -8526,7 +8738,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8544,7 +8756,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString64,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString64 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8552,28 +8764,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString64 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString4096 a, in FixedString64 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString64 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString4096 a, in FixedString64 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString4096 from a FixedString64
         /// </summary>
@@ -8584,15 +8798,16 @@ namespace Unity.Collections
             bytes = new FixedBytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString64 to FixedString4096.
         /// </summary>
         /// <param name="b">The FixedString64 object to convert to a FixedString4096</param>
-        public static implicit operator FixedString4096(in FixedString64 source) => new FixedString4096(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString4096(in FixedString64 source) => new FixedString4096(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString4096 with the UTF-8 representation of a given long integer.
@@ -8624,7 +8839,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString128 onto this FixedString4096.
         /// </summary>
@@ -8638,14 +8853,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int IndexOf(in FixedString128 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -8670,14 +8885,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString128,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString128 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString128 
+        /// otherwise, the index of the first occurrence of the FixedString128
         /// </returns>
         public int LastIndexOf(in FixedString128 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -8703,7 +8918,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString128,
-        /// and return whether the FixedString128 was found or not.   
+        /// and return whether the FixedString128 was found or not.
         /// </summary>
         /// <param name="other">The FixedString128 to search for</param>
         /// <returns>
@@ -8717,7 +8932,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8735,7 +8950,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString128,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString128 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8743,28 +8958,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString128 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString4096 a, in FixedString128 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString128 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString4096 a, in FixedString128 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString4096 from a FixedString128
         /// </summary>
@@ -8775,15 +8992,16 @@ namespace Unity.Collections
             bytes = new FixedBytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString128 to FixedString4096.
         /// </summary>
         /// <param name="b">The FixedString128 object to convert to a FixedString4096</param>
-        public static implicit operator FixedString4096(in FixedString128 source) => new FixedString4096(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString4096(in FixedString128 source) => new FixedString4096(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString4096 with the UTF-8 representation of a given long integer.
@@ -8815,7 +9033,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString512 onto this FixedString4096.
         /// </summary>
@@ -8829,14 +9047,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int IndexOf(in FixedString512 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -8861,14 +9079,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString512,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString512 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString512 
+        /// otherwise, the index of the first occurrence of the FixedString512
         /// </returns>
         public int LastIndexOf(in FixedString512 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -8894,7 +9112,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString512,
-        /// and return whether the FixedString512 was found or not.   
+        /// and return whether the FixedString512 was found or not.
         /// </summary>
         /// <param name="other">The FixedString512 to search for</param>
         /// <returns>
@@ -8908,7 +9126,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8926,7 +9144,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString512,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString512 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -8934,28 +9152,30 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString512 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString4096 a, in FixedString512 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString512 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString4096 a, in FixedString512 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
-        
+
         /// <summary>
         /// Construct a FixedString4096 from a FixedString512
         /// </summary>
@@ -8966,15 +9186,16 @@ namespace Unity.Collections
             bytes = new FixedBytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
 
         /// <summary>
         /// Enable implicit conversion of FixedString512 to FixedString4096.
         /// </summary>
         /// <param name="b">The FixedString512 object to convert to a FixedString4096</param>
-        public static implicit operator FixedString4096(in FixedString512 source) => new FixedString4096(source);        
-        
+        /// <returns></returns>
+        public static implicit operator FixedString4096(in FixedString512 source) => new FixedString4096(source);
+
 
         /// <summary>
         /// Overwrite the contents of this FixedString4096 with the UTF-8 representation of a given long integer.
@@ -9006,7 +9227,7 @@ namespace Unity.Collections
         {
             return AppendFrom(source);
         }
-        
+
         /// <summary>
         /// Copy a FixedString4096 onto this FixedString4096.
         /// </summary>
@@ -9020,14 +9241,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int IndexOf(in FixedString4096 other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
@@ -9052,14 +9273,14 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the last occurrence of a FixedString4096,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the FixedString4096 was not found.
-        /// otherwise, the index of the first occurrence of the FixedString4096 
+        /// otherwise, the index of the first occurrence of the FixedString4096
         /// </returns>
         public int LastIndexOf(in FixedString4096 other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
@@ -9085,7 +9306,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a FixedString4096,
-        /// and return whether the FixedString4096 was found or not.   
+        /// and return whether the FixedString4096 was found or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to search for</param>
         /// <returns>
@@ -9099,7 +9320,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -9117,7 +9338,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a FixedString4096,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The FixedString4096 to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -9125,28 +9346,31 @@ namespace Unity.Collections
         {
             return EqualsIn(other);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString4096 have the same value.
         /// </summary>
-        /// <param name="a">The first string to compare for equality</param> 
-        /// <param name="b">The second string to compare for equality</param> 
+        /// <param name="a">The first string to compare for equality</param>
+        /// <param name="b">The second string to compare for equality</param>
+        /// <returns></returns>
         public static bool operator ==(in FixedString4096 a, in FixedString4096 b)
         {
             return a.EqualsIn(b);
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 and FixedString4096 have different values.
         /// </summary>
-        /// <param name="a">The first string to compare for inequality</param> 
-        /// <param name="b">The second string to compare for inequality</param> 
+        /// <param name="a">The first string to compare for inequality</param>
+        /// <param name="b">The second string to compare for inequality</param>
+        /// <returns></returns>
         public static bool operator !=(in FixedString4096 a, in FixedString4096 b)
         {
             return !a.EqualsIn(b);
-        }        
+        }
 
 
+        [ExcludeFromDocs]
         public struct Enumerator
         {
             FixedString4096 target;
@@ -9183,45 +9407,45 @@ namespace Unity.Collections
 
         /// <summary>
         /// Search this string for the first occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Uniode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching from</param>
         /// <param name="count">The count of bytes to search from the starting index</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int IndexOf(Unicode.Rune other, int startIndex = 0, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return IndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Search this string for the last occurrence of a Unicode.Rune,
-        /// and return the index of where it was found, if any.   
+        /// and return the index of where it was found, if any.
         /// </summary>
         /// <param name="other">The Unicode.Rune to search for</param>
         /// <param name="startIndex">The byte index to begin searching backwards from</param>
         /// <param name="count">The count of bytes to search from the starting index backward</param>
         /// <returns>
         /// -1 if the Unicode.Rune was not found.
-        /// otherwise, the index of the first occurrence of the Unicode.Rune 
+        /// otherwise, the index of the first occurrence of the Unicode.Rune
         /// </returns>
         public int LastIndexOf(Unicode.Rune other, int startIndex = UTF8MaxLengthInBytes-1, int count = UTF8MaxLengthInBytes)
         {
             FixedString32 temp = new FixedString32(other, 1);
             return LastIndexOf(temp, startIndex, count);
-        } 
+        }
 
         /// <summary>
         /// Compare this FixedString4096 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted. 
+        /// and return which of the two strings would come first if sorted.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted, 
+        /// -1 if this FixedString4096 would appear first if sorted,
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
@@ -9232,7 +9456,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Compare this FixedString4096 with a System.String,
-        /// and return whether they contain the same string or not. 
+        /// and return whether they contain the same string or not.
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
@@ -9240,7 +9464,7 @@ namespace Unity.Collections
         {
             return ToString().Equals(other);
         }
-        
+
         /// <summary>
         /// Copy UTF-16 data from a buffer onto this FixedString4096.
         /// </summary>
@@ -9276,11 +9500,11 @@ namespace Unity.Collections
             {
                 utf8LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
         }
-                
+
         /// <summary>
         /// Copy this FixedString4096 into a buffer of UTF-8 data.
         /// </summary>
@@ -9293,20 +9517,20 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Copy this FixedString4096 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data copied to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that will be copied to the destination buffer</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Copy(d, out length, maxLength, b, utf8LengthInBytes);
         }
-                
+
         /// <summary>
         /// Append this FixedString4096 into a buffer of UTF-8 data.
         /// </summary>
@@ -9319,14 +9543,14 @@ namespace Unity.Collections
             fixed (byte* b = &bytes.offset0000.byte0000)
                 return Generic.Append(d, ref length, maxLength, b, utf8LengthInBytes);
         }
-        
+
         /// <summary>
         /// Append this FixedString4096 into a buffer of UTF-16 data.
         /// </summary>
         /// <param name="d">A pointer to the UTF-16 buffer destination for the copy</param>
         /// <param name="length">The length, in 16-bit units, of the data appended to the destination buffer</param>
         /// <param name="maxLength">The maximum number of 16-bit units that the destination buffer can hold</param>
-        /// <returns>An error code, if any, in the case that the operation fails.</returns>                        
+        /// <returns>An error code, if any, in the case that the operation fails.</returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &bytes.offset0000.byte0000)
@@ -9343,19 +9567,20 @@ namespace Unity.Collections
             bytes = new FixedBytes4094{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
-                
+
         /// <summary>
         /// Enable implicit conversion of System.String to FixedString4096.
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString4096</param>
-        public static implicit operator FixedString4096(string b) => new FixedString4096(b);        
-                
+        /// <returns></returns>
+        public static implicit operator FixedString4096(string b) => new FixedString4096(b);
+
         /// <summary>
         /// Convert this FixedString4096 to a System.String.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString4096</returns>                        
+        /// <returns>A System.String with a copy of this FixedString4096</returns>
         public override String ToString()
         {
             unsafe
@@ -9366,12 +9591,12 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Compute a hash code of this FixedString4096: an integer that is likely to be different for
         /// two FixedString4096, if their contents are different.
         /// </summary>
-        /// <returns>A hash code of this FixedString4096</returns>                                
+        /// <returns>A hash code of this FixedString4096</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -9382,11 +9607,11 @@ namespace Unity.Collections
                 }
             }
         }
-        
+
         /// <summary>
         /// Determines whether a FixedString4096 has the same value as some other object.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param> 
+        /// <param name="obj">The object to compare for equality</param>
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;

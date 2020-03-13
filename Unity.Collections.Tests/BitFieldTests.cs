@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Unity.Collections;
 
-public class BitFieldTests
+internal class BitFieldTests
 {
     [Test]
     public void BitField32_Get_Set()

@@ -334,7 +334,7 @@ namespace Unity.Collections
             /// <typeparam name="T">The type of value.</typeparam>
             public ref T Allocate<T>() where T : struct
             {
-                IsUnmanagedAndThrow<T>();
+                CollectionHelper.CheckIsUnmanaged<T>();
                 int size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtilityEx.AsRef<T>(Allocate(size));
             }
@@ -347,15 +347,6 @@ namespace Unity.Collections
             {
                 AllocateChecks(size);
                 return m_Writer.Allocate(size);
-            }
-
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            static void IsUnmanagedAndThrow<T>() where T : struct
-            {
-                if (!UnsafeUtility.IsUnmanaged<T>())
-                {
-                    throw new ArgumentException($"{typeof(T)} used in BlockStream must be unmanaged (contain no managed types).");
-                }
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

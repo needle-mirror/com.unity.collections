@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.Tests;
 
-public class NativeHashMapTests
+internal class NativeHashMapTests
 {
 #pragma warning disable 0649 // always default value
     struct NonBlittableStruct : IEquatable<NonBlittableStruct>
@@ -151,7 +151,7 @@ public class NativeHashMapTests
         var hashMap = new NativeHashMap<int, int> (0, Allocator.Persistent);
         hashMap.TryAdd (0, 0);
         Assert.AreEqual (1, hashMap.Capacity);
-        Assert.AreEqual (1, hashMap.Length);
+        Assert.AreEqual (1, hashMap.Count());
         hashMap.Dispose ();
     }
 
@@ -506,7 +506,7 @@ public class NativeHashMapTests
         }
 
         // Validate Hashtable has all the expected values
-        Assert.AreEqual(30, hashMap.Length);
+        Assert.AreEqual(30, hashMap.Count());
         for (int i = 0; i < 30; ++i)
         {
             int output;
@@ -552,6 +552,27 @@ public class NativeHashMapTests
         Assert.IsFalse(hashMap.ContainsKey(6));
 
         hashMap.Dispose();
+    }
+
+    [Test]
+    public void NativeHashMap_NativeKeyValueArrays_DisposeJob()
+    {
+        var container = new NativeHashMap<int, int>(1, Allocator.Persistent);
+        Assert.True(container.IsCreated);
+        Assert.DoesNotThrow(() => { container[0] = 0; });
+        Assert.DoesNotThrow(() => { container[1] = 1; });
+        Assert.DoesNotThrow(() => { container[2] = 2; });
+        Assert.DoesNotThrow(() => { container[3] = 3; });
+
+        var kv = container.GetKeyValueArrays(Allocator.Persistent);
+
+        var disposeJob = container.Dispose(default);
+        Assert.False(container.IsCreated);
+        Assert.Throws<InvalidOperationException>(() => { container[0] = 2; });
+
+        kv.Dispose(disposeJob);
+
+        disposeJob.Complete();
     }
 
     [Test]

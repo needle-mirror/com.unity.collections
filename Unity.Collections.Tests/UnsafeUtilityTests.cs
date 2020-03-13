@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 
 [TestFixture]
-public class UnsafeUtilityTests
+internal class UnsafeUtilityTests
 {
 #pragma warning disable 649
     struct DummyVec

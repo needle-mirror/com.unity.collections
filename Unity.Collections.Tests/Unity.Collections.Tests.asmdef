@@ -3,7 +3,8 @@
     "references": [
         "Unity.Collections",
         "Unity.PerformanceTesting",
-        "Unity.Burst"
+        "Unity.Burst",
+        "Unity.Jobs"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Unity.Collections.LowLevel.Unsafe
+﻿namespace Unity.Collections.LowLevel.Unsafe
 {
     public unsafe static class UnsafeUtilityEx
     {

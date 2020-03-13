@@ -14,7 +14,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-  
+
 // We have defined fixed-size NativeStrings, all of which are value types with zero allocation.
 // You can copy them freely without ever generating garbage or needing to Dispose, but they are limited in size.
 // If you want no size restrictions - if you want one type that works equally well for 1 character or 1,000,000,000 -
@@ -23,7 +23,7 @@
 // NativeString32 - consumes 32 bytes of memory. suitable for short names. cacheline-sized on ARM
 // NativeString64 - consumes 64 bytes of memory. suitable for names and descriptions. cacheline sized on non-ARM
 // NativeString128 - consumes 128 bytes of memory. can hold a line of text.
-// NativeString512 - consumes 512 bytes of memory. 
+// NativeString512 - consumes 512 bytes of memory.
 // NativeString4096 - consumes 4096 bytes of memory. can hold a printed page of text.
 
 using System;
@@ -31,9 +31,13 @@ using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
-{   
+{
     internal unsafe struct NativeString
     {
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             var c = stackalloc char[Length * 2];
@@ -42,11 +46,23 @@ namespace Unity.Collections
             return new String(c, 0, length);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return (int)CollectionHelper.Hash(data, Length);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="aa"></param>
+        /// <param name="b"></param>
+        /// <param name="bb"></param>
+        /// <returns></returns>
         public static unsafe int CompareTo(byte *a, int aa, byte* b, int bb)
         {
             int chars = aa < bb ? aa : bb;
@@ -61,8 +77,17 @@ namespace Unity.Collections
                 return -1;
             if (aa > bb)
                 return 1;
-            return 0;            
-        }        
+            return 0;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="aa"></param>
+        /// <param name="b"></param>
+        /// <param name="bb"></param>
+        /// <returns></returns>
         public static unsafe bool Equals(byte *a, int aa, byte* b, int bb)
         {
             if (aa != bb)
@@ -70,15 +95,33 @@ namespace Unity.Collections
             return UnsafeUtility.MemCmp(a, b, aa) == 0;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public static bool IsDigit(Unicode.Rune c)
         {
             return c.value >= '0' && c.value <= '9';
         }
 
+        /// <summary>
+        /// </summary>
         public int Length;
+
+        /// <summary>
+        /// </summary>
         public int Capacity;
+
+        /// <summary>
+        /// </summary>
         public byte* data;
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public Unicode.Rune Peek(int offset)
         {
             if (offset >= Length)
@@ -86,17 +129,34 @@ namespace Unity.Collections
             Unicode.Utf8ToUcs(out var rune, data, ref offset, Capacity);
             return rune;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public Unicode.Rune Read(ref int offset)
         {
             Unicode.Utf8ToUcs(out var rune, data, ref offset, Capacity);
             return rune;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="rune"></param>
         public void Write(ref int offset, Unicode.Rune rune)
         {
             Unicode.UcsToUtf8(data, ref offset, Capacity, rune);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             long value = 0;
@@ -126,11 +186,14 @@ namespace Unity.Collections
             if(value > Int32.MaxValue)
                 return ParseError.Overflow;
             if (value < Int32.MinValue)
-                return ParseError.Overflow;            
+                return ParseError.Overflow;
             output = (int)value;
             return ParseError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
         [StructLayout(LayoutKind.Explicit)]
         internal struct UintFloatUnion
         {
@@ -139,7 +202,14 @@ namespace Unity.Collections
             [FieldOffset(0)]
             public float floatValue;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="mantissa10"></param>
+        /// <param name="exponent10"></param>
+        /// <returns></returns>
         static ParseError Base10ToBase2(ref float output, ulong mantissa10, int exponent10)
         {
             if (mantissa10 == 0)
@@ -166,7 +236,7 @@ namespace Unity.Collections
             }
             while(exponent10 < 0)
             {
-                while ((mantissa2 & 0x8000000000000000U) == 0) 
+                while ((mantissa2 & 0x8000000000000000U) == 0)
                 {
                     mantissa2 <<= 1;
                     --exponent2;
@@ -188,21 +258,14 @@ namespace Unity.Collections
             return ParseError.None;
         }
 
-        static int tzcnt(uint v)
-        {
-            uint c = 32; // c will be the number of zero bits on the right
-            v &= (uint)-(int)v;
-            if (0 != v) c--;
-            if (0 != (v & 0x0000FFFF)) c -= 16;
-            if (0 != (v & 0x00FF00FF)) c -= 8;
-            if (0 != (v & 0x0F0F0F0F)) c -= 4;
-            if (0 != (v & 0x33333333)) c -= 2;
-            if (0 != (v & 0x55555555)) c -= 1;
-            return (int)c;
-        }        
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="mantissa10"></param>
+        /// <param name="exponent10"></param>
+        /// <param name="input"></param>
         public static void Base2ToBase10(ref ulong mantissa10, ref int exponent10, float input)
-        {          
+        {
             UintFloatUnion ufu = new UintFloatUnion();
             ufu.floatValue = input;
             if(ufu.uintValue == 0)
@@ -213,9 +276,6 @@ namespace Unity.Collections
             }
             var mantissa2 = (ufu.uintValue & ((1<<23)-1)) | (1 << 23);
             var exponent2 = (int) (ufu.uintValue >> 23) - 127 - 23;
-//            var tz = tzcnt((uint)mantissa2);
-//            mantissa2 >>= tz;
-//            exponent2 += tz;
             mantissa10 = mantissa2;
             exponent10 = exponent2;
             if (exponent2 > 0)
@@ -246,14 +306,19 @@ namespace Unity.Collections
                     ++exponent2;
                 }
             }
-            // normalize mantissa10                
-            while (mantissa10 > 9999999U || mantissa10 % 10 == 0) 
+            // normalize mantissa10
+            while (mantissa10 > 9999999U || mantissa10 % 10 == 0)
             {
                 mantissa10 = (mantissa10 + 5) / 10;
                 ++exponent10;
             }
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <returns></returns>
         public FormatError Format(char a)
         {
             if (Length >= Capacity)
@@ -261,7 +326,13 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = a});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b)
         {
             if (Length >= Capacity)
@@ -272,9 +343,16 @@ namespace Unity.Collections
             Write(ref Length, new Unicode.Rune {value = b});
             return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -287,8 +365,20 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public FormatError Format(char a, char b, char c, char d, char e, char f, char g, char h)
-        {            
+        {
             if (Length >= Capacity)
                 return FormatError.Overflow;
             Write(ref Length, new Unicode.Rune {value = a});
@@ -316,6 +406,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="sourceLength"></param>
+        /// <param name="decimalExponent"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError FormatScientific(char *source, int sourceLength, int decimalExponent, char decimalSeparator)
         {
             FormatError error;
@@ -349,14 +447,19 @@ namespace Unity.Collections
             {
                 var decimalDigit = decimalExponent % 10;
                 ascii[1 - i] = (char)('0'+decimalDigit);
-                decimalExponent /= 10;                        
+                decimalExponent /= 10;
             }
             for(var i = 0; i < decimalDigits; ++i)
                 if ((error = Format(ascii[i])) != FormatError.None)
-                    return error;            
-            return FormatError.None;                       
+                    return error;
+            return FormatError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             const int maximumDigits = 20;
@@ -386,14 +489,25 @@ namespace Unity.Collections
                 return FormatError.Overflow;
             Length = newLength;
             UnsafeUtility.MemCpy(data, temp + offset, Length);
-            return FormatError.None;            
+            return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             return Format((long)input);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator)
         {
             UintFloatUnion ufu = new UintFloatUnion();
@@ -447,7 +561,7 @@ namespace Unity.Collections
             if (trailingZeroes > 0)
             {
                 if (trailingZeroes > 4)
-                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);                
+                    return FormatScientific(  ascii, decimalDigits, decimalExponent, decimalSeparator);
                 for (var i = 0; i < decimalDigits; ++i)
                 {
                     if ((error = Format( ascii[i])) != FormatError.None)
@@ -457,8 +571,8 @@ namespace Unity.Collections
                 {
                     if ((error = Format( '0')) != FormatError.None)
                         return error;
-                    --trailingZeroes;                    
-                }                
+                    --trailingZeroes;
+                }
                 return FormatError.None;
             }
             var indexOfSeparator = decimalDigits + decimalExponent;
@@ -473,6 +587,14 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c)
         {
             int old = offset;
@@ -484,6 +606,19 @@ namespace Unity.Collections
             return false;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <param name="d"></param>
+        /// <param name="e"></param>
+        /// <param name="f"></param>
+        /// <param name="g"></param>
+        /// <param name="h"></param>
+        /// <returns></returns>
         public bool Found(ref int offset, char a, char b, char c, char d, char e, char f, char g, char h)
         {
             int old = offset;
@@ -499,7 +634,14 @@ namespace Unity.Collections
             offset = old;
             return false;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator)
         {
             if(Found(ref offset, 'n', 'a', 'n'))
@@ -508,7 +650,7 @@ namespace Unity.Collections
                 ufu.uintValue = 4290772992U;
                 output = ufu.floatValue;
                 return ParseError.None;
-            }            
+            }
             int sign = 1;
             if (offset < Length)
             {
@@ -592,41 +734,89 @@ namespace Unity.Collections
                 if (exponentDigits == 0)
                     return ParseError.Syntax;
             }
-            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;            
+            decimalExponent = decimalExponent * decimalExponentSign - digitsAfterDot;
             var error = Base10ToBase2(ref output, decimalMantissa, decimalExponent);
             if (error != ParseError.None)
                 return error;
             output *= sign;
             return ParseError.None;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destMaxLength, char *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf16ToUtf8(src, srcLength, dest, out destLength, destMaxLength))
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out int destLength, int destMaxLength, byte *src, int srcLength)
         {
             destLength = srcLength > destMaxLength ? destMaxLength : srcLength;
             UnsafeUtility.MemCpy(dest, src, destLength);
             return destLength == srcLength ? CopyError.None : CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out int destLength, int destMaxLength, byte *src, int srcLength)
         {
             if(ConversionError.None == Unicode.Utf8ToUtf16(src, srcLength, dest, out destLength, destMaxLength))
                 return CopyError.None;
             return CopyError.Truncation;
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destMaxLength, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest, out var temp, destMaxLength);
             destLength = (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(byte *dest, out ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest, out var temp, destMaxLength);
@@ -635,6 +825,16 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Copy(char *dest, out ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest, out var temp, destMaxLength);
@@ -644,14 +844,33 @@ namespace Unity.Collections
             return CopyError.Truncation;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destMaxLength, char *src, ushort srcLength)
         {
             var error = Unicode.Utf16ToUtf8(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
             destLength += (ushort)temp;
-            if(error == ConversionError.None) 
+            if(error == ConversionError.None)
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(byte *dest, ref ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf8(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
@@ -660,6 +879,16 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="dest"></param>
+        /// <param name="destLength"></param>
+        /// <param name="destMaxLength"></param>
+        /// <param name="src"></param>
+        /// <param name="srcLength"></param>
+        /// <returns></returns>
         public static CopyError Append(char *dest, ref ushort destLength, ushort destMaxLength, byte *src, ushort srcLength)
         {
             var error = Unicode.Utf8ToUtf16(src, srcLength, dest + destLength, out var temp, destMaxLength - destLength);
@@ -668,16 +897,22 @@ namespace Unity.Collections
                 return CopyError.None;
             return CopyError.Truncation;
         }
-
-        
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=1)]
     public struct Bytes1
-    {   
+    {
+        /// <summary>
+        /// </summary>
         [FieldOffset(0)] public byte byte0000;
     }
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=16)]
     public struct Bytes16
     {
@@ -686,7 +921,9 @@ namespace Unity.Collections
     {
        var offset = i.ToString("D4");
 #>
-      [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
+        /// <summary>
+        /// </summary>
+        [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
     }
 #>
@@ -699,16 +936,21 @@ namespace Unity.Collections
       var MAXLENGTH = BYTES - 2;
 #>
 
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=<#=MAXLENGTH#>)]
     public struct Bytes<#=MAXLENGTH#>
     {
 <#
       var freeBytes = MAXLENGTH % 16;
-      for(var i = 0; i < freeBytes; ++i) 
+      for(var i = 0; i < freeBytes; ++i)
       {
         var offset = i.ToString("D4");
 #>
-        [FieldOffset(<#=i#>)] public byte byte<#=offset#>;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
       }
       for(var i = 0; i < MAXLENGTH / 16; ++i)
@@ -716,46 +958,57 @@ namespace Unity.Collections
         var offset = freeBytes + i * 16;
         var offs = offset.ToString("D4");
 #>
-        [FieldOffset(<#=offset#>)] public Bytes16 byte<#=offs#>;            
+        /// <summary>
+        /// </summary>
+        [FieldOffset(<#=offset#>)] public Bytes16 byte<#=offs#>;
 <#
       }
 #>
     }
-    
+
+    /// <summary>
+    ///
+    /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
     public struct NativeString<#=BYTES#> : IComparable<NativeString<#=BYTES#>>, IEquatable<NativeString<#=BYTES#>>
     {
         public const int MaxLength = <#=MAXLENGTH#>;
         [FieldOffset(0)] public ushort LengthInBytes;
-        [FieldOffset(2)] public Bytes<#=MAXLENGTH#> buffer;        
-        
+        [FieldOffset(2)] public Bytes<#=MAXLENGTH#> buffer;
+
         /// <summary>
         /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
-        public int Utf8BufferLengthInBytes 
+        /// </summary>
+        public int Utf8BufferLengthInBytes
         {
             get
             {
                 return LengthInBytes;
             }
-            set 
+            set
             {
                 LengthInBytes = (ushort)value;
             }
         }
-        
+
         /// <summary>
         /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>        
+        /// </summary>
         public unsafe ref Bytes1 Utf8Buffer
         {
-            get 
+            get
             {
                 fixed(Bytes<#=MAXLENGTH#>* b = &buffer)
                     return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
             }
         }
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref int output)
         {
             unsafe
@@ -763,10 +1016,18 @@ namespace Unity.Collections
                 fixed (byte* b = &buffer.byte0000)
                 {
                     NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);                    
+                    return temp.Parse(ref offset, ref output);
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="output"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
         {
             unsafe
@@ -779,6 +1040,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(int input)
         {
             unsafe
@@ -793,6 +1059,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Format(long input)
         {
             unsafe
@@ -807,6 +1078,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(int input)
         {
             unsafe
@@ -821,6 +1097,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public FormatError Append(long input)
         {
             unsafe
@@ -835,6 +1116,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Format(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -849,6 +1136,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="decimalSeparator"></param>
+        /// <returns></returns>
         public FormatError Append(float input, char decimalSeparator = '.')
         {
             unsafe
@@ -862,19 +1155,28 @@ namespace Unity.Collections
                 }
             }
         }
-        
-<#
-    foreach (var OTHERBYTES in SIZES) 
-    {
-    
-#>
 
+<#
+    foreach (var OTHERBYTES in SIZES)
+    {
+
+#>
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendFrom(NativeString<#=OTHERBYTES#> source)
         {
             fixed(byte * b = &buffer.byte0000)
                 return source.AppendTo(b, ref LengthInBytes, MaxLength);
         }
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(NativeString<#=OTHERBYTES#> source)
         {
             fixed (byte* b = &buffer.byte0000)
@@ -885,69 +1187,125 @@ namespace Unity.Collections
         if(OTHERBYTES != BYTES)
         {
 #>
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
         public NativeString<#=BYTES#>(ref NativeString<#=OTHERBYTES#> source)
         {
             LengthInBytes = 0;
             buffer = new Bytes<#=MAXLENGTH#>{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");
         }
-        
+
 <#
         }
     }
 #>
-        
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(char* s, ushort length)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyFrom(String source)
         {
             if (string.IsNullOrEmpty(source))
             {
                 LengthInBytes = 0;
                 return CopyError.None;
-            }        
+            }
             fixed(char *c = source)
                 return CopyFrom(c, (ushort)source.Length);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }        
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="length"></param>
+        /// <param name="maxLength"></param>
+        /// <returns></returns>
         public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
         {
             fixed (byte* b = &buffer.byte0000)
                 return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
         }
 
-
+        /// <summary>
+        ///
+        /// </summary>
         public NativeString<#=BYTES#>(String source)
         {
             LengthInBytes = 0;
             buffer = new Bytes<#=MAXLENGTH#>{};
             var error = CopyFrom(source);
             if(error != CopyError.None)
-                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");             
+                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");
         }
-                
-        public static implicit operator NativeString<#=BYTES#>(string b) => new NativeString<#=BYTES#>(b);        
-                
+
+        /// <summary>
+        ///
+        /// </summary>
+        public static implicit operator NativeString<#=BYTES#>(string b) => new NativeString<#=BYTES#>(b);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override String ToString()
         {
             unsafe
@@ -958,6 +1316,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             unsafe
@@ -969,7 +1332,11 @@ namespace Unity.Collections
             }
         }
 
-        
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public int CompareTo(NativeString<#=BYTES#> other)
         {
             unsafe
@@ -981,6 +1348,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(NativeString<#=BYTES#> other)
         {
             unsafe
@@ -992,6 +1364,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;

@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 
-public class UnsafeBitArrayTests
+internal class UnsafeBitArrayTests
 {
     [Test, DotsRuntimeIgnore]
     public void UnsafeBitArray_Get_Set()

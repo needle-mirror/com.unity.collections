@@ -29,7 +29,7 @@ namespace FixedStringTests
 
 [TestFixture("en-US")]
 [TestFixture("da-DK")]
-public class DecimalSeparatorCulture
+internal class DecimalSeparatorCulture
 {
     CultureInfo testCulture;
     CultureInfo backupCulture;
@@ -68,8 +68,8 @@ public class DecimalSeparatorCulture
          var TOO_BIG = new String('o', BYTES -1 ); 
        #>
 
-    [TestCase("Supercalifragilisticexpialidocious")]
-    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString<#=BYTES#>CopyFromBytesWorks(String a)
     {
         FixedString<#=BYTES#> aa = default;

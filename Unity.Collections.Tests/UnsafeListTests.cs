@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
@@ -8,7 +9,7 @@ using Unity.Jobs;
 using Unity.PerformanceTesting;
 #endif
 
-public class UnsafeListTests
+internal class UnsafeListTests
 {
     [Test]
     public unsafe void UnsafeList_Init_ClearMemory()
@@ -269,6 +270,8 @@ public class UnsafeListTests
         list.Dispose();
     }
 
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     struct UnsafeListParallelReader : IJob
     {
         public UnsafeList.ParallelReader list;
@@ -296,6 +299,7 @@ public class UnsafeListTests
         list.Dispose(job.Schedule()).Complete();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct UnsafeListParallelWriter : IJobParallelFor
     {
         public UnsafeList.ParallelWriter list;

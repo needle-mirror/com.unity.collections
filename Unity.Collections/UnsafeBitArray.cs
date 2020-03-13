@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using Unity.Burst;
 using Unity.Jobs;
 using Unity.Mathematics;
 
@@ -13,9 +12,17 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
     public unsafe struct UnsafeBitArray : IDisposable
     {
+        /// <summary>
+        /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public ulong* Ptr;
+
+        /// <summary>
+        /// </summary>
         public int Length;
+
+        /// <summary>
+        /// </summary>
         public Allocator Allocator;
 
         /// <summary>
@@ -32,7 +39,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr = (ulong*)ptr;
             Length = sizeInBytes * 8;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
         }
 
         /// <summary>
@@ -68,7 +75,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 UnsafeUtility.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
@@ -91,7 +98,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 

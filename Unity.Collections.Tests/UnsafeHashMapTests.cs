@@ -1,10 +1,13 @@
 using NUnit.Framework;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 
-public class UnsafeHashMapTests
+internal class UnsafeHashMapTests
 {
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     public struct UnsafeHashMapAddJob : IJob
     {
         public UnsafeHashMap<int, int>.ParallelWriter Writer;
@@ -32,6 +35,7 @@ public class UnsafeHashMapTests
         hashMap.Dispose();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     public struct UnsafeMultiHashMapAddJob : IJobParallelFor
     {
         public UnsafeMultiHashMap<int, int>.ParallelWriter Writer;

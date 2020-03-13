@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-public class UnsafeAppendBufferTests
+internal class UnsafeAppendBufferTests
 {
     struct TestHeader
     {

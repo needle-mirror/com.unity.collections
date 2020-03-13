@@ -238,7 +238,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             UnsafeUtility.Free(m_Block->Ranges, m_Allocator);
             UnsafeUtility.Free(m_Block, m_Allocator);
             m_Block = null;
-            m_Allocator = Allocator.Invalid;
+            m_Allocator = Allocator.None;
         }
 
         /// <summary>

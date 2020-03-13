@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Burst;
+using Unity.Burst.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
@@ -86,6 +87,43 @@ namespace Unity.Collections
 #endif
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckIndexInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new IndexOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value >= (uint)length)
+                throw new IndexOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckCapacityInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value < (uint)length)
+                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckArgInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value >= (uint)length)
+                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckArgPositive(int value)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
+        }
+
         /// <summary>
         /// Retrieve a member of the contaner by index.
         /// </summary>
@@ -98,19 +136,17 @@ namespace Unity.Collections
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-                if ((uint)index >= (uint)m_ListData->Length)
-                    throw new IndexOutOfRangeException($"Index {index} is out of range in NativeList of '{m_ListData->Length}' Length.");
+                CheckIndexInRange(index, m_ListData->Length);
 #endif
-                return UnsafeUtility.ReadArrayElement<T>(m_ListData->Ptr, index);
+                return UnsafeUtility.ReadArrayElement<T>(m_ListData->Ptr, CollectionHelper.AssumePositive(index));
             }
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-                if ((uint)index >= (uint)m_ListData->Length)
-                    throw new IndexOutOfRangeException($"Index {index} is out of range in NativeList of '{m_ListData->Length}' Length.");
+                CheckIndexInRange(index, m_ListData->Length);
 #endif
-                UnsafeUtility.WriteArrayElement(m_ListData->Ptr, index, value);
+                UnsafeUtility.WriteArrayElement(m_ListData->Ptr, CollectionHelper.AssumePositive(index), value);
             }
         }
 
@@ -125,7 +161,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return m_ListData->Length;
+                return CollectionHelper.AssumePositive(m_ListData->Length);
             }
         }
 
@@ -137,7 +173,7 @@ namespace Unity.Collections
         /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
         /// old array to the new one, and then deallocates the original array memory. You cannot change the Capacity
         /// to a size smaller than <see cref="Length"/> (remove unwanted elements from the list first).</remarks>
-        /// <exception cref="ArgumentException">Thrown if Capacity is set smaller than Length.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if Capacity is set smaller than Length.</exception>
         public int Capacity
         {
             get
@@ -145,15 +181,14 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return m_ListData->Capacity;
+                return CollectionHelper.AssumePositive(m_ListData->Capacity);
             }
 
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
-                if (value < m_ListData->Length)
-                    throw new ArgumentException("Capacity must be larger than the length of the NativeList.");
+                CheckCapacityInRange(value, m_ListData->Length);
 #endif
                 m_ListData->SetCapacity<T>(value);
             }
@@ -178,17 +213,19 @@ namespace Unity.Collections
         /// <summary>
         /// Adds elements from a buffer to this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="T">Source type of elements.</typeparam>
         /// <param name="ptr">A pointer to the buffer.</param>
         /// <param name="length">The number of elements to add to the list.</param>
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if length is negative.</exception>
         public void AddRangeNoResize(void* ptr, int length)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
+            CheckArgPositive(length);
             m_ListData->AddRangeNoResize<T>(ptr, length);
         }
 
@@ -236,12 +273,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="elements">A pointer to the buffer.</param>
         /// <param name="count">The number of elements to add to the list.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if count is negative.</exception>
         public unsafe void AddRange(void* elements, int count)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+            CheckArgPositive(count);
 #endif
-            m_ListData->AddRange<T>(elements, count);
+            m_ListData->AddRange<T>(elements, CollectionHelper.AssumePositive(count));
         }
 
         /// <summary>
@@ -254,13 +293,9 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
-
-            if (index < 0 || index >= Length)
-            {
-                throw new ArgumentOutOfRangeException(index.ToString());
-            }
 #endif
-            m_ListData->RemoveAtSwapBack<T>(index);
+            CheckArgInRange(index, Length);
+            m_ListData->RemoveAtSwapBack<T>(CollectionHelper.AssumePositive(index));
         }
 
         /// <summary>
@@ -350,7 +385,7 @@ namespace Unity.Collections
             var arraySafety = m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref arraySafety);
 #endif
-            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(m_ListData->Ptr, m_ListData->Length, Allocator.Invalid);
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(m_ListData->Ptr, m_ListData->Length, Allocator.None);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, arraySafety);
@@ -444,7 +479,7 @@ namespace Unity.Collections
             // We use the first bit of the pointer to infer that the array is in list mode
             // Thus the job scheduling code will need to patch it.
             buffer += 1;
-            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(buffer, 0, Allocator.Invalid);
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(buffer, 0, Allocator.None);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, m_Safety);
@@ -581,6 +616,15 @@ namespace Unity.Collections
             }
 #endif
 
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            private static void CheckSufficientCapacity(int capacity, int length)
+            {
+                if (capacity < length)
+                {
+                    throw new Exception($"Length {length} exceeds capacity Capacity {capacity}");
+                }
+            }
+
             /// <summary>
             /// Adds an element to the list.
             /// </summary>
@@ -595,12 +639,9 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
-                if (ListData->Capacity < idx + 1)
-                {
-                    throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {ListData->Capacity}, Lenght {ListData->Length})!");
-                }
+                CheckSufficientCapacity(ListData->Capacity, idx + 1);
 #endif
+
                 UnsafeUtility.WriteArrayElement(Ptr, idx, value);
             }
 
@@ -610,12 +651,9 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
-                if (ListData->Capacity < idx + length)
-                {
-                    throw new Exception($"AddRangeNoResize assumes that list capacity is sufficient (Capacity {ListData->Capacity}, Lenght {ListData->Length})!");
-                }
+                CheckSufficientCapacity(ListData->Capacity, idx + length);
 #endif
+
                 void* dst = (byte*)Ptr + idx * sizeOf;
                 UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
             }
@@ -629,9 +667,11 @@ namespace Unity.Collections
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
+            /// <exception cref="ArgumentOutOfRangeException">Thrown if length is negative.</exception>
             public void AddRangeNoResize(void* ptr, int length)
             {
-                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+                CheckArgPositive(length);
+                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, CollectionHelper.AssumePositive(length));
             }
 
             /// <summary>

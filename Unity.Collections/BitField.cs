@@ -69,6 +69,8 @@ namespace Unity.Collections
     [DebuggerTypeProxy(typeof(BitField32DebugView))]
     public struct BitField32
     {
+        /// <summary>
+        /// </summary>
         public uint Value;
 
         /// <summary>

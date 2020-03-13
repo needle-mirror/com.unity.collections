@@ -1,9 +1,10 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
 using Unity.Jobs;
+using Unity.Burst;
 using Unity.Collections;
 
-public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
+internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 {
     [Test]
     public void NativeMultiHashMap_Read_And_Write()
@@ -122,7 +123,8 @@ public class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
         writeStatus.Dispose();
         readValues.Dispose();
     }
-    
+
+    [BurstCompile(CompileSynchronously = true)]
     struct AddMultiIndex : IJobParallelFor
     {
         public NativeMultiHashMap<int, int>.ParallelWriter hashMap;

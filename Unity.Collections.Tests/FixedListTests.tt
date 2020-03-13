@@ -22,7 +22,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-public class FixedListTests
+internal class FixedListTests
 {
 <#
     {

@@ -9,7 +9,12 @@ namespace Unity.Collections
     /// </summary>
     public enum FormatError
     {
+        /// <summary>
+        /// </summary>
         None,
+
+        /// <summary>
+        /// </summary>
         Overflow,
     }
 
@@ -17,9 +22,20 @@ namespace Unity.Collections
     /// </summary>
     public enum ParseError
     {
+        /// <summary>
+        /// </summary>
         None,
+
+        /// <summary>
+        /// </summary>
         Syntax,
+
+        /// <summary>
+        /// </summary>
         Overflow,
+
+        /// <summary>
+        /// </summary>
         Underflow,
     }
 
@@ -27,17 +43,33 @@ namespace Unity.Collections
     /// </summary>
     public enum CopyError
     {
+        /// <summary>
+        /// </summary>
         None,
-        Truncation
+
+        /// <summary>
+        /// </summary>
+        Truncation,
     }
 
     /// <summary>
     /// </summary>
     public enum ConversionError
     {
+        /// <summary>
+        /// </summary>
         None,
+
+        /// <summary>
+        /// </summary>
         Overflow,
+
+        /// <summary>
+        /// </summary>
         Encoding,
+
+        /// <summary>
+        /// </summary>
         CodePoint,
     }
 
@@ -365,7 +397,7 @@ namespace Unity.Collections
             }
             // TODO even in this case, it's possible to MemCpy all but the last 3 bytes that fit, and then by looking at only
             // TODO the high bits of the last 3 bytes that fit, decide how many of the 3 to append. but that requires a
-            // TODO little UNICODE presence of mind that nobody has today. 
+            // TODO little UNICODE presence of mind that nobody has today.
             dest_length = 0;
             for(var src_offset = 0; src_offset < src_length;)
             {

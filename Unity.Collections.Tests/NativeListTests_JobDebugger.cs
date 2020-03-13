@@ -2,14 +2,16 @@
 using NUnit.Framework;
 using System;
 using Unity.Jobs;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 
 #pragma warning disable 0219
 #pragma warning disable 0414
 
-public class NativeListJobDebuggerTests
+internal class NativeListJobDebuggerTests
 {
+    [BurstCompile(CompileSynchronously = true)]
     struct NativeListAddJob : IJob
     {
         NativeList<int> list;
@@ -22,6 +24,7 @@ public class NativeListJobDebuggerTests
         }
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct NativeArrayTest : IJob
     {
         NativeArray<int> array;
@@ -144,8 +147,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-
-
+    [BurstCompile(CompileSynchronously = true)]
     struct ReadOnlyListAccess : IJob
     {
         [ReadOnly]
@@ -191,7 +193,7 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-
+    [BurstCompile(CompileSynchronously = true)]
     struct NativeListToArrayConversionFromJob : IJob
     {
         public NativeList<int> list;
@@ -218,6 +220,7 @@ public class NativeListJobDebuggerTests
         jobData.list.Dispose();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct WriteJob : IJobParallelFor
     {
         public NativeArray<float> output;
@@ -278,6 +281,8 @@ public class NativeListJobDebuggerTests
         deps.Complete();
     }
 
+    // error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     struct InvalidArrayAccessFromListJob : IJob
     {
         public NativeList<int> list;
@@ -309,6 +314,8 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     struct NativeArrayTestReadOnly : IJob
     {
         [ReadOnly]
@@ -334,6 +341,8 @@ public class NativeListJobDebuggerTests
         list.Dispose();
     }
 
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     struct NativeArrayTestWriteOnly : IJob
     {
         [WriteOnly]
@@ -373,6 +382,8 @@ public class NativeListJobDebuggerTests
     }
 
 #if UNITY_2020_1_OR_NEWER
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
     struct NativeListTestParallelReader : IJob
     {
         [ReadOnly]
@@ -412,6 +423,7 @@ public class NativeListJobDebuggerTests
         readerJob.Complete();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct NativeListTestParallelWriter : IJob
     {
         [WriteOnly]

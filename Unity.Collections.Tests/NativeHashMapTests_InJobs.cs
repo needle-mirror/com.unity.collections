@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using Unity.Jobs;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 
-public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
+internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {
     [Test]
     public void NativeHashMap_Read_And_Write()
@@ -135,6 +136,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         readValues.Dispose();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct Clear : IJob
     {
         public NativeHashMap<int, int> hashMap;
@@ -215,6 +217,7 @@ public class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         deps.Complete();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct MergeSharedValues : IJobNativeMultiHashMapMergedSharedKeyIndices
     {
         [NativeDisableParallelForRestriction]

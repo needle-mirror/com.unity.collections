@@ -13,10 +13,21 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     public unsafe struct UnsafeList : IDisposable
     {
+        /// <summary>
+        /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public void* Ptr;
+
+        /// <summary>
+        /// </summary>
         public int Length;
+
+        /// <summary>
+        /// </summary>
         public int Capacity;
+
+        /// <summary>
+        /// </summary>
         public Allocator Allocator;
 
         /// <summary>
@@ -44,7 +55,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = ptr;
             Length = length;
             Capacity = length;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
         }
 
         /// <summary>
@@ -107,17 +118,21 @@ namespace Unity.Collections.LowLevel.Unsafe
             return listData;
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void NullCheck(void* listData)
+        {
+            if (listData == null)
+            {
+                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
+            }
+        }
+
         /// <summary>
         /// Destroys container.
         /// </summary>
         public static void Destroy(UnsafeList* listData)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (listData == null)
-            {
-                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
-            }
-#endif
+            NullCheck(listData);
             var allocator = listData->Allocator;
             listData->Dispose();
             UnsafeUtility.Free(listData, allocator);
@@ -136,7 +151,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 UnsafeUtility.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
@@ -160,7 +175,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
@@ -222,14 +237,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
         }
 
-        void Realloc(int sizeOf, int alignOf, int capacity)
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static private void CheckAllocator(Allocator a)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (Allocator == Allocator.Invalid)
+            if (a <= Allocator.None)
             {
                 throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
             }
-#endif
+        }
+
+        void Realloc(int sizeOf, int alignOf, int capacity)
+        {
+            CheckAllocator(Allocator);
             void* newPointer = null;
 
             if (capacity > 0)
@@ -309,6 +328,21 @@ namespace Unity.Collections.LowLevel.Unsafe
             return IndexOf(value) != -1;
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckNoResizeHasEnoughCapacity(int length)
+        {
+            CheckNoResizeHasEnoughCapacity(length, Length);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckNoResizeHasEnoughCapacity(int length, int index)
+        {
+            if (Capacity < index + length)
+            {
+                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
+            }
+        }
+
         /// <summary>
         /// Adds an element to the list.
         /// </summary>
@@ -319,24 +353,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddNoResize<T>(T value) where T : struct
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (Capacity < Length + 1)
-            {
-                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Lenght {Length})!");
-            }
-#endif
+            CheckNoResizeHasEnoughCapacity(1);
             UnsafeUtility.WriteArrayElement(Ptr, Length, value);
             Length += 1;
         }
 
-        private void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
+        private void AddRangeNoResize(int sizeOf, void* ptr, int length)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (Capacity < Length + length)
-            {
-                throw new Exception($"AddRangeNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Lenght {Length})!");
-            }
-#endif
+            CheckNoResizeHasEnoughCapacity(length);
             void* dst = (byte*)Ptr + Length * sizeOf;
             UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
             Length += length;
@@ -353,7 +377,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
         {
-            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), ptr, length);
         }
 
         /// <summary>
@@ -365,7 +389,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddRangeNoResize<T>(UnsafeList list) where T : struct
         {
-            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
+            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), list.Ptr, CollectionHelper.AssumePositive(list.Length));
         }
 
         /// <summary>
@@ -537,26 +561,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             public void AddNoResize<T>(T value) where T : struct
             {
                 var idx = Interlocked.Increment(ref ListData->Length) - 1;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if (ListData->Capacity < idx + 1)
-                {
-                    throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {ListData->Capacity}, Lenght {ListData->Length})!");
-                }
-#endif
+                ListData->CheckNoResizeHasEnoughCapacity(idx, 1);
                 UnsafeUtility.WriteArrayElement(Ptr, idx, value);
             }
 
             private void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
             {
                 var idx = Interlocked.Add(ref ListData->Length, length) - length;
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                if (ListData->Capacity < idx + length)
-                {
-                    throw new Exception($"AddRangeNoResize assumes that list capacity is sufficient (Capacity {ListData->Capacity}, Lenght {ListData->Length})!");
-                }
-#endif
+                ListData->CheckNoResizeHasEnoughCapacity(idx, length);
                 void* dst = (byte*)Ptr + idx * sizeOf;
                 UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
             }
@@ -625,7 +637,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = ptr;
             Length = length;
             Capacity = 0;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
         }
 
         /// <summary>
@@ -641,7 +653,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = null;
             Length = 0;
             Capacity = 0;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
             var sizeOf = UnsafeUtility.SizeOf<T>();
             var alignOf = UnsafeUtility.AlignOf<T>();
             this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
@@ -954,7 +966,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = ptr;
             Length = length;
             Capacity = length;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
         }
 
         /// <summary>
@@ -970,7 +982,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = null;
             Length = 0;
             Capacity = 0;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
 
             var sizeOf = IntPtr.Size;
             this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
@@ -1005,12 +1017,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public static void Destroy(UnsafePtrList* listData)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (listData == null)
-            {
-                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
-            }
-#endif
+            UnsafeList.NullCheck(listData);
             var allocator = listData->ListData().Allocator == Allocator.Invalid
                 ? Allocator.Persistent
                 : listData->ListData().Allocator

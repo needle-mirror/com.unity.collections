@@ -1,5 +1,33 @@
 # Change log
 
+## [0.7.0] - 2020-03-13
+
+### Added
+
+ * Added ability to dispose NativeKeyValueArrays from job (DisposeJob).
+ * Added `NativeQueue<T>.ToArray` to copy a native queue to an array efficiently
+
+### Changed
+
+ * Upgraded Burst to fix multiple issues and introduced a native debugging feature.
+
+### Deprecated
+
+ * Deprecated `Length` property from `NativeHashMap`, `UnsafeHashMap`, `NativeMultiHashMap`,
+   `UnsafeMultiHashMap`, `NativeQueue`, and replaced it with `Count()` to reflect that there
+   is computation being done.
+
+### Removed
+
+* Removed expired API `CollectionHelper.CeilPow2()`
+* Removed expired API `CollectionHelper.lzcnt()`
+* Removed expired API `struct ResizableArray64Byte<T>`
+
+### Fixed
+
+* Removed code that made `NativeStream` incompatible with Burst.
+
+
 ## [0.6.0] - 2020-03-03
 
 ### Added
@@ -9,8 +37,7 @@
 ### Changed
 
  * `UnsafeAppendBuffer` field `Size` renamed to `Length`.
- * Removed `[BurstDiscard]` from all validation check functions. Validation will
-   be present in code compiled with Burst.
+ * Removed `[BurstDiscard]` from all validation check functions. Validation is present in code compiled with Burst.
 
 ### Removed
 

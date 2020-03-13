@@ -3,6 +3,9 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
 {
+    /// <summary>
+    /// NativeArray extension methods.
+    /// </summary>
     unsafe static public class NativeArrayExtensions
     {
         /// <summary>
@@ -103,6 +106,23 @@ namespace Unity.Collections
         /// Searches for the specified element in array.
         /// </summary>
         /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <param name="array">Array to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T>(this NativeArray<T> array, T value) where T : struct, IComparable<T>
+        {
+            for (int i = 0; i != array.Length; i++)
+            {
+                if (array[i].CompareTo(value) == 0)
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified element in array.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the array.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
         /// <param name="ptr">Pointer to first element to perform search.</param>
         /// <param name="length">Number of elements to perform search.</param>
@@ -141,7 +161,7 @@ namespace Unity.Collections
 
 #endif
             var ptr = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array);
-            var result = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<U>(ptr, (int)uLen, Allocator.Invalid);
+            var result = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<U>(ptr, (int)uLen, Allocator.None);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var handle = NativeArrayUnsafeUtility.GetAtomicSafetyHandle(array);
@@ -152,8 +172,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if the Length & the content of the two NativeArray's are the same
+        /// Returns true if the Length & the content of the two NativeArray's are the same.
         /// </summary>
+        /// <typeparam name="T">Source type of array elements</typeparam>
+        /// <param name="array"></param>
+        /// <param name="other"></param>
+        /// <returns>Returns true if both array are equal.</returns>
         public static bool ArraysEqual<T>(this NativeArray<T> array, NativeArray<T> other) where T : struct, IEquatable<T>
         {
             if (array.Length != other.Length)
@@ -167,6 +191,5 @@ namespace Unity.Collections
 
             return true;
         }
-
     }
 }

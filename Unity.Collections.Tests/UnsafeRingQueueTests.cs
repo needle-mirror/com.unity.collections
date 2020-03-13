@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
-public class UnsafeRingQueueTests
+internal class UnsafeRingQueueTests
 {
     [Test]
     public void UnsafeRingQueue_Enqueue_Dequeue()

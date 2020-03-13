@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-public class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixture
+internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixture
 {
     [Test, DotsRuntimeIgnore]
     public void NativeMultiHashMap_Read_And_Write_Without_Fences()

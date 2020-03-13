@@ -1,10 +1,11 @@
 ﻿using System;
 using NUnit.Framework;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 
-public class NativeArrayTests
+internal class NativeArrayTests
 {
     [Test]
     public void NativeArray_DisposeJob()
@@ -20,6 +21,7 @@ public class NativeArrayTests
         disposeJob.Complete();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
     struct NativeArrayPokeJob : IJob
     {
         NativeArray<int> array;

@@ -57,8 +57,8 @@ public class DecimalSeparatorCulture
     }
             
     
-    [TestCase("for whom the bell tolls")]
-    [TestCase("⁣🌹🌻🌷🌿🌵🌾")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString32CopyFromBytesWorks(String a)
     {
         FixedString32 aa = default;
@@ -483,8 +483,8 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
-    [TestCase("Supercalifragilisticexpialidocious")]
-    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString64CopyFromBytesWorks(String a)
     {
         FixedString64 aa = default;
@@ -912,8 +912,8 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
-    [TestCase("Supercalifragilisticexpialidocious")]
-    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString128CopyFromBytesWorks(String a)
     {
         FixedString128 aa = default;
@@ -1343,8 +1343,8 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
-    [TestCase("Supercalifragilisticexpialidocious")]
-    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString512CopyFromBytesWorks(String a)
     {
         FixedString512 aa = default;
@@ -1775,8 +1775,8 @@ public class DecimalSeparatorCulture
         Assert.AreEqual(a, d);
     }
 
-    [TestCase("Supercalifragilisticexpialidocious")]
-    [TestCase("⁣🌹 🌻 🌷 🌿 🌵 🌾 🌼⁣")] 
+    [TestCase("Antidisestablishmentarianism")]
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
     public void FixedString4096CopyFromBytesWorks(String a)
     {
         FixedString4096 aa = default;

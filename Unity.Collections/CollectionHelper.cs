@@ -6,6 +6,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
+using Unity.Burst.CompilerServices;
 #if !NET_DOTS
 using System.Reflection;
 #endif
@@ -25,43 +26,24 @@ namespace Unity.Collections
             public double doubleValue;
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-        [Obsolete("Use math.lzcnt from Unity.Mathematics instead. (RemovedAfter 2020-03-02). If you see this message in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define from the Entities assembly definition file.")]
-    #else
-        [Obsolete("Use math.lzcnt from Unity.Mathematics instead. (RemovedAfter 2020-03-02) (UnityUpgradable) -> Unity.Mathematics.math.lzcnt(*)")]
-    #endif
-        public static int lzcnt(uint x)
-        {
-            return math.lzcnt(x);
-        }
-
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static int Log2Floor(int value)
         {
             return 31 - math.lzcnt((uint)value);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static int Log2Ceil(int value)
         {
             return 32 - math.lzcnt((uint)value-1);
-        }
-
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-        [Obsolete("Use math.ceilpow2 from Unity.Mathematics instead. (RemovedAfter 2020-03-02). If you see this message in a user project, remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define from the Entities assembly definition file.")]
-    #else
-        [Obsolete("Use math.ceilpow2 from Unity.Mathematics instead. (RemovedAfter 2020-03-02) (UnityUpgradable) -> Unity.Mathematics.math.ceilpow2(*)")]
-    #endif
-        public static int CeilPow2(int i)
-        {
-            i -= 1;
-            i |= i >> 1;
-            i |= i >> 2;
-            i |= i >> 4;
-            i |= i >> 8;
-            i |= i >> 16;
-            return i + 1;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -74,6 +56,12 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="alignmentPowerOfTwo"></param>
+        /// <returns></returns>
         public static int Align(int size, int alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
@@ -84,16 +72,38 @@ namespace Unity.Collections
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="alignmentPowerOfTwo"></param>
+        /// <returns></returns>
         public static unsafe bool IsAligned(void* p, int alignmentPowerOfTwo)
         {
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
             return ((ulong)p & ((ulong)alignmentPowerOfTwo - 1)) == 0;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="alignmentPowerOfTwo"></param>
+        /// <returns></returns>
         public static unsafe bool IsAligned(ulong offset, int alignmentPowerOfTwo)
         {
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
             return (offset & ((ulong)alignmentPowerOfTwo - 1)) == 0;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool IsPowerOfTwo(int value)
+        {
+            return (value & (value - 1)) == 0;
         }
 
         /// <summary>
@@ -113,15 +123,19 @@ namespace Unity.Collections
             return (uint)hash;
         }
 
+        /// <summary>
+        /// Throws exeception if type T is managed.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard]
+        [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
         public static void CheckIsUnmanaged<T>()
         {
-#if !UNITY_DOTSPLAYER // todo: enable when this is supported
+#if !UNITY_DOTSPLAYER
             if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
 #else
             if (!UnsafeUtility.IsUnmanaged<T>())
-        #endif
+#endif
                 throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
         }
 
@@ -143,9 +157,22 @@ namespace Unity.Collections
 #endif
         }
 
-        public static bool IsPowerOfTwo(int value)
+        internal static bool ShouldDeallocate(Allocator allocator)
         {
-            return (value & (value - 1)) == 0;
+            // Allocator.Invalid == container is not initialized.
+            // Allocator.None    == container is initialized, but container doesn't own data.
+            return allocator > Allocator.None;
+        }
+
+        /// <summary>
+        /// Tell Burst that an integer can be assumed to map to an always positive value.
+        /// </summary>
+        /// <param name="x">The integer that is always positive.</param>
+        /// <returns>Returns `x`, but allows the compiler to assume it is always positive.</returns>
+        [return: AssumeRange(0, int.MaxValue)]
+        internal static int AssumePositive(int x)
+        {
+            return x;
         }
     }
 }

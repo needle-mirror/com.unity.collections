@@ -6,7 +6,7 @@ using Unity.Collections;
 using Unity.PerformanceTesting;
 #endif
 
-public class MathTests
+internal class MathTests
 {
     [Test]
     public void Tests()
@@ -28,7 +28,7 @@ public class MathTests
 }
 
 
-public class NativeArraySortTests
+internal class NativeArraySortTests
 {
     [Test]
     public void SortNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
@@ -294,7 +294,7 @@ public class NativeArraySortTests
 }
 
 
-public class NativeSliceTests
+internal class NativeSliceTests
 {
     [Test]
     public void NativeSlice_CopyTo()

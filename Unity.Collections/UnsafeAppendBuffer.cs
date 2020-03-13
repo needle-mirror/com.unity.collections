@@ -10,11 +10,25 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     public unsafe struct UnsafeAppendBuffer : IDisposable
     {
+        /// <summary>
+        /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public byte* Ptr;
+
+        /// <summary>
+        /// </summary>
         public int Length;
+
+        /// <summary>
+        /// </summary>
         public int Capacity;
+
+        /// <summary>
+        /// </summary>
         public Allocator Allocator;
+
+        /// <summary>
+        /// </summary>
         public readonly int Alignment;
 
         /// <summary>
@@ -47,7 +61,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeAppendBuffer(void* ptr, int length)
         {
             Alignment = 0;
-            Allocator = Allocator.Invalid;
+            Allocator = Allocator.None;
             Ptr = (byte*)ptr;
             Length = 0;
             Capacity = length;
@@ -71,7 +85,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 UnsafeUtility.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
@@ -95,7 +109,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the container.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            if (Allocator != Allocator.Invalid)
+            if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 

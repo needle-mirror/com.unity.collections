@@ -742,28 +742,32 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The current number of items in the container.
         /// </summary>
         /// <value>The item count.</value>
-        public int Length
+        public int Count()
         {
-            get
+            UnsafeHashMapData* data = m_Buffer;
+            int* nextPtrs = (int*)data->next;
+            int freeListSize = 0;
+
+            for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
             {
-                UnsafeHashMapData* data = m_Buffer;
-                int* nextPtrs = (int*)data->next;
-                int freeListSize = 0;
-
-                for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
+                for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
+                    ; freeIdx >= 0
+                    ; freeIdx = nextPtrs[freeIdx]
+                    )
                 {
-                    for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
-                        ; freeIdx >= 0
-                        ; freeIdx = nextPtrs[freeIdx]
-                        )
-                    {
-                        ++freeListSize;
-                    }
+                    ++freeListSize;
                 }
-
-                return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
             }
+
+            return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
+
+    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
+    #else
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
+    #endif
+        public int Length => Count();
 
         /// <summary>
         /// The number of items that can fit in the container.
@@ -919,7 +923,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
-            var result = new NativeArray<TKey>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
@@ -932,7 +936,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
-            var result = new NativeArray<TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
@@ -945,7 +949,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
-            var result = new NativeKeyValueArrays<TKey, TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeKeyValueArrays<TKey, TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyValueArrays(m_Buffer, result);
             return result;
         }
@@ -1101,28 +1105,32 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The current number of items in the container.
         /// </summary>
         /// <value>The item count.</value>
-        public int Length
+        public int Count()
         {
-            get
+            UnsafeHashMapData* data = m_Buffer;
+            int* nextPtrs = (int*)data->next;
+            int freeListSize = 0;
+
+            for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
             {
-                UnsafeHashMapData* data = m_Buffer;
-                int* nextPtrs = (int*)data->next;
-                int freeListSize = 0;
-
-                for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
+                for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
+                    ; freeIdx >= 0
+                    ; freeIdx = nextPtrs[freeIdx]
+                    )
                 {
-                    for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
-                        ; freeIdx >= 0
-                        ; freeIdx = nextPtrs[freeIdx]
-                        )
-                    {
-                        ++freeListSize;
-                    }
+                    ++freeListSize;
                 }
-
-                return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
             }
+
+            return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
+
+    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
+    #else
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
+    #endif
+        public int Length => Count();
 
         /// <summary>
         /// The number of items that can fit in the container.
@@ -1305,7 +1313,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Array of keys.</returns>
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
-            var result = new NativeArray<TKey>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
@@ -1318,7 +1326,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Array of values.</returns>
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
-            var result = new NativeArray<TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
@@ -1331,7 +1339,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Array of keys-values.</returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
-            var result = new NativeKeyValueArrays<TKey, TValue>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeKeyValueArrays<TKey, TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyValueArrays(m_Buffer, result);
             return result;
         }
@@ -1505,7 +1513,7 @@ namespace Unity.Collections
     // a unique index (generally to the relevant data in some other collection).
     // 2) Each bucket is processed concurrently with other buckets.
     // 3) All key/value pairs in each bucket are processed individually (in sequential order) by a single thread.
-    [JobProducerType(typeof(JobUnsafeMultiHashMapUniqueHashExtensions.UnsafeMultiHashMapUniqueHashJobStruct<>))]
+    [JobProducerType(typeof(JobUnsafeMultiHashMapUniqueHashExtensions.JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<>))]
     public interface IJobUnsafeMultiHashMapMergedSharedKeyIndices
     {
         // The first time each key (=hash) is encountered, ExecuteFirst() is invoked with corresponding value (=index).
@@ -1522,27 +1530,27 @@ namespace Unity.Collections
     /// </summary>
     public static class JobUnsafeMultiHashMapUniqueHashExtensions
     {
-        internal struct UnsafeMultiHashMapUniqueHashJobStruct<TJob>
+        internal struct JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>
             where TJob : struct, IJobUnsafeMultiHashMapMergedSharedKeyIndices
         {
             [ReadOnly] public UnsafeMultiHashMap<int, int> HashMap;
             internal TJob JobData;
 
-            private static IntPtr jobReflectionData;
+            static IntPtr s_JobReflectionData;
 
             internal static IntPtr Initialize()
             {
-                if (jobReflectionData == IntPtr.Zero)
+                if (s_JobReflectionData == IntPtr.Zero)
                 {
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(UnsafeMultiHashMapUniqueHashJobStruct<TJob>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
+                    s_JobReflectionData = JobsUtility.CreateJobReflectionData(typeof(JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
                 }
 
-                return jobReflectionData;
+                return s_JobReflectionData;
             }
 
-            private delegate void ExecuteJobFunction(ref UnsafeMultiHashMapUniqueHashJobStruct<TJob> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
+            private delegate void ExecuteJobFunction(ref JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob> jobProducer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
-            internal static unsafe void Execute(ref UnsafeMultiHashMapUniqueHashJobStruct<TJob> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
+            internal static unsafe void Execute(ref JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob> jobProducer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
                 {
@@ -1554,7 +1562,7 @@ namespace Unity.Collections
                         return;
                     }
 
-                    UnsafeHashMapData* hashMapData = fullData.HashMap.m_Buffer;
+                    UnsafeHashMapData* hashMapData = jobProducer.HashMap.m_Buffer;
                     var buckets = (int*)hashMapData->buckets;
                     var nextPtrs = (int*)hashMapData->next;
                     var keys = hashMapData->keys;
@@ -1571,7 +1579,7 @@ namespace Unity.Collections
                             int firstValue;
 
                             NativeMultiHashMapIterator<int> it;
-                            fullData.HashMap.TryGetFirstValue(key, out firstValue, out it);
+                            jobProducer.HashMap.TryGetFirstValue(key, out firstValue, out it);
 
                             // [macton] Didn't expect a usecase for this with multiple same values
                             // (since it's intended use was for unique indices.)
@@ -1579,9 +1587,9 @@ namespace Unity.Collections
                             if (entryIndex == it.EntryIndex)
                             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref fullData), value, 1);
+                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobProducer), value, 1);
 #endif
-                                fullData.JobData.ExecuteFirst(value);
+                                jobProducer.JobData.ExecuteFirst(value);
                             }
                             else
                             {
@@ -1590,9 +1598,9 @@ namespace Unity.Collections
                                 var lastIndex = math.max(firstValue, value);
                                 var rangeLength = (lastIndex - startIndex) + 1;
 
-                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref fullData), startIndex, rangeLength);
+                                JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobProducer), startIndex, rangeLength);
 #endif
-                                fullData.JobData.ExecuteNext(firstValue, value);
+                                jobProducer.JobData.ExecuteNext(firstValue, value);
                             }
 
                             entryIndex = nextPtrs[entryIndex];
@@ -1614,15 +1622,15 @@ namespace Unity.Collections
         public static unsafe JobHandle Schedule<TJob>(this TJob jobData, UnsafeMultiHashMap<int, int> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobUnsafeMultiHashMapMergedSharedKeyIndices
         {
-            var fullData = new UnsafeMultiHashMapUniqueHashJobStruct<TJob>
+            var jobProducer = new JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>
             {
                 HashMap = hashMap,
                 JobData = jobData,
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref fullData)
-                , UnsafeMultiHashMapUniqueHashJobStruct<TJob>.Initialize()
+                  UnsafeUtility.AddressOf(ref jobProducer)
+                , JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
                 );
@@ -1636,7 +1644,7 @@ namespace Unity.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
     /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyValue.UnsafeMultiHashMapVisitKeyValueJobStruct<,,>))]
+    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyValue.JobUnsafeMultiHashMapVisitKeyValueProducer<,,>))]
     public interface IJobUnsafeMultiHashMapVisitKeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1649,7 +1657,7 @@ namespace Unity.Collections
     /// </summary>
     public static class JobUnsafeMultiHashMapVisitKeyValue
     {
-        internal struct UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
+        internal struct JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>
             where TJob : struct, IJobUnsafeMultiHashMapVisitKeyValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
@@ -1657,21 +1665,21 @@ namespace Unity.Collections
             [ReadOnly] public UnsafeMultiHashMap<TKey, TValue> HashMap;
             internal TJob JobData;
 
-            private static IntPtr jobReflectionData;
+            static IntPtr s_JobReflectionData;
 
             internal static IntPtr Initialize()
             {
-                if (jobReflectionData == IntPtr.Zero)
+                if (s_JobReflectionData == IntPtr.Zero)
                 {
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
+                    s_JobReflectionData = JobsUtility.CreateJobReflectionData(typeof(JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
                 }
 
-                return jobReflectionData;
+                return s_JobReflectionData;
             }
 
-            internal delegate void ExecuteJobFunction(ref UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
+            internal delegate void ExecuteJobFunction(ref JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
-            internal static unsafe void Execute(ref UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
+            internal static unsafe void Execute(ref JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
                 {
@@ -1683,7 +1691,7 @@ namespace Unity.Collections
                         return;
                     }
 
-                    UnsafeHashMapData* hashMapData = fullData.HashMap.m_Buffer;
+                    UnsafeHashMapData* hashMapData = producer.HashMap.m_Buffer;
                     var buckets = (int*)hashMapData->buckets;
                     var nextPtrs = (int*)hashMapData->next;
                     var keys = hashMapData->keys;
@@ -1698,7 +1706,7 @@ namespace Unity.Collections
                             var key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
                             var value = UnsafeUtility.ReadArrayElement<TValue>(values, entryIndex);
 
-                            fullData.JobData.ExecuteNext(key, value);
+                            producer.JobData.ExecuteNext(key, value);
 
                             entryIndex = nextPtrs[entryIndex];
                         }
@@ -1723,15 +1731,15 @@ namespace Unity.Collections
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            var fullData = new UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>
+            var jobProducer = new JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>
             {
                 HashMap = hashMap,
                 JobData = jobData
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref fullData)
-                , UnsafeMultiHashMapVisitKeyValueJobStruct<TJob, TKey, TValue>.Initialize()
+                  UnsafeUtility.AddressOf(ref jobProducer)
+                , JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
                 );
@@ -1745,7 +1753,7 @@ namespace Unity.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
     /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyMutableValue.UnsafeMultiHashMapVisitKeyMutableValueJobStruct<,,>))]
+    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyMutableValue.JobUnsafeMultiHashMapVisitKeyMutableValueProducer<,,>))]
     public interface IJobUnsafeMultiHashMapVisitKeyMutableValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1758,7 +1766,7 @@ namespace Unity.Collections
     /// </summary>
     public static class JobUnsafeMultiHashMapVisitKeyMutableValue
     {
-        internal struct UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>
+        internal struct JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>
             where TJob : struct, IJobUnsafeMultiHashMapVisitKeyMutableValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
@@ -1767,21 +1775,21 @@ namespace Unity.Collections
             internal UnsafeMultiHashMap<TKey, TValue> HashMap;
             internal TJob JobData;
 
-            private static IntPtr jobReflectionData;
+            static IntPtr s_JobReflectionData;
 
             internal static IntPtr Initialize()
             {
-                if (jobReflectionData == IntPtr.Zero)
+                if (s_JobReflectionData == IntPtr.Zero)
                 {
-                    jobReflectionData = JobsUtility.CreateJobReflectionData(typeof(UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
+                    s_JobReflectionData = JobsUtility.CreateJobReflectionData(typeof(JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>), typeof(TJob), JobType.ParallelFor, (ExecuteJobFunction)Execute);
                 }
 
-                return jobReflectionData;
+                return s_JobReflectionData;
             }
 
-            internal delegate void ExecuteJobFunction(ref UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
+            internal delegate void ExecuteJobFunction(ref JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex);
 
-            internal static unsafe void Execute(ref UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue> fullData, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
+            internal static unsafe void Execute(ref JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue> producer, IntPtr additionalPtr, IntPtr bufferRangePatchData, ref JobRanges ranges, int jobIndex)
             {
                 while (true)
                 {
@@ -1793,10 +1801,10 @@ namespace Unity.Collections
                         return;
                     }
 
-                    var buckets = (int*)fullData.HashMap.m_Buffer->buckets;
-                    var nextPtrs = (int*)fullData.HashMap.m_Buffer->next;
-                    var keys = fullData.HashMap.m_Buffer->keys;
-                    var values = fullData.HashMap.m_Buffer->values;
+                    var buckets = (int*)producer.HashMap.m_Buffer->buckets;
+                    var nextPtrs = (int*)producer.HashMap.m_Buffer->next;
+                    var keys = producer.HashMap.m_Buffer->keys;
+                    var values = producer.HashMap.m_Buffer->values;
 
                     for (int i = begin; i < end; i++)
                     {
@@ -1806,7 +1814,7 @@ namespace Unity.Collections
                         {
                             var key = UnsafeUtility.ReadArrayElement<TKey>(keys, entryIndex);
 
-                            fullData.JobData.ExecuteNext(key, ref UnsafeUtilityEx.ArrayElementAsRef<TValue>(values, entryIndex));
+                            producer.JobData.ExecuteNext(key, ref UnsafeUtilityEx.ArrayElementAsRef<TValue>(values, entryIndex));
 
                             entryIndex = nextPtrs[entryIndex];
                         }
@@ -1831,15 +1839,15 @@ namespace Unity.Collections
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            var fullData = new UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>
+            var jobProducer = new JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>
             {
                 HashMap = hashMap,
                 JobData = jobData
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref fullData)
-                , UnsafeMultiHashMapVisitKeyMutableValueJobStruct<TJob, TKey, TValue>.Initialize()
+                  UnsafeUtility.AddressOf(ref jobProducer)
+                , JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
                 );

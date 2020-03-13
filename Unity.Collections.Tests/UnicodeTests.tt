@@ -1,7 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
 <#@ output extension=".gen.cs" #>
-<#@ assembly name="System.Collections" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Text" #>
 
@@ -29,7 +28,7 @@ namespace NativeStringTests
 
 [TestFixture("en-US")]
 [TestFixture("da-DK")]
-public class WordsTests
+internal class WordsTests
 {
     CultureInfo testCulture;
     CultureInfo backupCulture;
