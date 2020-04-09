@@ -87,14 +87,16 @@ namespace Unity.Collections
 
     internal unsafe static class NativeQueueBlockPool
     {
-        static NativeQueueBlockPoolData data;
+        static NativeQueueBlockPoolData* pData;
 
         public static NativeQueueBlockPoolData* QueueBlockPool
         {
             get
             {
-                if (data.m_NumBlocks == 0)
+                if (pData == null)
                 {
+                    pData = (NativeQueueBlockPoolData*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<NativeQueueBlockPoolData>(), 8, Allocator.Persistent);
+                    ref var data = ref *pData;
                     data.m_NumBlocks = data.m_MaxBlocks = 256;
                     data.m_AllocLock = 0;
                     // Allocate MaxBlocks items
@@ -111,13 +113,14 @@ namespace Unity.Collections
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
 #endif
                 }
-                return (NativeQueueBlockPoolData*)UnsafeUtility.AddressOf<NativeQueueBlockPoolData>(ref data);
+                return pData;
             }
         }
 
 #if !NET_DOTS
         static void OnDomainUnload(object sender, EventArgs e)
         {
+            ref var data = ref *pData;
             while (data.m_FirstBlock != IntPtr.Zero)
             {
                 NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)data.m_FirstBlock;
@@ -125,6 +128,8 @@ namespace Unity.Collections
                 UnsafeUtility.Free(block, Allocator.Persistent);
                 --data.m_NumBlocks;
             }
+            UnsafeUtility.Free(pData, Allocator.Persistent);
+            pData = null;
         }
 #endif
     }

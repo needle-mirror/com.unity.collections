@@ -538,7 +538,7 @@ for(var size = 0; size < 5; ++size)
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class <#=TYPENAME#>DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class <#=TYPENAME#>DebugView<T> where T : unmanaged
     {
         <#=TYPENAME#><T> m_List;
         public <#=TYPENAME#>DebugView(<#=TYPENAME#><T> list)

@@ -6,8 +6,7 @@ using Unity.Collections;
 
 internal class NativeQueueTests_InJobs
 {
-    // Burst error BC1005: The `try` construction is not supported
-    // [BurstCompile(CompileSynchronously = true)]
+    [BurstCompile(CompileSynchronously = true)]
     struct ConcurrentEnqueue : IJobParallelFor
     {
         public NativeQueue<int>.ParallelWriter queue;
@@ -16,14 +15,7 @@ internal class NativeQueueTests_InJobs
         public void Execute(int index)
         {
             result[index] = 1;
-            try
-            {
-                queue.Enqueue(index);
-            }
-            catch (System.Exception)
-            {
-                result[index] = 0;
-            }
+            queue.Enqueue(index);
         }
     }
 

@@ -24,7 +24,42 @@ using Unity.Collections.LowLevel.Unsafe;
 
 internal class FixedListTests
 {
+    struct NonComparableStruct
+    {
+        public int a;
+    }
+
 <#
+    {
+        var SIZES = new int[] {32, 64, 128};
+        for (var size = 0; size < 3; ++size)
+        {
+            var BYTES = SIZES[size];
+            var TYPENAME = String.Format("FixedList{0}", BYTES);
+#>
+    [Test]
+    public void <#=TYPENAME #>DebugView()
+    {
+        var list = new <#=TYPENAME #><NonComparableStruct>();
+        CollectionAssert.IsEmpty(new <#=TYPENAME #>DebugView<NonComparableStruct>(list).Items);
+
+        var reference = new []
+        {
+            new NonComparableStruct{ a = 123 },
+            new NonComparableStruct{ a = 234 },
+            new NonComparableStruct{ a = 345 },
+        };
+
+        list.Add(reference[0]);
+        list.Add(reference[1]);
+        list.Add(reference[2]);
+
+        CollectionAssert.AreEqual(reference, new <#=TYPENAME #>DebugView<NonComparableStruct>(list).Items);
+    }
+
+<#
+        }
+    }
     {
         var TYPES = new string[] {"byte", "int", "float"};
         var TYPESIZES = new int[] {1, 4, 4};

@@ -850,7 +850,7 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class FixedList32DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class FixedList32DebugView<T> where T : unmanaged
     {
         FixedList32<T> m_List;
         public FixedList32DebugView(FixedList32<T> list)
@@ -1655,7 +1655,7 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class FixedList64DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class FixedList64DebugView<T> where T : unmanaged
     {
         FixedList64<T> m_List;
         public FixedList64DebugView(FixedList64<T> list)
@@ -2460,7 +2460,7 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class FixedList128DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class FixedList128DebugView<T> where T : unmanaged
     {
         FixedList128<T> m_List;
         public FixedList128DebugView(FixedList128<T> list)
@@ -3265,7 +3265,7 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class FixedList512DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class FixedList512DebugView<T> where T : unmanaged
     {
         FixedList512<T> m_List;
         public FixedList512DebugView(FixedList512<T> list)
@@ -4070,7 +4070,7 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
     }
 
-    sealed class FixedList4096DebugView<T> where T : unmanaged, IComparable<T>
+    sealed class FixedList4096DebugView<T> where T : unmanaged
     {
         FixedList4096<T> m_List;
         public FixedList4096DebugView(FixedList4096<T> list)

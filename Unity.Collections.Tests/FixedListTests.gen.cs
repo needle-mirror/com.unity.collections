@@ -19,6 +19,71 @@ using Unity.Collections.LowLevel.Unsafe;
 
 internal class FixedListTests
 {
+    struct NonComparableStruct
+    {
+        public int a;
+    }
+
+    [Test]
+    public void FixedList32DebugView()
+    {
+        var list = new FixedList32<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList32DebugView<NonComparableStruct>(list).Items);
+
+        var reference = new []
+        {
+            new NonComparableStruct{ a = 123 },
+            new NonComparableStruct{ a = 234 },
+            new NonComparableStruct{ a = 345 },
+        };
+
+        list.Add(reference[0]);
+        list.Add(reference[1]);
+        list.Add(reference[2]);
+
+        CollectionAssert.AreEqual(reference, new FixedList32DebugView<NonComparableStruct>(list).Items);
+    }
+
+    [Test]
+    public void FixedList64DebugView()
+    {
+        var list = new FixedList64<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList64DebugView<NonComparableStruct>(list).Items);
+
+        var reference = new []
+        {
+            new NonComparableStruct{ a = 123 },
+            new NonComparableStruct{ a = 234 },
+            new NonComparableStruct{ a = 345 },
+        };
+
+        list.Add(reference[0]);
+        list.Add(reference[1]);
+        list.Add(reference[2]);
+
+        CollectionAssert.AreEqual(reference, new FixedList64DebugView<NonComparableStruct>(list).Items);
+    }
+
+    [Test]
+    public void FixedList128DebugView()
+    {
+        var list = new FixedList128<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList128DebugView<NonComparableStruct>(list).Items);
+
+        var reference = new []
+        {
+            new NonComparableStruct{ a = 123 },
+            new NonComparableStruct{ a = 234 },
+            new NonComparableStruct{ a = 345 },
+        };
+
+        list.Add(reference[0]);
+        list.Add(reference[1]);
+        list.Add(reference[2]);
+
+        CollectionAssert.AreEqual(reference, new FixedList128DebugView<NonComparableStruct>(list).Items);
+    }
+
     
 
     [Test]

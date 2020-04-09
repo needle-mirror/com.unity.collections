@@ -1,5 +1,19 @@
 # Change log
 
+## [0.7.1] - 2020-04-08
+
+### Deprecated
+
+ * Deprecated `Length` property from `NativeHashMap`, `UnsafeHashMap`, `NativeMultiHashMap`,
+   `UnsafeMultiHashMap`, `NativeQueue`, and replaced it with `Count()` to reflect that there
+   is computation being done.
+
+### Fixed
+
+ * Fixed an issue where `FixedListDebugView<T>` only existed for IComparable types, which lead to a crash while debugging other types.
+ * Removed code that made NativeStream incompatible with Burst.
+
+
 ## [0.7.0] - 2020-03-13
 
 ### Added
