@@ -1,4 +1,4 @@
-﻿#if !UNITY_DOTSPLAYER
+#if !UNITY_DOTSPLAYER
 using NUnit.Framework;
 using System;
 using Unity.Collections;
@@ -71,7 +71,7 @@ class NativeArrayChunked8Tests
 
         for (int i = 0; i < a.Length; ++i)
         {
-            a[i] = new T1 { A = (uint) i };
+            a[i] = new T1 { A = (uint)i };
         }
 
         for (int i = 0; i < a.Length; ++i)
@@ -90,9 +90,10 @@ class NativeArrayChunked8Tests
 
         for (int i = 0; i < a.Length; ++i)
         {
-            a[i] = new T2 {
+            a[i] = new T2
+            {
                 A = i,
-                B = 900-i
+                B = 900 - i
             };
         }
 
@@ -100,7 +101,7 @@ class NativeArrayChunked8Tests
         {
             var e = a[i];
             Assert.AreEqual(i, e.A);
-            Assert.AreEqual(900-i, e.B);
+            Assert.AreEqual(900 - i, e.B);
         }
 
         a.Dispose();
@@ -203,7 +204,7 @@ class NativeArrayFullSOATests
 
         for (int i = 0; i < a.Length; ++i)
         {
-            a[i] = new T1 { A = (uint) i };
+            a[i] = new T1 { A = (uint)i };
         }
 
         for (int i = 0; i < a.Length; ++i)
@@ -222,9 +223,10 @@ class NativeArrayFullSOATests
 
         for (int i = 0; i < a.Length; ++i)
         {
-            a[i] = new T2 {
+            a[i] = new T2
+            {
                 A = i,
-                B = 900-i
+                B = 900 - i
             };
         }
 
@@ -232,7 +234,7 @@ class NativeArrayFullSOATests
         {
             var e = a[i];
             Assert.AreEqual(i, e.A);
-            Assert.AreEqual(900-i, e.B);
+            Assert.AreEqual(900 - i, e.B);
         }
 
         a.Dispose();
@@ -296,6 +298,5 @@ class NativeArrayFullSOATests
             Assert.AreEqual(i, array[i].A.A, "NativeArrayFullSOA failed to write values from within Burst job.");
         array.Dispose();
     }
-
 }
 #endif

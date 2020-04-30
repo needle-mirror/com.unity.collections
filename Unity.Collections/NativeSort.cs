@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -303,12 +303,12 @@ namespace Unity.Collections
 
             public void Execute()
             {
-                var segmentCount = (Length + (SegmentWidth-1)) / SegmentWidth;
+                var segmentCount = (Length + (SegmentWidth - 1)) / SegmentWidth;
                 var segmentIndex = stackalloc int[segmentCount];
 
                 var resultCopy = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
 
-                for (int sortIndex=0;sortIndex < Length;sortIndex++)
+                for (int sortIndex = 0; sortIndex < Length; sortIndex++)
                 {
                     // find next best
                     int bestSegmentIndex = -1;
@@ -337,7 +337,7 @@ namespace Unity.Collections
                     resultCopy[sortIndex] = bestValue;
                 }
 
-                UnsafeUtility.MemCpy(Data,resultCopy,UnsafeUtility.SizeOf<T>()*Length);
+                UnsafeUtility.MemCpy(Data, resultCopy, UnsafeUtility.SizeOf<T>() * Length);
             }
         }
 
@@ -376,7 +376,7 @@ namespace Unity.Collections
             var workerSegmentCount = segmentCount / workerCount;
             var segmentSortJob = new SegmentSort<T> {Data = array, Length = length, SegmentWidth = 1024};
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
-            var segmentSortMergeJob = new SegmentSortMerge<T>{Data = array, Length = length, SegmentWidth = 1024};
+            var segmentSortMergeJob = new SegmentSortMerge<T> {Data = array, Length = length, SegmentWidth = 1024};
             var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
             return segmentSortMergeJobHandle;
         }

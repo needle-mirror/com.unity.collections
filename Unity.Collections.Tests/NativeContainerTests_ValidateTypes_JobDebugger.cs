@@ -1,4 +1,4 @@
-﻿using Unity.Jobs;
+using Unity.Jobs;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
@@ -35,11 +35,11 @@ internal class NativeContainderTests_ValidateTypes_JobDebugger : NativeContainer
     [Test]
     public void ValidatedUnsupportedTypes()
     {
-        CheckNativeContainerReflectionExceptionParallelFor<WriteOnlyHashMapParallelForJob> ("WriteOnlyHashMapParallelForJob.value is not declared [ReadOnly] in a IJobParallelFor job. The container does not support parallel writing. Please use a more suitable container type.");
-        CheckNativeContainerReflectionException<DeallocateOnJobCompletionOnUnsupportedType> ("DeallocateOnJobCompletionOnUnsupportedType.value uses [DeallocateOnJobCompletion] but the native container does not support deallocation of the memory from a job.");
+        CheckNativeContainerReflectionExceptionParallelFor<WriteOnlyHashMapParallelForJob>("WriteOnlyHashMapParallelForJob.value is not declared [ReadOnly] in a IJobParallelFor job. The container does not support parallel writing. Please use a more suitable container type.");
+        CheckNativeContainerReflectionException<DeallocateOnJobCompletionOnUnsupportedType>("DeallocateOnJobCompletionOnUnsupportedType.value uses [DeallocateOnJobCompletion] but the native container does not support deallocation of the memory from a job.");
 
         // ReadWrite against atomic write only container
-        CheckNativeContainerReflectionExceptionParallelFor<ReadWriteMultiHashMapParallelForJob> ("ReadWriteMultiHashMapParallelForJob.value is not declared [ReadOnly] in a IJobParallelFor job. The container does not support parallel writing. Please use a more suitable container type.");
+        CheckNativeContainerReflectionExceptionParallelFor<ReadWriteMultiHashMapParallelForJob>("ReadWriteMultiHashMapParallelForJob.value is not declared [ReadOnly] in a IJobParallelFor job. The container does not support parallel writing. Please use a more suitable container type.");
     }
 }
 #endif

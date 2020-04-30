@@ -1,48 +1,54 @@
-﻿using System;
+using System;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Jobs;
+using UnityEngine;
+using UnityEngine.TestTools;
+
 
 internal class NativeQueueTests
 {
     [Test]
     public void Enqueue_Dequeue()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         Assert.AreEqual(16, queue.Count);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
     public void ConcurrentEnqueue_Dequeue()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             cQueue.Enqueue(i);
         Assert.AreEqual(16, queue.Count);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
     public void Enqueue_Dequeue_Peek()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         Assert.AreEqual(16, queue.Count);
@@ -52,16 +58,16 @@ internal class NativeQueueTests
             queue.Dequeue();
         }
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
     public void Enqueue_Dequeue_Clear()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         Assert.AreEqual(16, queue.Count);
@@ -70,42 +76,42 @@ internal class NativeQueueTests
         Assert.AreEqual(8, queue.Count);
         queue.Clear();
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
     public void Double_Deallocate_Throws()
     {
-        var queue = new NativeQueue<int> (Allocator.TempJob);
-        queue.Dispose ();
-        Assert.Throws<System.InvalidOperationException> (() => { queue.Dispose (); });
+        var queue = new NativeQueue<int>(Allocator.TempJob);
+        queue.Dispose();
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dispose(); });
     }
 
     [Test]
     public void EnqueueScalability()
     {
-        var queue = new NativeQueue<int> (Allocator.Persistent);
+        var queue = new NativeQueue<int>(Allocator.Persistent);
         for (int i = 0; i != 1000 * 100; i++)
         {
-            queue.Enqueue (i);
+            queue.Enqueue(i);
         }
 
-        Assert.AreEqual (1000 * 100, queue.Count);
+        Assert.AreEqual(1000 * 100, queue.Count);
 
         for (int i = 0; i != 1000 * 100; i++)
-            Assert.AreEqual (i, queue.Dequeue());
-        Assert.AreEqual (0, queue.Count);
+            Assert.AreEqual(i, queue.Dequeue());
+        Assert.AreEqual(0, queue.Count);
 
-        queue.Dispose ();
+        queue.Dispose();
     }
 
     [Test]
     public void Enqueue_Wrap()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 256; ++i)
             queue.Enqueue(i);
         Assert.AreEqual(256, queue.Count);
@@ -121,17 +127,17 @@ internal class NativeQueueTests
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
     public void ConcurrentEnqueue_Wrap()
     {
-        var queue = new NativeQueue<int> (Allocator.Temp);
+        var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 256; ++i)
             cQueue.Enqueue(i);
         Assert.AreEqual(256, queue.Count);
@@ -147,8 +153,8 @@ internal class NativeQueueTests
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         Assert.AreEqual(0, queue.Count);
-        Assert.Throws<System.InvalidOperationException> (()=> {queue.Dequeue(); });
-        queue.Dispose ();
+        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+        queue.Dispose();
     }
 
     [Test]
@@ -228,4 +234,16 @@ internal class NativeQueueTests
             }
         }
     }
+
+#if UNITY_2020_1_OR_NEWER
+    [Test]
+    public void NativeQueue_UseAfterFree_UsesCustomOwnerTypeName()
+    {
+        var container = new NativeQueue<int>(Allocator.TempJob);
+        container.Enqueue(123);
+        container.Dispose();
+        Assert.That(() => container.Dequeue(), Throws.InvalidOperationException.With.Message.Contains($"The {container.GetType()} has been deallocated"));
+    }
+
+#endif
 }

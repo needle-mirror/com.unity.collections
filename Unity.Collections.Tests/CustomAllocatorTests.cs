@@ -24,7 +24,7 @@ public class CustomAllocatorTests
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
-                Assert.AreEqual(AllocatorManager.Persistent, block.Range.Allocator);
+                Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
             }
         }
         AllocatorManager.Shutdown();
@@ -76,7 +76,7 @@ public class CustomAllocatorTests
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
-                Assert.AreEqual(AllocatorManager.Persistent, block.Range.Allocator);
+                Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
             }
 
             var freeJob = new FreeJob();
@@ -90,12 +90,13 @@ public class CustomAllocatorTests
                 Assert.AreEqual(0, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
-                Assert.AreEqual(AllocatorManager.Persistent, block.Range.Allocator);
+                Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
             }
         }
 
         AllocatorManager.Shutdown();
     }
+
 #endif
 
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
@@ -140,6 +141,7 @@ public class CustomAllocatorTests
         {
             return ((ClearToValueAllocator*)state)->Try(ref block);
         }
+
         public AllocatorManager.TryFunction Function => Try;
         public void Dispose()
         {
@@ -196,6 +198,31 @@ public class CustomAllocatorTests
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+            }
+        }
+        AllocatorManager.Shutdown();
+    }
+
+    // this is testing for the case where we want to install a custom allocator that clears memory to a constant
+    // byte value, and then have an UnsafeList use that custom allocator.
+    [Test]
+    public void CustomAllocatorUnsafeListWorks()
+    {
+        var customhandle = new AllocatorManager.AllocatorHandle { Value = AllocatorManager.FirstUserIndex };
+        AllocatorManager.Initialize();
+        using (var installation = new AllocatorManager.AllocatorInstallation<ClearToValueAllocator>(customhandle))
+        {
+            installation.Allocator.budgetInBytes = 100;
+            for (byte ClearValue = 0; ClearValue < 0xF; ++ClearValue)
+            {
+                installation.Allocator.ClearValue = ClearValue;
+                using (var unsafelist = new UnsafeList<byte>(1, customhandle))
+                {
+                    const int kLength = 100;
+                    unsafelist.Resize(kLength);
+                    for (int i = 0; i < kLength; ++i)
+                        Assert.AreEqual(ClearValue, unsafelist[i]);
+                }
             }
         }
         AllocatorManager.Shutdown();

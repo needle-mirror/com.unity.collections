@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using Unity.Jobs;
 using Unity.Collections;
@@ -29,7 +29,7 @@ internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixt
         };
 
         var writeJob = writeData.Schedule(hashMapSize, 1);
-        Assert.Throws<InvalidOperationException> (() => { readData.Schedule(hashMapSize, 1); } );
+        Assert.Throws<InvalidOperationException>(() => { readData.Schedule(hashMapSize, 1); });
         writeJob.Complete();
 
         hashMap.Dispose();

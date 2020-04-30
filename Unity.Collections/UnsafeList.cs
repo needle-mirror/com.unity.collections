@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Burst;
 using Unity.Jobs;
@@ -11,6 +12,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// An unmanaged, untyped, resizable list, without any thread safety check features.
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe struct UnsafeList : IDisposable
     {
         /// <summary>
@@ -28,7 +30,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         /// <summary>
         /// </summary>
-        public Allocator Allocator;
+        public AllocatorManager.AllocatorHandle Allocator;
 
         /// <summary>
         /// Constructs a new container with type of memory allocation.
@@ -55,7 +57,36 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = ptr;
             Length = length;
             Capacity = length;
-            Allocator = Allocator.None;
+            Allocator = Collections.Allocator.None;
+        }
+
+        /// <summary>
+        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// </summary>
+        /// <param name="sizeOf">Size of element.</param>
+        /// <param name="alignOf">Alignment of element.</param>
+        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
+        /// the internal array is copied to a new, larger array.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        public unsafe UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            Allocator = allocator;
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+
+            if (initialCapacity != 0)
+            {
+                SetCapacity(sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && Ptr != null)
+            {
+                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
+            }
         }
 
         /// <summary>
@@ -81,7 +112,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             if (options == NativeArrayOptions.ClearMemory
-            && Ptr != null)
+                && Ptr != null)
             {
                 UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
             }
@@ -99,7 +130,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public static UnsafeList* Create(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            UnsafeList* listData = (UnsafeList*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<UnsafeList>(), UnsafeUtility.AlignOf<UnsafeList>(), allocator);
+            var handle = new AllocatorManager.AllocatorHandle {Value = (int)allocator};
+            UnsafeList* listData = AllocatorManager.Allocate<UnsafeList>(handle);
             UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
 
             listData->Allocator = allocator;
@@ -110,7 +142,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             if (options == NativeArrayOptions.ClearMemory
-            && listData->Ptr != null)
+                && listData->Ptr != null)
             {
                 UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
             }
@@ -135,7 +167,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             NullCheck(listData);
             var allocator = listData->Allocator;
             listData->Dispose();
-            UnsafeUtility.Free(listData, allocator);
+            AllocatorManager.Free(allocator, listData);
         }
 
         /// <summary>
@@ -153,8 +185,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
-                UnsafeUtility.Free(Ptr, Allocator);
-                Allocator = Allocator.Invalid;
+                AllocatorManager.Free(Allocator, Ptr);
+                Allocator = AllocatorManager.Invalid;
             }
 
             Ptr = null;
@@ -177,10 +209,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
-                var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
+                var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = (Allocator)Allocator.Value }.Schedule(inputDeps);
 
                 Ptr = null;
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
 
                 return jobHandle;
             }
@@ -218,7 +250,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Length = length;
 
             if (options == NativeArrayOptions.ClearMemory
-            && oldLength < length)
+                && oldLength < length)
             {
                 var num = length - oldLength;
                 byte* ptr = (byte*)Ptr;
@@ -240,7 +272,16 @@ namespace Unity.Collections.LowLevel.Unsafe
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         static private void CheckAllocator(Allocator a)
         {
-            if (a <= Allocator.None)
+            if (!CollectionHelper.ShouldDeallocate(a))
+            {
+                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static private void CheckAllocator(AllocatorManager.AllocatorHandle a)
+        {
+            if (!CollectionHelper.ShouldDeallocate(a))
             {
                 throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
             }
@@ -253,8 +294,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (capacity > 0)
             {
-                var bytesToMalloc = sizeOf * capacity;
-                newPointer = UnsafeUtility.Malloc(bytesToMalloc, alignOf, Allocator);
+                newPointer = AllocatorManager.Allocate(Allocator, sizeOf, alignOf, capacity);
 
                 if (Capacity > 0)
                 {
@@ -264,7 +304,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            UnsafeUtility.Free(Ptr, Allocator);
+            AllocatorManager.Free(Allocator, Ptr);
 
             Ptr = newPointer;
             Capacity = capacity;
@@ -610,7 +650,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         public void Execute()
         {
-            UnsafeUtility.Free(Ptr, Allocator);
+            var handle = new AllocatorManager.AllocatorHandle {Value = (int)Allocator};
+            AllocatorManager.Free(handle, Ptr);
         }
     }
 
@@ -620,14 +661,39 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="T">Source type of elements</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
-    public unsafe struct UnsafeList<T> : IDisposable
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct UnsafeList<T> : INativeList<T>, IDisposable
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
         public T* Ptr;
-        public int Length;
-        public int Capacity;
-        public Allocator Allocator;
+
+        public int length;
+        public int capacity;
+        public AllocatorManager.AllocatorHandle Allocator;
+
+        public int Length
+        {
+            get { return length; }
+            set { length = value; }
+        }
+
+        public int Capacity
+        {
+            get { return capacity; }
+            set { capacity = value; }
+        }
+
+        public T this[int index]
+        {
+            get { return Ptr[index]; }
+            set { Ptr[index] = value; }
+        }
+
+        public ref T ElementAt(int index)
+        {
+            return ref Ptr[index];
+        }
 
         /// <summary>
         /// Constructs list as view into memory.
@@ -635,9 +701,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafeList(T* ptr, int length)
         {
             Ptr = ptr;
-            Length = length;
-            Capacity = 0;
-            Allocator = Allocator.None;
+            this.length = length;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
+        }
+
+        /// <summary>
+        /// Constructs a new list using the specified type of memory allocation.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
+        /// sufficient capacity up front.</remarks>
+        public unsafe UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            Ptr = null;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
+            var sizeOf = UnsafeUtility.SizeOf<T>();
+            var alignOf = UnsafeUtility.AlignOf<T>();
+            this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
         }
 
         /// <summary>
@@ -651,9 +736,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafeList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
-            Length = 0;
-            Capacity = 0;
-            Allocator = Allocator.None;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
             var sizeOf = UnsafeUtility.SizeOf<T>();
             var alignOf = UnsafeUtility.AlignOf<T>();
             this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
@@ -920,7 +1005,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     internal sealed class UnsafeListTDebugView<T>
-        where T : unmanaged, IEquatable<T>
+        where T : unmanaged
     {
         UnsafeList<T> Data;
 
@@ -950,13 +1035,27 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
-    public unsafe struct UnsafePtrList : IDisposable
+    public unsafe struct UnsafePtrList : INativeList<IntPtr>, IDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         public readonly void** Ptr;
-        public readonly int Length;
-        public readonly int Capacity;
-        public readonly Allocator Allocator;
+        public readonly int length;
+        public readonly int capacity;
+        public readonly AllocatorManager.AllocatorHandle Allocator;
+
+        public int Length { get { return length; } set {} }
+        public int Capacity { get { return capacity; } set {} }
+
+        public IntPtr this[int index]
+        {
+            get { return new IntPtr(Ptr[index]); }
+            set { Ptr[index] = (void*)value; }
+        }
+
+        public ref IntPtr ElementAt(int index)
+        {
+            return ref ((IntPtr*)Ptr)[index];
+        }
 
         /// <summary>
         /// Constructs list as view into memory.
@@ -964,9 +1063,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafePtrList(void** ptr, int length)
         {
             Ptr = ptr;
-            Length = length;
-            Capacity = length;
-            Allocator = Allocator.None;
+            this.length = length;
+            this.capacity = length;
+            Allocator = AllocatorManager.None;
+        }
+
+        /// <summary>
+        /// Constructs a new list using the specified type of memory allocation.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
+        /// sufficient capacity up front.</remarks>
+        public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            Ptr = null;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
+
+            var sizeOf = IntPtr.Size;
+            this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
         }
 
         /// <summary>
@@ -980,9 +1098,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafePtrList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
-            Length = 0;
-            Capacity = 0;
-            Allocator = Allocator.None;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
 
             var sizeOf = IntPtr.Size;
             this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
@@ -992,7 +1110,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public static UnsafePtrList* Create(void** ptr, int length)
         {
-            UnsafePtrList* listData = (UnsafePtrList*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<UnsafePtrList>(), UnsafeUtility.AlignOf<UnsafePtrList>(), Allocator.Persistent);
+            UnsafePtrList* listData = AllocatorManager.Allocate<UnsafePtrList>(AllocatorManager.Persistent);
             *listData = new UnsafePtrList(ptr, length);
             return listData;
         }
@@ -1007,7 +1125,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public static UnsafePtrList* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            UnsafePtrList* listData = (UnsafePtrList*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<UnsafePtrList>(), UnsafeUtility.AlignOf<UnsafePtrList>(), allocator);
+            UnsafePtrList* listData = AllocatorManager.Allocate<UnsafePtrList>(allocator);
             *listData = new UnsafePtrList(initialCapacity, allocator, options);
             return listData;
         }
@@ -1018,12 +1136,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         public static void Destroy(UnsafePtrList* listData)
         {
             UnsafeList.NullCheck(listData);
-            var allocator = listData->ListData().Allocator == Allocator.Invalid
-                ? Allocator.Persistent
+            var allocator = listData->ListData().Allocator.Value == AllocatorManager.Invalid.Value
+                ? AllocatorManager.Persistent
                 : listData->ListData().Allocator
-                ;
+            ;
             listData->Dispose();
-            UnsafeUtility.Free(listData, allocator);
+            AllocatorManager.Free(allocator, listData);
         }
 
         /// <summary>

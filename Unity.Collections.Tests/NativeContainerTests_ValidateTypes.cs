@@ -1,4 +1,4 @@
-﻿using Unity.Burst;
+using Unity.Burst;
 using Unity.Jobs;
 using NUnit.Framework;
 using Unity.Collections;
@@ -49,16 +49,16 @@ internal class NativeContainerTests_ValidateTypes : NativeContainerTests_Validat
     [Test]
     public void Scheduling_With_Supported_Types()
     {
-        var temp1 = new NativeArray<float> (1, Allocator.TempJob);
-        var temp2 = new NativeArray<float> (1, Allocator.TempJob);
+        var temp1 = new NativeArray<float>(1, Allocator.TempJob);
+        var temp2 = new NativeArray<float>(1, Allocator.TempJob);
 
         var types = new StructWithVariousStructsAndValueTypesJob();
         types.nativeArrayRO = temp1;
         types.nativeArrayRW = temp2;
-        types.Schedule ().Complete();
-        new StructEmptyJob ().Schedule ().Complete();
+        types.Schedule().Complete();
+        new StructEmptyJob().Schedule().Complete();
 
-        temp1.Dispose ();
-        temp2.Dispose ();
+        temp1.Dispose();
+        temp2.Dispose();
     }
 }

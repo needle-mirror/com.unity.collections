@@ -1,6 +1,8 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 [TestFixture]
 internal class UnsafeUtilityTests
@@ -89,7 +91,21 @@ internal class UnsafeUtilityTests
         }
     }
 
+#if UNITY_2020_2_OR_NEWER
     [Test]
+    public void AliasCanBeDisposed()
+    {
+        using (var src = MakeTestArray(12))
+        {
+            using (var dst = src.Reinterpret<int, float>())
+            {
+            }
+        }
+    }
+
+#else
+    [Test]
+    [Ignore("Failing due to editor changes, disabled for now: https://unity3d.atlassian.net/browse/DOTS-1442")]
     public void CannotDisposeAlias()
     {
         using (var src = MakeTestArray(12))
@@ -98,6 +114,8 @@ internal class UnsafeUtilityTests
             Assert.Throws<InvalidOperationException>(() => dst.Dispose());
         }
     }
+
+#endif
 
     [Test]
     public void CannotUseAliasAfterSourceIsDisposed()
@@ -121,4 +139,53 @@ internal class UnsafeUtilityTests
             Assert.AreEqual(-1.0f, src[1]);
         }
     }
+
+#if UNITY_2020_2_OR_NEWER
+    struct AlignOfX
+    {
+        float x;
+        bool y;
+    }
+
+    struct AlignOfY
+    {
+        float x;
+        bool y;
+        float z;
+        bool w;
+    }
+
+    struct AlignOfZ
+    {
+        float4 x;
+        bool y;
+    }
+
+    struct AlignOfW
+    {
+        float4 x;
+        bool y;
+        float4x4 z;
+        bool w;
+    }
+
+    [Test]
+    public void UnsafeUtility_AlignOf()
+    {
+        Assert.AreEqual(UnsafeUtility.SizeOf<byte>(), UnsafeUtility.AlignOf<byte>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<short>(), UnsafeUtility.AlignOf<short>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<ushort>(), UnsafeUtility.AlignOf<ushort>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<int>(), UnsafeUtility.AlignOf<int>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<uint>(), UnsafeUtility.AlignOf<uint>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<long>(), UnsafeUtility.AlignOf<long>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<ulong>(), UnsafeUtility.AlignOf<ulong>());
+        Assert.AreEqual(4, UnsafeUtility.AlignOf<float4>());
+
+        Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfX>());
+        Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfY>());
+        Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfZ>());
+        Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfW>());
+    }
+
+#endif
 }

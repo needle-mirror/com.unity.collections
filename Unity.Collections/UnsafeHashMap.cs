@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +13,46 @@ using UnityEngine.Internal;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    /// <summary>
+    ///
+    /// </summary>
+    public unsafe struct UnsafeHashMapBucketData
+    {
+        internal UnsafeHashMapBucketData(byte* v, byte* k, byte* n, byte* b, int bcm)
+        {
+            values = v;
+            keys = k;
+            next = n;
+            buckets = b;
+            bucketCapacityMask = bcm;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public readonly byte* values;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public readonly byte* keys;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public readonly byte* next;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public readonly byte* buckets;
+
+        /// <summary>
+        ///
+        /// </summary>
+        public readonly int bucketCapacityMask;
+    }
+
     [StructLayout(LayoutKind.Explicit)]
     internal unsafe struct UnsafeHashMapData
     {
@@ -41,7 +81,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [FieldOffset(40)]
         internal int allocatedIndexLength;
 
-        [FieldOffset(JobsUtility.CacheLineSize < 64 ? 64 : JobsUtility.CacheLineSize)]
+        [FieldOffset(JobsUtility.CacheLineSize < 64 ? 64: JobsUtility.CacheLineSize)]
         internal fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
 
         // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
@@ -257,6 +297,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             Assert.AreEqual(result.Keys.Length, o);
             Assert.AreEqual(result.Values.Length, o);
         }
+
+        internal UnsafeHashMapBucketData GetBucketData()
+        {
+            return new UnsafeHashMapBucketData(values, keys, next, buckets, bucketCapacityMask);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -328,9 +373,9 @@ namespace Unity.Collections.LowLevel.Unsafe
                     {
                         again = false;
                         for (int other = (threadIndex + 1) % JobsUtility.MaxJobThreadCount
-                            ; other != threadIndex
-                            ; other = (other + 1) % JobsUtility.MaxJobThreadCount
-                            )
+                             ; other != threadIndex
+                             ; other = (other + 1) % JobsUtility.MaxJobThreadCount
+                        )
                         {
                             do
                             {
@@ -340,14 +385,13 @@ namespace Unity.Collections.LowLevel.Unsafe
                                 {
                                     break;
                                 }
-
                             }
                             while (Interlocked.CompareExchange(
-                                      ref data->firstFreeTLS[other * UnsafeHashMapData.IntsPerCacheLine]
-                                    , nextPtrs[idx]
-                                    , idx
-                                    ) != idx
-                                    );
+                                ref data->firstFreeTLS[other * UnsafeHashMapData.IntsPerCacheLine]
+                                , nextPtrs[idx]
+                                , idx
+                                   ) != idx
+                            );
 
                             if (idx == -2)
                             {
@@ -369,11 +413,11 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
             while (Interlocked.CompareExchange(
-                      ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
-                    , nextPtrs[idx]
-                    , idx
-                    ) != idx
-                    );
+                ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
+                , nextPtrs[idx]
+                , idx
+                   ) != idx
+            );
 
             nextPtrs[idx] = -1;
             return idx;
@@ -415,11 +459,11 @@ namespace Unity.Collections.LowLevel.Unsafe
                             nextPtrs[idx] = data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine];
                         }
                         while (Interlocked.CompareExchange(
-                                  ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
-                                , idx
-                                , nextPtrs[idx]
-                                ) != nextPtrs[idx]
-                                );
+                            ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
+                            , idx
+                            , nextPtrs[idx]
+                               ) != nextPtrs[idx]
+                        );
 
                         return false;
                     }
@@ -622,7 +666,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             do
             {
                 if (UnsafeUtility.ReadArrayElement<TKey>(keys, entryIdx).Equals(key)
-                && UnsafeUtility.ReadArrayElement<TValueEQ>(values, entryIdx).Equals(value))
+                    && UnsafeUtility.ReadArrayElement<TValueEQ>(values, entryIdx).Equals(value))
                 {
                     int nextIdx = nextPtrs[entryIdx];
                     nextPtrs[entryIdx] = firstFreeTLS[0];
@@ -751,9 +795,9 @@ namespace Unity.Collections.LowLevel.Unsafe
             for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
             {
                 for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
-                    ; freeIdx >= 0
-                    ; freeIdx = nextPtrs[freeIdx]
-                    )
+                     ; freeIdx >= 0
+                     ; freeIdx = nextPtrs[freeIdx]
+                )
                 {
                     ++freeListSize;
                 }
@@ -1114,9 +1158,9 @@ namespace Unity.Collections.LowLevel.Unsafe
             for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
             {
                 for (int freeIdx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine]
-                    ; freeIdx >= 0
-                    ; freeIdx = nextPtrs[freeIdx]
-                    )
+                     ; freeIdx >= 0
+                     ; freeIdx = nextPtrs[freeIdx]
+                )
                 {
                     ++freeListSize;
                 }
@@ -1256,7 +1300,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             return count;
-
         }
 
         /// <summary>
@@ -1364,7 +1407,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             TValue value;
             NativeMultiHashMapIterator<TKey> iterator;
 
-            public void Dispose() { }
+            public void Dispose() {}
 
             public bool MoveNext()
             {
@@ -1503,16 +1546,7 @@ namespace Unity.Collections
 {
     using Unity.Collections.LowLevel.Unsafe;
 
-    /// <summary>
-    ///
-    /// </summary>
-    // IJobNativeMultiHashMapMergedSharedKeyIndices: custom job type, following its own defined custom safety rules:
-    // A) because we know how hashmap safety works, B) we can iterate safely in parallel
-    // Notable Features:
-    // 1) The hash map must be a NativeMultiHashMap<int,int>, where the key is a hash of some data, and the index is
-    // a unique index (generally to the relevant data in some other collection).
-    // 2) Each bucket is processed concurrently with other buckets.
-    // 3) All key/value pairs in each bucket are processed individually (in sequential order) by a single thread.
+    [Obsolete("IJobUnsafeMultiHashMapMergedSharedKeyIndices is obsolete. (RemovedAfter 2020-07-07)", false)]
     [JobProducerType(typeof(JobUnsafeMultiHashMapUniqueHashExtensions.JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<>))]
     public interface IJobUnsafeMultiHashMapMergedSharedKeyIndices
     {
@@ -1525,9 +1559,7 @@ namespace Unity.Collections
         void ExecuteNext(int firstIndex, int index);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobUnsafeMultiHashMapUniqueHashExtensions is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobUnsafeMultiHashMapUniqueHashExtensions
     {
         internal struct JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>
@@ -1610,15 +1642,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob>(this TJob jobData, UnsafeMultiHashMap<int, int> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobUnsafeMultiHashMapMergedSharedKeyIndices
         {
@@ -1629,22 +1652,18 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobUnsafeMultiHashMapMergedSharedKeyIndicesProducer<TJob>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyValue.JobUnsafeMultiHashMapVisitKeyValueProducer<,,>))]
+    [Obsolete("IJobUnsafeMultiHashMapVisitKeyValue is obsolete. (RemovedAfter 2020-07-07)", false)]
+    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyValue.JobUnsafeMultiHashMapVisitKeyValueProducer<, ,>))]
     public interface IJobUnsafeMultiHashMapVisitKeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1652,9 +1671,7 @@ namespace Unity.Collections
         void ExecuteNext(TKey key, TValue value);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobUnsafeMultiHashMapVisitKeyValue is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobUnsafeMultiHashMapVisitKeyValue
     {
         internal struct JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>
@@ -1715,17 +1732,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(this TJob jobData, UnsafeMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobUnsafeMultiHashMapVisitKeyValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
@@ -1738,22 +1744,18 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobUnsafeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyMutableValue.JobUnsafeMultiHashMapVisitKeyMutableValueProducer<,,>))]
+    [Obsolete("IJobUnsafeMultiHashMapVisitKeyMutableValue is obsolete. (RemovedAfter 2020-07-07)", false)]
+    [JobProducerType(typeof(JobUnsafeMultiHashMapVisitKeyMutableValue.JobUnsafeMultiHashMapVisitKeyMutableValueProducer<, ,>))]
     public interface IJobUnsafeMultiHashMapVisitKeyMutableValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1761,9 +1763,7 @@ namespace Unity.Collections
         void ExecuteNext(TKey key, ref TValue value);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobUnsafeMultiHashMapVisitKeyMutableValue is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobUnsafeMultiHashMapVisitKeyMutableValue
     {
         internal struct JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>
@@ -1823,17 +1823,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(this TJob jobData, UnsafeMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobUnsafeMultiHashMapVisitKeyMutableValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
@@ -1846,11 +1835,11 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobUnsafeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
         }

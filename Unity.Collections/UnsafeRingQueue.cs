@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -84,7 +84,6 @@ namespace Unity.Collections.LowLevel.Unsafe
     public unsafe struct UnsafeRingQueue<T> : IDisposable
         where T : unmanaged
     {
-
         /// <summary>
         /// </summary>
         [NativeDisableUnsafePtrRestriction]

@@ -33,7 +33,7 @@ internal class DecimalSeparatorCulture
 {
     CultureInfo testCulture;
     CultureInfo backupCulture;
-    
+
     public DecimalSeparatorCulture(string culture)
     {
         testCulture = CultureInfo.CreateSpecificCulture(culture);
@@ -60,16 +60,46 @@ internal class DecimalSeparatorCulture
         Assert.AreEqual("0.1 1.2", FixedString.Format("{0} {1}", 0.1f, 1.2f));
         Assert.AreEqual("error 500 in line 350: bubbly", FixedString.Format("error {0} in line {1}: {2}", 500, 350, "bubbly"));
     }
-            
-    <# var SIZES = new int[]{32,64,128,512,4096}; 
-       foreach(var BYTES in SIZES) 
+
+    <# var SIZES = new int[]{32,64,128,512,4096};
+       foreach(var BYTES in SIZES)
        {
          var ALMOST_TOO_BIG = new String('o', BYTES -2 );
-         var TOO_BIG = new String('o', BYTES -1 ); 
-       #>
+         var TOO_BIG = new String('o', BYTES -1 );
+         for (var PARAMS = 0; PARAMS < 10; ++PARAMS)
+         {
+             var FORMAT = "{0}";
+             var ARGS = "arg0";
+             var EXPECTED = "a";
+             for (var f = 1; f <= PARAMS; ++f)
+             {
+                 FORMAT += " {" + f + "}";
+                 ARGS += ", arg" + f;
+                 EXPECTED += " " + (char)('a' + f);
+             }
+#>
+
+    [Test]
+    public void FixedString<#=BYTES #>FormatExtension<#=PARAMS+1#>Params()
+    {
+        FixedString<#=BYTES #> aa = default;
+        FixedString128 format = "<#=FORMAT#>";
+<#
+             for (var PARAM = 0; PARAM <= PARAMS; ++PARAM)
+             {
+                 WriteLine("        FixedString32 arg{0} = \"{1}\";", PARAM, (char)('a' + PARAM));
+             }
+#>
+        aa.Format(format, <#=ARGS#>);
+        Assert.AreEqual("<#=EXPECTED#>", aa);
+    }
+
+<#
+         }
+#>
 
     [TestCase("Antidisestablishmentarianism")]
-    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")] 
+    [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")]
     public void FixedString<#=BYTES#>CopyFromBytesWorks(String a)
     {
         FixedString<#=BYTES#> aa = default;
@@ -79,7 +109,7 @@ internal class DecimalSeparatorCulture
             fixed(byte *b = utf8)
                 aa.CopyFrom(b, (ushort)utf8.Length);
         }
-        Assert.AreEqual(a, aa.ToString());          
+        Assert.AreEqual(a, aa.ToString());
     }
 
     [TestCase("<#=ALMOST_TOO_BIG#>", CopyError.None)]
@@ -90,7 +120,7 @@ internal class DecimalSeparatorCulture
         var error = aa.CopyFrom(a);
         Assert.AreEqual(expectedError, error);
     }
-       
+
     [TestCase("red", 0, 0, ParseError.Syntax)]
     [TestCase("0", 1, 0, ParseError.None)]
     [TestCase("-1", 2, -1, ParseError.None)]
@@ -116,7 +146,7 @@ internal class DecimalSeparatorCulture
             Assert.AreEqual(expectedOutput, output);
         }
     }
-    
+
     [TestCase("red", 0, ParseError.Syntax)]
     [TestCase("0", 1,  ParseError.None)]
     [TestCase("-1", 2, ParseError.None)]
@@ -141,7 +171,7 @@ internal class DecimalSeparatorCulture
     [TestCase("100000000001", 12, ParseError.None)]
     public void FixedString<#=BYTES#>ParseFloat(String unlocalizedString, int expectedOffset, ParseError expectedResult)
     {
-        var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);            
+        var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var localizedString = unlocalizedString.Replace('.', localizedDecimalSeparator);
         float expectedOutput = 0;
         try { expectedOutput = Single.Parse(localizedString); } catch {}
@@ -165,7 +195,7 @@ internal class DecimalSeparatorCulture
     [TestCase(100)]
     [TestCase(2147483647)]
     public void FixedString<#=BYTES#>FormatInt(int input)
-    {         
+    {
         var expectedOutput = input.ToString();
         FixedString<#=BYTES#> aa = new FixedString<#=BYTES#>();
         var result = aa.Format(input);
@@ -182,7 +212,7 @@ internal class DecimalSeparatorCulture
     [TestCase(100L)]
     [TestCase(9223372036854775807L)]
     public void FixedString<#=BYTES#>FormatLong(long input)
-    {         
+    {
         var expectedOutput = input.ToString();
         FixedString<#=BYTES#> aa = new FixedString<#=BYTES#>();
         var result = aa.Format(input);
@@ -207,7 +237,7 @@ internal class DecimalSeparatorCulture
     [TestCase(-1E-10f, FormatError.None)]
     [TestCase(3.402823E+38f, FormatError.None)]
     public void FixedString<#=BYTES#>FormatFloat(float input, FormatError expectedResult)
-    {         
+    {
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var expectedOutput = input.ToString();
         FixedString<#=BYTES#> aa = new FixedString<#=BYTES#>();
@@ -228,7 +258,7 @@ internal class DecimalSeparatorCulture
     [TestCase(100)]
     [TestCase(2147483647)]
     public void FixedString<#=BYTES#>AppendInt(int input)
-    {         
+    {
         var expectedOutput = "foo" + input.ToString();
         FixedString<#=BYTES#> aa = "foo";
         var result = aa.Append(input);
@@ -245,7 +275,7 @@ internal class DecimalSeparatorCulture
     [TestCase(100L)]
     [TestCase(9223372036854775807L)]
     public void FixedString<#=BYTES#>AppendLong(long input)
-    {         
+    {
         var expectedOutput = "foo" + input.ToString();
         FixedString<#=BYTES#> aa = "foo";
         var result = aa.Append(input);
@@ -269,7 +299,7 @@ internal class DecimalSeparatorCulture
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
     public void FixedString<#=BYTES#>AppendFloat(float input, FormatError expectedResult)
-    {         
+    {
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var expectedOutput = "foo" + input.ToString();
         FixedString<#=BYTES#> aa = "foo";
@@ -293,16 +323,16 @@ internal class DecimalSeparatorCulture
         var actualOutput = aa.ToString();
         Assert.AreEqual(expectedOutput, actualOutput);
     }
-    
+
     [TestCase("en-US")]
     [TestCase("da-DK")]
     public void FixedString<#=BYTES#>ParseFloatLocale(String locale)
-    {         
+    {
         var original = CultureInfo.CurrentCulture;
         try
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo(locale);
-            var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);                    
+            var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
             float value = 1.5f;
             FixedString<#=BYTES#> native = new FixedString<#=BYTES#>();
             native.Format(value, localizedDecimalSeparator);
@@ -315,10 +345,10 @@ internal class DecimalSeparatorCulture
             Thread.CurrentThread.CurrentCulture = original;
         }
     }
-    
+
     [Test]
     public void FixedString<#=BYTES#>ParseFloatNan()
-    {         
+    {
         FixedString<#=BYTES#> aa = new FixedString<#=BYTES#>("NaN");
         int offset = 0;
         float output = 0;
@@ -326,7 +356,7 @@ internal class DecimalSeparatorCulture
         Assert.AreEqual(ParseError.None, result);
         Assert.IsTrue(Single.IsNaN(output));
     }
-    
+
     [TestCase("red")]
     [TestCase("紅色", TestName="{m}(Chinese-Red)")]
     [TestCase("George Washington")]
@@ -336,7 +366,7 @@ internal class DecimalSeparatorCulture
         FixedString<#=BYTES#> aa = new FixedString<#=BYTES#>(a);
         Assert.AreEqual(aa.ToString(), a);
     }
-    
+
     [TestCase("monkey", "monkey")]
     [TestCase("yellow","green")]
     [TestCase("violet","紅色", TestName="{m}(Violet-Chinese-Red")]
@@ -364,17 +394,17 @@ internal class DecimalSeparatorCulture
         int index = 0;
         foreach(var rune in actual)
         {
-            Assert.AreEqual(expected[index], rune.value);            
+            Assert.AreEqual(expected[index], rune.value);
             ++index;
         }
     }
-    
+
     [Test]
     public void FixedString<#=BYTES#>RuneConstructor()
     {
         Assert.AreEqual("aaaaa", new FixedString<#=BYTES#>(new Unicode.Rune{value='a'}, 5));
     }
-        
+
     [Test]
     public void FixedString<#=BYTES#>IndexOf()
     {
@@ -430,19 +460,19 @@ internal class DecimalSeparatorCulture
         Assert.AreEqual(UnsafeUtility.SizeOf<FixedString<#=BYTES#>>(), <#=BYTES#>);
     }
 
-<#    
+<#
     var layoutString = new string[] {
         "red",
         "紅色",
         "црвена",
         "George Washington",
-        "村上春樹", 
-        "🌕🌖🌗🌘🌑🌒🌓🌔", 
+        "村上春樹",
+        "🌕🌖🌗🌘🌑🌒🌓🌔",
         "𝒞𝒯𝒮𝒟𝒳𝒩𝒫𝒢",
-        "로마는 하루아침에 이루어진 것이 아니다", 
+        "로마는 하루아침에 이루어진 것이 아니다",
         "Лако ти је плитку воду замутити и будалу наљутити",
         "Үнэн үг хэлсэн хүнд ноёд өстэй, үхэр унасан хүнд ноход өстэй.",
-        "न अभिशेको न संस्कारः सिम्हस्य कृयते वनेविक्रमार्जितसत्वस्य स्वयमेव मृगेन्द्रता"             
+        "न अभिशेको न संस्कारः सिम्हस्य कृयते वनेविक्रमार्जितसत्वस्य स्वयमेव मृगेन्द्रता"
     };
     var layoutName = new string[] {
         "red",
@@ -455,8 +485,8 @@ internal class DecimalSeparatorCulture
         "{m}(Korean - Rome was not made overnight)",
         "{m}(Serbian-Proverb)",
         "{m}(Mongolian-Proverb1)",
-        "{m}(Hindi-Proverb3)"             
-    };        
+        "{m}(Hindi-Proverb3)"
+    };
     for(var i = 0; i < layoutString.Length; ++i)
     {
         var utf8 = Encoding.UTF8;
@@ -467,11 +497,11 @@ internal class DecimalSeparatorCulture
         Array.Copy(utfBytes, 0, expected, 2, utfBytes.Length);
         if(expected.Length <= BYTES)
         {
-            var bytes = String.Join(", ", expected);            
+            var bytes = String.Join(", ", expected);
         #>
     [TestCase("<#=layoutString[i]#>", new byte[]{<#=bytes#>}, TestName="<#=layoutName[i]#>")]
 <#
-        }        
+        }
     }
 #>        unsafe public void FixedString<#=BYTES#>Layout(String a, byte[] expected)
     {
@@ -483,7 +513,7 @@ internal class DecimalSeparatorCulture
         }
     }
 
-<# foreach(var OTHERBYTES in SIZES) 
+<# foreach(var OTHERBYTES in SIZES)
 {
  if(OTHERBYTES != BYTES)
  { #>
@@ -501,7 +531,7 @@ internal class DecimalSeparatorCulture
     }
 <# }
 } } #>
-    
+
 }
 
 }

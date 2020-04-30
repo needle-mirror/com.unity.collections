@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,6 +22,12 @@ namespace Unity.Collections
         internal TKey key;
         internal int NextEntryIndex;
         internal int EntryIndex;
+
+        /// <summary>
+        /// Returns entry index.
+        /// </summary>
+        /// <returns>Entry index.</returns>
+        public int GetEntryIndex() => EntryIndex;
     }
 
     /// <summary>
@@ -87,10 +93,21 @@ namespace Unity.Collections
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        UnsafeHashMap<TKey, TValue> m_HashMapData;
+        internal UnsafeHashMap<TKey, TValue> m_HashMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
+
+#if UNITY_2020_1_OR_NEWER
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashMap<TKey, TValue>>();
+
+        [BurstDiscard]
+        private static void CreateStaticSafetyId()
+        {
+            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeHashMap<TKey, TValue>>();
+        }
+
+#endif
 
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
@@ -114,6 +131,13 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+#if UNITY_2020_1_OR_NEWER
+            if (s_staticSafetyId.Data == 0)
+            {
+                CreateStaticSafetyId();
+            }
+            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+#endif
 #endif
         }
 
@@ -195,7 +219,7 @@ namespace Unity.Collections
         /// <param name="value">The value of the element to add.</param>
         public void Add(TKey key, TValue value)
         {
-            var added = m_HashMapData.TryAdd(key, value);
+            var added = TryAdd(key, value);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (!added)
             {
@@ -255,14 +279,14 @@ namespace Unity.Collections
             {
                 TValue res;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+
                 if (m_HashMapData.TryGetValue(key, out res))
                 {
                     return res;
                 }
-                else
-                {
-                    throw new ArgumentException($"Key: {key} is not present in the NativeHashMap.");
-                }
+
+                throw new ArgumentException($"Key: {key} is not present in the NativeHashMap.");
 #else
                 m_HashMapData.TryGetValue(key, out res);
                 return res;
@@ -509,6 +533,17 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
 
+#if UNITY_2020_1_OR_NEWER
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
+
+        [BurstDiscard]
+        private static void CreateStaticSafetyId()
+        {
+            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeMultiHashMap<TKey, TValue>>();
+        }
+
+#endif
+
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
 #endif
@@ -531,6 +566,14 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+
+#if UNITY_2020_1_OR_NEWER
+            if (s_staticSafetyId.Data == 0)
+            {
+                CreateStaticSafetyId();
+            }
+            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+#endif
 #endif
         }
 
@@ -713,7 +756,6 @@ namespace Unity.Collections
             }
 
             return count;
-
         }
 
         /// <summary>
@@ -842,7 +884,7 @@ namespace Unity.Collections
             TValue value;
             NativeMultiHashMapIterator<TKey> iterator;
 
-            public void Dispose() { }
+            public void Dispose() {}
 
             public bool MoveNext()
             {
@@ -974,13 +1016,91 @@ namespace Unity.Collections
     /// <summary>
     ///
     /// </summary>
-    // IJobNativeMultiHashMapMergedSharedKeyIndices: custom job type, following its own defined custom safety rules:
-    // A) because we know how hashmap safety works, B) we can iterate safely in parallel
-    // Notable Features:
-    // 1) The hash map must be a NativeMultiHashMap<int,int>, where the key is a hash of some data, and the index is
-    // a unique index (generally to the relevant data in some other collection).
-    // 2) Each bucket is processed concurrently with other buckets.
-    // 3) All key/value pairs in each bucket are processed individually (in sequential order) by a single thread.
+    public static class NativeHashMapExtensions
+    {
+#if !UNITY_DOTSPLAYER
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="array"></param>
+        /// <returns></returns>
+        public static int Unique<T>(this NativeArray<T> array)
+            where T : struct, IEquatable<T>
+        {
+            if (array.Length == 0)
+            {
+                return 0;
+            }
+
+            int first = 0;
+            int last = array.Length;
+            var result = first;
+            while (++first != last)
+            {
+                if (!array[result].Equals(array[first]))
+                {
+                    array[++result] = array[first];
+                }
+            }
+
+            return ++result;
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
+        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+        /// <param name="hashMap"></param>
+        /// <param name="allocator"></param>
+        /// <returns></returns>
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
+            where TKey : struct, IEquatable<TKey>, IComparable<TKey>
+            where TValue : struct
+        {
+            var withDuplicates = hashMap.GetKeyArray(allocator);
+            withDuplicates.Sort();
+            int uniques = withDuplicates.Unique();
+            return (withDuplicates, uniques);
+        }
+
+#endif
+
+        /// <summary>
+        /// Returns internal bucked data structure. Internal bucket structure is useful when creating custom
+        /// jobs operating on container. Each bucket can be processed concurrently with other buckets, and all key/value
+        /// pairs in each bucket must processed individually (in sequential order) by a single thread.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
+        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+        /// <param name="hashMap"></param>
+        /// <returns>Returns internal bucked data structure.</returns>
+        public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            return hashMap.m_HashMapData.m_Buffer->GetBucketData();
+        }
+
+        /// <summary>
+        /// Returns internal bucked data structure. Internal bucket structure is useful when creating custom
+        /// jobs operating on container. Each bucket can be processed concurrently with other buckets, and all key/value
+        /// pairs in each bucket must processed individually (in sequential order) by a single thread.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
+        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+        /// <param name="hashMap"></param>
+        /// <returns>Returns internal bucked data structure.</returns>
+        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> multiHashMap)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            return multiHashMap.m_MultiHashMapData.m_Buffer->GetBucketData();
+        }
+    }
+
+    [Obsolete("IJobNativeMultiHashMapMergedSharedKeyIndices is obsolete. (RemovedAfter 2020-07-07)", false)]
     [JobProducerType(typeof(JobNativeMultiHashMapUniqueHashExtensions.JobNativeMultiHashMapMergedSharedKeyIndicesProducer<>))]
     public interface IJobNativeMultiHashMapMergedSharedKeyIndices
     {
@@ -993,9 +1113,7 @@ namespace Unity.Collections
         void ExecuteNext(int firstIndex, int index);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobNativeMultiHashMapUniqueHashExtensions is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobNativeMultiHashMapUniqueHashExtensions
     {
         internal struct JobNativeMultiHashMapMergedSharedKeyIndicesProducer<TJob>
@@ -1030,11 +1148,11 @@ namespace Unity.Collections
                         return;
                     }
 
-                    UnsafeHashMapData* hashMapData = jobProducer.HashMap.m_MultiHashMapData.m_Buffer;
-                    var buckets = (int*)hashMapData->buckets;
-                    var nextPtrs = (int*)hashMapData->next;
-                    var keys = hashMapData->keys;
-                    var values = hashMapData->values;
+                    var bucketData = jobProducer.HashMap.GetUnsafeBucketData();
+                    var buckets = (int*)bucketData.buckets;
+                    var nextPtrs = (int*)bucketData.next;
+                    var keys = bucketData.keys;
+                    var values = bucketData.values;
 
                     for (int i = begin; i < end; i++)
                     {
@@ -1078,15 +1196,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob>(this TJob jobData, NativeMultiHashMap<int, int> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobNativeMultiHashMapMergedSharedKeyIndices
         {
@@ -1097,22 +1206,18 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobNativeMultiHashMapMergedSharedKeyIndicesProducer<TJob>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_MultiHashMapData.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyValue.JobNativeMultiHashMapVisitKeyValueProducer<,,>))]
+    [Obsolete("IJobNativeMultiHashMapVisitKeyValue is obsolete. (RemovedAfter 2020-07-07)", false)]
+    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyValue.JobNativeMultiHashMapVisitKeyValueProducer<, ,>))]
     public interface IJobNativeMultiHashMapVisitKeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1120,9 +1225,7 @@ namespace Unity.Collections
         void ExecuteNext(TKey key, TValue value);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobNativeMultiHashMapVisitKeyValue is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobNativeMultiHashMapVisitKeyValue
     {
         internal struct JobNativeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>
@@ -1160,10 +1263,12 @@ namespace Unity.Collections
                     }
 
                     UnsafeHashMapData* hashMapData = producer.HashMap.m_MultiHashMapData.m_Buffer;
-                    var buckets = (int*)hashMapData->buckets;
-                    var nextPtrs = (int*)hashMapData->next;
-                    var keys = hashMapData->keys;
-                    var values = hashMapData->values;
+
+                    var bucketData = producer.HashMap.GetUnsafeBucketData();
+                    var buckets = (int*)bucketData.buckets;
+                    var nextPtrs = (int*)bucketData.next;
+                    var keys = bucketData.keys;
+                    var values = bucketData.values;
 
                     for (int i = begin; i < end; i++)
                     {
@@ -1183,17 +1288,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(this TJob jobData, NativeMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobNativeMultiHashMapVisitKeyValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
@@ -1206,62 +1300,18 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobNativeMultiHashMapVisitKeyValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_MultiHashMapData.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
         }
     }
 
-#if !UNITY_DOTSPLAYER
-    /// <summary>
-    ///
-    /// </summary>
-    public static class NativeHashMapExtensions
-    {
-        public static int Unique<T>(this NativeArray<T> array)
-            where T : struct, IEquatable<T>
-        {
-            if (array.Length == 0)
-            {
-                return 0;
-            }
-
-            int first = 0;
-            int last = array.Length;
-            var result = first;
-            while (++first != last)
-            {
-                if (!array[result].Equals(array[first]))
-                {
-                    array[++result] = array[first];
-                }
-            }
-
-            return ++result;
-        }
-
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
-            where TKey : struct, IEquatable<TKey>, IComparable<TKey>
-            where TValue : struct
-        {
-            var withDuplicates = hashMap.GetKeyArray(allocator);
-            withDuplicates.Sort();
-            int uniques = withDuplicates.Unique();
-            return (withDuplicates, uniques);
-        }
-    }
-#endif
-
-    /// <summary>
-    ///
-    /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyMutableValue.JobNativeMultiHashMapVisitKeyMutableValueProducer<,,>))]
+    [Obsolete("IJobNativeMultiHashMapVisitKeyMutableValue is obsolete. (RemovedAfter 2020-07-07)", false)]
+    [JobProducerType(typeof(JobNativeMultiHashMapVisitKeyMutableValue.JobNativeMultiHashMapVisitKeyMutableValueProducer<, ,>))]
     public interface IJobNativeMultiHashMapVisitKeyMutableValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1269,9 +1319,7 @@ namespace Unity.Collections
         void ExecuteNext(TKey key, ref TValue value);
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    [Obsolete("JobNativeMultiHashMapVisitKeyMutableValue is obsolete. (RemovedAfter 2020-07-07)", false)]
     public static class JobNativeMultiHashMapVisitKeyMutableValue
     {
         internal struct JobNativeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>
@@ -1309,10 +1357,11 @@ namespace Unity.Collections
                         return;
                     }
 
-                    var buckets = (int*)producer.HashMap.m_MultiHashMapData.m_Buffer->buckets;
-                    var nextPtrs = (int*)producer.HashMap.m_MultiHashMapData.m_Buffer->next;
-                    var keys = producer.HashMap.m_MultiHashMapData.m_Buffer->keys;
-                    var values = producer.HashMap.m_MultiHashMapData.m_Buffer->values;
+                    var bucketData = producer.HashMap.GetUnsafeBucketData();
+                    var buckets = (int*)bucketData.buckets;
+                    var nextPtrs = (int*)bucketData.next;
+                    var keys = bucketData.keys;
+                    var values = bucketData.values;
 
                     for (int i = begin; i < end; i++)
                     {
@@ -1331,17 +1380,6 @@ namespace Unity.Collections
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="TJob"></typeparam>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="jobData"></param>
-        /// <param name="hashMap"></param>
-        /// <param name="minIndicesPerJobCount"></param>
-        /// <param name="dependsOn"></param>
-        /// <returns></returns>
         public static unsafe JobHandle Schedule<TJob, TKey, TValue>(this TJob jobData, NativeMultiHashMap<TKey, TValue> hashMap, int minIndicesPerJobCount, JobHandle dependsOn = new JobHandle())
             where TJob : struct, IJobNativeMultiHashMapVisitKeyMutableValue<TKey, TValue>
             where TKey : struct, IEquatable<TKey>
@@ -1354,13 +1392,13 @@ namespace Unity.Collections
             };
 
             var scheduleParams = new JobsUtility.JobScheduleParameters(
-                  UnsafeUtility.AddressOf(ref jobProducer)
+                UnsafeUtility.AddressOf(ref jobProducer)
                 , JobNativeMultiHashMapVisitKeyMutableValueProducer<TJob, TKey, TValue>.Initialize()
                 , dependsOn
                 , ScheduleMode.Batched
-                );
+            );
 
-            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.m_MultiHashMapData.m_Buffer->bucketCapacityMask + 1, minIndicesPerJobCount);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, hashMap.GetUnsafeBucketData().bucketCapacityMask + 1, minIndicesPerJobCount);
         }
     }
 }

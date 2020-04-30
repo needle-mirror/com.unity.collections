@@ -1,5 +1,30 @@
 # Change log
 
+
+## [0.8.0] - 2020-04-24
+
+### Added
+
+ * Added `UnsafeAtomicCounter32/64` providing helper interface for atomic counter functionality.
+ * Added `NativeBitArray` providing arbitrary sized bit array functionality with safety mechanism.
+
+### Changed
+
+ * Bumped Burst version to improve compile time and fix multiple bugs.
+
+### Deprecated
+
+ * Deprecated `IJobNativeMultiHashMapMergedSharedKeyIndices`, `JobNativeMultiHashMapUniqueHashExtensions`,
+   `IJobNativeMultiHashMapVisitKeyValue`, `JobNativeMultiHashMapVisitKeyValue`, `IJobNativeMultiHashMapVisitKeyMutableValue`,
+   `JobNativeMultiHashMapVisitKeyMutableValue`, and introduced `NativeHashMap.GetUnsafeBucketData` and
+   `NativeMultiHashMap.GetUnsafeBucketData` to obtain internals to implement deprecated functionality
+   inside user code. If this functionality is used, the best is to copy deprecated code into user code.
+
+### Removed
+
+* Removed expired API `class TerminatesProgramAttribute`
+
+
 ## [0.7.1] - 2020-04-08
 
 ### Deprecated

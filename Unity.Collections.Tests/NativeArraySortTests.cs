@@ -337,15 +337,16 @@ internal class NativeSliceTests
         var copyToArray = new int[numElements];
 
         Measure.Method(() =>
-            {
-                slice.CopyTo(copyToArray);
-            })
+        {
+            slice.CopyTo(copyToArray);
+        })
             .WarmupCount(100)
             .MeasurementCount(1000)
             .Run();
 
         array.Dispose();
     }
+
 #endif
 
     [Test]
@@ -389,15 +390,16 @@ internal class NativeSliceTests
         var copyToArray = new int[numElements];
 
         Measure.Method(() =>
-            {
-                slice.CopyFrom(copyToArray);
-            })
+        {
+            slice.CopyFrom(copyToArray);
+        })
             .WarmupCount(100)
             .MeasurementCount(1000)
             .Run();
 
         array.Dispose();
     }
+
 #endif
 
     [Test]
@@ -514,5 +516,4 @@ internal class NativeSliceTests
         }
         array.Dispose();
     }
-
 }

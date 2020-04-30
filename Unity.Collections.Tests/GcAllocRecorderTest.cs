@@ -7,7 +7,7 @@ using Unity.Collections.Tests;
 internal class GcAllocRecorderTest
 {
     [Test]
-    public void TestBeginEnd ()
+    public void TestBeginEnd()
     {
         GCAllocRecorder.BeginNoGCAlloc();
         GCAllocRecorder.EndNoGCAlloc();
@@ -16,7 +16,7 @@ internal class GcAllocRecorderTest
     // NOTE: Causing GC allocation with new requires an unused variable
 #pragma warning disable 219
     [Test]
-    public void TestNoAlloc ()
+    public void TestNoAlloc()
     {
         GCAllocRecorder.ValidateNoGCAllocs(() =>
         {
@@ -35,6 +35,7 @@ internal class GcAllocRecorderTest
             });
         });
     }
+
 #pragma warning restore 219
 }
 #endif

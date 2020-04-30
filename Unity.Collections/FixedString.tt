@@ -1,4 +1,4 @@
-﻿<#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
+<#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
 <#@ output extension=".gen.cs" #>
 <#@ assembly name="System.Core" #>
@@ -18,6 +18,7 @@ using System;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Internal;
+using System.Diagnostics;
 
 namespace Unity.Collections
 {
@@ -1039,9 +1040,10 @@ namespace Unity.Collections
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
     /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
-    [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
+    [StructLayout(LayoutKind.Sequential, Size=<#=BYTES#>)]
     public struct FixedString<#=BYTES#>
-    : IComparable<String>
+    : INativeList<byte>
+    , IComparable<String>
     , IEquatable<String>
 <#
     foreach (var OTHERBYTES in SIZES)
@@ -1051,8 +1053,89 @@ namespace Unity.Collections
     }
 #>
     {
-        [FieldOffset(0)] internal ushort utf8LengthInBytes;
-        [FieldOffset(2)] internal FixedBytes<#=MAXLENGTH#> bytes;
+        internal ushort utf8LengthInBytes;
+        internal FixedBytes<#=MAXLENGTH#> bytes;
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckIndexInRange(int index)
+        {
+            if (index < 0)
+                throw new IndexOutOfRangeException($"Index {index} must be positive.");
+            if (index >= utf8LengthInBytes)
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString<#=BYTES#> of '{utf8LengthInBytes}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckLengthInRange(int length)
+        {
+            if (length < 0)
+                throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
+            if (length > UTF8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString<#=BYTES#> of '{UTF8MaxLengthInBytes}' Capacity.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
+
+        public int Length
+        {
+            get
+            {
+                return utf8LengthInBytes;
+            }
+            set
+            {
+                CheckLengthInRange(value);
+                utf8LengthInBytes = (ushort)value;
+            }
+        }
+
+        public int Capacity
+        {
+            get
+            {
+                return UTF8MaxLengthInBytes;
+            }
+            set
+            {
+                CheckCapacityInRange(value);
+            }
+        }
+
+        public byte this[int index]
+        {
+            get
+            {
+                CheckIndexInRange(index);
+                unsafe
+                {
+                    fixed(FixedBytes<#=MAXLENGTH#>* b = &bytes)
+                        return ((byte*)b)[index];
+                }
+            }
+            set
+            {
+                CheckIndexInRange(index);
+                unsafe
+                {
+                    fixed(FixedBytes<#=MAXLENGTH#>* b = &bytes)
+                        ((byte*)b)[index] = value;
+                }
+            }
+        }
+
+        public ref byte ElementAt(int index)
+        {
+            unsafe
+            {
+                fixed(FixedBytes<#=MAXLENGTH#>* b = &bytes)
+                    return ref ((byte*)b)[index];
+            }
+        }
 
         /// <summary>
         /// The maximum length of the string, in bytes.

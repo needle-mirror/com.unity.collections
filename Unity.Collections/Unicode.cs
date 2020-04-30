@@ -113,12 +113,12 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        static public Rune ReplacementCharacter => new Rune{value = 0xFFFD};
+        static public Rune ReplacementCharacter => new Rune {value = 0xFFFD};
 
         /// <summary>
         ///
         /// </summary>
-        static public Rune BadRune => new Rune{value = 0};
+        static public Rune BadRune => new Rune {value = 0};
 
         /// <summary>
         ///
@@ -139,7 +139,7 @@ namespace Unity.Collections
 
             if ((buffer[offset] & 0b10000000) == 0b00000000) // if high bit is 0, 1 byte
             {
-                rune.value = buffer[offset+0];
+                rune.value = buffer[offset + 0];
                 offset += 1;
                 return ConversionError.None;
             }
@@ -151,9 +151,9 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset+0] & 0b00011111);
-                code = (code<<6) |  (buffer[offset+1] & 0b00111111);
-                if (code < (1<<7) || NotTrailer(buffer[offset+1]))
+                code =              (buffer[offset + 0] & 0b00011111);
+                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
+                if (code < (1 << 7) || NotTrailer(buffer[offset + 1]))
                 {
                     offset += 1;
                     return ConversionError.Encoding;
@@ -170,10 +170,10 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset+0] & 0b00001111);
-                code = (code<<6) |  (buffer[offset+1] & 0b00111111);
-                code = (code<<6) |  (buffer[offset+2] & 0b00111111);
-                if (code < (1<<11) || !IsValidCodePoint(code) || NotTrailer(buffer[offset+1]) || NotTrailer(buffer[offset+2]))
+                code =              (buffer[offset + 0] & 0b00001111);
+                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
+                code = (code << 6) |  (buffer[offset + 2] & 0b00111111);
+                if (code < (1 << 11) || !IsValidCodePoint(code) || NotTrailer(buffer[offset + 1]) || NotTrailer(buffer[offset + 2]))
                 {
                     offset += 1;
                     return ConversionError.Encoding;
@@ -190,11 +190,11 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset+0] & 0b00000111);
-                code = (code<<6) |  (buffer[offset+1] & 0b00111111);
-                code = (code<<6) |  (buffer[offset+2] & 0b00111111);
-                code = (code<<6) |  (buffer[offset+3] & 0b00111111);
-                if (code < (1 << 16) || !IsValidCodePoint(code) || NotTrailer(buffer[offset+1]) || NotTrailer(buffer[offset+2]) || NotTrailer(buffer[offset+3]))
+                code =              (buffer[offset + 0] & 0b00000111);
+                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
+                code = (code << 6) |  (buffer[offset + 2] & 0b00111111);
+                code = (code << 6) |  (buffer[offset + 3] & 0b00111111);
+                if (code < (1 << 16) || !IsValidCodePoint(code) || NotTrailer(buffer[offset + 1]) || NotTrailer(buffer[offset + 2]) || NotTrailer(buffer[offset + 3]))
                 {
                     offset += 1;
                     return ConversionError.Encoding;
@@ -229,20 +229,20 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =               (buffer[offset+0] & 0x03FF);
+                code =               (buffer[offset + 0] & 0x03FF);
                 char next = buffer[offset + 1];
                 if (next < 0xDC00 || next > 0xDFFF)
                 {
                     offset += 1;
                     return ConversionError.Encoding;
                 }
-                code = (code << 10) | (buffer[offset+1] & 0x03FF);
+                code = (code << 10) | (buffer[offset + 1] & 0x03FF);
                 code += 0x10000;
                 rune.value = code;
                 offset += 2;
                 return ConversionError.None;
             }
-            rune.value = buffer[offset+0];
+            rune.value = buffer[offset + 0];
             offset += 1;
             return ConversionError.None;
         }
@@ -269,7 +269,7 @@ namespace Unity.Collections
 
             if (rune.value <= 0x7F)
             {
-                buffer[offset++] = (byte) rune.value;
+                buffer[offset++] = (byte)rune.value;
                 return ConversionError.None;
             }
 
@@ -369,7 +369,7 @@ namespace Unity.Collections
         public static ConversionError Utf16ToUtf8(char* utf16_buffer, int utf16_length, byte* utf8_buffer, out int utf8_length, int utf8_capacity)
         {
             utf8_length = 0;
-            for(var utf16_offset = 0; utf16_offset < utf16_length;)
+            for (var utf16_offset = 0; utf16_offset < utf16_length;)
             {
                 Utf16ToUcs(out var ucs, utf16_buffer, ref utf16_offset, utf16_length);
                 if (UcsToUtf8(utf8_buffer, ref utf8_length, utf8_capacity, ucs) == ConversionError.Overflow)
@@ -399,7 +399,7 @@ namespace Unity.Collections
             // TODO the high bits of the last 3 bytes that fit, decide how many of the 3 to append. but that requires a
             // TODO little UNICODE presence of mind that nobody has today.
             dest_length = 0;
-            for(var src_offset = 0; src_offset < src_length;)
+            for (var src_offset = 0; src_offset < src_length;)
             {
                 Utf8ToUcs(out var ucs, src_buffer, ref src_offset, src_length);
                 if (UcsToUtf8(dest_buffer, ref dest_length, dest_capacity, ucs) == ConversionError.Overflow)
@@ -420,7 +420,7 @@ namespace Unity.Collections
         public static ConversionError Utf8ToUtf16(byte* utf8_buffer, int utf8_length, char* utf16_buffer, out int utf16_length, int utf16_capacity)
         {
             utf16_length = 0;
-            for(var utf8_offset = 0; utf8_offset < utf8_length;)
+            for (var utf8_offset = 0; utf8_offset < utf8_length;)
             {
                 Utf8ToUcs(out var ucs, utf8_buffer, ref utf8_offset, utf8_length);
                 if (UcsToUtf16(utf16_buffer, ref utf16_length, utf16_capacity, ucs) == ConversionError.Overflow)
@@ -481,7 +481,7 @@ namespace Unity.Collections
                 return new string(pointer, 0, length);
 #else
                 var c = new char[Length];
-                for(var i = 0; i < Length; ++i)
+                for (var i = 0; i < Length; ++i)
                     c[i] = pointer[i];
                 return new String(c, 0, Length);
 #endif
@@ -531,7 +531,7 @@ namespace Unity.Collections
         NativeArray<ushort> buffer; // all the UTF-16 encoded bytes in one place
         NativeArray<int> offset; // one offset for each text in "buffer"
         NativeArray<ushort> length; // one length for each text in "buffer"
-        NativeMultiHashMap<int,int> hash; // from string hash to table entry
+        NativeMultiHashMap<int, int> hash; // from string hash to table entry
         int chars; // bytes in buffer allocated so far
         int entries; // number of strings allocated so far
         static WordStorage _Instance;
@@ -550,7 +550,7 @@ namespace Unity.Collections
             set { _Instance = value; }
         }
 
-        const int kMaxEntries = 16<<10;
+        const int kMaxEntries = 16 << 10;
         const int kMaxChars = kMaxEntries * 128;
 
         /// <summary>
@@ -565,10 +565,15 @@ namespace Unity.Collections
             buffer = new NativeArray<ushort>(kMaxChars, Allocator.Persistent);
             offset = new NativeArray<int>(kMaxEntries, Allocator.Persistent);
             length = new NativeArray<ushort>(kMaxEntries, Allocator.Persistent);
-            hash = new NativeMultiHashMap<int,int>(kMaxEntries, Allocator.Persistent);
+            hash = new NativeMultiHashMap<int, int>(kMaxEntries, Allocator.Persistent);
             chars = 0;
             entries = 0;
             GetOrCreateIndex(new NativeStringView()); // make sure that Index=0 means empty string
+
+#if UNITY_EDITOR
+            // Free storage on domain unload, which happens when iterating on the Entities module a lot.
+            AppDomain.CurrentDomain.DomainUnload += (_, __) => { this.Dispose(); };
+#endif
         }
 
         WordStorage()
@@ -581,7 +586,7 @@ namespace Unity.Collections
         /// </summary>
         public static void Setup()
         {
-            if(Instance.buffer.Length > 0)
+            if (Instance.buffer.Length > 0)
                 Instance.Dispose();
             Instance.Initialize();
         }
@@ -619,14 +624,14 @@ namespace Unity.Collections
                 {
                     var o = offset[itemIndex];
                     int matches;
-                    for(matches = 0; matches < l; ++matches)
+                    for (matches = 0; matches < l; ++matches)
                         if (temp[matches] != buffer[o + matches])
                             break;
                     if (matches == temp.Length)
                         return itemIndex;
-
                 }
-            } while (hash.TryGetNextValue(out itemIndex, ref iter));
+            }
+            while (hash.TryGetNextValue(out itemIndex, ref iter)) ;
             return -1;
         }
 
@@ -649,7 +654,7 @@ namespace Unity.Collections
         public unsafe bool Contains(string value)
         {
             fixed(char *c = value)
-                return Contains(new NativeStringView(c, value.Length));
+            return Contains(new NativeStringView(c, value.Length));
         }
 
         /// <summary>
@@ -680,10 +685,13 @@ namespace Unity.Collections
         /// </summary>
         public void Dispose()
         {
-            buffer.Dispose();
-            offset.Dispose();
-            length.Dispose();
-            hash.Dispose();
+            if (buffer.IsCreated)
+            {
+                buffer.Dispose();
+                offset.Dispose();
+                length.Dispose();
+                hash.Dispose();
+            }
         }
     }
 
@@ -730,7 +738,7 @@ namespace Unity.Collections
         public unsafe void SetString(string value)
         {
             fixed(char *c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
+            Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
         }
     }
 
@@ -863,7 +871,7 @@ namespace Unity.Collections
                 // an intrepid user may attempt to encode a positive integer with 20 digits or something.
                 // they are rewarded with a string that is encoded wholesale without any optimizations.
 
-                if(number <= kMaxPositiveNumericSuffix)
+                if (number <= kMaxPositiveNumericSuffix)
                     PositiveNumericSuffix = number;
                 else
                 {
@@ -878,13 +886,13 @@ namespace Unity.Collections
 
             // truncate the string, if there were digits at the end that we encoded.
 
-            if(beginningOfDigits != value.Length)
+            if (beginningOfDigits != value.Length)
                 value = Substring(value, 0, beginningOfDigits);
 
             // finally, set the string to its index in the global string blob thing.
 
             fixed(char *c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
+            Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
         }
     }
 }

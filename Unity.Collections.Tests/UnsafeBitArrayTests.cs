@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -6,7 +6,7 @@ using Unity.Collections.Tests;
 
 internal class UnsafeBitArrayTests
 {
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void UnsafeBitArray_Get_Set()
     {
         var numBits = 256;
@@ -85,7 +85,7 @@ internal class UnsafeBitArrayTests
             Assert.Throws<ArgumentException>(() => { test.IsSet(numBits); });
             Assert.Throws<ArgumentException>(() => { test.TestAny(0, 0); });
             Assert.Throws<ArgumentException>(() => { test.TestAny(numBits, 1); });
-            Assert.Throws<ArgumentException>(() => { test.TestAny(numBits-1, 0); });
+            Assert.Throws<ArgumentException>(() => { test.TestAny(numBits - 1, 0); });
 
             // GetBits numBits must be 1-64.
             Assert.Throws<ArgumentException>(() => { test.GetBits(0, 0); });
@@ -96,7 +96,7 @@ internal class UnsafeBitArrayTests
         }
     }
 
-    void GetBitsTest(ref UnsafeBitArray test, int pos, int numBits)
+    static void GetBitsTest(ref UnsafeBitArray test, int pos, int numBits)
     {
         test.SetBits(pos, true, numBits);
         Assert.AreEqual(numBits, test.CountBits(0, test.Length));
@@ -104,7 +104,7 @@ internal class UnsafeBitArrayTests
         test.Clear();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void UnsafeBitArray_GetBits()
     {
         var numBits = 256;
@@ -122,7 +122,7 @@ internal class UnsafeBitArrayTests
         test.Dispose();
     }
 
-    void SetBitsTest(ref UnsafeBitArray test, int pos, ulong value, int numBits)
+    static void SetBitsTest(ref UnsafeBitArray test, int pos, ulong value, int numBits)
     {
         test.SetBits(pos, value, numBits);
         Assert.AreEqual(value, test.GetBits(pos, numBits));

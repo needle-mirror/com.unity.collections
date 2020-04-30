@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Burst;
@@ -22,7 +22,7 @@ internal class NativeQueueTests_InJobs
     [Test]
     public void Enqueue()
     {
-        const int queueSize = 100*1024;
+        const int queueSize = 100 * 1024;
         var queue = new NativeQueue<int>(Allocator.TempJob);
         var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
 
@@ -94,9 +94,9 @@ internal class NativeQueueTests_InJobs
             q3.Dispose();
             q4.Dispose();
             rangeCheck.Dispose();
-	    }
-	    handles.Dispose();
-	}
+        }
+        handles.Dispose();
+    }
 
     struct EnqueueJob : IJobParallelFor
     {

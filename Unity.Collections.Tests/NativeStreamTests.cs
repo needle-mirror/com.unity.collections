@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
@@ -211,7 +211,7 @@ internal class NativeStreamTests
         var writer = stream.AsWriter();
         writer.BeginForEachIndex(0);
         // Missing EndForEachIndex();
-        Assert.Throws<ArgumentException>(() => writer.BeginForEachIndex(1) );
+        Assert.Throws<ArgumentException>(() => writer.BeginForEachIndex(1));
 
         stream.Dispose();
     }
@@ -289,7 +289,6 @@ internal class NativeStreamTests
         stream.Dispose();
     }
 
-
     [Test]
     public void CopyWriterByValueThrows()
     {
@@ -352,5 +351,6 @@ internal class NativeStreamTests
 
         stream.Dispose();
     }
+
 #endif
 }

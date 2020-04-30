@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Collections.LowLevel.Unsafe;
@@ -20,7 +20,7 @@ namespace Unity.Collections
         internal IntPtr m_FirstBlock;
         internal int m_NumBlocks;
         internal int m_MaxBlocks;
-        internal const int m_BlockSize = 16*1024;
+        internal const int m_BlockSize = 16 * 1024;
         internal int m_AllocLock;
 
         public NativeQueueBlockHeader* AllocateBlock()
@@ -131,6 +131,7 @@ namespace Unity.Collections
             UnsafeUtility.Free(pData, Allocator.Persistent);
             pData = null;
         }
+
 #endif
     }
 
@@ -160,7 +161,7 @@ namespace Unity.Collections
             NativeQueueBlockHeader* currentWriteBlock = data->GetCurrentWriteBlockTLS(threadIndex);
 
             if (currentWriteBlock != null
-            &&  currentWriteBlock->m_NumItems == data->m_MaxItems)
+                &&  currentWriteBlock->m_NumItems == data->m_MaxItems)
             {
                 currentWriteBlock = null;
             }
@@ -192,11 +193,11 @@ namespace Unity.Collections
             var queueDataSize = CollectionHelper.Align(UnsafeUtility.SizeOf<NativeQueueData>(), JobsUtility.CacheLineSize);
 
             var data = (NativeQueueData*)UnsafeUtility.Malloc(
-                  queueDataSize
+                queueDataSize
                 + JobsUtility.CacheLineSize * JobsUtility.MaxJobThreadCount
                 , JobsUtility.CacheLineSize
                 , label
-                );
+            );
 
             data->m_CurrentWriteBlockTLS = (((byte*)data) + queueDataSize);
 
@@ -246,6 +247,17 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
 
+#if UNITY_2020_1_OR_NEWER
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeQueue<T>>();
+
+        [BurstDiscard]
+        private static void CreateStaticSafetyId()
+        {
+            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeQueue<T>>();
+        }
+
+#endif
+
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
 #endif
@@ -268,6 +280,14 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator);
+
+#if UNITY_2020_1_OR_NEWER
+            if (s_staticSafetyId.Data == 0)
+            {
+                CreateStaticSafetyId();
+            }
+            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+#endif
 #endif
         }
 
@@ -278,15 +298,18 @@ namespace Unity.Collections
         {
             get
             {
-            #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-            #endif
+#endif
                 int count = 0;
 
-                for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*) m_Buffer->m_FirstBlock;
-                     block != null;
-                     block = block->m_NextBlock)
+                for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock
+                     ; block != null
+                     ; block = block->m_NextBlock
+                )
+                {
                     count += block->m_NumItems;
+                }
 
                 return count - m_Buffer->m_CurrentRead;
             }
@@ -400,7 +423,6 @@ namespace Unity.Collections
 
             return true;
         }
-
 
         /// <summary>
         /// A copy of this queue as a [NativeArray](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,6 +11,14 @@ using Unity.Jobs;
 
 namespace Unity.Collections
 {
+    public interface INativeList<T> where T : struct
+    {
+        int Length { get; set; }
+        int Capacity { get; set; }
+        T this[int index] { get; set; }
+        ref T ElementAt(int index);
+    }
+
     /// <summary>
     /// An unmanaged, resizable list.
     /// </summary>
@@ -19,12 +27,20 @@ namespace Unity.Collections
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}")]
     [DebuggerTypeProxy(typeof(NativeListDebugView<>))]
-    public unsafe struct NativeList<T> : IEnumerable<T>, IDisposable
+    public unsafe struct NativeList<T> : INativeList<T>, IEnumerable<T>, IDisposable
         where T : struct
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
+#if UNITY_2020_1_OR_NEWER
+        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeList<T>>();
+        [BurstDiscard]
+        private static void CreateStaticSafetyId()
+        {
+            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeList<T>>();
+        }
 
+#endif
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
 #endif
@@ -78,6 +94,13 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), $"Capacity * sizeof(T) cannot exceed {int.MaxValue} bytes");
 
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+#if UNITY_2020_1_OR_NEWER
+            if (s_staticSafetyId.Data == 0)
+            {
+                CreateStaticSafetyId();
+            }
+            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+#endif
 #endif
             m_ListData = UnsafeList.Create(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), initialCapacity, allocator);
             m_DeprecatedAllocator = allocator;
@@ -150,6 +173,15 @@ namespace Unity.Collections
             }
         }
 
+        public ref T ElementAt(int index)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+            CheckIndexInRange(index, m_ListData->Length);
+#endif
+            return ref UnsafeUtilityEx.ArrayElementAsRef<T>(m_ListData->Ptr, index);
+        }
+
         /// <summary>
         /// The current number of items in the list.
         /// </summary>
@@ -162,6 +194,10 @@ namespace Unity.Collections
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
                 return CollectionHelper.AssumePositive(m_ListData->Length);
+            }
+            set
+            {
+                m_ListData->Resize<T>(value, NativeArrayOptions.ClearMemory);
             }
         }
 
@@ -193,6 +229,12 @@ namespace Unity.Collections
                 m_ListData->SetCapacity<T>(value);
             }
         }
+
+        /// <summary>
+        /// Return internal UnsafeList*
+        /// </summary>
+        /// <returns></returns>
+        public UnsafeList* GetUnsafeList() => m_ListData;
 
         /// <summary>
         /// Adds an element to the list.
@@ -575,6 +617,7 @@ namespace Unity.Collections
             return new NativeArray<T>.ReadOnly(m_ListData->Ptr, m_ListData->Length);
 #endif
         }
+
 #endif
 
         /// <summary>
@@ -608,12 +651,14 @@ namespace Unity.Collections
                 ListData = listData;
                 m_Safety = safety;
             }
+
 #else
             public unsafe ParallelWriter(void* ptr, UnsafeList* listData)
             {
                 Ptr = ptr;
                 ListData = listData;
             }
+
 #endif
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -789,6 +834,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             return list.m_Safety;
         }
+
 #endif
 
         /// <summary>

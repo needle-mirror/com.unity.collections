@@ -53,6 +53,7 @@ internal class ListExtensionsTests
         Assert.False(list.RemoveSwapBack(c => c == 'd'));
         CollectionAssert.IsEmpty(list);
     }
+
     #endif // !NET_DOTS
 
     [Test]

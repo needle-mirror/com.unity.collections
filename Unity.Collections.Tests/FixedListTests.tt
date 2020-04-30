@@ -74,7 +74,7 @@ internal class FixedListTests
                 var MAXLENGTH = BYTES - 2;
                 var TYPENAME = String.Format("FixedList{0}", BYTES);
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
-#>    
+#>
 
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericHasExpectedLayout()
@@ -83,7 +83,7 @@ internal class FixedListTests
         for(var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
           actual.Add((<#=TYPE #>)i);
         unsafe
-        {        
+        {
             var e = stackalloc byte[<#=BYTES #>];
             e[0] = (byte)((<#=EXPECTEDCAPACITY #> >> 0) & 0xFF);
             e[1] = (byte)((<#=EXPECTEDCAPACITY #> >> 8) & 0xFF);
@@ -103,66 +103,66 @@ internal class FixedListTests
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((<#=TYPE #>)i);
-		Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
+        Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
 <#
                 if (EXPECTEDCAPACITY >= 5)
                 {
-#>                
+#>
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericInsertRange()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
-        list.Add(0);        
-        list.Add(3);        
+        list.Add(0);
+        list.Add(3);
         list.Add(4);
         list.InsertRange(1,3);
         list[1] = 1;
         list[2] = 2;
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericRemoveRange()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
-        list.Add(0);        
-        list.Add(3);        
-        list.Add(3);        
-        list.Add(1);        
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
         list.Add(2);
         list.RemoveRange(1,3);
         for(var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericInsert()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
-        list.Add(0);        
-        list.Add(3);        
-        list.Add(4);        
+        list.Add(0);
+        list.Add(3);
+        list.Add(4);
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericRemove()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
-        list.Add(0);        
-        list.Add(3);        
-        list.Add(3);        
-        list.Add(1);        
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
         list.Add(2);
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
@@ -173,7 +173,7 @@ internal class FixedListTests
           list.Add((<#=TYPE #>)(4-i));
         list.Sort();
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);                
+            Assert.AreEqual(i, list[i]);
     }
 <#
                 }
@@ -187,7 +187,7 @@ internal class FixedListTests
                 var TYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE),
                     BYTES);
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
-#>    
+#>
 
     [Test]
     public void <#=TYPENAME #>HasExpectedLayout()
@@ -196,7 +196,7 @@ internal class FixedListTests
         for(var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
           actual.Add((<#=TYPE #>)i);
         unsafe
-        {        
+        {
             var e = stackalloc byte[<#=BYTES #>];
             e[0] = (byte)((<#=EXPECTEDCAPACITY #> >> 0) & 0xFF);
             e[1] = (byte)((<#=EXPECTEDCAPACITY #> >> 8) & 0xFF);
@@ -208,7 +208,7 @@ internal class FixedListTests
             Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, <#=BYTES #>));
         }
     }
-    
+
     [Test]
     public void <#=TYPENAME #>HasExpectedCapacity()
     {
@@ -216,66 +216,66 @@ internal class FixedListTests
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((<#=TYPE #>)i);
-		Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
+        Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
 <#
                 if (EXPECTEDCAPACITY >= 5)
                 {
-#>                
+#>
     [Test]
     public void <#=TYPENAME #>InsertRange()
     {
         var list = new <#=TYPENAME #>();
-        list.Add(0);        
-        list.Add(3);        
+        list.Add(0);
+        list.Add(3);
         list.Add(4);
         list.InsertRange(1,3);
         list[1] = 1;
         list[2] = 2;
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #>RemoveRange()
     {
         var list = new <#=TYPENAME #>();
-        list.Add(0);        
-        list.Add(3);        
-        list.Add(3);        
-        list.Add(1);        
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
         list.Add(2);
         list.RemoveRange(1,3);
         for(var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #>Remove()
     {
         var list = new <#=TYPENAME #>();
-        list.Add(0);        
-        list.Add(3);        
-        list.Add(3);        
-        list.Add(1);        
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
         list.Add(2);
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
     public void <#=TYPENAME #>Insert()
     {
         var list = new <#=TYPENAME #>();
-        list.Add(0);        
-        list.Add(3);        
+        list.Add(0);
+        list.Add(3);
         list.Add(4);
-        list.Insert(1,1);        
-        list.Insert(2,2);        
+        list.Insert(1,1);
+        list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);        
+            Assert.AreEqual(i, list[i]);
     }
 
     [Test]
@@ -286,9 +286,9 @@ internal class FixedListTests
           list.Add((<#=TYPE #>)(4-i));
         list.Sort();
         for(var i = 0; i < 5; ++i)
-            Assert.AreEqual(i, list[i]);                
+            Assert.AreEqual(i, list[i]);
     }
-        
+
 <#
                 }
 
@@ -325,6 +325,6 @@ internal class FixedListTests
             }
         }
     }
-#>       
+#>
 
 }

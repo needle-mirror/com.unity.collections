@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -51,6 +51,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
+            if (allocator <= Allocator.None)
+            {
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
+            }
+
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
             Ptr = (ulong*)UnsafeUtility.Malloc(sizeInBytes, 16, allocator);
@@ -172,7 +177,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr[idxB] = (Ptr[idxB] & cmaskB) | orBitsB;
 
-            for (var idx = idxB+1; idx < idxE; ++idx)
+            for (var idx = idxB + 1; idx < idxE; ++idx)
             {
                 Ptr[idx] = orBits;
             }
@@ -185,7 +190,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="pos">Position in bit array.</param>
         /// <param name="value">Value of bits to set.</param>
-        /// <param name="numBits">Number of bits to get (must be 1-64).</param>
+        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
         public void SetBits(int pos, ulong value, int numBits = 1)
         {
             CheckArgsUlong(pos, numBits);
@@ -420,8 +425,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         private void CheckArgs(int pos, int numBits)
         {
             if (pos < 0
-            ||  pos >= Length
-            ||  numBits < 1)
+                ||  pos >= Length
+                ||  numBits < 1)
             {
                 throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length-1}), numBits {numBits} (must be greater than 0).");
             }
@@ -433,7 +438,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             CheckArgs(pos, numBits);
 
             if (numBits < 1
-            ||  numBits > 64)
+                ||  numBits > 64)
             {
                 throw new ArgumentException($"BitArray invalid arguments: numBits {numBits} (must be 1-64).");
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
@@ -44,6 +44,7 @@ internal class NativeArrayTests
         deps.Complete();
         array.Dispose();
     }
+
 #endif
 
     [Test, DotsRuntimeIgnore]

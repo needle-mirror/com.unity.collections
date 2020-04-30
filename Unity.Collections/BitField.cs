@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Unity.Burst;
 using Unity.Mathematics;
@@ -110,7 +110,7 @@ namespace Unity.Collections
         public void SetBits(int pos, bool value, int numBits)
         {
             CheckArgs(pos, numBits);
-            var mask = 0xffffffffu >> (32-numBits);
+            var mask = 0xffffffffu >> (32 - numBits);
             Value = Bitwise.SetBits(Value, pos, mask, value);
         }
 
@@ -203,9 +203,9 @@ namespace Unity.Collections
         private static void CheckArgs(int pos, int numBits)
         {
             if (pos > 31
-            ||  numBits == 0
-            ||  numBits > 32
-            ||  pos + numBits > 32)
+                ||  numBits == 0
+                ||  numBits > 32
+                ||  pos + numBits > 32)
             {
                 throw new ArgumentException($"BitField32 invalid arguments: pos {pos} (must be 0-31), numBits {numBits} (must be 1-32).");
             }
@@ -362,9 +362,9 @@ namespace Unity.Collections
         private static void CheckArgs(int pos, int numBits)
         {
             if (pos > 63
-            ||  numBits == 0
-            ||  numBits > 64
-            ||  pos + numBits > 64)
+                ||  numBits == 0
+                ||  numBits > 64
+                ||  pos + numBits > 64)
             {
                 throw new ArgumentException($"BitField32 invalid arguments: pos {pos} (must be 0-63), numBits {numBits} (must be 1-64).");
             }

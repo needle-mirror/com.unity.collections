@@ -28,7 +28,6 @@ internal class UnsafeAppendBufferTests
         Assert.AreEqual(5, data[0]);
     }
 
-
     [Test]
     public void UnsafeAppendBuffer_ThrowZeroAlignment()
     {
@@ -80,7 +79,7 @@ internal class UnsafeAppendBufferTests
                 PayloadSize = packetSize
             });
 
-            UnsafeUtility.MemSet(scratchPayload,(byte)(i & 0xff), packetSize);
+            UnsafeUtility.MemSet(scratchPayload, (byte)(i & 0xff), packetSize);
 
             buffer.Add(scratchPayload, i);
         }
@@ -94,7 +93,7 @@ internal class UnsafeAppendBufferTests
             if (packetHeader.PayloadSize > 0)
             {
                 var packetPayload = reader.ReadNext(packetHeader.PayloadSize);
-                Assert.AreEqual( (byte)(i&0xff), *(byte*)packetPayload);
+                Assert.AreEqual((byte)(i & 0xff), *(byte*)packetPayload);
             }
         }
         Assert.True(reader.EndOfBuffer);

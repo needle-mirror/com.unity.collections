@@ -32,7 +32,7 @@ internal class WordsTests
 {
     CultureInfo testCulture;
     CultureInfo backupCulture;
-    
+
     public WordsTests(string culture)
     {
         testCulture = CultureInfo.CreateSpecificCulture(culture);
@@ -115,14 +115,14 @@ internal class WordsTests
     }
 
     [TestCase("🌕🌖🌗🌘🌑🌒🌓🌔", TestName = "{m}(MoonPhases)")]
-    [TestCase("𝒞𝒯𝒮𝒟𝒳𝒩𝒫𝒢", TestName = "{m}(Cursive)")]        
+    [TestCase("𝒞𝒯𝒮𝒟𝒳𝒩𝒫𝒢", TestName = "{m}(Cursive)")]
     public unsafe void Utf16ToUtf8TransBMP(string source)
     {
         Utf16ToUtf8(source);
     }
-            
-    <# var SIZES = new int[]{32,64,128,512,4096}; 
-       foreach(var BYTES in SIZES) 
+
+    <# var SIZES = new int[]{32,64,128,512,4096};
+       foreach(var BYTES in SIZES)
        {
          var ALMOST_TOO_BIG = BYTES-2;
          var TOO_BIG = BYTES-1;
@@ -137,7 +137,7 @@ internal class WordsTests
         var error = aa.CopyFrom(a);
         Assert.AreEqual(expectedError, error);
     }
-       
+
     [TestCase("red", 0, 0, ParseError.Syntax)]
     [TestCase("0", 1, 0, ParseError.None)]
     [TestCase("-1", 2, -1, ParseError.None)]
@@ -163,7 +163,7 @@ internal class WordsTests
             Assert.AreEqual(expectedOutput, output);
         }
     }
-    
+
     [TestCase("red", 0, ParseError.Syntax)]
     [TestCase("0", 1,  ParseError.None)]
     [TestCase("-1", 2, ParseError.None)]
@@ -188,7 +188,7 @@ internal class WordsTests
     [TestCase("100000000001", 12, ParseError.None)]
     public void NativeString<#=BYTES#>ParseFloat(String unlocalizedString, int expectedOffset, ParseError expectedResult)
     {
-        var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);            
+        var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var localizedString = unlocalizedString.Replace('.', localizedDecimalSeparator);
         float expectedOutput = 0;
         try { expectedOutput = Single.Parse(localizedString); } catch {}
@@ -212,7 +212,7 @@ internal class WordsTests
     [TestCase(100)]
     [TestCase(2147483647)]
     public void NativeString<#=BYTES#>FormatInt(int input)
-    {         
+    {
         var expectedOutput = input.ToString();
         NativeString<#=BYTES#> aa = new NativeString<#=BYTES#>();
         var result = aa.Format(input);
@@ -229,7 +229,7 @@ internal class WordsTests
     [TestCase(100L)]
     [TestCase(9223372036854775807L)]
     public void NativeString<#=BYTES#>FormatLong(long input)
-    {         
+    {
         var expectedOutput = input.ToString();
         NativeString<#=BYTES#> aa = new NativeString<#=BYTES#>();
         var result = aa.Format(input);
@@ -253,7 +253,7 @@ internal class WordsTests
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
     public void NativeString<#=BYTES#>FormatFloat(float input, FormatError expectedResult)
-    {         
+    {
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var expectedOutput = input.ToString();
         NativeString<#=BYTES#> aa = new NativeString<#=BYTES#>();
@@ -274,7 +274,7 @@ internal class WordsTests
     [TestCase(100)]
     [TestCase(2147483647)]
     public void NativeString<#=BYTES#>AppendInt(int input)
-    {         
+    {
         var expectedOutput = "foo" + input.ToString();
         NativeString<#=BYTES#> aa = "foo";
         var result = aa.Append(input);
@@ -291,7 +291,7 @@ internal class WordsTests
     [TestCase(100L)]
     [TestCase(9223372036854775807L)]
     public void NativeString<#=BYTES#>AppendLong(long input)
-    {         
+    {
         var expectedOutput = "foo" + input.ToString();
         NativeString<#=BYTES#> aa = "foo";
         var result = aa.Append(input);
@@ -315,7 +315,7 @@ internal class WordsTests
     [TestCase(-1E10f, FormatError.None)]
     [TestCase(-1E-10f, FormatError.None)]
     public void NativeString<#=BYTES#>AppendFloat(float input, FormatError expectedResult)
-    {         
+    {
         var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
         var expectedOutput = "foo" + input.ToString();
         NativeString<#=BYTES#> aa = "foo";
@@ -339,16 +339,16 @@ internal class WordsTests
         var actualOutput = aa.ToString();
         Assert.AreEqual(expectedOutput, actualOutput);
     }
-    
+
     [TestCase("en-US")]
     [TestCase("da-DK")]
     public void NativeString<#=BYTES#>ParseFloatLocale(String locale)
-    {         
+    {
         var original = CultureInfo.CurrentCulture;
         try
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo(locale);
-            var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);                    
+            var localizedDecimalSeparator = Convert.ToChar(Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
             float value = 1.5f;
             NativeString<#=BYTES#> native = new NativeString<#=BYTES#>();
             native.Format(value, localizedDecimalSeparator);
@@ -361,10 +361,10 @@ internal class WordsTests
             Thread.CurrentThread.CurrentCulture = original;
         }
     }
-    
+
     [Test]
     public void NativeString<#=BYTES#>ParseFloatNan()
-    {         
+    {
         NativeString<#=BYTES#> aa = new NativeString<#=BYTES#>("NaN");
         int offset = 0;
         float output = 0;
@@ -372,7 +372,7 @@ internal class WordsTests
         Assert.AreEqual(ParseError.None, result);
         Assert.IsTrue(Single.IsNaN(output));
     }
-    
+
     [TestCase("red")]
     [TestCase("紅色", TestName="{m}(Chinese-Red)")]
     [TestCase("George Washington")]
@@ -382,7 +382,7 @@ internal class WordsTests
         NativeString<#=BYTES#> aa = new NativeString<#=BYTES#>(a);
         Assert.AreEqual(aa.ToString(), a);
     }
-    
+
     [TestCase("monkey", "monkey")]
     [TestCase("yellow","green")]
     [TestCase("violet","紅色", TestName="{m}(Violet-Chinese-Red")]
@@ -397,7 +397,7 @@ internal class WordsTests
         NativeString<#=BYTES#> bb = new NativeString<#=BYTES#>(b);
         Assert.AreEqual(aa.Equals(bb), a.Equals(b));
     }
-    
+
     [TestCase("monkey", "monkey")]
     [TestCase("red","orange")]
     [TestCase("violet","紅色", TestName="{m}(Chinese-Red)")]
@@ -421,19 +421,19 @@ internal class WordsTests
         Assert.AreEqual(UnsafeUtility.SizeOf<NativeString<#=BYTES#>>(), <#=BYTES#>);
     }
 
-<#    
+<#
     var layoutString = new string[] {
         "red",
         "紅色",
         "црвена",
         "George Washington",
-        "村上春樹", 
-        "🌕🌖🌗🌘🌑🌒🌓🌔", 
+        "村上春樹",
+        "🌕🌖🌗🌘🌑🌒🌓🌔",
         "𝒞𝒯𝒮𝒟𝒳𝒩𝒫𝒢",
-        "로마는 하루아침에 이루어진 것이 아니다", 
+        "로마는 하루아침에 이루어진 것이 아니다",
         "Лако ти је плитку воду замутити и будалу наљутити",
         "Үнэн үг хэлсэн хүнд ноёд өстэй, үхэр унасан хүнд ноход өстэй.",
-        "न अभिशेको न संस्कारः सिम्हस्य कृयते वनेविक्रमार्जितसत्वस्य स्वयमेव मृगेन्द्रता"             
+        "न अभिशेको न संस्कारः सिम्हस्य कृयते वनेविक्रमार्जितसत्वस्य स्वयमेव मृगेन्द्रता"
     };
     var layoutName = new string[] {
         "red",
@@ -446,8 +446,8 @@ internal class WordsTests
         "{m}(Korean - Rome was not made overnight)",
         "{m}(Serbian-Proverb)",
         "{m}(Mongolian-Proverb1)",
-        "{m}(Hindi-Proverb3)"             
-    };        
+        "{m}(Hindi-Proverb3)"
+    };
     for(var i = 0; i < layoutString.Length; ++i)
     {
         var utf8 = Encoding.UTF8;
@@ -458,11 +458,11 @@ internal class WordsTests
         Array.Copy(utfBytes, 0, expected, 2, utfBytes.Length);
         if(expected.Length <= BYTES)
         {
-            var bytes = String.Join(", ", expected);            
+            var bytes = String.Join(", ", expected);
         #>
     [TestCase("<#=layoutString[i]#>", new byte[]{<#=bytes#>}, TestName="<#=layoutName[i]#>")]
 <#
-        }        
+        }
     }
 #>        unsafe public void NativeString<#=BYTES#>Layout(String a, byte[] expected)
     {
@@ -474,7 +474,7 @@ internal class WordsTests
         }
     }
 
-<# foreach(var OTHERBYTES in SIZES) 
+<# foreach(var OTHERBYTES in SIZES)
 {
  if(OTHERBYTES != BYTES)
  { #>
@@ -492,7 +492,7 @@ internal class WordsTests
     }
 <# }
 } } #>
-    
+
     [TestCase("red")]
     [TestCase("orange")]
     [TestCase("yellow")]
@@ -609,7 +609,7 @@ internal class WordsTests
         Words w = new Words();
         Assert.IsFalse(WordStorage.Instance.Contains(value));
         Assert.IsTrue(WordStorage.Instance.Entries == 1);
-        w.SetString(value);	        
+        w.SetString(value);
         Assert.IsTrue(WordStorage.Instance.Contains(value));
         Assert.IsTrue(WordStorage.Instance.Entries == 2);
     }
@@ -640,7 +640,7 @@ internal class WordsTests
         {
             w.SetString( value + i);
             Assert.IsTrue(WordStorage.Instance.Entries == 2);
-        }	        
+        }
     }
 }
 

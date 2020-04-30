@@ -1,4 +1,4 @@
-﻿<#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
+<#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
 <#@ output extension=".gen.cs" #>
 <#@ assembly name="System.Collections" #>

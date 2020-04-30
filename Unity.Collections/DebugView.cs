@@ -13,11 +13,12 @@ namespace Unity.Collections
             value = v;
         }
 
-#if !NET_DOTS        
+#if !NET_DOTS
         public override string ToString()
         {
             return $"{key} = {value}";
         }
+
 #endif
     }
 

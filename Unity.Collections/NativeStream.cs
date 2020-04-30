@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
@@ -46,7 +46,7 @@ namespace Unity.Collections
             where T : struct
         {
             AllocateBlock(out stream, allocator);
-            var jobData = new ConstructJobList<T> { List = forEachCountFromList, Container = stream };
+            var jobData = new ConstructJobList { List = forEachCountFromList.GetUnsafeList(), Container = stream };
             return jobData.Schedule(dependency);
         }
 
@@ -160,17 +160,17 @@ namespace Unity.Collections
         }
 
         [BurstCompile]
-        struct ConstructJobList<T> : IJob
-            where T : struct
+        struct ConstructJobList : IJob
         {
             public NativeStream Container;
 
             [ReadOnly]
-            public NativeList<T> List;
+            [NativeDisableUnsafePtrRestriction]
+            public UnsafeList* List;
 
             public void Execute()
             {
-                Container.AllocateForEach(List.Length);
+                Container.AllocateForEach(List->Length);
             }
         }
 

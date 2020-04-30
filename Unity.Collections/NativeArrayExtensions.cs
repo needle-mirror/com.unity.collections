@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
@@ -60,6 +60,7 @@ namespace Unity.Collections
         {
             return IndexOf<T, U>(array.m_Buffer, array.m_Length, value);
         }
+
 #endif
 
         /// <summary>

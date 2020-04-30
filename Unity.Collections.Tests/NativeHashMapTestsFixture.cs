@@ -1,10 +1,10 @@
-﻿using Unity.Jobs;
+using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
 
 internal class NativeHashMapTestsFixture
 {
-    protected const int hashMapSize = 10*1024;
+    protected const int hashMapSize = 10 * 1024;
 
     // Burst error BC1005: The `try` construction is not supported
     // [BurstCompile(CompileSynchronously = true)]

@@ -2,6 +2,8 @@
 #define CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
 #endif
 
+#pragma warning disable 0649
+
 using System;
 using System.Runtime.InteropServices;
 using Unity.Burst;
@@ -14,35 +16,80 @@ namespace Unity.Collections
 {
     public static class AllocatorManager
     {
+        public unsafe static void* Allocate(AllocatorHandle handle, int itemSizeInBytes, int alignmentInBytes, int items = 1)
+        {
+            Block block = default;
+            block.Range.Allocator = handle;
+            block.Range.Items = items;
+            block.Range.Pointer = IntPtr.Zero;
+            block.BytesPerItem = itemSizeInBytes;
+            block.Alignment = alignmentInBytes;
+            var error = Try(ref block);
+            if (error != 0)
+                throw new ArgumentException("failed to allocate");
+            return (void*)block.Range.Pointer;
+        }
+
+        public unsafe static T* Allocate<T>(AllocatorHandle handle, int items = 1) where T : unmanaged
+        {
+            return (T*)Allocate(handle, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), items);
+        }
+
+        public unsafe static void Free(AllocatorHandle handle, void* pointer, int itemSizeInBytes, int alignmentInBytes,
+            int items = 1)
+        {
+            if (pointer == null)
+                return;
+            Block block = default;
+            block.Range.Allocator = handle;
+            block.Range.Items = 0;
+            block.Range.Pointer = (IntPtr)pointer;
+            block.BytesPerItem = itemSizeInBytes;
+            block.Alignment = alignmentInBytes;
+            var error = Try(ref block);
+            if (error != 0)
+                throw new ArgumentException("failed to free");
+        }
+
+        public unsafe static void Free(AllocatorHandle handle, void* pointer)
+        {
+            Free(handle, pointer, 1, 1, 1);
+        }
+
+        public unsafe static void Free<T>(AllocatorHandle handle, T* pointer, int items = 1) where T : unmanaged
+        {
+            Free(handle, pointer, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), items);
+        }
+
         /// <summary>
         /// Corresponds to Allocator.Invalid.
         /// </summary>
-        public static readonly AllocatorHandle Invalid = new AllocatorHandle{Value = 0};
+        public static readonly AllocatorHandle Invalid = new AllocatorHandle {Value = 0};
 
         /// <summary>
         /// Corresponds to Allocator.None.
         /// </summary>
-        public static readonly AllocatorHandle None = new AllocatorHandle{Value = 1};
+        public static readonly AllocatorHandle None = new AllocatorHandle {Value = 1};
 
         /// <summary>
         /// Corresponds to Allocator.Temp.
         /// </summary>
-        public static readonly AllocatorHandle Temp = new AllocatorHandle{Value = 2};
+        public static readonly AllocatorHandle Temp = new AllocatorHandle {Value = 2};
 
         /// <summary>
         /// Corresponds to Allocator.TempJob.
         /// </summary>
-        public static readonly AllocatorHandle TempJob = new AllocatorHandle{Value = 3};
+        public static readonly AllocatorHandle TempJob = new AllocatorHandle {Value = 3};
 
         /// <summary>
         /// Corresponds to Allocator.Persistent.
         /// </summary>
-        public static readonly AllocatorHandle Persistent = new AllocatorHandle{Value = 4};
+        public static readonly AllocatorHandle Persistent = new AllocatorHandle {Value = 4};
 
         /// <summary>
         /// Corresponds to Allocator.AudioKernel.
         /// </summary>
-        public static readonly AllocatorHandle AudioKernel = new AllocatorHandle{Value = 5};
+        public static readonly AllocatorHandle AudioKernel = new AllocatorHandle {Value = 5};
 
         #region Allocator Parts
         /// <summary>
@@ -50,16 +97,31 @@ namespace Unity.Collections
         /// </summary>
         public delegate int TryFunction(IntPtr allocatorState, ref Block block);
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SmallAllocatorHandle
+        {
+            public static implicit operator SmallAllocatorHandle(Allocator a) => new SmallAllocatorHandle {Value = (ushort)a};
+            public static implicit operator SmallAllocatorHandle(AllocatorHandle a) => new SmallAllocatorHandle {Value = (ushort)a.Value};
+            public static implicit operator AllocatorHandle(SmallAllocatorHandle a) => new AllocatorHandle {Value = a.Value};
+
+            /// <summary>
+            /// Index into a function table of allocation functions.
+            /// </summary>
+            public ushort Value;
+        }
+
         /// <summary>
         /// Which allocator a Block's Range allocates from.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public struct AllocatorHandle
         {
+            public static implicit operator AllocatorHandle(Allocator a) => new AllocatorHandle {Value = (int)a};
+
             /// <summary>
             /// Index into a function table of allocation functions.
             /// </summary>
-            public ushort Value;
+            public int Value;
 
             /// <summary>
             /// Allocates a Block of memory from this allocator with requested number of items of a given type.
@@ -106,7 +168,7 @@ namespace Unity.Collections
         {
             public IntPtr Pointer; //  0
             public int Items; //  8
-            public AllocatorHandle Allocator; // 12
+            public SmallAllocatorHandle Allocator; // 12
             public BlockHandle Block; // 14
 
             public void Dispose()
@@ -169,7 +231,6 @@ namespace Unity.Collections
                 if (error != 0)
                     throw new ArgumentException($"Error {error}: Failed to Free {this}");
             }
-
         }
 
         /// <summary>
@@ -183,6 +244,26 @@ namespace Unity.Collections
             long AllocatedBytes { get; }
         }
 
+        static unsafe int TryLegacy(ref Block block)
+        {
+            if (block.Range.Pointer == IntPtr.Zero) // Allocate
+            {
+                block.Range.Pointer =
+                    (IntPtr)UnsafeUtility.Malloc(block.Bytes, block.Alignment, (Allocator)block.Range.Allocator.Value);
+                block.AllocatedItems = block.Range.Items;
+                return (block.Range.Pointer == IntPtr.Zero) ? -1 : 0;
+            }
+            if (block.Bytes == 0) // Free
+            {
+                UnsafeUtility.Free((void*)block.Range.Pointer, (Allocator)block.Range.Allocator.Value);
+                block.Range.Pointer = IntPtr.Zero;
+                block.AllocatedItems = 0;
+                return 0;
+            }
+            // Reallocate (keep existing pointer and change size if possible. otherwise, allocate new thing and copy)
+            return -1;
+        }
+
         /// <summary>
         /// Looks up an allocator's allocate, free, or realloc function pointer from a table and invokes the function.
         /// </summary>
@@ -191,78 +272,21 @@ namespace Unity.Collections
         public static unsafe int Try(ref Block block)
         {
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            var functionTable = (IntPtr*)StaticFunctionTable.Ref.Data;
-            var stateTable = (IntPtr*)StaticAllocatorState.Ref.Data;
-            var function = new FunctionPointer<TryFunction>(functionTable[block.Range.Allocator.Value]);
+            if (block.Range.Allocator.Value < FirstUserIndex)
+#endif
+            return TryLegacy(ref block);
+#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
+            TableEntry tableEntry = default;
+            fixed(TableEntry65536* tableEntry65536 = &StaticFunctionTable.Ref.Data)
+            tableEntry = ((TableEntry*)tableEntry65536)[block.Range.Allocator.Value];
+            var function = new FunctionPointer<TryFunction>(tableEntry.function);
             // this is really bad in non-Burst C#, it generates garbage each time we call Invoke
-            return function.Invoke(stateTable[block.Range.Allocator.Value], ref block);
-#else
-            return StaticFunctionTable.Array[block.Range.Allocator.Value](StaticAllocatorState.Array[block.Range.Allocator.Value], ref block);
+            return function.Invoke(tableEntry.state, ref block);
 #endif
         }
+
         #endregion
         #region Allocators
-        /// <summary>
-        /// Allocator that uses UnsafeUtility.Malloc for its backing storage.
-        /// </summary>
-#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-        [BurstCompile(CompileSynchronously = true)]
-#endif
-        internal struct MallocAllocator : IAllocator, IDisposable
-        {
-            public Allocator m_allocator;
-
-            /// <summary>
-            /// Upper limit on how many bytes this allocator is allowed to allocate.
-            /// </summary>
-            public long budgetInBytes;
-            public long BudgetInBytes => budgetInBytes;
-
-            /// <summary>
-            /// Number of currently allocated bytes for this allocator.
-            /// </summary>
-            public long allocatedBytes;
-            public long AllocatedBytes => allocatedBytes;
-
-            public unsafe int Try(ref Block block)
-            {
-                if (block.Range.Pointer == IntPtr.Zero) // Allocate
-                {
-                    block.Range.Pointer =
-                        (IntPtr)UnsafeUtility.Malloc(block.Bytes, block.Alignment, m_allocator);
-                    block.AllocatedItems = block.Range.Items;
-                    allocatedBytes += block.Bytes;
-                    return (block.Range.Pointer == IntPtr.Zero) ? -1 : 0;
-                }
-
-                if (block.Bytes == 0) // Free
-                {
-                    UnsafeUtility.Free((void*)block.Range.Pointer, m_allocator);
-                    var blockSizeInBytes = block.AllocatedItems * block.BytesPerItem;
-                    allocatedBytes -= blockSizeInBytes;
-                    block.Range.Pointer = IntPtr.Zero;
-                    block.AllocatedItems = 0;
-                    return 0;
-                }
-
-                // Reallocate (keep existing pointer and change size if possible. otherwise, allocate new thing and copy)
-                return -1;
-            }
-
-#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            [BurstCompile(CompileSynchronously = true)]
-#endif
-            public static unsafe int Try(IntPtr allocatorState, ref Block block)
-            {
-                return ((MallocAllocator*)allocatorState)->Try(ref block);
-            }
-
-            public TryFunction Function => Try;
-
-            public void Dispose()
-            {
-            }
-        }
 
         /// <summary>
         /// Stack allocator with no backing storage.
@@ -321,6 +345,7 @@ namespace Unity.Collections
                 // Reallocate (keep existing pointer and change size if possible. otherwise, allocate new thing and copy)
                 return -1;
             }
+
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
             [BurstCompile(CompileSynchronously = true)]
 #endif
@@ -398,7 +423,7 @@ namespace Unity.Collections
                             {
                                 Occupied[wordIndex] |= 1 << bitIndex;
                                 block.Range.Pointer = Storage.Range.Pointer +
-                                                       (int)(SlabSizeInBytes * (wordIndex * 32U + bitIndex));
+                                    (int)(SlabSizeInBytes * (wordIndex * 32U + bitIndex));
                                 block.AllocatedItems = SlabSizeInBytes / block.BytesPerItem;
                                 allocatedBytes += block.Bytes;
                                 return 0;
@@ -411,7 +436,7 @@ namespace Unity.Collections
                 if (block.Bytes == 0) // Free
                 {
                     var slabIndex = ((ulong)block.Range.Pointer - (ulong)Storage.Range.Pointer) >>
-                                    Log2SlabSizeInBytes;
+                        Log2SlabSizeInBytes;
                     int wordIndex = (int)(slabIndex >> 5);
                     int bitIndex = (int)(slabIndex & 31);
                     Occupied[wordIndex] &= ~(1 << bitIndex);
@@ -425,6 +450,7 @@ namespace Unity.Collections
                 // Reallocate (keep existing pointer and change size if possible. otherwise, allocate new thing and copy)
                 return -1;
             }
+
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
             [BurstCompile(CompileSynchronously = true)]
 #endif
@@ -495,41 +521,101 @@ namespace Unity.Collections
             }
         }
 
+        struct TableEntry
+        {
+            public IntPtr function;
+            public IntPtr state;
+        }
+
+        struct TableEntry16
+        {
+            public TableEntry f0;
+            public TableEntry f1;
+            public TableEntry f2;
+            public TableEntry f3;
+            public TableEntry f4;
+            public TableEntry f5;
+            public TableEntry f6;
+            public TableEntry f7;
+            public TableEntry f8;
+            public TableEntry f9;
+            public TableEntry f10;
+            public TableEntry f11;
+            public TableEntry f12;
+            public TableEntry f13;
+            public TableEntry f14;
+            public TableEntry f15;
+        }
+
+        struct TableEntry256
+        {
+            public TableEntry16 f0;
+            public TableEntry16 f1;
+            public TableEntry16 f2;
+            public TableEntry16 f3;
+            public TableEntry16 f4;
+            public TableEntry16 f5;
+            public TableEntry16 f6;
+            public TableEntry16 f7;
+            public TableEntry16 f8;
+            public TableEntry16 f9;
+            public TableEntry16 f10;
+            public TableEntry16 f11;
+            public TableEntry16 f12;
+            public TableEntry16 f13;
+            public TableEntry16 f14;
+            public TableEntry16 f15;
+        }
+
+        struct TableEntry4096
+        {
+            public TableEntry256 f0;
+            public TableEntry256 f1;
+            public TableEntry256 f2;
+            public TableEntry256 f3;
+            public TableEntry256 f4;
+            public TableEntry256 f5;
+            public TableEntry256 f6;
+            public TableEntry256 f7;
+            public TableEntry256 f8;
+            public TableEntry256 f9;
+            public TableEntry256 f10;
+            public TableEntry256 f11;
+            public TableEntry256 f12;
+            public TableEntry256 f13;
+            public TableEntry256 f14;
+            public TableEntry256 f15;
+        }
+
+        struct TableEntry65536
+        {
+            public TableEntry4096 f0;
+            public TableEntry4096 f1;
+            public TableEntry4096 f2;
+            public TableEntry4096 f3;
+            public TableEntry4096 f4;
+            public TableEntry4096 f5;
+            public TableEntry4096 f6;
+            public TableEntry4096 f7;
+            public TableEntry4096 f8;
+            public TableEntry4096 f9;
+            public TableEntry4096 f10;
+            public TableEntry4096 f11;
+            public TableEntry4096 f12;
+            public TableEntry4096 f13;
+            public TableEntry4096 f14;
+            public TableEntry4096 f15;
+        }
+
         /// <summary>
         /// SharedStatic that holds array of allocation function pointers for each allocator.
         /// </summary>
         private sealed class StaticFunctionTable
         {
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            public static FunctionPointer<TryFunction>[] Array = new FunctionPointer<TryFunction>[65536];
-            public static GCHandle Handle;
-            public static readonly SharedStatic<IntPtr> Ref =
-                SharedStatic<IntPtr>.GetOrCreate<StaticFunctionTable>();
-#else
-            public static TryFunction[] Array = new TryFunction[65536];
+            public static readonly SharedStatic<TableEntry65536> Ref =
+                SharedStatic<TableEntry65536>.GetOrCreate<StaticFunctionTable>();
 #endif
-        }
-
-        /// <summary>
-        /// SharedStatic that holds array of pointers to custom allocator state.
-        /// </summary>
-        private sealed class StaticAllocatorState
-        {
-            public static IntPtr[] Array = new IntPtr[65536];
-#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            public static GCHandle Handle;
-            public static readonly SharedStatic<IntPtr> Ref =
-                SharedStatic<IntPtr>.GetOrCreate<StaticAllocatorState>();
-#endif
-        }
-
-        /// <summary>
-        /// Malloc allocators for each of the built-in C++ allocators (e.g. Allocator.Persistent).
-        /// </summary>
-        private sealed class MallocAllocators
-        {
-            public static MallocAllocator[] Array = new MallocAllocator[6];
-            public static GCHandle Handle;
         }
 
         /// <summary>
@@ -537,19 +623,6 @@ namespace Unity.Collections
         /// </summary>
         public static void Initialize()
         {
-#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            StaticAllocatorState.Handle = GCHandle.Alloc(StaticAllocatorState.Array, GCHandleType.Pinned);
-            StaticFunctionTable.Handle = GCHandle.Alloc(StaticFunctionTable.Array, GCHandleType.Pinned);
-            StaticAllocatorState.Ref.Data = StaticAllocatorState.Handle.AddrOfPinnedObject();
-            StaticFunctionTable.Ref.Data = StaticFunctionTable.Handle.AddrOfPinnedObject();
-#endif
-            MallocAllocators.Handle = GCHandle.Alloc(MallocAllocators.Array, GCHandleType.Pinned);
-            for (ushort i = 0; i < 6; ++i)
-            {
-                MallocAllocators.Array[i].m_allocator = (Allocator)i;
-                Install(new AllocatorHandle { Value = i }, MallocAllocators.Handle.AddrOfPinnedObject() + UnsafeUtility.SizeOf<MallocAllocator>() * i,
-                    MallocAllocator.Try);
-            }
         }
 
         /// <summary>
@@ -558,26 +631,22 @@ namespace Unity.Collections
         /// <param name="handle">AllocatorHandle to allocator to install function for.</param>
         /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
         /// <param name="function">Function pointer to create or save in function table.</param>
-        public static void Install(AllocatorHandle handle, IntPtr allocatorState, TryFunction function)
+        public static unsafe void Install(AllocatorHandle handle, IntPtr allocatorState, TryFunction function)
         {
-            StaticAllocatorState.Array[handle.Value] = allocatorState;
 #if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            StaticFunctionTable.Array[handle.Value] = (function == null)
+            var functionPointer = (function == null)
                 ? new FunctionPointer<TryFunction>(IntPtr.Zero)
                 : BurstCompiler.CompileFunctionPointer(function);
-#else
-            StaticFunctionTable.Array[handle.Value] = function;
+            var tableEntry = new TableEntry {state = allocatorState, function = functionPointer.Value};
+            fixed(TableEntry65536* tableEntry65536 = &StaticFunctionTable.Ref.Data)
+                ((TableEntry*)tableEntry65536)[handle.Value] = tableEntry;
 #endif
         }
 
         public static void Shutdown()
         {
-            MallocAllocators.Handle.Free();
-#if CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
-            StaticFunctionTable.Handle.Free();
-            StaticAllocatorState.Handle.Free();
-#endif
         }
+
         #endregion
         /// <summary>
         /// User-defined allocator index.
@@ -585,3 +654,5 @@ namespace Unity.Collections
         public const ushort FirstUserIndex = 32;
     }
 }
+
+#pragma warning restore 0649

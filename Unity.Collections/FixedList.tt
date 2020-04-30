@@ -75,7 +75,7 @@ for(var size = 0; size < 5; ++size)
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView<>))]
     public struct <#=TYPENAME#><T>
-    : IEnumerable<T>
+    : INativeList<T>, IEnumerable<T>
 <#
     foreach(var OTHERBYTES in SIZES)
     {
@@ -113,13 +113,30 @@ for(var size = 0; size < 5; ++size)
             }
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
+
         /// <summary>
         /// The number of items that can fit in the list.
         /// </summary>
         /// <value>The number of items that the list can hold.</value>
         /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
         /// to fit more or fewer items.</remarks>
-        public int Capacity => FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>,T>();
+        public int Capacity
+        {
+          get
+          {
+              return FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>,T>();
+          }
+          set
+          {
+              CheckCapacityInRange(value);
+          }
+        }
 
         /// <summary>
         /// Retrieve a member of the list by index.
@@ -127,15 +144,31 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The zero-based index into the list.</param>
         /// <value>The list item at the specified index.</value>
         /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public ref T this[int index]
+        public T this[int index]
         {
             get
             {
                 FixedList.CheckElementAccess(index, length);
                 unsafe
                 {
-                    return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                    return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
+            }
+            set
+            {
+                unsafe
+                {
+                    UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
+                }
+            }
+        }
+
+        public ref T ElementAt(int index)
+        {
+            FixedList.CheckElementAccess(index, length);
+            unsafe
+            {
+                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -571,7 +604,7 @@ for(var size = 0; size < 5; ++size)
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView))]
     public struct <#=TYPENAME#>
-    : IEnumerable<<#=TYPE#>>
+    : INativeList<<#=TYPE#>>, IEnumerable<<#=TYPE#>>
 <#
     foreach(var OTHERBYTES in SIZES)
     {
@@ -609,13 +642,30 @@ for(var size = 0; size < 5; ++size)
             }
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
+
         /// <summary>
         /// The number of items that can fit in the list.
         /// </summary>
         /// <value>The number of items that the list can hold.</value>
         /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
         /// to fit more or fewer items.</remarks>
-        public int Capacity => FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>, <#=TYPE#>>();
+        public int Capacity
+        {
+            get
+            {
+                return FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>, <#=TYPE#>>();
+            }
+            set
+            {
+                CheckCapacityInRange(value);
+            }
+        }
 
         /// <summary>
         /// Retrieve a member of the list by index.
@@ -640,6 +690,15 @@ for(var size = 0; size < 5; ++size)
                 {
                     UnsafeUtility.WriteArrayElement<<#=TYPE#>>(Buffer, index, value);
                 }
+            }
+        }
+
+        public ref <#=TYPE#> ElementAt(int index)
+        {
+            FixedList.CheckElementAccess(index, length);
+            unsafe
+            {
+                return ref UnsafeUtilityEx.ArrayElementAsRef<<#=TYPE#>>(Buffer, index);
             }
         }
 

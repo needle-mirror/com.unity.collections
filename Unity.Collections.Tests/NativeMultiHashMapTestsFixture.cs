@@ -1,10 +1,10 @@
-﻿using Unity.Jobs;
+using Unity.Jobs;
 using Unity.Collections;
 using Unity.Burst;
 
 internal class NativeMultiHashMapTestsFixture
 {
-    protected const int hashMapSize = 10*1024;
+    protected const int hashMapSize = 10 * 1024;
 
     [BurstCompile(CompileSynchronously = true)]
     public struct MultiHashMapSimpleWriteJob : IJob
@@ -53,18 +53,19 @@ internal class NativeMultiHashMapTestsFixture
             int iSquared;
             values[i] = -1;
             NativeMultiHashMapIterator<int> it;
-            if (hashMap.TryGetFirstValue(i%keyMod, out iSquared, out it))
+            if (hashMap.TryGetFirstValue(i % keyMod, out iSquared, out it))
             {
                 int count = 0;
                 do
                 {
-                    if (iSquared%keyMod != i%keyMod)
+                    if (iSquared % keyMod != i % keyMod)
                     {
                         values[i] = -2;
                         return;
                     }
                     ++count;
-                } while (hashMap.TryGetNextValue(out iSquared, ref it));
+                }
+                while (hashMap.TryGetNextValue(out iSquared, ref it));
                 values[i] = count;
             }
         }

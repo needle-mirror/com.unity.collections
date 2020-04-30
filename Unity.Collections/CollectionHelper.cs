@@ -43,7 +43,7 @@ namespace Unity.Collections
         /// <returns></returns>
         public static int Log2Ceil(int value)
         {
-            return 32 - math.lzcnt((uint)value-1);
+            return 32 - math.lzcnt((uint)value - 1);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -131,11 +131,7 @@ namespace Unity.Collections
         [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
         public static void CheckIsUnmanaged<T>()
         {
-#if !UNITY_DOTSPLAYER
             if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
-#else
-            if (!UnsafeUtility.IsUnmanaged<T>())
-#endif
                 throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
         }
 
@@ -150,7 +146,7 @@ namespace Unity.Collections
                     , Marshal.OffsetOf(type, field.Name)
                     , Marshal.SizeOf(field.FieldType)
                     , field.Name
-                    );
+                );
             }
 #else
             _ = type;
@@ -164,12 +160,19 @@ namespace Unity.Collections
             return allocator > Allocator.None;
         }
 
+        internal static bool ShouldDeallocate(AllocatorManager.AllocatorHandle allocator)
+        {
+            // Allocator.Invalid == container is not initialized.
+            // Allocator.None    == container is initialized, but container doesn't own data.
+            return allocator.Value > (int)Allocator.None;
+        }
+
         /// <summary>
         /// Tell Burst that an integer can be assumed to map to an always positive value.
         /// </summary>
         /// <param name="x">The integer that is always positive.</param>
         /// <returns>Returns `x`, but allows the compiler to assume it is always positive.</returns>
-        [return: AssumeRange(0, int.MaxValue)]
+        [return : AssumeRange(0, int.MaxValue)]
         internal static int AssumePositive(int x)
         {
             return x;

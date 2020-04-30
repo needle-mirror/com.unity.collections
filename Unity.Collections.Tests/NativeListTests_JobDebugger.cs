@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using NUnit.Framework;
 using System;
 using Unity.Jobs;
@@ -79,7 +79,7 @@ internal class NativeListJobDebuggerTests
         var jobHandle = new NativeListAddJob(list).Schedule();
         Assert.Throws<InvalidOperationException>(() =>
         {
-           list.AsArray();
+            list.AsArray();
         });
 
         jobHandle.Complete();
@@ -93,9 +93,9 @@ internal class NativeListJobDebuggerTests
         var array = list.AsArray();
         var jobHandle = new NativeListAddJob(list).Schedule();
         Assert.Throws<InvalidOperationException>(() =>
-       {
-           new NativeArrayTest(array).Schedule(jobHandle);
-       });
+        {
+            new NativeArrayTest(array).Schedule(jobHandle);
+        });
         jobHandle.Complete();
 
         list.Dispose();
@@ -176,7 +176,6 @@ internal class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-
     [Test]
     public void AsArrayJobKeepsAsArrayValid()
     {
@@ -251,7 +250,6 @@ internal class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-
     [Test]
     public void NativeList_DisposeJob()
     {
@@ -304,15 +302,31 @@ internal class NativeListJobDebuggerTests
         job.list.Dispose();
     }
 
+#if UNITY_2020_2_OR_NEWER
     [Test]
-    public void DisposeAliasedArrayThrows()
+    public void DisposeAliasedArrayDoesNotThrow()
     {
         var list = new NativeList<int>(Allocator.Persistent);
         var array = list.AsArray();
+        Assert.DoesNotThrow(() => { array.Dispose(); });
+
+        list.Dispose();
+    }
+
+#else
+    [Test]
+    public void DisposingNativeListDerivedArrayThrows()
+    {
+        var list = new NativeList<int>(Allocator.Persistent);
+        list.Add(1);
+
+        NativeArray<int> array = list;
         Assert.Throws<InvalidOperationException>(() => { array.Dispose(); });
 
         list.Dispose();
     }
+
+#endif
 
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
@@ -463,5 +477,6 @@ internal class NativeListJobDebuggerTests
 
         list.Dispose();
     }
+
 #endif
 }
