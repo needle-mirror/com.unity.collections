@@ -2,6 +2,8 @@
 
 ## [0.9.0] - 2020-05-25
 
+**This version requires Unity 2019.3.12f1+**
+
 ### Added
 
  * Added `RemoveAt` and `RemoveRange` to list containers in collections. These methods remove
@@ -12,7 +14,6 @@
 ### Changed
 
  * Updated package `com.unity.burst` to version `1.3.0-preview.12`.
- * Updated minimum Unity Editor version to 2019.3.12f1 (84b23722532d)
 
  ### Removed
 
