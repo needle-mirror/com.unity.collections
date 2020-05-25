@@ -63,4 +63,26 @@ internal class UnsafeHashMapTests
 
         hashMap.Dispose();
     }
+
+    [Test]
+    public void UnsafeHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    {
+        var hashMap = new UnsafeHashMap<int, int>(0, Allocator.Temp);
+        Assert.DoesNotThrow(() => hashMap.Remove(0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
+        hashMap.Dispose();
+    }
+
+    [Test]
+    public void UnsafeMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    {
+        var hashMap = new UnsafeMultiHashMap<int, int>(0, Allocator.Temp);
+
+        Assert.DoesNotThrow(() => hashMap.Remove(0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
+        Assert.DoesNotThrow(() => hashMap.Remove(0, 0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196, 0));
+
+        hashMap.Dispose();
+    }
 }

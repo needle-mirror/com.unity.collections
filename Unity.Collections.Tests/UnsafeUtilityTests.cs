@@ -140,7 +140,7 @@ internal class UnsafeUtilityTests
         }
     }
 
-#if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_1_OR_NEWER
     struct AlignOfX
     {
         float x;

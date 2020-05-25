@@ -418,22 +418,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListByte32 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListByte32RemoveAt()
+    {
+        var list = new FixedListByte32();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListByte32RemoveRange()
     {
         var list = new FixedListByte32();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListByte32Remove()
+    public void FixedListByte32RemoveAtSwapBack()
     {
         var list = new FixedListByte32();
         list.Add(0);
@@ -441,10 +464,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListByte32RemoveRangeSwapBack()
+    {
+        var list = new FixedListByte32();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -537,22 +573,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListByte64 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListByte64RemoveAt()
+    {
+        var list = new FixedListByte64();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListByte64RemoveRange()
     {
         var list = new FixedListByte64();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListByte64Remove()
+    public void FixedListByte64RemoveAtSwapBack()
     {
         var list = new FixedListByte64();
         list.Add(0);
@@ -560,10 +619,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListByte64RemoveRangeSwapBack()
+    {
+        var list = new FixedListByte64();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -654,22 +726,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListByte128 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListByte128RemoveAt()
+    {
+        var list = new FixedListByte128();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListByte128RemoveRange()
     {
         var list = new FixedListByte128();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListByte128Remove()
+    public void FixedListByte128RemoveAtSwapBack()
     {
         var list = new FixedListByte128();
         list.Add(0);
@@ -677,10 +772,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListByte128RemoveRangeSwapBack()
+    {
+        var list = new FixedListByte128();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1060,22 +1168,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListInt32 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListInt32RemoveAt()
+    {
+        var list = new FixedListInt32();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListInt32RemoveRange()
     {
         var list = new FixedListInt32();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListInt32Remove()
+    public void FixedListInt32RemoveAtSwapBack()
     {
         var list = new FixedListInt32();
         list.Add(0);
@@ -1083,10 +1214,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListInt32RemoveRangeSwapBack()
+    {
+        var list = new FixedListInt32();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1179,22 +1323,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListInt64 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListInt64RemoveAt()
+    {
+        var list = new FixedListInt64();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListInt64RemoveRange()
     {
         var list = new FixedListInt64();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListInt64Remove()
+    public void FixedListInt64RemoveAtSwapBack()
     {
         var list = new FixedListInt64();
         list.Add(0);
@@ -1202,10 +1369,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListInt64RemoveRangeSwapBack()
+    {
+        var list = new FixedListInt64();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1296,22 +1476,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListInt128 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListInt128RemoveAt()
+    {
+        var list = new FixedListInt128();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListInt128RemoveRange()
     {
         var list = new FixedListInt128();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListInt128Remove()
+    public void FixedListInt128RemoveAtSwapBack()
     {
         var list = new FixedListInt128();
         list.Add(0);
@@ -1319,10 +1522,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListInt128RemoveRangeSwapBack()
+    {
+        var list = new FixedListInt128();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1702,22 +1918,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListFloat32 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListFloat32RemoveAt()
+    {
+        var list = new FixedListFloat32();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListFloat32RemoveRange()
     {
         var list = new FixedListFloat32();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListFloat32Remove()
+    public void FixedListFloat32RemoveAtSwapBack()
     {
         var list = new FixedListFloat32();
         list.Add(0);
@@ -1725,10 +1964,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListFloat32RemoveRangeSwapBack()
+    {
+        var list = new FixedListFloat32();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1821,22 +2073,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListFloat64 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListFloat64RemoveAt()
+    {
+        var list = new FixedListFloat64();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListFloat64RemoveRange()
     {
         var list = new FixedListFloat64();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListFloat64Remove()
+    public void FixedListFloat64RemoveAtSwapBack()
     {
         var list = new FixedListFloat64();
         list.Add(0);
@@ -1844,10 +2119,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListFloat64RemoveRangeSwapBack()
+    {
+        var list = new FixedListFloat64();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
@@ -1938,22 +2226,45 @@ internal class FixedListTests
             Assert.AreEqual(i, list[i]);
     }
 
+    private static void Expected(ref FixedListFloat128 list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(expected[i], list[i]);
+        }
+    }
+
+    [Test]
+    public void FixedListFloat128RemoveAt()
+    {
+        var list = new FixedListFloat128();
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveAt(1);
+        list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
     [Test]
     public void FixedListFloat128RemoveRange()
     {
         var list = new FixedListFloat128();
+
         list.Add(0);
         list.Add(3);
         list.Add(3);
         list.Add(1);
         list.Add(2);
         list.RemoveRange(1, 3);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void FixedListFloat128Remove()
+    public void FixedListFloat128RemoveAtSwapBack()
     {
         var list = new FixedListFloat128();
         list.Add(0);
@@ -1961,10 +2272,23 @@ internal class FixedListTests
         list.Add(3);
         list.Add(1);
         list.Add(2);
-        list.RemoveAt(1);
-        list.RemoveAt(1);
-        for (var i = 0; i < 3; ++i)
-            Assert.AreEqual(i, list[i]);
+        list.RemoveAtSwapBack(1);
+        list.RemoveAtSwapBack(1);
+        Expected(ref list, 3, new int[] { 0, 1, 3 });
+    }
+
+    [Test]
+    public void FixedListFloat128RemoveRangeSwapBack()
+    {
+        var list = new FixedListFloat128();
+
+        list.Add(0);
+        list.Add(3);
+        list.Add(3);
+        list.Add(1);
+        list.Add(2);
+        list.RemoveRangeSwapBack(1, 3);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]

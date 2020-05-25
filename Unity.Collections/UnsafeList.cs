@@ -150,21 +150,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return listData;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static void NullCheck(void* listData)
-        {
-            if (listData == null)
-            {
-                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
-            }
-        }
-
         /// <summary>
         /// Destroys container.
         /// </summary>
         public static void Destroy(UnsafeList* listData)
         {
-            NullCheck(listData);
+            CheckNull(listData);
             var allocator = listData->Allocator;
             listData->Dispose();
             AllocatorManager.Free(allocator, listData);
@@ -269,24 +260,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static private void CheckAllocator(Allocator a)
-        {
-            if (!CollectionHelper.ShouldDeallocate(a))
-            {
-                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
-            }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static private void CheckAllocator(AllocatorManager.AllocatorHandle a)
-        {
-            if (!CollectionHelper.ShouldDeallocate(a))
-            {
-                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
-            }
-        }
-
         void Realloc(int sizeOf, int alignOf, int capacity)
         {
             CheckAllocator(Allocator);
@@ -366,21 +339,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool Contains<T>(T value) where T : struct, IEquatable<T>
         {
             return IndexOf(value) != -1;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckNoResizeHasEnoughCapacity(int length)
-        {
-            CheckNoResizeHasEnoughCapacity(length, Length);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckNoResizeHasEnoughCapacity(int length, int index)
-        {
-            if (Capacity < index + length)
-            {
-                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
-            }
         }
 
         /// <summary>
@@ -498,19 +456,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
         }
 
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack<T>(int index) where T : struct
-        {
-            RemoveRangeSwapBack<T>(index, index + 1);
-        }
-
         private void RemoveRangeSwapBack(int sizeOf, int begin, int end)
         {
+            CheckBeginEnd(begin, end);
+
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
             {
@@ -523,15 +472,72 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        public void RemoveAtSwapBack<T>(int index) where T : struct
+        {
+            RemoveRangeSwapBack<T>(index, index + 1);
+        }
+
+        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The first index of the item to delete.</param>
-        /// <param name="end">The last index of the item to delete.</param>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
         public void RemoveRangeSwapBack<T>(int begin, int end) where T : struct
         {
             RemoveRangeSwapBack(UnsafeUtility.SizeOf<T>(), begin, end);
+        }
+
+        private void RemoveRange(int sizeOf, int begin, int end)
+        {
+            CheckBeginEnd(begin, end);
+
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
+            {
+                int copyFrom = math.min(begin + itemsToRemove, Length);
+                void* dst = (byte*)Ptr + begin * sizeOf;
+                void* src = (byte*)Ptr + copyFrom * sizeOf;
+                UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                Length -= itemsToRemove;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt<T>(int index) where T : struct
+        {
+            RemoveRange<T>(index, index + 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange<T>(int begin, int end) where T : struct
+        {
+            RemoveRange(UnsafeUtility.SizeOf<T>(), begin, end);
         }
 
         /// <summary>
@@ -637,6 +643,67 @@ namespace Unity.Collections.LowLevel.Unsafe
             public void AddRangeNoResize<T>(UnsafeList list) where T : struct
             {
                 AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckNull(void* listData)
+        {
+            if (listData == null)
+            {
+                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckAllocator(Allocator a)
+        {
+            if (!CollectionHelper.ShouldDeallocate(a))
+            {
+                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckAllocator(AllocatorManager.AllocatorHandle a)
+        {
+            if (!CollectionHelper.ShouldDeallocate(a))
+            {
+                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckBeginEnd(int begin, int end)
+        {
+            if (begin > end)
+            {
+                throw new ArgumentException($"Value for begin {begin} index must less or equal to end {end}.");
+            }
+
+            if (begin > Length)
+            {
+                throw new ArgumentException($"Value for begin {begin} is out of bounds.");
+            }
+
+            if (end > Length)
+            {
+                throw new ArgumentException($"Value for end {end} is out of bounds.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckNoResizeHasEnoughCapacity(int length)
+        {
+            CheckNoResizeHasEnoughCapacity(length, Length);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckNoResizeHasEnoughCapacity(int length, int index)
+        {
+            if (Capacity < index + length)
+            {
+                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
             }
         }
     }
@@ -875,6 +942,49 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void RemoveAtSwapBack(int index)
         {
             this.ListData().RemoveAtSwapBack<T>(index);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBack(int begin, int end)
+        {
+            this.ListData().RemoveRangeSwapBack<T>(begin, end);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
+        {
+            this.ListData().RemoveAt<T>(index);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange(int begin, int end)
+        {
+            this.ListData().RemoveRange<T>(begin, end);
         }
 
         /// <summary>
@@ -1135,7 +1245,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public static void Destroy(UnsafePtrList* listData)
         {
-            UnsafeList.NullCheck(listData);
+            UnsafeList.CheckNull(listData);
             var allocator = listData->ListData().Allocator.Value == AllocatorManager.Invalid.Value
                 ? AllocatorManager.Persistent
                 : listData->ListData().Allocator
@@ -1298,18 +1408,49 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            this.ListData().RemoveAtSwapBack<IntPtr>(index);
         }
 
         /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to delete.</param>
-        /// <param name="end">The last index of the item to delete.</param>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
         public void RemoveRangeSwapBack(int begin, int end)
         {
             this.ListData().RemoveRangeSwapBack<IntPtr>(begin, end);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
+        {
+            this.ListData().RemoveAt<IntPtr>(index);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange(int begin, int end)
+        {
+            this.ListData().RemoveRange<IntPtr>(begin, end);
         }
 
         /// <summary>

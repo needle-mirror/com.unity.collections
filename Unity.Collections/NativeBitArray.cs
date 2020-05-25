@@ -114,9 +114,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The current number of items in the list.
+        /// Number of bits.
         /// </summary>
-        /// <value>The item count.</value>
+        /// <value>The number of bits.</value>
         public int Length
         {
             get
@@ -194,6 +194,18 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Copy block of bits from source to destination.
+        /// </summary>
+        /// <param name="dstPos">Destination position in bit array.</param>
+        /// <param name="srcPos">Source position in bit array.</param>
+        /// <param name="numBits">Number of bits to copy.</param>
+        public void Copy(int dstPos, int srcPos, int numBits)
+        {
+            CheckWrite();
+            m_BitArray.Copy(dstPos, srcPos, numBits);
+        }
+
+        /// <summary>
         /// Returns true if none of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bit array.</param>
@@ -256,5 +268,24 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
         }
+    }
+}
+
+namespace Unity.Collections.LowLevel.Unsafe
+{
+    public static class NativeBitArrayUnsafeUtility
+    {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        public static AtomicSafetyHandle GetAtomicSafetyHandle(in NativeBitArray container)
+        {
+            return container.m_Safety;
+        }
+
+        public static void SetAtomicSafetyHandle<T>(ref NativeBitArray container, AtomicSafetyHandle safety)
+        {
+            container.m_Safety = safety;
+        }
+
+#endif
     }
 }

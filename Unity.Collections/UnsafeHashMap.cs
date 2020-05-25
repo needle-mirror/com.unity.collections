@@ -565,6 +565,11 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal static unsafe int Remove(UnsafeHashMapData* data, TKey key, bool isMultiHashMap)
         {
+            if (data->keyCapacity == 0)
+            {
+                return 0;
+            }
+
             var removed = 0;
 
             // First find the slot based on the hash
@@ -648,6 +653,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal static unsafe void RemoveKeyValue<TValueEQ>(UnsafeHashMapData* data, TKey key, TValueEQ value)
             where TValueEQ : struct, IEquatable<TValueEQ>
         {
+            if (data->keyCapacity == 0)
+            {
+                return;
+            }
+
             var buckets = (int*)data->buckets;
             var keyCapacity = (uint)data->keyCapacity;
             var prevNextPtr = buckets + (key.GetHashCode() & data->bucketCapacityMask);
@@ -805,13 +815,6 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
-
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
-    #else
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
-    #endif
-        public int Length => Count();
 
         /// <summary>
         /// The number of items that can fit in the container.
@@ -1168,13 +1171,6 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
-
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
-    #else
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
-    #endif
-        public int Length => Count();
 
         /// <summary>
         /// The number of items that can fit in the container.

@@ -6,7 +6,7 @@ using Unity.Collections;
 internal class ListExtensionsTests
 {
     [Test]
-    public void RemoveSwapBack_Item()
+    public void ListExtensions_RemoveSwapBack_Item()
     {
         var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
 
@@ -29,9 +29,9 @@ internal class ListExtensionsTests
         CollectionAssert.IsEmpty(list);
     }
 
-    #if !NET_DOTS
+#if !NET_DOTS
     [Test]
-    public void RemoveSwapBack_Predicate()
+    public void ListExtensions_RemoveSwapBack_Predicate()
     {
         var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
 
@@ -54,10 +54,10 @@ internal class ListExtensionsTests
         CollectionAssert.IsEmpty(list);
     }
 
-    #endif // !NET_DOTS
+#endif // !NET_DOTS
 
     [Test]
-    public void RemoveAtSwapBack()
+    public void ListExtensions_RemoveAtSwapBack()
     {
         var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
 
@@ -77,5 +77,33 @@ internal class ListExtensionsTests
         CollectionAssert.IsEmpty(list);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveAtSwapBack(0));
+    }
+
+    [Test]
+    public void ListExtensions_ToNativeList()
+    {
+        var list = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }.ToList();
+        var native = list.ToNativeList(Allocator.Persistent);
+
+        for (int i = 0; i < native.Length; ++i)
+        {
+            Assert.AreEqual(i, native[i]);
+        }
+
+        native.Dispose();
+    }
+
+    [Test]
+    public void ListExtensions_ToNativeArray()
+    {
+        var list = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }.ToList();
+        var native = list.ToNativeArray(Allocator.Persistent);
+
+        for (int i = 0; i < native.Length; ++i)
+        {
+            Assert.AreEqual(i, native[i]);
+        }
+
+        native.Dispose();
     }
 }

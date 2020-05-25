@@ -57,5 +57,41 @@ namespace Unity.Collections
             list[index] = list[lastIndex];
             list.RemoveAt(lastIndex);
         }
+
+        /// <summary>
+        /// Convert System.Collections.Generics.List to Unity.Collections.NativeList.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform conversion.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>A NativeList copy of the List.</returns>
+        public static NativeList<T> ToNativeList<T>(this List<T> list, Allocator allocator) where T : unmanaged
+        {
+            var container = new NativeList<T>(list.Count, allocator);
+            for (int i = 0; i < list.Count; i++)
+            {
+                container.AddNoResize(list[i]);
+            }
+            return container;
+        }
+
+        /// <summary>
+        /// Convert System.Collections.Generics.List to Unity.Collections.NativeArray.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform conversion.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>A NativeArray copy of the List.</returns>
+        public unsafe static NativeArray<T> ToNativeArray<T>(this List<T> list, Allocator allocator) where T : unmanaged
+        {
+            var container = new NativeArray<T>(list.Count, allocator);
+            for (int i = 0; i < list.Count; i++)
+            {
+                container[i] = list[i];
+            }
+            return container;
+        }
     }
 }

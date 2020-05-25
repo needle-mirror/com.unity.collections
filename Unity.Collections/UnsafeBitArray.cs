@@ -13,11 +13,13 @@ namespace Unity.Collections.LowLevel.Unsafe
     public unsafe struct UnsafeBitArray : IDisposable
     {
         /// <summary>
+        /// Pointer to data.
         /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public ulong* Ptr;
 
         /// <summary>
+        /// Number of bits.
         /// </summary>
         public int Length;
 
@@ -198,7 +200,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
 
-            if (shiftB + numBits < 64)
+            if (shiftB + numBits <= 64)
             {
                 var mask = 0xfffffffffffffffful >> (64 - numBits);
                 Ptr[idxB] = Bitwise.ReplaceBits(Ptr[idxB], shiftB, mask, value);
@@ -231,7 +233,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var idxB = pos >> 6;
             var shiftB = pos & 0x3f;
 
-            if (shiftB + numBits < 64)
+            if (shiftB + numBits <= 64)
             {
                 var mask = 0xfffffffffffffffful >> (64 - numBits);
                 return Bitwise.ExtractBits(Ptr[idxB], shiftB, mask);
@@ -263,6 +265,93 @@ namespace Unity.Collections.LowLevel.Unsafe
             var shift = pos & 0x3f;
             var mask = 1ul << shift;
             return 0ul != (Ptr[idx] & mask);
+        }
+
+        internal void CopyUlong(int dstPos, int srcPos, int numBits) => SetBits(dstPos, GetBits(srcPos, numBits), numBits);
+
+        /// <summary>
+        /// Copy block of bits from source to destination.
+        /// </summary>
+        /// <param name="dstPos">Destination position in bit array.</param>
+        /// <param name="srcPos">Source position in bit array.</param>
+        /// <param name="numBits">Number of bits to copy.</param>
+        public void Copy(int dstPos, int srcPos, int numBits)
+        {
+            if (dstPos == srcPos ||
+                numBits == 0)
+            {
+                return;
+            }
+
+            CheckArgsCopy(dstPos, srcPos, numBits);
+
+            if (numBits <= 64) // 1x CopyUlong
+            {
+                CopyUlong(dstPos, srcPos, numBits);
+            }
+            else if (numBits <= 128) // 2x CopyUlong
+            {
+                CopyUlong(dstPos, srcPos, 64);
+                numBits -= 64;
+
+                if (numBits > 0)
+                {
+                    CopyUlong(dstPos + 64, srcPos + 64, numBits);
+                }
+            }
+            else if ((dstPos & 7) == (srcPos & 7)) // aligned copy
+            {
+                var dstPosInBytes = CollectionHelper.Align(dstPos, 8) >> 3;
+                var srcPosInBytes = CollectionHelper.Align(srcPos, 8) >> 3;
+                var numPreBits = dstPosInBytes * 8 - dstPos;
+
+                if (numPreBits > 0)
+                {
+                    CopyUlong(dstPos, srcPos, numPreBits);
+                }
+
+                var numBitsLeft = numBits - numPreBits;
+                var numBytes = numBitsLeft / 8;
+
+                if (numBytes > 0)
+                {
+                    unsafe
+                    {
+                        byte* ptr = (byte*)Ptr;
+                        UnsafeUtility.MemMove(ptr + dstPosInBytes, ptr + srcPosInBytes, numBytes);
+                    }
+                }
+
+                var numPostBits = numBitsLeft & 7;
+
+                if (numPostBits > 0)
+                {
+                    CopyUlong((dstPosInBytes + numBytes) * 8, (srcPosInBytes + numBytes) * 8, numPostBits);
+                }
+            }
+            else // unaligned copy
+            {
+                var dstPosAligned = CollectionHelper.Align(dstPos, 64);
+                var numPreBits = dstPosAligned - dstPos;
+
+                if (numPreBits > 0)
+                {
+                    CopyUlong(dstPos, srcPos, numPreBits);
+                    numBits -= numPreBits;
+                    dstPos += numPreBits;
+                    srcPos += numPreBits;
+                }
+
+                for (; numBits >= 64; numBits -= 64, dstPos += 64, srcPos += 64)
+                {
+                    Ptr[dstPos >> 6] = GetBits(srcPos, 64);
+                }
+
+                if (numBits > 0)
+                {
+                    CopyUlong(dstPos, srcPos, numBits);
+                }
+            }
         }
 
         /// <summary>
@@ -446,6 +535,20 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (pos + numBits > Length)
             {
                 throw new ArgumentException($"BitArray invalid arguments: Out of bounds pos {pos}, numBits {numBits}, Length {Length}.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private void CheckArgsCopy(int dstPos, int srcPos, int numBits)
+        {
+            if (dstPos + numBits > Length)
+            {
+                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - destination position dstPos {dstPos}, numBits {numBits}, Length {Length}.");
+            }
+
+            if (srcPos + numBits > Length)
+            {
+                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - source position srcPos {srcPos}, numBits {numBits}, Length {Length}.");
             }
         }
     }

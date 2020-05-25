@@ -144,17 +144,13 @@ internal class NativeListTests
     public void NativeList_CopyFrom()
     {
         var list = new NativeList<float>(4, Allocator.Persistent);
-        var ar = new float[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        var ar = new float[] { 0, 1, 2, 3, 4, 5, 6, 7 };
         list.CopyFrom(ar);
         Assert.AreEqual(8, list.Length);
-        Assert.AreEqual(list[0], 1);
-        Assert.AreEqual(list[1], 2);
-        Assert.AreEqual(list[2], 3);
-        Assert.AreEqual(list[3], 4);
-        Assert.AreEqual(list[4], 5);
-        Assert.AreEqual(list[5], 6);
-        Assert.AreEqual(list[6], 7);
-        Assert.AreEqual(list[7], 8);
+        for (int i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
         list.Dispose();
     }
 

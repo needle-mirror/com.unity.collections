@@ -153,13 +153,6 @@ namespace Unity.Collections
             return m_HashMapData.Count();
         }
 
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
-    #else
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
-    #endif
-        public int Length => Count();
-
         /// <summary>
         /// The number of items that can fit in the container.
         /// </summary>
@@ -531,7 +524,7 @@ namespace Unity.Collections
         internal UnsafeMultiHashMap<TKey, TValue> m_MultiHashMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        AtomicSafetyHandle m_Safety;
+        internal AtomicSafetyHandle m_Safety;
 
 #if UNITY_2020_1_OR_NEWER
         private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
@@ -588,13 +581,6 @@ namespace Unity.Collections
 #endif
             return m_MultiHashMapData.Count();
         }
-
-    #if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE && !UNITY_2020_1_OR_NEWER
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12) -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.")]
-    #else
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-05-12). (UnityUpgradable) -> Count()")]
-    #endif
-        public int Length => Count();
 
         /// <summary>
         /// The number of items that can fit in the container.
@@ -658,32 +644,6 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
             return m_MultiHashMapData.Remove(key);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckValueEQ<TValueEQ>()
-            where TValueEQ : struct, IEquatable<TValueEQ>
-        {
-            if (typeof(TValueEQ) != typeof(TValue))
-            {
-                throw new System.ArgumentException($"value is type '{typeof(TValueEQ)}' but must match the HashMap value type '{typeof(TValue)}'.");
-            }
-        }
-
-        /// <summary>
-        /// Removes all elements with the specified key from the container.
-        /// </summary>
-        /// <typeparam name="TValueEQ"></typeparam>
-        /// <param name="key">The key of the element to remove.</param>
-        /// <returns>Returns number of removed items.</returns>
-        public void Remove<TValueEQ>(TKey key, TValueEQ value)
-            where TValueEQ : struct, IEquatable<TValueEQ>
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-            CheckValueEQ<TValueEQ>();
-#endif
-            m_MultiHashMapData.Remove(key, value);
         }
 
         /// <summary>
@@ -1097,6 +1057,23 @@ namespace Unity.Collections
             where TValue : struct
         {
             return multiHashMap.m_MultiHashMapData.m_Buffer->GetBucketData();
+        }
+
+        /// <summary>
+        /// Removes all elements with the specified key from the container.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
+        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+        /// <param name="key">The key of the element to remove.</param>
+        /// <param name="value">The value of the element to remove.</param>
+        /// <param name="multiHashMap"></param>
+        /// <returns>Returns number of removed items.</returns>
+        public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> multiHashMap, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(multiHashMap.m_Safety);
+#endif
+            multiHashMap.m_MultiHashMapData.Remove(key, value);
         }
     }
 

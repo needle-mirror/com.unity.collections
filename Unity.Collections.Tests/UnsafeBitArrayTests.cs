@@ -113,6 +113,9 @@ internal class UnsafeBitArrayTests
 
         GetBitsTest(ref test, 0, 5);
         GetBitsTest(ref test, 1, 3);
+        GetBitsTest(ref test, 0, 63);
+        GetBitsTest(ref test, 0, 64);
+        GetBitsTest(ref test, 1, 63);
         GetBitsTest(ref test, 1, 64);
         GetBitsTest(ref test, 62, 5);
         GetBitsTest(ref test, 127, 3);
@@ -142,6 +145,80 @@ internal class UnsafeBitArrayTests
         SetBitsTest(ref test, 62, 6, 5);
         SetBitsTest(ref test, 127, 1, 3);
         SetBitsTest(ref test, 60, 0xaa, 8);
+
+        test.Dispose();
+    }
+
+    static void CopyBitsTest(ref UnsafeBitArray test, int dstPos, int srcPos, int numBits)
+    {
+        for (int pos = 0; pos < test.Length; pos += 64)
+        {
+            test.SetBits(pos, 0xaaaaaaaaaaaaaaaaul, 64);
+        }
+
+        test.SetBits(srcPos, true, numBits);
+        test.Copy(dstPos, srcPos, numBits);
+        Assert.AreEqual(true, test.TestAll(dstPos, numBits));
+
+        for (int pos = 0; pos < test.Length; ++pos)
+        {
+            if ((pos >= dstPos && pos < dstPos + numBits) ||
+                (pos >= srcPos && pos < srcPos + numBits))
+            {
+                Assert.AreEqual(true, test.IsSet(pos));
+            }
+            else
+            {
+                Assert.AreEqual((0 != (pos & 1)), test.IsSet(pos));
+            }
+        }
+
+        test.Clear();
+    }
+
+    [Test]
+    public void UnsafeBitArray_Copy()
+    {
+        var numBits = 512;
+
+        var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        CopyBitsTest(ref test, 1, 16, 12); // short up to 64-bits copy
+        CopyBitsTest(ref test, 1, 80, 63); // short up to 64-bits copy
+        CopyBitsTest(ref test, 1, 11, 12); // short up to 64-bits copy overlapped
+        CopyBitsTest(ref test, 11, 1, 12); // short up to 64-bits copy overlapped
+
+        CopyBitsTest(ref test, 1, 16, 76); // short up to 128-bits copy
+        CopyBitsTest(ref test, 1, 80, 127); // short up to 128-bits copy
+        CopyBitsTest(ref test, 1, 11, 76); // short up to 128-bits copy overlapped
+        CopyBitsTest(ref test, 11, 1, 76); // short up to 128-bits copy overlapped
+
+        CopyBitsTest(ref test, 1, 81, 255); // long copy aligned
+        CopyBitsTest(ref test, 8, 0, 255); // long copy overlapped aligned
+        CopyBitsTest(ref test, 1, 80, 255); // long copy unaligned
+        CopyBitsTest(ref test, 80, 1, 255); // long copy overlapped unaligned
+
+        test.Dispose();
+    }
+
+    [Test]
+    public unsafe void UnsafeBitArray_Copy_Throws()
+    {
+        var numBits = 512;
+
+        var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, 0, numBits - 1, 16); }); // short up to 64-bits copy out of bounds
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, numBits - 1, 0, 16); }); // short up to 64-bits copy out of bounds
+
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, 0, numBits - 1, 80); }); // short up to 128-bits copy out of bounds
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, numBits - 1, 0, 80); }); // short up to 128-bits copy out of bounds
+
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, 1, numBits - 7, 127); }); // long copy aligned
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, numBits - 7, 1, 127); }); // long copy aligned
+
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, 2, numBits - 1, 127); }); // long copy unaligned
+        Assert.Throws<ArgumentException>(() => { CopyBitsTest(ref test, numBits - 1, 2, 127); }); // long copy unaligned
 
         test.Dispose();
     }

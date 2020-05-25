@@ -110,43 +110,6 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckIndexInRange(int value, int length)
-        {
-            if (value < 0)
-                throw new IndexOutOfRangeException($"Value {value} must be positive.");
-
-            if ((uint)value >= (uint)length)
-                throw new IndexOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckCapacityInRange(int value, int length)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-
-            if ((uint)value < (uint)length)
-                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckArgInRange(int value, int length)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-
-            if ((uint)value >= (uint)length)
-                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckArgPositive(int value)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-        }
-
         /// <summary>
         /// Retrieve a member of the contaner by index.
         /// </summary>
@@ -159,16 +122,16 @@ namespace Unity.Collections
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-                CheckIndexInRange(index, m_ListData->Length);
 #endif
+                CheckIndexInRange(index, m_ListData->Length);
                 return UnsafeUtility.ReadArrayElement<T>(m_ListData->Ptr, CollectionHelper.AssumePositive(index));
             }
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-                CheckIndexInRange(index, m_ListData->Length);
 #endif
+                CheckIndexInRange(index, m_ListData->Length);
                 UnsafeUtility.WriteArrayElement(m_ListData->Ptr, CollectionHelper.AssumePositive(index), value);
             }
         }
@@ -177,8 +140,8 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-            CheckIndexInRange(index, m_ListData->Length);
 #endif
+            CheckIndexInRange(index, m_ListData->Length);
             return ref UnsafeUtilityEx.ArrayElementAsRef<T>(m_ListData->Ptr, index);
         }
 
@@ -224,8 +187,8 @@ namespace Unity.Collections
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
-                CheckCapacityInRange(value, m_ListData->Length);
 #endif
+                CheckCapacityInRange(value, m_ListData->Length);
                 m_ListData->SetCapacity<T>(value);
             }
         }
@@ -320,8 +283,8 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
-            CheckArgPositive(count);
 #endif
+            CheckArgPositive(count);
             m_ListData->AddRange<T>(elements, CollectionHelper.AssumePositive(count));
         }
 
@@ -338,6 +301,59 @@ namespace Unity.Collections
 #endif
             CheckArgInRange(index, Length);
             m_ListData->RemoveAtSwapBack<T>(CollectionHelper.AssumePositive(index));
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBack(int begin, int end)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_ListData->RemoveRangeSwapBack<T>(CollectionHelper.AssumePositive(begin), CollectionHelper.AssumePositive(end));
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            CheckArgInRange(index, Length);
+            m_ListData->RemoveAt<T>(CollectionHelper.AssumePositive(index));
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange(int begin, int end)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_ListData->RemoveRange<T>(begin, end);
         }
 
         /// <summary>
@@ -661,15 +677,6 @@ namespace Unity.Collections
 
 #endif
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            private static void CheckSufficientCapacity(int capacity, int length)
-            {
-                if (capacity < length)
-                {
-                    throw new Exception($"Length {length} exceeds capacity Capacity {capacity}");
-                }
-            }
-
             /// <summary>
             /// Adds an element to the list.
             /// </summary>
@@ -680,24 +687,22 @@ namespace Unity.Collections
             /// </remarks>
             public void AddNoResize(T value)
             {
-                var idx = Interlocked.Increment(ref ListData->Length) - 1;
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-                CheckSufficientCapacity(ListData->Capacity, idx + 1);
 #endif
+                var idx = Interlocked.Increment(ref ListData->Length) - 1;
+                CheckSufficientCapacity(ListData->Capacity, idx + 1);
 
                 UnsafeUtility.WriteArrayElement(Ptr, idx, value);
             }
 
             private void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
             {
-                var idx = Interlocked.Add(ref ListData->Length, length) - length;
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-                CheckSufficientCapacity(ListData->Capacity, idx + length);
 #endif
+                var idx = Interlocked.Add(ref ListData->Length, length) - length;
+                CheckSufficientCapacity(ListData->Capacity, idx + length);
 
                 void* dst = (byte*)Ptr + idx * sizeOf;
                 UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
@@ -742,6 +747,50 @@ namespace Unity.Collections
             {
                 AddRangeNoResize(*list.m_ListData);
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckSufficientCapacity(int capacity, int length)
+        {
+            if (capacity < length)
+                throw new Exception($"Length {length} exceeds capacity Capacity {capacity}");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckIndexInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new IndexOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value >= (uint)length)
+                throw new IndexOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckCapacityInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value < (uint)length)
+                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckArgInRange(int value, int length)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
+
+            if ((uint)value >= (uint)length)
+                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        private static void CheckArgPositive(int value)
+        {
+            if (value < 0)
+                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
         }
     }
 

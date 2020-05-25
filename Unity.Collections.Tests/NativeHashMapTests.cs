@@ -193,6 +193,28 @@ internal class NativeHashMapTests
     }
 
     [Test]
+    public void NativeHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    {
+        var hashMap = new NativeHashMap<int, int>(0, Allocator.Temp);
+        Assert.DoesNotThrow(() => hashMap.Remove(0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
+        hashMap.Dispose();
+    }
+
+    [Test]
+    public void NativeMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    {
+        var hashMap = new NativeMultiHashMap<int, int>(0, Allocator.Temp);
+
+        Assert.DoesNotThrow(() => hashMap.Remove(0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
+        Assert.DoesNotThrow(() => hashMap.Remove(0, 0));
+        Assert.DoesNotThrow(() => hashMap.Remove(-425196, 0));
+
+        hashMap.Dispose();
+    }
+
+    [Test]
     public void NativeHashMap_RemoveFromMultiHashMap()
     {
         var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.Temp);
@@ -733,14 +755,6 @@ internal class NativeHashMapTests
         var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.TempJob);
         hashMap.Dispose();
         Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(); });
-    }
-
-    [Test]
-    public void NativeMultiHashMap_RemoveKeyValueThrowsInvalidParam()
-    {
-        var hashMap = new NativeMultiHashMap<int, long>(1, Allocator.Temp);
-        Assert.Throws<ArgumentException>(() => hashMap.Remove(5, 5));
-        hashMap.Dispose();
     }
 
 #if UNITY_2020_1_OR_NEWER

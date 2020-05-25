@@ -286,14 +286,24 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes an element from the <#=TYPENAME#>&lt;T&gt; at the specified index and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
+        /// Inserts a single element into a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
         /// </summary>
-        /// <param name="index">The zero-based index of the elements to remove.</param>
+        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
+        /// <param name="item">The element to insert</param>
+        public void Insert(int index, in T item)
+        {
+            InsertRange(index, index+1);
+            this[index] = item;
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            this[index] = this[Length-1];
-            --Length;
+            RemoveRangeSwapBack(index, index + 1);
         }
 
         /// <summary>
@@ -310,38 +320,42 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes a number of elements from a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The zero-based index at which the elements should be removed.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void RemoveRange(int begin, int end)
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBack(int begin, int end)
         {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - (begin + items);
-            Length -= items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * UnsafeUtility.SizeOf<T>();
-            unsafe
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
             {
-                byte*b = Buffer;
-                byte *dest = b + begin * UnsafeUtility.SizeOf<T>();
-                byte *src = b + end * UnsafeUtility.SizeOf<T>();
-                UnsafeUtility.MemCpy(dest, src, bytesToCopy);
+                int copyFrom = math.max(Length - itemsToRemove, end);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + begin * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                }
+
+                Length -= itemsToRemove;
             }
         }
 
         /// <summary>
-        /// Inserts a single element into a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
         /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, in T item)
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
         {
-            InsertRange(index, index+1);
-            this[index] = item;
+            RemoveRange(index, index + 1);
         }
 
         /// <summary>
@@ -360,13 +374,30 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes the T at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="index">The zero-based index at which to remove the T</param>
-        public void RemoveAt(int index)
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange(int begin, int end)
         {
-            RemoveRange(index, index+1);
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
+            {
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    int copyFrom = math.min(begin + itemsToRemove, Length);
+                    void* dst = Buffer + begin * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                    Length -= itemsToRemove;
+                }
+            }
         }
 
         /// <summary>
@@ -816,14 +847,24 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes an element from the <#=TYPENAME#> at the specified index and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
+        /// Inserts a single element into a <#=TYPENAME#> at a specified zero-based index.
         /// </summary>
-        /// <param name="index">The zero-based index of the elements to remove.</param>
+        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
+        /// <param name="item">The element to insert</param>
+        public void Insert(int index, <#=TYPE#> item)
+        {
+            InsertRange(index, index+1);
+            this[index] = item;
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            this[index] = this[Length-1];
-            --Length;
+            RemoveRangeSwapBack(index, index + 1);
         }
 
         /// <summary>
@@ -840,38 +881,38 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes a number of elements from a <#=TYPENAME#> at a specified zero-based index.
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The zero-based index at which the elements should be removed.</param>
-        /// <param name="end"></param>
-        public void RemoveRange(int begin, int end)
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBack(int begin, int end)
         {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - (begin + items);
-            Length -= items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(<#=TYPE#>);
-            unsafe
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
             {
-                byte* b = Buffer;
-                byte *dest = b + begin * sizeof(<#=TYPE#>);
-                byte *src = b + end * sizeof(<#=TYPE#>);
-                UnsafeUtility.MemCpy(dest, src, bytesToCopy);
+                int copyFrom = math.max(Length - itemsToRemove, end);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(<#=TYPE#>);
+                    void* dst = Buffer + begin * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                }
+
+                Length -= itemsToRemove;
             }
         }
 
         /// <summary>
-        /// Inserts a single element into a <#=TYPENAME#> at a specified zero-based index.
+        /// Removes the <#=TYPE#> at the specified index, and copies all subsequent elements backward to fill the
+        /// hole so created.
         /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, <#=TYPE#> item)
+        /// <param name="index">The zero-based index at which to remove the <#=TYPE#></param>
+        public void RemoveAt(int index)
         {
-            InsertRange(index, index+1);
-            this[index] = item;
+            RemoveRange(index, index+1);
         }
 
         /// <summary>
@@ -890,13 +931,30 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes the <#=TYPE#> at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="index">The zero-based index at which to remove the <#=TYPE#></param>
-        public void RemoveAt(int index)
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        public void RemoveRange(int begin, int end)
         {
-            RemoveRange(index, index+1);
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
+            {
+                unsafe
+                {
+                    var sizeOf = sizeof(<#=TYPE#>);
+                    int copyFrom = math.min(begin + itemsToRemove, Length);
+                    void* dst = Buffer + begin * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                    Length -= itemsToRemove;
+                }
+            }
         }
 
         /// <summary>

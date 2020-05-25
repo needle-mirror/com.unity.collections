@@ -1,10 +1,35 @@
 # Change log
 
+## [0.9.0] - 2020-05-25
+
+### Added
+
+ * Added `RemoveAt` and `RemoveRange` to list containers in collections. These methods remove
+   elements in a list container while preserving the order of the list. These methods are slower than
+   `Remove*SwapBack` methods and as shuch, you should use `Remove*SwapBack` if you don't want to
+   preserve the order inside `\*List` container.
+
+### Changed
+
+ * Updated package `com.unity.burst` to version `1.3.0-preview.12`.
+ * Updated minimum Unity Editor version to 2019.3.12f1 (84b23722532d)
+
+ ### Removed
+
+* Removed expired APIs for `UnsafeHashMap.Length`
+* Removed expired APIs for `NativeHashMap.Length`
+
+### Fixed
+
+ * Moved `NativeMultiHashMap.Remove<TValueEQ>(TKey key, TValueEq value)` into an extension method and made it Burst compatible
+ * Fixed a bug in `*HashMap.Remove` to not throw when removing from empty hash map.
+
 
 ## [0.8.0] - 2020-04-24
 
 ### Added
 
+ * Added `Native/UnsafeBitArray.Copy` for copying or shifting bits inside array.
  * Added `UnsafeAtomicCounter32/64` providing helper interface for atomic counter functionality.
  * Added `NativeBitArray` providing arbitrary sized bit array functionality with safety mechanism.
 
