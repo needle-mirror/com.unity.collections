@@ -1,14 +1,15 @@
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
-internal class NativeHashMapTestsFixture
+internal class NativeHashMapTestsFixture : CollectionsTestFixture
 {
     protected const int hashMapSize = 10 * 1024;
 
     // Burst error BC1005: The `try` construction is not supported
     // [BurstCompile(CompileSynchronously = true)]
-    public struct HashMapWriteJob : IJob
+    internal struct HashMapWriteJob : IJob
     {
         public NativeHashMap<int, int>.ParallelWriter hashMap;
         public NativeArray<int> status;
@@ -35,7 +36,7 @@ internal class NativeHashMapTestsFixture
     }
 
     [BurstCompile(CompileSynchronously = true)]
-    public struct HashMapReadParallelForJob : IJobParallelFor
+    internal struct HashMapReadParallelForJob : IJobParallelFor
     {
         [ReadOnly]
         public NativeHashMap<int, int> hashMap;

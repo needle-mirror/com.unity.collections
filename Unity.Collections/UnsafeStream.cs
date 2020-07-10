@@ -32,6 +32,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal UnsafeStreamBlock** Blocks;
         internal int BlockCount;
 
+        internal UnsafeStreamBlock* Free;
+
         internal UnsafeStreamRange* Ranges;
         internal int RangeCount;
 
@@ -78,11 +80,13 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeStreamBlockData* m_Block;
-        Allocator m_Allocator;
+        internal Allocator m_Allocator;
 
         /// <summary>
         /// Constructs a new UnsafeStream using the specified type of memory allocation.
         /// </summary>
+        /// <param name="foreachCount"></param>
+        /// <param name="allocator"></param>
         public UnsafeStream(int foreachCount, Allocator allocator)
         {
             AllocateBlock(out this, allocator);
@@ -92,9 +96,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Schedule job to construct a new UnsafeStream using the specified type of memory allocation.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="stream"></param>
+        /// <param name="forEachCountFromList"></param>
         /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
         public static JobHandle ScheduleConstruct<T>(out UnsafeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
@@ -106,9 +114,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Schedule job to construct a new UnsafeStream using the specified type of memory allocation.
         /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="lengthFromIndex0"></param>
         /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
         public static JobHandle ScheduleConstruct(out UnsafeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
@@ -146,6 +157,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <returns>True if this container empty.</returns>
+        public bool IsEmpty()
+        {
+            if (!IsCreated)
+            {
+                return true;
+            }
+
+            for (int i = 0; i != m_Block->RangeCount; i++)
+            {
+                if (m_Block->Ranges[i].ElementCount > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
@@ -160,6 +193,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Returns reader instance.
         /// </summary>
+        /// <returns>Reader instance</returns>
         public Reader AsReader()
         {
             return new Reader(ref this);
@@ -168,16 +202,24 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Returns writer instance.
         /// </summary>
+        /// <returns>Writer instance</returns>
         public Writer AsWriter()
         {
             return new Writer(ref this);
         }
 
         /// <summary>
-        /// Compute item count.
+        ///
         /// </summary>
-        /// <returns>Item count.</returns>
-        public int ComputeItemCount()
+        /// <returns></returns>
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
+        public int ComputeItemCount() => Count();
+
+        /// <summary>
+        /// The current number of items in the container.
+        /// </summary>
+        /// <returns>The item count.</returns>
+        public int Count()
         {
             int itemCount = 0;
 
@@ -192,13 +234,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Copies stream data into NativeArray.
         /// </summary>
+        /// <typeparam name="T">The type of value.</typeparam>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
         /// <remarks>The array is a copy of stream data.</remarks>
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
-            var array = new NativeArray<T>(ComputeItemCount(), allocator, NativeArrayOptions.UninitializedMemory);
+            var array = new NativeArray<T>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             var reader = AsReader();
 
             int offset = 0;
@@ -257,12 +300,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
         /// using it have run.</remarks>
-        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
+        /// <param name="inputDeps">All jobs spawned will depend on this JobHandle.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        public JobHandle Dispose(JobHandle dependency)
+        public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new DisposeJob { Container = this }.Schedule(dependency);
+            var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
 
             m_Block = null;
 
@@ -360,7 +403,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <param name="foreachIndex"></param>
             /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
-            /// <returns>The number of elements at this index.</returns>
             public void BeginForEachIndex(int foreachIndex)
             {
                 m_ForeachIndex = foreachIndex;
@@ -388,6 +430,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Write data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <param name="value">Value to write.</param>
             public void Write<T>(T value) where T : struct
             {
                 ref T dst = ref Allocate<T>();
@@ -398,16 +441,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Allocate space for data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns>Reference to allocated space for data.</returns>
             public ref T Allocate<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtilityEx.AsRef<T>(Allocate(size));
+                return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
 
             /// <summary>
             /// Allocate space for data.
             /// </summary>
             /// <param name="size">Size in bytes.</param>
+            /// <returns>Pointer to allocated space for data.</returns>
             public byte* Allocate(int size)
             {
                 byte* ptr = m_CurrentPtr;
@@ -509,6 +554,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <summary>
             /// Returns pointer to data.
             /// </summary>
+            /// <param name="size">Size in bytes.</param>
+            /// <returns>Pointer to data.</returns>
             public byte* ReadUnsafePtr(int size)
             {
                 m_RemainingItemCount--;
@@ -534,16 +581,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Read data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns>Reference to data.</returns>
             public ref T Read<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtilityEx.AsRef<T>(ReadUnsafePtr(size));
+                return ref UnsafeUtility.AsRef<T>(ReadUnsafePtr(size));
             }
 
             /// <summary>
             /// Peek into data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns>Reference to data.</returns>
             public ref T Peek<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
@@ -554,14 +603,21 @@ namespace Unity.Collections.LowLevel.Unsafe
                     ptr = m_CurrentBlock->Next->Data;
                 }
 
-                return ref UnsafeUtilityEx.AsRef<T>(ptr);
+                return ref UnsafeUtility.AsRef<T>(ptr);
             }
 
             /// <summary>
-            /// Compute item count.
+            ///
             /// </summary>
-            /// <returns>Item count.</returns>
-            public int ComputeItemCount()
+            /// <returns></returns>
+            [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
+            public int ComputeItemCount() => Count();
+
+            /// <summary>
+            /// The current number of items in the container.
+            /// </summary>
+            /// <returns>The item count.</returns>
+            public int Count()
             {
                 int itemCount = 0;
                 for (int i = 0; i != m_BlockStream->RangeCount; i++)

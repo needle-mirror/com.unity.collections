@@ -79,7 +79,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// Fixed-size circular buffer.
     /// </summary>
     /// <typeparam name="T">Source type of elements.</typeparam>
-    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}")]
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeRingQueueDebugView<>))]
     public unsafe struct UnsafeRingQueue<T> : IDisposable
         where T : unmanaged
@@ -94,6 +94,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         public Allocator Allocator;
 
         internal RingControl Control;
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
         /// Returns number of items in the container.
@@ -207,6 +213,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void ThrowQueueFull()
+        {
+            throw new InvalidOperationException("Trying to enqueue into full queue.");
+        }
+
         /// <summary>
         /// Enqueue value into the container.
         /// </summary>
@@ -216,7 +228,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (!TryEnqueue(value))
             {
-                throw new InvalidOperationException("Trying to enqueue into full queue.");
+                ThrowQueueFull();
             }
         }
 
@@ -231,6 +243,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return 1 == Control.Consume(1);
         }
 
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void ThrowQueueEmpty()
+        {
+            throw new InvalidOperationException("Trying to dequeue from an empty queue");
+        }
+
         /// <summary>
         /// Dequeue item from the container.
         /// </summary>
@@ -238,11 +256,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns item from the container.</returns>
         public T Dequeue()
         {
-            T item;
-
-            if (!TryDequeue(out item))
+            if (!TryDequeue(out T item))
             {
-                throw new InvalidOperationException("Trying to dequeue from an empty queue");
+                ThrowQueueEmpty();
             }
 
             return item;

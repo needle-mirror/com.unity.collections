@@ -9,7 +9,7 @@ using Unity.Collections.Tests;
 #pragma warning disable 0219
 #pragma warning disable 0414
 
-internal class NativeListJobDebuggerTests
+internal class NativeListJobDebuggerTests : CollectionsTestFixture
 {
     [BurstCompile(CompileSynchronously = true)]
     struct NativeListAddJob : IJob
@@ -48,7 +48,12 @@ internal class NativeListJobDebuggerTests
         var jobData = new NativeListAddJob(list);
         var job = jobData.Schedule();
 
-        Assert.Throws<InvalidOperationException>(() => { Debug.Log(arrayBeforeSchedule[0]); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { Debug.Log(arrayBeforeSchedule[0]); });
         Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list; Debug.Log(array.Length); });
         Assert.Throws<InvalidOperationException>(() => { Debug.Log(list.Capacity); });
         Assert.Throws<InvalidOperationException>(() => { list.Dispose(); });
@@ -57,7 +62,12 @@ internal class NativeListJobDebuggerTests
         job.Complete();
 
         Assert.AreEqual(1, arrayBeforeSchedule.Length);
-        Assert.Throws<InvalidOperationException>(() => { Debug.Log(arrayBeforeSchedule[0]); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { Debug.Log(arrayBeforeSchedule[0]); });
 
         Assert.AreEqual(2, list.Length);
         Assert.AreEqual(0, list[0]);
@@ -395,7 +405,6 @@ internal class NativeListJobDebuggerTests
         list.Dispose();
     }
 
-#if UNITY_2020_1_OR_NEWER
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
     struct NativeListTestParallelReader : IJob
@@ -477,6 +486,4 @@ internal class NativeListJobDebuggerTests
 
         list.Dispose();
     }
-
-#endif
 }

@@ -3,25 +3,31 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-
 internal class NativeQueueTests
 {
+    static void ExpectedCount<T>(ref NativeQueue<T> container, int expected) where T : unmanaged
+    {
+        Assert.AreEqual(expected == 0, container.IsEmpty());
+        Assert.AreEqual(expected, container.Count);
+    }
+
     [Test]
     public void Enqueue_Dequeue()
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
-        Assert.AreEqual(16, queue.Count);
+        ExpectedCount(ref queue, 16);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -31,14 +37,14 @@ internal class NativeQueueTests
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             cQueue.Enqueue(i);
-        Assert.AreEqual(16, queue.Count);
+        ExpectedCount(ref queue, 16);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -47,17 +53,17 @@ internal class NativeQueueTests
     public void Enqueue_Dequeue_Peek()
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
-        Assert.AreEqual(16, queue.Count);
+        ExpectedCount(ref queue, 16);
         for (int i = 0; i < 16; ++i)
         {
             Assert.AreEqual(i, queue.Peek(), "Got the wrong value from the queue");
             queue.Dequeue();
         }
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -66,16 +72,16 @@ internal class NativeQueueTests
     public void Enqueue_Dequeue_Clear()
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
-        Assert.AreEqual(16, queue.Count);
+        ExpectedCount(ref queue, 16);
         for (int i = 0; i < 8; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(8, queue.Count);
+        ExpectedCount(ref queue, 8);
         queue.Clear();
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -85,7 +91,12 @@ internal class NativeQueueTests
     {
         var queue = new NativeQueue<int>(Allocator.TempJob);
         queue.Dispose();
-        Assert.Throws<System.InvalidOperationException>(() => { queue.Dispose(); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { queue.Dispose(); });
     }
 
     [Test]
@@ -97,11 +108,11 @@ internal class NativeQueueTests
             queue.Enqueue(i);
         }
 
-        Assert.AreEqual(1000 * 100, queue.Count);
+        ExpectedCount(ref queue, 1000 * 100);
 
         for (int i = 0; i != 1000 * 100; i++)
             Assert.AreEqual(i, queue.Dequeue());
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
 
         queue.Dispose();
     }
@@ -110,23 +121,30 @@ internal class NativeQueueTests
     public void Enqueue_Wrap()
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
+
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
         for (int i = 0; i < 256; ++i)
             queue.Enqueue(i);
-        Assert.AreEqual(256, queue.Count);
+        ExpectedCount(ref queue, 256);
+
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(128, queue.Count);
+        ExpectedCount(ref queue, 128);
+
         for (int i = 0; i < 128; ++i)
             queue.Enqueue(i);
-        Assert.AreEqual(256, queue.Count);
+        ExpectedCount(ref queue, 256);
+
         for (int i = 128; i < 256; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(128, queue.Count);
+        ExpectedCount(ref queue, 128);
+
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
+
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -136,23 +154,29 @@ internal class NativeQueueTests
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
         for (int i = 0; i < 256; ++i)
             cQueue.Enqueue(i);
-        Assert.AreEqual(256, queue.Count);
+        ExpectedCount(ref queue, 256);
+
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(128, queue.Count);
+        ExpectedCount(ref queue, 128);
+
         for (int i = 0; i < 128; ++i)
             cQueue.Enqueue(i);
-        Assert.AreEqual(256, queue.Count);
+        ExpectedCount(ref queue, 256);
+
         for (int i = 128; i < 256; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(128, queue.Count);
+        ExpectedCount(ref queue, 128);
+
         for (int i = 0; i < 128; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
-        Assert.AreEqual(0, queue.Count);
+        ExpectedCount(ref queue, 0);
+
         Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
         queue.Dispose();
     }
@@ -166,7 +190,12 @@ internal class NativeQueueTests
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container.Enqueue(0); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container.Enqueue(0); });
 
         disposeJob.Complete();
     }
@@ -180,11 +209,13 @@ internal class NativeQueueTests
             {
                 queue.Enqueue(i);
                 Assert.AreEqual(1, queue.Count);
+
                 int value;
                 while (queue.TryDequeue(out value))
                 {
                     Assert.AreEqual(i, value);
                 }
+
                 Assert.AreEqual(0, queue.Count);
             }
         }
@@ -235,15 +266,23 @@ internal class NativeQueueTests
         }
     }
 
-#if UNITY_2020_1_OR_NEWER
-    [Test]
+    // These tests require:
+    // - JobsDebugger support for static safety IDs (added in 2020.1)
+    // - Asserting throws
+#if !UNITY_DOTSRUNTIME
+    [Test,DotsRuntimeIgnore]
     public void NativeQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeQueue<int>(Allocator.TempJob);
         container.Enqueue(123);
         container.Dispose();
-        Assert.That(() => container.Dequeue(), Throws.InvalidOperationException.With.Message.Contains($"The {container.GetType()} has been deallocated"));
+        Assert.That(() => container.Dequeue(),
+#if UNITY_2020_2_OR_NEWER
+            Throws.Exception.TypeOf<ObjectDisposedException>()
+#else
+            Throws.InvalidOperationException
+#endif
+                .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
-
 #endif
 }

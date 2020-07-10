@@ -18,6 +18,9 @@ using System.Collections.Generic;
 using UnityEngine.Internal;
 using System.Collections;
 using Unity.Mathematics;
+#if UNITY_PROPERTIES_EXISTS
+using Unity.Properties;
+#endif
 
 namespace Unity.Collections
 {
@@ -61,7 +64,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(FixedList32DebugView<>))]
     public struct FixedList32<T>
-    : INativeList<T>, IEnumerable<T>
+    : INativeList<T>
+    , IEnumerable<T> // Used by collection initializers.
     , IEquatable<FixedList32<T>>
     , IComparable<FixedList32<T>>
     , IEquatable<FixedList64<T>>
@@ -81,6 +85,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -90,6 +95,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -103,7 +119,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -152,12 +168,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -254,8 +275,16 @@ namespace Unity.Collections
         /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end"></param>
-        public void InsertRange(int begin, int end)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -281,7 +310,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, in T item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -292,7 +321,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -314,7 +343,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -326,7 +364,7 @@ namespace Unity.Collections
                     var sizeOf = UnsafeUtility.SizeOf<T>();
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -344,7 +382,7 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index + 1);
+            RemoveRangeWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -358,7 +396,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -370,9 +408,21 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -868,35 +918,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             FixedList32<T> m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedList32<T> list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedList32<T> indexer check for out of range.
-            public T Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public T Current => m_List[m_Index]; // Let FixedList32<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -910,8 +978,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedList32DebugView<T> where T : unmanaged
@@ -930,7 +1017,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(FixedList64DebugView<>))]
     public struct FixedList64<T>
-    : INativeList<T>, IEnumerable<T>
+    : INativeList<T>
+    , IEnumerable<T> // Used by collection initializers.
     , IEquatable<FixedList32<T>>
     , IComparable<FixedList32<T>>
     , IEquatable<FixedList64<T>>
@@ -950,6 +1038,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -959,6 +1048,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -972,7 +1072,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -1021,12 +1121,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -1123,8 +1228,16 @@ namespace Unity.Collections
         /// Inserts a number of items into a FixedList64&lt;T&gt; at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end"></param>
-        public void InsertRange(int begin, int end)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList64&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -1150,7 +1263,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, in T item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -1161,7 +1274,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -1183,7 +1296,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -1195,7 +1317,7 @@ namespace Unity.Collections
                     var sizeOf = UnsafeUtility.SizeOf<T>();
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -1213,7 +1335,7 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index + 1);
+            RemoveRangeWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -1227,7 +1349,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -1239,9 +1361,21 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -1737,35 +1871,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             FixedList64<T> m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedList64<T> list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedList64<T> indexer check for out of range.
-            public T Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public T Current => m_List[m_Index]; // Let FixedList64<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -1779,8 +1931,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedList64DebugView<T> where T : unmanaged
@@ -1799,7 +1970,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(FixedList128DebugView<>))]
     public struct FixedList128<T>
-    : INativeList<T>, IEnumerable<T>
+    : INativeList<T>
+    , IEnumerable<T> // Used by collection initializers.
     , IEquatable<FixedList32<T>>
     , IComparable<FixedList32<T>>
     , IEquatable<FixedList64<T>>
@@ -1819,6 +1991,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -1828,6 +2001,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -1841,7 +2025,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -1890,12 +2074,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -1992,8 +2181,16 @@ namespace Unity.Collections
         /// Inserts a number of items into a FixedList128&lt;T&gt; at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end"></param>
-        public void InsertRange(int begin, int end)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList128&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -2019,7 +2216,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, in T item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -2030,7 +2227,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -2052,7 +2249,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -2064,7 +2270,7 @@ namespace Unity.Collections
                     var sizeOf = UnsafeUtility.SizeOf<T>();
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -2082,7 +2288,7 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index + 1);
+            RemoveRangeWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -2096,7 +2302,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -2108,9 +2314,21 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -2606,35 +2824,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             FixedList128<T> m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedList128<T> list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedList128<T> indexer check for out of range.
-            public T Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public T Current => m_List[m_Index]; // Let FixedList128<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -2648,8 +2884,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedList128DebugView<T> where T : unmanaged
@@ -2668,7 +2923,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(FixedList512DebugView<>))]
     public struct FixedList512<T>
-    : INativeList<T>, IEnumerable<T>
+    : INativeList<T>
+    , IEnumerable<T> // Used by collection initializers.
     , IEquatable<FixedList32<T>>
     , IComparable<FixedList32<T>>
     , IEquatable<FixedList64<T>>
@@ -2688,6 +2944,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -2697,6 +2954,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -2710,7 +2978,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -2759,12 +3027,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -2861,8 +3134,16 @@ namespace Unity.Collections
         /// Inserts a number of items into a FixedList512&lt;T&gt; at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end"></param>
-        public void InsertRange(int begin, int end)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList512&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -2888,7 +3169,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, in T item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -2899,7 +3180,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -2921,7 +3202,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -2933,7 +3223,7 @@ namespace Unity.Collections
                     var sizeOf = UnsafeUtility.SizeOf<T>();
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -2951,7 +3241,7 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index + 1);
+            RemoveRangeWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -2965,7 +3255,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -2977,9 +3267,21 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -3475,35 +3777,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             FixedList512<T> m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedList512<T> list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedList512<T> indexer check for out of range.
-            public T Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public T Current => m_List[m_Index]; // Let FixedList512<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -3517,8 +3837,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedList512DebugView<T> where T : unmanaged
@@ -3537,7 +3876,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [DebuggerTypeProxy(typeof(FixedList4096DebugView<>))]
     public struct FixedList4096<T>
-    : INativeList<T>, IEnumerable<T>
+    : INativeList<T>
+    , IEnumerable<T> // Used by collection initializers.
     , IEquatable<FixedList32<T>>
     , IComparable<FixedList32<T>>
     , IEquatable<FixedList64<T>>
@@ -3557,6 +3897,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -3566,6 +3907,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -3579,7 +3931,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -3628,12 +3980,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<T>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
             }
         }
 
@@ -3730,8 +4087,16 @@ namespace Unity.Collections
         /// Inserts a number of items into a FixedList4096&lt;T&gt; at a specified zero-based index.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end"></param>
-        public void InsertRange(int begin, int end)
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList4096&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -3757,7 +4122,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, in T item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -3768,7 +4133,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -3790,7 +4155,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -3802,7 +4176,7 @@ namespace Unity.Collections
                     var sizeOf = UnsafeUtility.SizeOf<T>();
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -3820,7 +4194,7 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index + 1);
+            RemoveRangeWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -3834,7 +4208,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -3846,9 +4220,21 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -4344,35 +4730,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
             FixedList4096<T> m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedList4096<T> list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedList4096<T> indexer check for out of range.
-            public T Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public T Current => m_List[m_Index]; // Let FixedList4096<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -4386,8 +4790,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedList4096DebugView<T> where T : unmanaged
@@ -4408,7 +4831,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=32)]
     [DebuggerTypeProxy(typeof(FixedListByte32DebugView))]
     public struct FixedListByte32
-    : INativeList<byte>, IEnumerable<byte>
+    : INativeList<byte>
+    , IEnumerable<byte> // Used by collection initializers.
     , IEquatable<FixedListByte32>
     , IComparable<FixedListByte32>
     , IEquatable<FixedListByte64>
@@ -4427,6 +4851,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -4436,6 +4861,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(byte);
 
@@ -4449,7 +4885,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -4499,12 +4935,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<byte>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
             }
         }
 
@@ -4602,7 +5043,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListByte32 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -4628,7 +5077,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, byte item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -4639,7 +5088,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -4661,7 +5110,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -4673,7 +5131,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(byte);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -4687,7 +5145,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -4701,7 +5159,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -4713,9 +5171,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -5199,35 +5670,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<byte>
         {
             FixedListByte32 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListByte32 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListByte32 indexer check for out of range.
-            public byte Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public byte Current => m_List[m_Index]; // Let FixedListByte32 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -5241,8 +5730,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListByte32DebugView
@@ -5263,7 +5771,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=64)]
     [DebuggerTypeProxy(typeof(FixedListByte64DebugView))]
     public struct FixedListByte64
-    : INativeList<byte>, IEnumerable<byte>
+    : INativeList<byte>
+    , IEnumerable<byte> // Used by collection initializers.
     , IEquatable<FixedListByte32>
     , IComparable<FixedListByte32>
     , IEquatable<FixedListByte64>
@@ -5282,6 +5791,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -5291,6 +5801,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(byte);
 
@@ -5304,7 +5825,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -5354,12 +5875,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<byte>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
             }
         }
 
@@ -5457,7 +5983,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListByte64 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -5483,7 +6017,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, byte item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -5494,7 +6028,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -5516,7 +6050,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -5528,7 +6071,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(byte);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -5542,7 +6085,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -5556,7 +6099,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -5568,9 +6111,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -6054,35 +6610,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<byte>
         {
             FixedListByte64 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListByte64 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListByte64 indexer check for out of range.
-            public byte Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public byte Current => m_List[m_Index]; // Let FixedListByte64 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -6096,8 +6670,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListByte64DebugView
@@ -6118,7 +6711,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=128)]
     [DebuggerTypeProxy(typeof(FixedListByte128DebugView))]
     public struct FixedListByte128
-    : INativeList<byte>, IEnumerable<byte>
+    : INativeList<byte>
+    , IEnumerable<byte> // Used by collection initializers.
     , IEquatable<FixedListByte32>
     , IComparable<FixedListByte32>
     , IEquatable<FixedListByte64>
@@ -6137,6 +6731,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -6146,6 +6741,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(byte);
 
@@ -6159,7 +6765,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -6209,12 +6815,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<byte>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
             }
         }
 
@@ -6312,7 +6923,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListByte128 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -6338,7 +6957,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, byte item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -6349,7 +6968,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -6371,7 +6990,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -6383,7 +7011,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(byte);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -6397,7 +7025,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -6411,7 +7039,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -6423,9 +7051,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -6909,35 +7550,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<byte>
         {
             FixedListByte128 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListByte128 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListByte128 indexer check for out of range.
-            public byte Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public byte Current => m_List[m_Index]; // Let FixedListByte128 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -6951,8 +7610,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListByte128DebugView
@@ -6973,7 +7651,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=512)]
     [DebuggerTypeProxy(typeof(FixedListByte512DebugView))]
     public struct FixedListByte512
-    : INativeList<byte>, IEnumerable<byte>
+    : INativeList<byte>
+    , IEnumerable<byte> // Used by collection initializers.
     , IEquatable<FixedListByte32>
     , IComparable<FixedListByte32>
     , IEquatable<FixedListByte64>
@@ -6992,6 +7671,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -7001,6 +7681,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(byte);
 
@@ -7014,7 +7705,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -7064,12 +7755,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<byte>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
             }
         }
 
@@ -7167,7 +7863,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListByte512 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -7193,7 +7897,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, byte item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -7204,7 +7908,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -7226,7 +7930,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -7238,7 +7951,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(byte);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -7252,7 +7965,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -7266,7 +7979,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -7278,9 +7991,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -7764,35 +8490,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<byte>
         {
             FixedListByte512 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListByte512 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListByte512 indexer check for out of range.
-            public byte Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public byte Current => m_List[m_Index]; // Let FixedListByte512 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -7806,8 +8550,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListByte512DebugView
@@ -7828,7 +8591,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=4096)]
     [DebuggerTypeProxy(typeof(FixedListByte4096DebugView))]
     public struct FixedListByte4096
-    : INativeList<byte>, IEnumerable<byte>
+    : INativeList<byte>
+    , IEnumerable<byte> // Used by collection initializers.
     , IEquatable<FixedListByte32>
     , IComparable<FixedListByte32>
     , IEquatable<FixedListByte64>
@@ -7847,6 +8611,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -7856,6 +8621,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(byte);
 
@@ -7869,7 +8645,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -7919,12 +8695,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<byte>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
             }
         }
 
@@ -8022,7 +8803,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListByte4096 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -8048,7 +8837,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, byte item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -8059,7 +8848,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -8081,7 +8870,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -8093,7 +8891,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(byte);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -8107,7 +8905,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -8121,7 +8919,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -8133,9 +8931,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -8619,35 +9430,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<byte>
         {
             FixedListByte4096 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListByte4096 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListByte4096 indexer check for out of range.
-            public byte Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public byte Current => m_List[m_Index]; // Let FixedListByte4096 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -8661,8 +9490,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListByte4096DebugView
@@ -8683,7 +9531,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=32)]
     [DebuggerTypeProxy(typeof(FixedListInt32DebugView))]
     public struct FixedListInt32
-    : INativeList<int>, IEnumerable<int>
+    : INativeList<int>
+    , IEnumerable<int> // Used by collection initializers.
     , IEquatable<FixedListInt32>
     , IComparable<FixedListInt32>
     , IEquatable<FixedListInt64>
@@ -8702,6 +9551,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -8711,6 +9561,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(int);
 
@@ -8724,7 +9585,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -8774,12 +9635,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref int ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<int>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
             }
         }
 
@@ -8877,7 +9743,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListInt32 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -8903,7 +9777,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, int item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -8914,7 +9788,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -8936,7 +9810,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -8948,7 +9831,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(int);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -8962,7 +9845,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -8976,7 +9859,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -8988,9 +9871,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -9474,35 +10370,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<int>
         {
             FixedListInt32 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListInt32 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListInt32 indexer check for out of range.
-            public int Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public int Current => m_List[m_Index]; // Let FixedListInt32 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -9516,8 +10430,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListInt32DebugView
@@ -9538,7 +10471,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=64)]
     [DebuggerTypeProxy(typeof(FixedListInt64DebugView))]
     public struct FixedListInt64
-    : INativeList<int>, IEnumerable<int>
+    : INativeList<int>
+    , IEnumerable<int> // Used by collection initializers.
     , IEquatable<FixedListInt32>
     , IComparable<FixedListInt32>
     , IEquatable<FixedListInt64>
@@ -9557,6 +10491,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -9566,6 +10501,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(int);
 
@@ -9579,7 +10525,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -9629,12 +10575,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref int ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<int>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
             }
         }
 
@@ -9732,7 +10683,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListInt64 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -9758,7 +10717,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, int item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -9769,7 +10728,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -9791,7 +10750,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -9803,7 +10771,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(int);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -9817,7 +10785,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -9831,7 +10799,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -9843,9 +10811,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -10329,35 +11310,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<int>
         {
             FixedListInt64 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListInt64 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListInt64 indexer check for out of range.
-            public int Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public int Current => m_List[m_Index]; // Let FixedListInt64 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -10371,8 +11370,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListInt64DebugView
@@ -10393,7 +11411,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=128)]
     [DebuggerTypeProxy(typeof(FixedListInt128DebugView))]
     public struct FixedListInt128
-    : INativeList<int>, IEnumerable<int>
+    : INativeList<int>
+    , IEnumerable<int> // Used by collection initializers.
     , IEquatable<FixedListInt32>
     , IComparable<FixedListInt32>
     , IEquatable<FixedListInt64>
@@ -10412,6 +11431,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -10421,6 +11441,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(int);
 
@@ -10434,7 +11465,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -10484,12 +11515,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref int ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<int>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
             }
         }
 
@@ -10587,7 +11623,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListInt128 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -10613,7 +11657,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, int item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -10624,7 +11668,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -10646,7 +11690,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -10658,7 +11711,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(int);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -10672,7 +11725,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -10686,7 +11739,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -10698,9 +11751,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -11184,35 +12250,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<int>
         {
             FixedListInt128 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListInt128 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListInt128 indexer check for out of range.
-            public int Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public int Current => m_List[m_Index]; // Let FixedListInt128 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -11226,8 +12310,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListInt128DebugView
@@ -11248,7 +12351,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=512)]
     [DebuggerTypeProxy(typeof(FixedListInt512DebugView))]
     public struct FixedListInt512
-    : INativeList<int>, IEnumerable<int>
+    : INativeList<int>
+    , IEnumerable<int> // Used by collection initializers.
     , IEquatable<FixedListInt32>
     , IComparable<FixedListInt32>
     , IEquatable<FixedListInt64>
@@ -11267,6 +12371,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -11276,6 +12381,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(int);
 
@@ -11289,7 +12405,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -11339,12 +12455,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref int ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<int>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
             }
         }
 
@@ -11442,7 +12563,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListInt512 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -11468,7 +12597,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, int item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -11479,7 +12608,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -11501,7 +12630,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -11513,7 +12651,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(int);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -11527,7 +12665,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -11541,7 +12679,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -11553,9 +12691,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -12039,35 +13190,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<int>
         {
             FixedListInt512 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListInt512 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListInt512 indexer check for out of range.
-            public int Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public int Current => m_List[m_Index]; // Let FixedListInt512 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -12081,8 +13250,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListInt512DebugView
@@ -12103,7 +13291,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=4096)]
     [DebuggerTypeProxy(typeof(FixedListInt4096DebugView))]
     public struct FixedListInt4096
-    : INativeList<int>, IEnumerable<int>
+    : INativeList<int>
+    , IEnumerable<int> // Used by collection initializers.
     , IEquatable<FixedListInt32>
     , IComparable<FixedListInt32>
     , IEquatable<FixedListInt64>
@@ -12122,6 +13311,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -12131,6 +13321,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(int);
 
@@ -12144,7 +13345,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -12194,12 +13395,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref int ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<int>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
             }
         }
 
@@ -12297,7 +13503,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListInt4096 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -12323,7 +13537,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, int item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -12334,7 +13548,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -12356,7 +13570,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -12368,7 +13591,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(int);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -12382,7 +13605,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -12396,7 +13619,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -12408,9 +13631,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -12894,35 +14130,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<int>
         {
             FixedListInt4096 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListInt4096 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListInt4096 indexer check for out of range.
-            public int Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public int Current => m_List[m_Index]; // Let FixedListInt4096 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -12936,8 +14190,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<int> IEnumerable<int>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<int> IEnumerable<int>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListInt4096DebugView
@@ -12958,7 +14231,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=32)]
     [DebuggerTypeProxy(typeof(FixedListFloat32DebugView))]
     public struct FixedListFloat32
-    : INativeList<float>, IEnumerable<float>
+    : INativeList<float>
+    , IEnumerable<float> // Used by collection initializers.
     , IEquatable<FixedListFloat32>
     , IComparable<FixedListFloat32>
     , IEquatable<FixedListFloat64>
@@ -12977,6 +14251,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -12986,6 +14261,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(float);
 
@@ -12999,7 +14285,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -13049,12 +14335,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref float ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<float>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
             }
         }
 
@@ -13152,7 +14443,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListFloat32 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -13178,7 +14477,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, float item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -13189,7 +14488,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -13211,7 +14510,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -13223,7 +14531,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(float);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -13237,7 +14545,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -13251,7 +14559,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -13263,9 +14571,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -13749,35 +15070,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<float>
         {
             FixedListFloat32 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListFloat32 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListFloat32 indexer check for out of range.
-            public float Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public float Current => m_List[m_Index]; // Let FixedListFloat32 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -13791,8 +15130,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<float> IEnumerable<float>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<float> IEnumerable<float>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListFloat32DebugView
@@ -13813,7 +15171,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=64)]
     [DebuggerTypeProxy(typeof(FixedListFloat64DebugView))]
     public struct FixedListFloat64
-    : INativeList<float>, IEnumerable<float>
+    : INativeList<float>
+    , IEnumerable<float> // Used by collection initializers.
     , IEquatable<FixedListFloat32>
     , IComparable<FixedListFloat32>
     , IEquatable<FixedListFloat64>
@@ -13832,6 +15191,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -13841,6 +15201,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(float);
 
@@ -13854,7 +15225,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -13904,12 +15275,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref float ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<float>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
             }
         }
 
@@ -14007,7 +15383,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListFloat64 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -14033,7 +15417,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, float item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -14044,7 +15428,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -14066,7 +15450,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -14078,7 +15471,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(float);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -14092,7 +15485,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -14106,7 +15499,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -14118,9 +15511,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -14604,35 +16010,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<float>
         {
             FixedListFloat64 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListFloat64 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListFloat64 indexer check for out of range.
-            public float Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public float Current => m_List[m_Index]; // Let FixedListFloat64 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -14646,8 +16070,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<float> IEnumerable<float>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<float> IEnumerable<float>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListFloat64DebugView
@@ -14668,7 +16111,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=128)]
     [DebuggerTypeProxy(typeof(FixedListFloat128DebugView))]
     public struct FixedListFloat128
-    : INativeList<float>, IEnumerable<float>
+    : INativeList<float>
+    , IEnumerable<float> // Used by collection initializers.
     , IEquatable<FixedListFloat32>
     , IComparable<FixedListFloat32>
     , IEquatable<FixedListFloat64>
@@ -14687,6 +16131,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -14696,6 +16141,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(float);
 
@@ -14709,7 +16165,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -14759,12 +16215,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref float ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<float>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
             }
         }
 
@@ -14862,7 +16323,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListFloat128 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -14888,7 +16357,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, float item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -14899,7 +16368,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -14921,7 +16390,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -14933,7 +16411,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(float);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -14947,7 +16425,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -14961,7 +16439,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -14973,9 +16451,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -15459,35 +16950,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<float>
         {
             FixedListFloat128 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListFloat128 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListFloat128 indexer check for out of range.
-            public float Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public float Current => m_List[m_Index]; // Let FixedListFloat128 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -15501,8 +17010,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<float> IEnumerable<float>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<float> IEnumerable<float>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListFloat128DebugView
@@ -15523,7 +17051,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=512)]
     [DebuggerTypeProxy(typeof(FixedListFloat512DebugView))]
     public struct FixedListFloat512
-    : INativeList<float>, IEnumerable<float>
+    : INativeList<float>
+    , IEnumerable<float> // Used by collection initializers.
     , IEquatable<FixedListFloat32>
     , IComparable<FixedListFloat32>
     , IEquatable<FixedListFloat64>
@@ -15542,6 +17071,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -15551,6 +17081,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(float);
 
@@ -15564,7 +17105,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -15614,12 +17155,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref float ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<float>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
             }
         }
 
@@ -15717,7 +17263,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListFloat512 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -15743,7 +17297,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, float item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -15754,7 +17308,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -15776,7 +17330,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -15788,7 +17351,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(float);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -15802,7 +17365,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -15816,7 +17379,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -15828,9 +17391,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -16314,35 +17890,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<float>
         {
             FixedListFloat512 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListFloat512 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListFloat512 indexer check for out of range.
-            public float Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public float Current => m_List[m_Index]; // Let FixedListFloat512 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -16356,8 +17950,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<float> IEnumerable<float>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<float> IEnumerable<float>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListFloat512DebugView
@@ -16378,7 +17991,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Explicit, Size=4096)]
     [DebuggerTypeProxy(typeof(FixedListFloat4096DebugView))]
     public struct FixedListFloat4096
-    : INativeList<float>, IEnumerable<float>
+    : INativeList<float>
+    , IEnumerable<float> // Used by collection initializers.
     , IEquatable<FixedListFloat32>
     , IComparable<FixedListFloat32>
     , IEquatable<FixedListFloat64>
@@ -16397,6 +18011,7 @@ namespace Unity.Collections
         /// The current number of items in the list.
         /// </summary>
         /// <value>The item length.</value>
+        [CreateProperty]
         public int Length
         {
             get => length;
@@ -16406,6 +18021,17 @@ namespace Unity.Collections
                 length = (ushort)value;
             }
         }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * sizeof(float);
 
@@ -16419,7 +18045,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
@@ -16469,12 +18095,17 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref float ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
             unsafe
             {
-                return ref UnsafeUtilityEx.ArrayElementAsRef<float>(Buffer, index);
+                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
             }
         }
 
@@ -16572,7 +18203,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        public void InsertRange(int begin, int end)
+        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
+        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Inserts a number of items into a FixedListFloat4096 at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
             if(items < 1)
@@ -16598,7 +18237,7 @@ namespace Unity.Collections
         /// <param name="item">The element to insert</param>
         public void Insert(int index, float item)
         {
-            InsertRange(index, index+1);
+            InsertRangeWithBeginEnd(index, index+1);
             this[index] = item;
         }
 
@@ -16609,7 +18248,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, index + 1);
+            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
         }
 
         /// <summary>
@@ -16631,7 +18270,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        public void RemoveRangeSwapBack(int begin, int end)
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
+        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -16643,7 +18291,7 @@ namespace Unity.Collections
                     var sizeOf = sizeof(float);
                     void* dst = Buffer + begin * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, math.min(itemsToRemove, Length - copyFrom) * sizeOf);
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
                 Length -= itemsToRemove;
@@ -16657,7 +18305,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
         }
 
         /// <summary>
@@ -16671,7 +18319,7 @@ namespace Unity.Collections
             int index = IndexOf(item);
             if(index < 0)
                 return false;
-            RemoveRange(index, index+1);
+            RemoveRangeWithBeginEnd(index, index+1);
             return true;
         }
 
@@ -16683,9 +18331,22 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        public void RemoveRange(int begin, int end)
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
+        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
             if (itemsToRemove > 0)
@@ -17169,35 +18830,53 @@ namespace Unity.Collections
             return false;
         }
 
-        [ExcludeFromDocs]
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         public struct Enumerator : IEnumerator<float>
         {
             FixedListFloat4096 m_List;
             int m_Index;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="list"><undoc /></param>
             public Enumerator(ref FixedListFloat4096 list)
             {
                 m_List = list;
                 m_Index = -1;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Dispose()
             {
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <returns><undoc /></returns>
             public bool MoveNext()
             {
                 m_Index++;
                 return m_Index < m_List.Length;
             }
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Reset()
             {
                 m_Index = -1;
             }
 
-            // Let FixedListFloat4096 indexer check for out of range.
-            public float Current => m_List[m_Index];
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public float Current => m_List[m_Index]; // Let FixedListFloat4096 indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -17211,8 +18890,27 @@ namespace Unity.Collections
             return new Enumerator(ref this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
-        IEnumerator<float> IEnumerable<float>.GetEnumerator() { throw new NotImplementedException(); }
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<float> IEnumerable<float>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     sealed class FixedListFloat4096DebugView
@@ -17225,7 +18923,10 @@ namespace Unity.Collections
         public float[] Items => m_List.ToArray();
     }
 
-    public static class Extensions
+    /// <summary>
+    /// <undoc />
+    /// </summary>
+    public static class FixedListExtensions
     {
 
         /// <summary>

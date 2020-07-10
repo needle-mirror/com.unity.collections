@@ -5,9 +5,6 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-#if !UNITY_DOTSPLAYER
-using Unity.PerformanceTesting;
-#endif
 
 internal class UnsafeListTests
 {
@@ -140,6 +137,7 @@ internal class UnsafeListTests
 
     unsafe void Expected(ref UnsafeList list, int expectedLength, int[] expected)
     {
+        Assert.AreEqual(0 == expectedLength, list.IsEmpty);
         Assert.AreEqual(list.Length, expectedLength);
         for (var i = 0; i < list.Length; ++i)
         {
@@ -210,7 +208,7 @@ internal class UnsafeListTests
     }
 
     [Test]
-    public unsafe void UnsafeList_RemoveRangeSwapBack()
+    public unsafe void UnsafeList_RemoveRangeSwapBackBE()
     {
         var sizeOf = UnsafeUtility.SizeOf<int>();
         var alignOf = UnsafeUtility.AlignOf<int>();
@@ -221,31 +219,31 @@ internal class UnsafeListTests
 
         // test removing from the end
         fixed(int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRangeSwapBack<int>(6, 9);
+        list.RemoveRangeSwapBackWithBeginEnd<int>(6, 9);
         Expected(ref list, 7, new int[] { 0, 1, 2, 3, 4, 5, 9 });
         list.Clear();
 
         // test removing all but one
         fixed(int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRangeSwapBack<int>(0, 9);
+        list.RemoveRangeSwapBackWithBeginEnd<int>(0, 9);
         Expected(ref list, 1, new int[] { 9 });
         list.Clear();
 
         // test removing from the front
         fixed(int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRangeSwapBack<int>(0, 3);
+        list.RemoveRangeSwapBackWithBeginEnd<int>(0, 3);
         Expected(ref list, 7, new int[] { 7, 8, 9, 3, 4, 5, 6 });
         list.Clear();
 
         // test removing from the middle
         fixed(int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRangeSwapBack<int>(0, 3);
+        list.RemoveRangeSwapBackWithBeginEnd<int>(0, 3);
         Expected(ref list, 7, new int[] { 7, 8, 9, 3, 4, 5, 6 });
         list.Clear();
 
         // test removing whole range
         fixed(int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRangeSwapBack<int>(0, 10);
+        list.RemoveRangeSwapBackWithBeginEnd<int>(0, 10);
         Expected(ref list, 0, new int[] { 0 });
         list.Clear();
 
@@ -289,31 +287,31 @@ internal class UnsafeListTests
 
         // test removing from the end
         fixed (int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRange<int>(6, 9);
+        list.RemoveRangeWithBeginEnd<int>(6, 9);
         Expected(ref list, 7, new int[] { 0, 1, 2, 3, 4, 5, 9 });
         list.Clear();
 
         // test removing all but one
         fixed (int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRange<int>(0, 9);
+        list.RemoveRangeWithBeginEnd<int>(0, 9);
         Expected(ref list, 1, new int[] { 9 });
         list.Clear();
 
         // test removing from the front
         fixed (int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRange<int>(0, 3);
+        list.RemoveRangeWithBeginEnd<int>(0, 3);
         Expected(ref list, 7, new int[] { 3, 4, 5, 6, 7, 8, 9 });
         list.Clear();
 
         // test removing from the middle
         fixed (int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRange<int>(0, 3);
+        list.RemoveRangeWithBeginEnd<int>(0, 3);
         Expected(ref list, 7, new int[] { 3, 4, 5, 6, 7, 8, 9 });
         list.Clear();
 
         // test removing whole range
         fixed (int* r = range) list.AddRange<int>(r, 10);
-        list.RemoveRange<int>(0, 10);
+        list.RemoveRangeWithBeginEnd<int>(0, 10);
         Expected(ref list, 0, new int[] { 0 });
         list.Clear();
 
@@ -337,16 +335,16 @@ internal class UnsafeListTests
         Assert.Throws<ArgumentException>(() => { list.RemoveAtSwapBack<int>(100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRange<int>(0, 100); });
+        Assert.Throws<ArgumentException>(() => { list.RemoveRangeWithBeginEnd<int>(0, 100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRangeSwapBack<int>(0, 100); });
+        Assert.Throws<ArgumentException>(() => { list.RemoveRangeSwapBackWithBeginEnd<int>(0, 100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRange<int>(100, 0);  });
+        Assert.Throws<ArgumentException>(() => { list.RemoveRangeWithBeginEnd<int>(100, 0);  });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRangeSwapBack<int>(100, 0); });
+        Assert.Throws<ArgumentException>(() => { list.RemoveRangeSwapBackWithBeginEnd<int>(100, 0); });
         Assert.AreEqual(10, list.Length);
 
         list.Dispose();
@@ -441,42 +439,11 @@ internal class UnsafeListTests
         list.Dispose();
     }
 
-#if !UNITY_DOTSPLAYER
-    [Test, Performance]
-    [Category("Performance")]
-    public void UnsafeList_Performance_Add()
-    {
-        const int numElements = 16 << 10;
-
-        var sizeOf = UnsafeUtility.SizeOf<int>();
-        var alignOf = UnsafeUtility.AlignOf<int>();
-        var list = new UnsafeList(sizeOf, alignOf, 1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
-
-        Measure.Method(() =>
-        {
-            list.SetCapacity<int>(1);
-            for (int i = 0; i < numElements; ++i)
-            {
-                list.Add(i);
-            }
-        })
-            .WarmupCount(100)
-            .MeasurementCount(1000)
-            .Run();
-
-        list.Dispose();
-    }
-
-#endif
-
     [Test]
     public unsafe void UnsafeListT_IndexOf()
     {
-        using (var list = new UnsafeList<int>(10, Allocator.Persistent))
+        using (var list = new UnsafeList<int>(10, Allocator.Persistent) { 123, 789 })
         {
-            list.Add(123);
-            list.Add(789);
-
             bool r0 = false, r1 = false, r2 = false;
 
             GCAllocRecorder.ValidateNoGCAllocs(() =>

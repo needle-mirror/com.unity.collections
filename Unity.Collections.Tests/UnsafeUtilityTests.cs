@@ -105,7 +105,6 @@ internal class UnsafeUtilityTests
 
 #else
     [Test]
-    [Ignore("Failing due to editor changes, disabled for now: https://unity3d.atlassian.net/browse/DOTS-1442")]
     public void CannotDisposeAlias()
     {
         using (var src = MakeTestArray(12))
@@ -125,7 +124,12 @@ internal class UnsafeUtilityTests
         {
             alias = src.Reinterpret<int, float>();
         }
-        Assert.Throws<InvalidOperationException>(() => alias[0] = 1.0f);
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => alias[0] = 1.0f);
     }
 
     [Test]
@@ -140,7 +144,6 @@ internal class UnsafeUtilityTests
         }
     }
 
-#if UNITY_2020_1_OR_NEWER
     struct AlignOfX
     {
         float x;
@@ -187,5 +190,61 @@ internal class UnsafeUtilityTests
         Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfW>());
     }
 
-#endif
+    [Test]
+    public unsafe void UnsafeUtility_MemSwap()
+    {
+        using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
+        using (var array1 = MakeTestArray(0x21436587, 0x21436587, 0x21436587, 0x21436587, 0x21436587, 0x21436587))
+        {
+            UnsafeUtilityExtensions.MemSwap(NativeArrayUnsafeUtility.GetUnsafePtr(array0), NativeArrayUnsafeUtility.GetUnsafePtr(array1), array0.Length*UnsafeUtility.SizeOf<int>());
+
+            foreach (var b in array0) { Assert.AreEqual(0x21436587, b); }
+            foreach (var b in array1) { Assert.AreEqual(0x12345678, b); }
+        }
+    }
+
+    [Test]
+    public unsafe void UnsafeUtility_MemSwap_DoesThrow_Overlapped()
+    {
+        using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
+        {
+            var mem = (byte*)NativeArrayUnsafeUtility.GetUnsafePtr(array0);
+            var len = array0.Length * UnsafeUtility.SizeOf<int>();
+
+            Assert.DoesNotThrow(() => { UnsafeUtilityExtensions.MemSwap(mem + 10, mem, 10); });
+            Assert.Throws<InvalidOperationException>(() => { UnsafeUtilityExtensions.MemSwap(mem + 10, mem, len - 10); });
+
+            Assert.DoesNotThrow(() => { UnsafeUtilityExtensions.MemSwap(mem, mem + 10, 10); });
+            Assert.Throws<InvalidOperationException>(() => { UnsafeUtilityExtensions.MemSwap(mem, mem + 10, len - 10); });
+        }
+    }
+
+    [Test]
+    public unsafe void UnsafeUtility_ReadArrayElementBoundsChecked_Works()
+    {
+        using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
+        {
+            var mem = (byte*)NativeArrayUnsafeUtility.GetUnsafePtr(array0);
+            var len = array0.Length;
+
+            Assert.DoesNotThrow(() => { UnsafeUtilityExtensions.ReadArrayElementBoundsChecked<int>(mem, 5, len); });
+            Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.ReadArrayElementBoundsChecked<int>(mem, 6, len); });
+            Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.ReadArrayElementBoundsChecked<int>(mem, -1, len); });
+        }
+    }
+
+
+    [Test]
+    public unsafe void UnsafeUtility_WriteArrayElementBoundsChecked_Works()
+    {
+        using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
+        {
+            var mem = (byte*)NativeArrayUnsafeUtility.GetUnsafePtr(array0);
+            var len = array0.Length;
+
+            Assert.DoesNotThrow(() => { UnsafeUtilityExtensions.WriteArrayElementBoundsChecked(mem, 5, -98765432, len); });
+            Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.WriteArrayElementBoundsChecked(mem, 6, -98765432, len); });
+            Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.WriteArrayElementBoundsChecked(mem, -1, -98765432, len); });
+        }
+    }
 }

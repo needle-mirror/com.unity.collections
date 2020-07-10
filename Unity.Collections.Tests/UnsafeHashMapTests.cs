@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
@@ -21,68 +20,47 @@ internal class UnsafeHashMapTests
     [Test]
     public void UnsafeHashMap_AddJob()
     {
-        var hashMap = new UnsafeHashMap<int, int>(32, Allocator.TempJob);
+        var container = new UnsafeHashMap<int, int>(32, Allocator.TempJob);
 
         var job = new UnsafeHashMapAddJob()
         {
-            Writer = hashMap.AsParallelWriter(),
+            Writer = container.AsParallelWriter(),
         };
 
         job.Schedule().Complete();
 
-        Assert.True(hashMap.ContainsKey(123));
+        Assert.True(container.ContainsKey(123));
 
-        hashMap.Dispose();
+        container.Dispose();
     }
 
-    [BurstCompile(CompileSynchronously = true)]
-    public struct UnsafeMultiHashMapAddJob : IJobParallelFor
+    [Test]
+    public void UnsafeHashMap_ForEach()
     {
-        public UnsafeMultiHashMap<int, int>.ParallelWriter Writer;
-
-        public void Execute(int index)
+        using (var container = new UnsafeHashMap<int, int>(32, Allocator.TempJob))
         {
-            Writer.Add(123, index);
+            container.Add(0, 012);
+            container.Add(1, 123);
+            container.Add(2, 234);
+            container.Add(3, 345);
+            container.Add(4, 456);
+            container.Add(5, 567);
+            container.Add(6, 678);
+            container.Add(7, 789);
+            container.Add(8, 890);
+            container.Add(9, 901);
+
+            var count = 0;
+            foreach (var kv in container)
+            {
+                int value;
+                Assert.True(container.TryGetValue(kv.Key, out value));
+                Assert.AreEqual(value, kv.Value);
+
+                ++count;
+            }
+
+            Assert.AreEqual(container.Count(), count);
         }
-    }
-
-    [Test]
-    public void UnsafeMultiHashMap_AddJob()
-    {
-        var hashMap = new UnsafeMultiHashMap<int, int>(32, Allocator.TempJob);
-
-        var job = new UnsafeMultiHashMapAddJob()
-        {
-            Writer = hashMap.AsParallelWriter(),
-        };
-
-        job.Schedule(3, 1).Complete();
-
-        Assert.True(hashMap.ContainsKey(123));
-        Assert.AreEqual(hashMap.CountValuesForKey(123), 3);
-
-        hashMap.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashMap_RemoveOnEmptyMap_DoesNotThrow()
-    {
-        var hashMap = new UnsafeHashMap<int, int>(0, Allocator.Temp);
-        Assert.DoesNotThrow(() => hashMap.Remove(0));
-        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
-        hashMap.Dispose();
-    }
-
-    [Test]
-    public void UnsafeMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
-    {
-        var hashMap = new UnsafeMultiHashMap<int, int>(0, Allocator.Temp);
-
-        Assert.DoesNotThrow(() => hashMap.Remove(0));
-        Assert.DoesNotThrow(() => hashMap.Remove(-425196));
-        Assert.DoesNotThrow(() => hashMap.Remove(0, 0));
-        Assert.DoesNotThrow(() => hashMap.Remove(-425196, 0));
-
-        hashMap.Dispose();
     }
 }

@@ -227,7 +227,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (value != null)
             {
                 Add(value.Length);
-                fixed(char* ptr = value)
+                fixed (char* ptr = value)
                 {
                     Add(ptr, sizeof(char) * value.Length);
                 }
@@ -277,7 +277,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public byte[] ToBytes()
         {
             var dst = new byte[Length];
-            fixed(byte* dstPtr = dst)
+            fixed (byte* dstPtr = dst)
             {
                 UnsafeUtility.MemCpy(dstPtr, Ptr, Length);
             }
@@ -298,8 +298,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public unsafe struct Reader
         {
+            /// <summary>
+            ///
+            /// </summary>
             public readonly byte* Ptr;
+
+            /// <summary>
+            ///
+            /// </summary>
             public readonly int Size;
+
+            /// <summary>
+            ///
+            /// </summary>
             public int Offset;
 
             /// <summary>
@@ -418,7 +429,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 {
                     value = new string('0', length);
 
-                    fixed(char* buf = value)
+                    fixed (char* buf = value)
                     {
                         int bufLen = length * sizeof(char);
                         UnsafeUtility.MemCpy(buf, ReadNext(bufLen), bufLen);

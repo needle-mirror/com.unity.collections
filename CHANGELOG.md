@@ -1,29 +1,109 @@
-# Change log
+# Changelog
 
-## [0.9.0] - 2020-05-25
-
-**This version requires Unity 2019.3.12f1+**
+## [0.11.0] - 2020-07-10
 
 ### Added
 
- * Added `RemoveAt` and `RemoveRange` to list containers in collections. These methods remove
-   elements in a list container while preserving the order of the list. These methods are slower than
-   `Remove*SwapBack` methods and as shuch, you should use `Remove*SwapBack` if you don't want to
-   preserve the order inside `\*List` container.
+ * Added `VirtualMemoryUtility` which provides low-level virtual memory utility functions backed by baselib.
+ * `*HashMap` and `*HashSet` now implement `IEnumerable<>`.
+ * Added `ReadArrayElementBoundsChecked` and `WriteArrayElementBoundsChecked` for ease of debugging `ReadArrayElement` and `WriteArrayElement`. This does not sacrifice performance by adding bounds that check directly to those functions.
+ * Added `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd` to list containers. `*WithBeginEnd` in the name shows that the arguments are begin/end instead of the standard index/count. Once `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed, those methods will be added with correct index/count arguments.
 
 ### Changed
 
+ * Updated minimum Unity Editor version to 2020.1.0b15 (40d9420e7de8)
+ * Bumped burst to 1.3.2 version.
+ * Changed `*HashSet.Add` API to return bool when adding element to set.
+ * `UnsafeUtilityExtensions` is now public.
+ * `NativeReference` methods `Equals` and `GetHashCode` will now operate on the value instead of the data pointer.
+
+### Deprecated
+
+ * Deprecated `*HashSet.TryAdd`. `*HashSet.Add` its equivalent.
+ * Deprecated `NativeString*`. The functionality is replaced by `FixedString*`.
+ * Deprecated `InsertRange`, `RemoveRangeSwap`, and `RemoveRange` from list containers, and added `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd`. `*WithBeginEnd` in the name shows that the arguments are begin/end instead of the standard index/count. Once `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed, those methods will be added with correct index/count arguments.
+
+### Removed
+
+ * Removed `System.Runtime.CompilerServices.Unsafe.dll` from package.
+
+
+### Known Issues
+
+* This version is not compatible with 2020.2.0a17. Please update to the forthcoming alpha.
+* All containers allocated with `Allocator.Temp` on the same thread use a shared `AtomicSafetyHandle` instance. This can be a problem if you use `NativeHashMap`, `NativeMultiHashMap`, `NativeHashSet` and `NativeList` together in situations where their secondary safety handle is used. This means that operations that invalidate an enumerator for either of these collections (or the `NativeArray` returned by `NativeList.AsArray`) also invalidate all other previously acquired enumerators.
+
+For example, the following throws when safety checks are enabled:
+```
+var list = new NativeList<int>(Allocator.Temp);
+list.Add(1);
+
+// This array uses the secondary safety handle of the list, which is
+// shared between all Allocator.Temp allocations.
+var array = list.AsArray();
+
+var list2 = new NativeHashSet<int>(Allocator.Temp);
+
+// This invalidates the secondary safety handle, which is also used
+// by the list above.
+list2.TryAdd(1);
+
+// This throws an InvalidOperationException because the shared safety
+// handle was invalidated.
+var x = array[0];
+```
+This defect will be addressed in a future release.
+
+
+## [0.10.0] - 2020-05-27
+
+
+### Added
+
+ * Added `Native/UnsafeHashSet` containers.
+ * Added `IsEmpty` method to `*Queue`, `*HashMap`, `*MultiHashMap`, `*List`, `FixedString`.
+   This method should be prefered to `Count() > 0` due to simpler checks for empty container.
+ * Added a new container `NativeReference` to hold unmanaged allocation.
+ * Added `CollectionsTestFixture` to enable jobs debugger and verify safety checks are enabled.
+ * Added `NativeList.CopyFrom(NativeArray<> array)`
+
+### Changed
+ * Updated minimum Unity Editor version to 2020.1.0b9 (9c0aec301c8d)
  * Updated package `com.unity.burst` to version `1.3.0-preview.12`.
+ * Made several tests inherit `CollectionsTestFixture` to prevent crashing when running tests without jobs debugger or safety checks enabled.
+ * Added `NativeBitArray.AsNativeArray<T>` method to reinterpret `NativeBitArray` as
+   `NativeArray` of desired type.
 
- ### Removed
+### Deprecated
 
-* Removed expired APIs for `UnsafeHashMap.Length`
-* Removed expired APIs for `NativeHashMap.Length`
+ * Deprecated `NativeArrayChunked8` and `NativeArrayFullSOA` from Unity.Collections.Experimental.
+ * Deprecated `UnsafeUtilityEx.As/AsRef/ArrayElementAsRef`. The functionality is available in `UnsafeUtility`.
+
+### Fixed
+
+ * `FixedString` and `FixedList` types now display their contents in the Entity Inspector.
+ * Fixed `NativeHashMap.ParallelWriter.TryAdd` race condition.
+
+## [0.9.0] - 2020-05-04
+
+### Added
+
+ * Added `RemoveAt` and `RemoveRange` to List containers in collections. These methods remove
+   elements in list container while preserving order of the list. These methods are slower than
+   `Remove*SwapBack` methods and users should prefer `Remove*SwapBack` if they don't care about
+   preserving order inside \*List container.
+ * Added `*BitArray.Copy` between two different bit arrays.
+ * Added `NativeBitArrayUnsafeUtility.ConvertExistingDataToNativeBitArray` for assigning view into
+   data as bit array.
+
+### Changed
+
+* Updated package `com.unity.burst` to version `1.3.0-preview.11`
 
 ### Fixed
 
  * Moved `NativeMultiHashMap.Remove<TValueEQ>(TKey key, TValueEq value)` into an extension method and made it Burst compatible
- * Fixed a bug in `*HashMap.Remove` to not throw when removing from empty hash map.
+ * Fixed bug in `*HashMap.Remove` to not throw when removing from empty hash map.
 
 
 ## [0.8.0] - 2020-04-24

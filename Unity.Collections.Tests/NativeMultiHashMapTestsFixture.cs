@@ -1,8 +1,9 @@
 using Unity.Jobs;
 using Unity.Collections;
 using Unity.Burst;
+using Unity.Collections.Tests;
 
-internal class NativeMultiHashMapTestsFixture
+internal class NativeMultiHashMapTestsFixture : CollectionsTestFixture
 {
     protected const int hashMapSize = 10 * 1024;
 

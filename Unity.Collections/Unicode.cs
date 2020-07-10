@@ -113,12 +113,12 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        static public Rune ReplacementCharacter => new Rune {value = 0xFFFD};
+        static public Rune ReplacementCharacter => new Rune { value = 0xFFFD };
 
         /// <summary>
         ///
         /// </summary>
-        static public Rune BadRune => new Rune {value = 0};
+        static public Rune BadRune => new Rune { value = 0 };
 
         /// <summary>
         ///
@@ -151,8 +151,8 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset + 0] & 0b00011111);
-                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
+                code = (buffer[offset + 0] & 0b00011111);
+                code = (code << 6) | (buffer[offset + 1] & 0b00111111);
                 if (code < (1 << 7) || NotTrailer(buffer[offset + 1]))
                 {
                     offset += 1;
@@ -170,9 +170,9 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset + 0] & 0b00001111);
-                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
-                code = (code << 6) |  (buffer[offset + 2] & 0b00111111);
+                code = (buffer[offset + 0] & 0b00001111);
+                code = (code << 6) | (buffer[offset + 1] & 0b00111111);
+                code = (code << 6) | (buffer[offset + 2] & 0b00111111);
                 if (code < (1 << 11) || !IsValidCodePoint(code) || NotTrailer(buffer[offset + 1]) || NotTrailer(buffer[offset + 2]))
                 {
                     offset += 1;
@@ -190,10 +190,10 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =              (buffer[offset + 0] & 0b00000111);
-                code = (code << 6) |  (buffer[offset + 1] & 0b00111111);
-                code = (code << 6) |  (buffer[offset + 2] & 0b00111111);
-                code = (code << 6) |  (buffer[offset + 3] & 0b00111111);
+                code = (buffer[offset + 0] & 0b00000111);
+                code = (code << 6) | (buffer[offset + 1] & 0b00111111);
+                code = (code << 6) | (buffer[offset + 2] & 0b00111111);
+                code = (code << 6) | (buffer[offset + 3] & 0b00111111);
                 if (code < (1 << 16) || !IsValidCodePoint(code) || NotTrailer(buffer[offset + 1]) || NotTrailer(buffer[offset + 2]) || NotTrailer(buffer[offset + 3]))
                 {
                     offset += 1;
@@ -229,7 +229,7 @@ namespace Unity.Collections
                     offset += 1;
                     return ConversionError.Overflow;
                 }
-                code =               (buffer[offset + 0] & 0x03FF);
+                code = (buffer[offset + 0] & 0x03FF);
                 char next = buffer[offset + 1];
                 if (next < 0xDC00 || next > 0xDFFF)
                 {
@@ -477,14 +477,7 @@ namespace Unity.Collections
         {
             unsafe
             {
-#if !UNITY_DOTSPLAYER
                 return new string(pointer, 0, length);
-#else
-                var c = new char[Length];
-                for (var i = 0; i < Length; ++i)
-                    c[i] = pointer[i];
-                return new String(c, 0, Length);
-#endif
             }
         }
 
@@ -653,8 +646,8 @@ namespace Unity.Collections
         /// <returns></returns>
         public unsafe bool Contains(string value)
         {
-            fixed(char *c = value)
-            return Contains(new NativeStringView(c, value.Length));
+            fixed (char* c = value)
+                return Contains(new NativeStringView(c, value.Length));
         }
 
         /// <summary>
@@ -737,8 +730,8 @@ namespace Unity.Collections
         /// <param name="value"></param>
         public unsafe void SetString(string value)
         {
-            fixed(char *c = value)
-            Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
+            fixed (char* c = value)
+                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
         }
     }
 
@@ -818,14 +811,6 @@ namespace Unity.Collections
             return c >= '0' && c <= '9';
         }
 
-        string Substring(string s, int offset, int count)
-        {
-            char[] c = new char[count];
-            for (var i = 0; i < count; ++i)
-                c[i] = s[offset + i];
-            return new string(c, 0, count);
-        }
-
         /// <summary>
         ///
         /// </summary>
@@ -885,14 +870,14 @@ namespace Unity.Collections
             LeadingZeroes = leadingZeroes;
 
             // truncate the string, if there were digits at the end that we encoded.
-
+            int length = value.Length;
             if (beginningOfDigits != value.Length)
-                value = Substring(value, 0, beginningOfDigits);
+                length = beginningOfDigits;
 
             // finally, set the string to its index in the global string blob thing.
 
-            fixed(char *c = value)
-            Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
+            fixed (char* c = value)
+                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, length));
         }
     }
 }

@@ -2,7 +2,6 @@
     "name": "Unity.Collections.Tests",
     "references": [
         "Unity.Collections",
-        "Unity.PerformanceTesting",
         "Unity.Burst",
         "Unity.Jobs",
         "UnityEngine.TestRunner",

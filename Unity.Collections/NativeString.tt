@@ -969,11 +969,28 @@ namespace Unity.Collections
     /// <summary>
     ///
     /// </summary>
+#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+    [Obsolete("NativeString<#=BYTES#> is deprecated, use FixedString<#=BYTES#> instead. (RemovedAfter 2020-09-10). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
+#else
+    [Obsolete("NativeString<#=BYTES#> is deprecated, use FixedString<#=BYTES#> instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> FixedString<#=BYTES#>", false)]
+#endif
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
     public struct NativeString<#=BYTES#> : IComparable<NativeString<#=BYTES#>>, IEquatable<NativeString<#=BYTES#>>
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [Obsolete("NativeString<#=BYTES#>.MaxLength is deprecated, use FixedString<#=BYTES#>.UTF8MaxLengthInBytes instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> FixedString<#=BYTES#>.UTF8MaxLengthInBytes", false)]
         public const int MaxLength = <#=MAXLENGTH#>;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public ushort LengthInBytes;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2)] public Bytes<#=MAXLENGTH#> buffer;
 
         /// <summary>
@@ -999,7 +1016,7 @@ namespace Unity.Collections
             get
             {
                 fixed(Bytes<#=MAXLENGTH#>* b = &buffer)
-                    return ref UnsafeUtilityEx.AsRef<Bytes1>(b);
+                    return ref UnsafeUtility.AsRef<Bytes1>(b);
             }
         }
 

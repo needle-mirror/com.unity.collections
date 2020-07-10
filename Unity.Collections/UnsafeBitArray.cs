@@ -32,16 +32,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr">Pointer to data.</param>
         /// <param name="sizeInBytes">Size of data in bytes. Must be multiple of 8-bytes.</param>
-        public unsafe UnsafeBitArray(void* ptr, int sizeInBytes)
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        public unsafe UnsafeBitArray(void* ptr, int sizeInBytes, Allocator allocator = Allocator.None)
         {
-            if ((sizeInBytes & 7) != 0)
-            {
-                throw new ArgumentException($"BitArray invalid arguments: sizeInBytes {sizeInBytes} (must be multiple of 8-bytes, sizeInBytes: {sizeInBytes}).");
-            }
-
+            CheckAllocator(allocator);
+            CheckSizeMultipleOf8(sizeInBytes);
             Ptr = (ulong*)ptr;
             Length = sizeInBytes * 8;
-            Allocator = Allocator.None;
+            Allocator = allocator;
         }
 
         /// <summary>
@@ -53,11 +52,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
-            if (allocator <= Allocator.None)
-            {
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
-            }
-
+            CheckAllocator(allocator);
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
             Ptr = (ulong*)UnsafeUtility.Malloc(sizeInBytes, 16, allocator);
@@ -267,7 +262,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return 0ul != (Ptr[idx] & mask);
         }
 
-        internal void CopyUlong(int dstPos, int srcPos, int numBits) => SetBits(dstPos, GetBits(srcPos, numBits), numBits);
+        internal void CopyUlong(int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits) => SetBits(dstPos, srcBitArray.GetBits(srcPos, numBits), numBits);
 
         /// <summary>
         /// Copy block of bits from source to destination.
@@ -277,26 +272,42 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="numBits">Number of bits to copy.</param>
         public void Copy(int dstPos, int srcPos, int numBits)
         {
-            if (dstPos == srcPos ||
-                numBits == 0)
+            if (dstPos == srcPos)
             {
                 return;
             }
 
-            CheckArgsCopy(dstPos, srcPos, numBits);
+            Copy(dstPos, ref this, srcPos, numBits);
+        }
+
+        /// <summary>
+        /// Copy block of bits from source to destination.
+        /// </summary>
+        /// <param name="dstPos">Destination position in bit array.</param>
+        /// <param name="srcBitArray">Source bit array from which bits will be copied.</param>
+        /// <param name="srcPos">Source position in bit array.</param>
+        /// <param name="numBits">Number of bits to copy.</param>
+        public void Copy(int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
+        {
+            if (numBits == 0)
+            {
+                return;
+            }
+
+            CheckArgsCopy(ref this, dstPos, ref srcBitArray, srcPos, numBits);
 
             if (numBits <= 64) // 1x CopyUlong
             {
-                CopyUlong(dstPos, srcPos, numBits);
+                CopyUlong(dstPos, ref srcBitArray, srcPos, numBits);
             }
             else if (numBits <= 128) // 2x CopyUlong
             {
-                CopyUlong(dstPos, srcPos, 64);
+                CopyUlong(dstPos, ref srcBitArray, srcPos, 64);
                 numBits -= 64;
 
                 if (numBits > 0)
                 {
-                    CopyUlong(dstPos + 64, srcPos + 64, numBits);
+                    CopyUlong(dstPos + 64, ref srcBitArray, srcPos + 64, numBits);
                 }
             }
             else if ((dstPos & 7) == (srcPos & 7)) // aligned copy
@@ -307,7 +318,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (numPreBits > 0)
                 {
-                    CopyUlong(dstPos, srcPos, numPreBits);
+                    CopyUlong(dstPos, ref srcBitArray, srcPos, numPreBits);
                 }
 
                 var numBitsLeft = numBits - numPreBits;
@@ -317,8 +328,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 {
                     unsafe
                     {
-                        byte* ptr = (byte*)Ptr;
-                        UnsafeUtility.MemMove(ptr + dstPosInBytes, ptr + srcPosInBytes, numBytes);
+                        UnsafeUtility.MemMove((byte*)Ptr + dstPosInBytes, (byte*)srcBitArray.Ptr + srcPosInBytes, numBytes);
                     }
                 }
 
@@ -326,7 +336,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (numPostBits > 0)
                 {
-                    CopyUlong((dstPosInBytes + numBytes) * 8, (srcPosInBytes + numBytes) * 8, numPostBits);
+                    CopyUlong((dstPosInBytes + numBytes) * 8, ref srcBitArray, (srcPosInBytes + numBytes) * 8, numPostBits);
                 }
             }
             else // unaligned copy
@@ -336,7 +346,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (numPreBits > 0)
                 {
-                    CopyUlong(dstPos, srcPos, numPreBits);
+                    CopyUlong(dstPos, ref srcBitArray, srcPos, numPreBits);
                     numBits -= numPreBits;
                     dstPos += numPreBits;
                     srcPos += numPreBits;
@@ -344,12 +354,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 for (; numBits >= 64; numBits -= 64, dstPos += 64, srcPos += 64)
                 {
-                    Ptr[dstPos >> 6] = GetBits(srcPos, 64);
+                    Ptr[dstPos >> 6] = srcBitArray.GetBits(srcPos, 64);
                 }
 
                 if (numBits > 0)
                 {
-                    CopyUlong(dstPos, srcPos, numBits);
+                    CopyUlong(dstPos, ref srcBitArray, srcPos, numBits);
                 }
             }
         }
@@ -511,23 +521,36 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckArgs(int pos, int numBits)
+        static void CheckAllocator(Allocator allocator)
+        {
+            if (allocator < Allocator.None)
+                throw new ArgumentException("Allocator cannot be Allocator.Invalid");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckSizeMultipleOf8(int sizeInBytes)
+        {
+            if ((sizeInBytes & 7) != 0)
+                throw new ArgumentException($"BitArray invalid arguments: sizeInBytes {sizeInBytes} (must be multiple of 8-bytes, sizeInBytes: {sizeInBytes}).");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckArgs(int pos, int numBits)
         {
             if (pos < 0
-                ||  pos >= Length
-                ||  numBits < 1)
+                || pos >= Length
+                || numBits < 1)
             {
-                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length-1}), numBits {numBits} (must be greater than 0).");
+                throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length - 1}), numBits {numBits} (must be greater than 0).");
             }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckArgsUlong(int pos, int numBits)
+        void CheckArgsUlong(int pos, int numBits)
         {
             CheckArgs(pos, numBits);
 
-            if (numBits < 1
-                ||  numBits > 64)
+            if (numBits < 1 || numBits > 64)
             {
                 throw new ArgumentException($"BitArray invalid arguments: numBits {numBits} (must be 1-64).");
             }
@@ -539,16 +562,16 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckArgsCopy(int dstPos, int srcPos, int numBits)
+        static void CheckArgsCopy(ref UnsafeBitArray dstBitArray, int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
         {
-            if (dstPos + numBits > Length)
+            if (dstPos + numBits > srcBitArray.Length)
             {
-                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - destination position dstPos {dstPos}, numBits {numBits}, Length {Length}.");
+                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - source position {srcPos}, numBits {numBits}, source bit array Length {srcBitArray.Length}.");
             }
 
-            if (srcPos + numBits > Length)
+            if (dstPos + numBits > dstBitArray.Length)
             {
-                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - source position srcPos {srcPos}, numBits {numBits}, Length {Length}.");
+                throw new ArgumentException($"BitArray invalid arguments: Out of bounds - destination position {dstPos}, numBits {numBits}, destination bit array Length {dstBitArray.Length}.");
             }
         }
     }

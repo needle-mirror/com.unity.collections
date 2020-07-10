@@ -189,11 +189,21 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
         var disposeJob0 = container0.Dispose(default);
         Assert.False(container0.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container0.ContainsKey(0); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container0.ContainsKey(0); });
 
         var disposeJob = container1.Dispose(disposeJob0);
         Assert.False(container1.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container1.ContainsKey(1); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container1.ContainsKey(1); });
 
         disposeJob.Complete();
     }

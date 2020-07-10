@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Burst;
@@ -8,7 +9,7 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-internal class NativeHashMapTests
+internal class NativeHashMapTests : CollectionsTestFixture
 {
 #pragma warning disable 0649 // always default value
     struct NonBlittableStruct : IEquatable<NonBlittableStruct>
@@ -42,29 +43,56 @@ internal class NativeHashMapTests
 #pragma warning restore 0219
     }
 
+    static void ExpectedCount<TKey, TValue>(ref NativeHashMap<TKey, TValue> container, int expected)
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        Assert.AreEqual(expected == 0, container.IsEmpty);
+        Assert.AreEqual(expected, container.Count());
+    }
+
+    static void ExpectedCount<TKey, TValue>(ref NativeMultiHashMap<TKey, TValue> container, int expected)
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        Assert.AreEqual(expected == 0, container.IsEmpty);
+        Assert.AreEqual(expected, container.Count());
+    }
+
     [Test]
     public void NativeHashMap_TryAdd_TryGetValue_Clear()
     {
         var hashMap = new NativeHashMap<int, int>(16, Allocator.Temp);
+        ExpectedCount(ref hashMap, 0);
+
         int iSquared;
         // Make sure GetValue fails if hash map is empty
         Assert.IsFalse(hashMap.TryGetValue(0, out iSquared), "TryGetValue on empty hash map did not fail");
+
         // Make sure inserting values work
         for (int i = 0; i < 16; ++i)
             Assert.IsTrue(hashMap.TryAdd(i, i * i), "Failed to add value");
+        ExpectedCount(ref hashMap, 16);
+
         // Make sure inserting duplicate keys fails
         for (int i = 0; i < 16; ++i)
             Assert.IsFalse(hashMap.TryAdd(i, i), "Adding duplicate keys did not fail");
+        ExpectedCount(ref hashMap, 16);
+
         // Make sure reading the inserted values work
         for (int i = 0; i < 16; ++i)
         {
             Assert.IsTrue(hashMap.TryGetValue(i, out iSquared), "Failed get value from hash table");
             Assert.AreEqual(iSquared, i * i, "Got the wrong value from the hash table");
         }
+
         // Make sure clearing removes all keys
         hashMap.Clear();
+        ExpectedCount(ref hashMap, 0);
+
         for (int i = 0; i < 16; ++i)
             Assert.IsFalse(hashMap.TryGetValue(i, out iSquared), "Got value from hash table after clearing");
+
         hashMap.Dispose();
     }
 
@@ -86,7 +114,12 @@ internal class NativeHashMapTests
     {
         var hashMap = new NativeHashMap<int, int>(16, Allocator.TempJob);
         hashMap.Dispose();
-        Assert.Throws<System.InvalidOperationException>(() => { hashMap.Dispose(); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+        () => { hashMap.Dispose(); });
     }
 
     [Test]
@@ -114,6 +147,78 @@ internal class NativeHashMapTests
             Assert.AreEqual(iSquared, i, "Got the wrong value from the hash table");
         }
         hashMap.Dispose();
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    unsafe struct LargeKey : IEquatable<LargeKey>
+    {
+        [FieldOffset(0)]
+        public int* Ptr;
+
+        [FieldOffset(300)]
+        int x;
+
+        public bool Equals(LargeKey rhs)
+        {
+            return Ptr == rhs.Ptr;
+        }
+        public override int GetHashCode()
+        {
+            return (int)Ptr;
+        }
+    }
+
+    [BurstCompile]
+    struct HashMapTryAddAtomic : IJobParallelFor
+    {
+        [ReadOnly]
+        public NativeArray<LargeKey> keys;
+
+        [WriteOnly]
+        public NativeHashMap<LargeKey, bool>.ParallelWriter hashMap;
+
+        public void Execute(int index)
+        {
+            hashMap.TryAdd(keys[index & (keys.Length - 1)], false);
+        }
+    }
+
+    [Test]
+    public unsafe void NativeHashMap_Key_Collisions_FromJobs()
+    {
+//        Assert.True(false);
+
+        var keys = new NativeArray<LargeKey>(4, Allocator.TempJob);
+        for (var i = 0; i < keys.Length; i++)
+        {
+            keys[i] = new LargeKey { Ptr = (int*)(((ulong)i) << 32) };
+        }
+
+        for (var spin = 0; spin < 1024; spin++)
+        {
+            var hashMap = new NativeHashMap<LargeKey, bool>(32, Allocator.TempJob);
+
+            var jobHandle = new HashMapTryAddAtomic
+            {
+                keys = keys,
+                hashMap = hashMap.AsParallelWriter(),
+            }
+            .Schedule(8, 1);
+
+            jobHandle.Complete();
+
+            Assert.AreEqual(keys.Length, hashMap.Count());
+
+            for (var i = 0; i < keys.Length; ++i)
+            {
+                var key = new LargeKey { Ptr = (int*)(((ulong)i) << 32) };
+                Assert.IsTrue(hashMap.ContainsKey(key));
+            }
+
+            hashMap.Dispose();
+        }
+
+        keys.Dispose();
     }
 
     [Test]
@@ -151,12 +256,29 @@ internal class NativeHashMapTests
     }
 
     [Test]
+    public void NativeHashMap_IsEmpty()
+    {
+        var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent);
+        Assert.IsTrue(hashMap.IsEmpty);
+
+        hashMap.TryAdd(0, 0);
+        Assert.IsFalse(hashMap.IsEmpty);
+        Assert.AreEqual(1, hashMap.Capacity);
+        ExpectedCount(ref hashMap, 1);
+
+        hashMap.Clear();
+        Assert.IsTrue(hashMap.IsEmpty);
+
+        hashMap.Dispose();
+    }
+
+    [Test]
     public void NativeHashMap_HashMapEmptyCapacity()
     {
         var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent);
         hashMap.TryAdd(0, 0);
         Assert.AreEqual(1, hashMap.Capacity);
-        Assert.AreEqual(1, hashMap.Count());
+        ExpectedCount(ref hashMap, 1);
         hashMap.Dispose();
     }
 
@@ -397,7 +519,7 @@ internal class NativeHashMapTests
         keys.Dispose();
     }
 
-#if !UNITY_DOTSPLAYER
+#if !UNITY_DOTSRUNTIME
     [Test]
     public void NativeMultiHashMap_GetUniqueKeysEmpty()
     {
@@ -451,16 +573,152 @@ internal class NativeHashMapTests
     }
 
     [Test]
+    public void NativeMultiHashMap_ForEach()
+    {
+        using (var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp))
+        {
+            for (int i = 0; i < 30; ++i)
+            {
+                container.Add(i, 30 + i);
+                container.Add(i, 60 + i);
+            }
+
+            var count = 0;
+            foreach (var kv in container)
+            {
+                if (kv.Value < 60)
+                {
+                    Assert.AreEqual(kv.Key + 30, kv.Value);
+                }
+                else
+                {
+                    Assert.AreEqual(kv.Key + 60, kv.Value);
+                }
+
+                ++count;
+            }
+
+            Assert.AreEqual(60, count);
+        }
+    }
+
+    [Test]
+    public void NativeMultiHashMap_ForEach_Throws_When_Modified()
+    {
+        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        {
+            for (int i = 0; i < 30; ++i)
+            {
+                container.Add(i, 30 + i);
+                container.Add(i, 60 + i);
+            }
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                foreach (var kv in container)
+                {
+                    container.Add(10, 10);
+                }
+            });
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                foreach (var kv in container)
+                {
+                    container.Remove(1);
+                }
+            });
+        }
+    }
+
+    struct NativeMultiHashMap_ForEachIterator : IJob
+    {
+        [ReadOnly]
+        public NativeMultiHashMap<int, int>.KeyValueEnumerator Iter;
+
+        public void Execute()
+        {
+            while (Iter.MoveNext())
+            {
+            }
+        }
+    }
+
+    [Test]
+    public void NativeMultiHashMap_ForEach_Throws_Job_Iterator()
+    {
+        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        {
+            var jobHandle = new NativeMultiHashMap_ForEachIterator
+            {
+                Iter = container.GetEnumerator()
+
+            }.Schedule();
+
+            Assert.Throws<InvalidOperationException>(() => { container.Add(1, 1); });
+
+            jobHandle.Complete();
+        }
+    }
+
+    struct ParallelWriteToMultiHashMapJob : IJobParallelFor
+    {
+        [WriteOnly]
+        public NativeMultiHashMap<int, int>.ParallelWriter Writer;
+
+        public void Execute(int index)
+        {
+            Writer.Add(index, 0);
+        }
+    }
+
+    [Test]
+    public void NativeMultiHashMap_ForEach_Throws_When_Modified_From_Job()
+    {
+        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        {
+            var iter = container.GetEnumerator();
+
+            var jobHandle = new ParallelWriteToMultiHashMapJob
+            {
+                Writer = container.AsParallelWriter()
+
+            }.Schedule(1, 2);
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                while (iter.MoveNext())
+                {
+                }
+            });
+
+            jobHandle.Complete();
+        }
+    }
+
+    [Test]
     public void NativeMultiHashMap_GetKeysAndValues()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
-            hashMap.Add(i, 30 + i);
-            hashMap.Add(i, 60 + i);
+            container.Add(i, 30 + i);
+            container.Add(i, 60 + i);
         }
-        var keysValues = hashMap.GetKeyValueArrays(Allocator.Temp);
-        hashMap.Dispose();
+        var keysValues = container.GetKeyValueArrays(Allocator.Temp);
+        container.Dispose();
 
         Assert.AreEqual(60, keysValues.Keys.Length);
         Assert.AreEqual(60, keysValues.Values.Length);
@@ -534,7 +792,7 @@ internal class NativeHashMapTests
         }
 
         // Validate Hashtable has all the expected values
-        Assert.AreEqual(30, hashMap.Count());
+        ExpectedCount(ref hashMap, 30);
         for (int i = 0; i < 30; ++i)
         {
             int output;
@@ -596,7 +854,12 @@ internal class NativeHashMapTests
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container[0] = 2; });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container[0] = 2; });
 
         kv.Dispose(disposeJob);
 
@@ -619,14 +882,23 @@ internal class NativeHashMapTests
         hashMap.Dispose();
     }
 
-#if UNITY_2020_1_OR_NEWER
-    [Test]
+    // These tests require:
+    // - JobsDebugger support for static safety IDs (added in 2020.1)
+    // - Asserting throws
+#if !UNITY_DOTSRUNTIME
+    [Test,DotsRuntimeIgnore]
     public void NativeHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeHashMap<int, int>(10, Allocator.TempJob);
         container[0] = 123;
         container.Dispose();
-        Assert.That(() => container[0], Throws.InvalidOperationException.With.Message.Contains($"The {container.GetType()} has been deallocated"));
+        Assert.That(() => container[0],
+#if UNITY_2020_2_OR_NEWER
+            Throws.Exception.TypeOf<ObjectDisposedException>()
+#else
+            Throws.InvalidOperationException
+#endif
+                .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -641,7 +913,7 @@ internal class NativeHashMapTests
         }
     }
 
-    [Test]
+    [Test,DotsRuntimeIgnore]
     public void NativeHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -660,8 +932,165 @@ internal class NativeHashMapTests
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-
 #endif
+
+    [Test]
+    public void NativeHashMap_ForEach()
+    {
+        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        {
+            container.Add(0, 012);
+            container.Add(1, 123);
+            container.Add(2, 234);
+            container.Add(3, 345);
+            container.Add(4, 456);
+            container.Add(5, 567);
+            container.Add(6, 678);
+            container.Add(7, 789);
+            container.Add(8, 890);
+            container.Add(9, 901);
+
+            var count = 0;
+            foreach (var kv in container)
+            {
+                int value;
+                Assert.True(container.TryGetValue(kv.Key, out value));
+                Assert.AreEqual(value, kv.Value);
+
+                ++count;
+            }
+
+            Assert.AreEqual(container.Count(), count);
+        }
+    }
+
+    [Test]
+    public void NativeHashMap_ForEach_Throws_When_Modified()
+    {
+        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        {
+            container.Add(0, 012);
+            container.Add(1, 123);
+            container.Add(2, 234);
+            container.Add(3, 345);
+            container.Add(4, 456);
+            container.Add(5, 567);
+            container.Add(6, 678);
+            container.Add(7, 789);
+            container.Add(8, 890);
+            container.Add(9, 901);
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                foreach (var kv in container)
+                {
+                    container.Add(10, 10);
+                }
+            });
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                foreach (var kv in container)
+                {
+                    container.Remove(1);
+                }
+            });
+        }
+    }
+
+    struct NativeHashMap_ForEachIterator : IJob
+    {
+        [ReadOnly]
+        public NativeHashMap<int, int>.Enumerator Iter;
+
+        public void Execute()
+        {
+            while (Iter.MoveNext())
+            {
+            }
+        }
+    }
+
+    [Test]
+    public void NativeHashMap_ForEach_Throws_Job_Iterator()
+    {
+        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        {
+            var jobHandle = new NativeHashMap_ForEachIterator
+            {
+                Iter = container.GetEnumerator()
+
+            }.Schedule();
+
+            Assert.Throws<InvalidOperationException>(() => { container.Add(1, 1); });
+
+            jobHandle.Complete();
+        }
+    }
+
+    struct ParallelWriteToHashMapJob : IJobParallelFor
+    {
+        [WriteOnly]
+        public NativeHashMap<int, int>.ParallelWriter Writer;
+
+        public void Execute(int index)
+        {
+            Writer.TryAdd(index, 0);
+        }
+    }
+
+    [Test]
+    public void NativeHashMap_ForEach_Throws()
+    {
+        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        {
+            var iter = container.GetEnumerator();
+
+            var jobHandle = new ParallelWriteToHashMapJob
+            {
+                Writer = container.AsParallelWriter()
+
+            }.Schedule(1, 2);
+
+#if UNITY_2020_2_OR_NEWER
+            Assert.Throws<ObjectDisposedException>(() =>
+#else
+            Assert.Throws<InvalidOperationException>(() =>
+#endif
+            {
+                while (iter.MoveNext())
+                {
+                }
+            });
+
+            jobHandle.Complete();
+        }
+    }
+
+    [Test]
+    public void NativeMultiHashMap_IsEmpty()
+    {
+        var hashMap = new NativeMultiHashMap<int, int>(0, Allocator.Persistent);
+        Assert.IsTrue(hashMap.IsEmpty);
+
+        hashMap.Add(0, 0);
+        Assert.IsFalse(hashMap.IsEmpty);
+        Assert.AreEqual(1, hashMap.Capacity);
+        ExpectedCount(ref hashMap, 1);
+
+        hashMap.Clear();
+        Assert.IsTrue(hashMap.IsEmpty);
+
+        hashMap.Dispose();
+    }
 
     [Test]
     public void NativeMultiHashMap_CountValuesForKey()
@@ -737,8 +1166,7 @@ internal class NativeHashMapTests
     [Test]
     public void NativeMultiHashMap_RemoveKeyValueDoesntDeallocate()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
-        hashMap.Add(5, 1);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp) { { 5, 1 } };
 
         hashMap.Remove(5, 5);
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -754,50 +1182,11 @@ internal class NativeHashMapTests
     {
         var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.TempJob);
         hashMap.Dispose();
-        Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(); });
-    }
-
-#if UNITY_2020_1_OR_NEWER
-    [Test]
-    public void NativeMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
-    {
-        var container = new NativeMultiHashMap<int, int>(10, Allocator.TempJob);
-        container.Add(0, 123);
-        container.Dispose();
-        Assert.That(() => container.ContainsKey(0), Throws.InvalidOperationException.With.Message.Contains($"The {container.GetType()} has been deallocated"));
-    }
-
-    [BurstCompile(CompileSynchronously = true)]
-    struct NativeMultiHashMap_CreateAndUseAfterFreeBurst : IJob
-    {
-        public void Execute()
-        {
-            var container = new NativeMultiHashMap<int, int>(10, Allocator.Temp);
-            container.Add(0, 17);
-            container.Dispose();
-            container.Add(1, 42);
-        }
-    }
-
-    [Test]
-    public void NativeMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
-    {
-        // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
-        var container = new NativeMultiHashMap<int, int>(10, Allocator.TempJob);
-        container.Dispose();
-
-        var job = new NativeMultiHashMap_CreateAndUseAfterFreeBurst
-        {
-        };
-
-        // Two things:
-        // 1. This exception is logged, not thrown; thus, we use LogAssert to detect it.
-        // 2. Calling write operation after container.Dispose() emits an unintuitive error message. For now, all this test cares about is whether it contains the
-        //    expected type name.
-        job.Run();
-        LogAssert.Expect(LogType.Exception,
-            new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
-    }
-
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
 #endif
+            () => { hashMap.Dispose(); });
+    }
 }

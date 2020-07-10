@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -8,6 +9,9 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
+    /// <summary>
+    ///
+    /// </summary>
     public static class NativeSortExtension
     {
         struct DefaultComparer<T> : IComparer<T> where T : IComparable<T>
@@ -40,6 +44,7 @@ namespace Unity.Collections
         /// Sorts an array using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="array">Array to perform sort.</param>
         /// <param name="length">Number of elements to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
@@ -52,6 +57,7 @@ namespace Unity.Collections
         /// Sorts an array using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="array">Array to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
@@ -83,6 +89,7 @@ namespace Unity.Collections
         /// Sorts a list using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="list">List to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
@@ -94,6 +101,7 @@ namespace Unity.Collections
         /// Sorts a list using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="list">List to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
@@ -115,17 +123,12 @@ namespace Unity.Collections
         /// Sorts a slice using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="slice">List to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         public unsafe static void Sort<T, U>(this NativeSlice<T> slice, U comp) where T : struct where U : IComparer<T>
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (slice.Stride != UnsafeUtility.SizeOf<T>())
-            {
-                throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
-            }
-#endif
-
+            CheckStrideMatchesSize<T>(slice.Stride);
             IntroSort<T, U>(slice.GetUnsafePtr(), slice.Length, comp);
         }
 
@@ -374,11 +377,20 @@ namespace Unity.Collections
 
             var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
             var workerSegmentCount = segmentCount / workerCount;
-            var segmentSortJob = new SegmentSort<T> {Data = array, Length = length, SegmentWidth = 1024};
+            var segmentSortJob = new SegmentSort<T> { Data = array, Length = length, SegmentWidth = 1024 };
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
-            var segmentSortMergeJob = new SegmentSortMerge<T> {Data = array, Length = length, SegmentWidth = 1024};
+            var segmentSortMergeJob = new SegmentSortMerge<T> { Data = array, Length = length, SegmentWidth = 1024 };
             var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
             return segmentSortMergeJobHandle;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckStrideMatchesSize<T>(int stride) where T : struct
+        {
+            if (stride != UnsafeUtility.SizeOf<T>())
+            {
+                throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
+            }
         }
     }
 }

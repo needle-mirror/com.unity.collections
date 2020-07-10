@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
@@ -13,17 +12,24 @@ using System.Reflection;
 
 namespace Unity.Collections
 {
+    /// <summary>
+    ///
+    /// </summary>
     public static class CollectionHelper
     {
+        /// <summary>
+        ///
+        /// </summary>
         public const int CacheLineSize = JobsUtility.CacheLineSize;
 
         [StructLayout(LayoutKind.Explicit)]
         internal struct LongDoubleUnion
         {
             [FieldOffset(0)]
-            public long longValue;
+            internal long longValue;
+
             [FieldOffset(0)]
-            public double doubleValue;
+            internal double doubleValue;
         }
 
         /// <summary>
@@ -46,6 +52,10 @@ namespace Unity.Collections
             return 32 - math.lzcnt((uint)value - 1);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         public static void CheckIntPositivePowerOfTwo(int value)
         {
@@ -109,11 +119,14 @@ namespace Unity.Collections
         /// <summary>
         /// Returns hash value of memory block. Function is using djb2 (non-cryptographic hash).
         /// </summary>
-        public static unsafe uint Hash(void* pointer, int bytes)
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="bytes">Number of bytes to hash.</param>
+        /// <returns></returns>
+        public static unsafe uint Hash(void* ptr, int bytes)
         {
             // djb2 - Dan Bernstein hash function
             // http://web.archive.org/web/20190508211657/http://www.cse.yorku.ca/~oz/hash.html
-            byte* str = (byte*)pointer;
+            byte* str = (byte*)ptr;
             ulong hash = 5381;
             while (bytes > 0)
             {
@@ -170,12 +183,12 @@ namespace Unity.Collections
         /// <summary>
         /// Tell Burst that an integer can be assumed to map to an always positive value.
         /// </summary>
-        /// <param name="x">The integer that is always positive.</param>
+        /// <param name="value">The integer that is always positive.</param>
         /// <returns>Returns `x`, but allows the compiler to assume it is always positive.</returns>
-        [return : AssumeRange(0, int.MaxValue)]
-        internal static int AssumePositive(int x)
+        [return: AssumeRange(0, int.MaxValue)]
+        internal static int AssumePositive(int value)
         {
-            return x;
+            return value;
         }
     }
 }

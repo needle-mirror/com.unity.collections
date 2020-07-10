@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using Unity.Burst;
 using Unity.Mathematics;
 
 namespace Unity.Collections
@@ -70,6 +69,7 @@ namespace Unity.Collections
     public struct BitField32
     {
         /// <summary>
+        /// 32-bit data storage.
         /// </summary>
         public uint Value;
 
@@ -200,12 +200,12 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckArgs(int pos, int numBits)
+        static void CheckArgs(int pos, int numBits)
         {
             if (pos > 31
-                ||  numBits == 0
-                ||  numBits > 32
-                ||  pos + numBits > 32)
+                || numBits == 0
+                || numBits > 32
+                || pos + numBits > 32)
             {
                 throw new ArgumentException($"BitField32 invalid arguments: pos {pos} (must be 0-31), numBits {numBits} (must be 1-32).");
             }
@@ -241,6 +241,9 @@ namespace Unity.Collections
     [DebuggerTypeProxy(typeof(BitField64DebugView))]
     public struct BitField64
     {
+        /// <summary>
+        /// 64-bit data storage.
+        /// </summary>
         public ulong Value;
 
         /// <summary>
@@ -359,12 +362,12 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckArgs(int pos, int numBits)
+        static void CheckArgs(int pos, int numBits)
         {
             if (pos > 63
-                ||  numBits == 0
-                ||  numBits > 64
-                ||  pos + numBits > 64)
+                || numBits == 0
+                || numBits > 64
+                || pos + numBits > 64)
             {
                 throw new ArgumentException($"BitField32 invalid arguments: pos {pos} (must be 0-63), numBits {numBits} (must be 1-64).");
             }

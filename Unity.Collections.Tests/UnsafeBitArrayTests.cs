@@ -149,31 +149,36 @@ internal class UnsafeBitArrayTests
         test.Dispose();
     }
 
-    static void CopyBitsTest(ref UnsafeBitArray test, int dstPos, int srcPos, int numBits)
+    static void CopyBitsTest(ref UnsafeBitArray dstBitArray, int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
     {
-        for (int pos = 0; pos < test.Length; pos += 64)
+        for (int pos = 0; pos < dstBitArray.Length; pos += 64)
         {
-            test.SetBits(pos, 0xaaaaaaaaaaaaaaaaul, 64);
+            dstBitArray.SetBits(pos, 0xaaaaaaaaaaaaaaaaul, 64);
         }
 
-        test.SetBits(srcPos, true, numBits);
-        test.Copy(dstPos, srcPos, numBits);
-        Assert.AreEqual(true, test.TestAll(dstPos, numBits));
+        srcBitArray.SetBits(srcPos, true, numBits);
+        dstBitArray.Copy(dstPos, ref srcBitArray, srcPos, numBits);
+        Assert.AreEqual(true, dstBitArray.TestAll(dstPos, numBits));
 
-        for (int pos = 0; pos < test.Length; ++pos)
+        for (int pos = 0; pos < dstBitArray.Length; ++pos)
         {
             if ((pos >= dstPos && pos < dstPos + numBits) ||
                 (pos >= srcPos && pos < srcPos + numBits))
             {
-                Assert.AreEqual(true, test.IsSet(pos));
+                Assert.AreEqual(true, dstBitArray.IsSet(pos));
             }
             else
             {
-                Assert.AreEqual((0 != (pos & 1)), test.IsSet(pos));
+                Assert.AreEqual((0 != (pos & 1)), dstBitArray.IsSet(pos));
             }
         }
 
-        test.Clear();
+        dstBitArray.Clear();
+    }
+
+    static void CopyBitsTest(ref UnsafeBitArray test, int dstPos, int srcPos, int numBits)
+    {
+        CopyBitsTest(ref test, dstPos, ref test, srcPos, numBits);
     }
 
     [Test]
@@ -199,6 +204,36 @@ internal class UnsafeBitArrayTests
         CopyBitsTest(ref test, 80, 1, 255); // long copy overlapped unaligned
 
         test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_CopyBetweenBitArrays()
+    {
+        var numBits = 512;
+
+        var test0 = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        var test1 = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        var test2 = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        for (int pos = 0; pos < test0.Length; pos += 64)
+        {
+            test0.SetBits(pos, 0xaaaaaaaaaaaaaaaaul, 64);
+            test1.SetBits(pos, 0x5555555555555555ul, 64);
+        }
+
+        var numCopyBits = 255;
+
+        test0.SetBits(13, true, numCopyBits);
+
+        test1.Copy(1, ref test0, 13, numCopyBits);
+        Assert.AreEqual(true, test1.TestAll(1, numCopyBits));
+
+        test2.Copy(43, ref test1, 1, numCopyBits);
+        Assert.AreEqual(true, test2.TestAll(43, numCopyBits));
+
+        test0.Dispose();
+        test1.Dispose();
+        test2.Dispose();
     }
 
     [Test]

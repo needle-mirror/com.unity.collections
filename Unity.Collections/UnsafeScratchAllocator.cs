@@ -3,12 +3,20 @@ using System.Diagnostics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    /// <summary>
+    ///
+    /// </summary>
     public unsafe struct UnsafeScratchAllocator
     {
         void* m_Pointer;
         int m_LengthInBytes;
         readonly int m_CapacityInBytes;
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="pointer"></param>
+        /// <param name="capacityInBytes"></param>
         public UnsafeScratchAllocator(void* pointer, int capacityInBytes)
         {
             m_Pointer = pointer;
@@ -23,6 +31,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new ArgumentException($"Cannot allocate more than provided size in UnsafeScratchAllocator. Requested: {requestedSize} Size: {m_LengthInBytes} Capacity: {m_CapacityInBytes}");
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="sizeInBytes"></param>
+        /// <param name="alignmentInBytes"></param>
+        /// <returns></returns>
         public void* Allocate(int sizeInBytes, int alignmentInBytes)
         {
             if (sizeInBytes == 0)
@@ -37,6 +51,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return (void*)(IntPtr)end;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="count"></param>
+        /// <returns></returns>
         public void* Allocate<T>(int count = 1) where T : struct
         {
             return Allocate(UnsafeUtility.SizeOf<T>() * count, UnsafeUtility.AlignOf<T>());

@@ -1,10 +1,12 @@
-#if !UNITY_DOTSPLAYER
+#if !UNITY_DOTSRUNTIME
 using NUnit.Framework;
 using System;
 using Unity.Collections;
 using Unity.Collections.Experimental;
 using Unity.Jobs;
 using Unity.Burst;
+
+#pragma warning disable 618 // RemovedAfter 2020-08-07
 
 class NativeArrayChunked8Tests
 {

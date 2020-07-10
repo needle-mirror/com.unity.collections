@@ -9,14 +9,26 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-internal class NativeListTests
+internal class NativeListTests : CollectionsTestFixture
 {
+    static void ExpectedLength<T>(ref NativeList<T> container, int expected)
+        where T : unmanaged
+    {
+        Assert.AreEqual(expected == 0, container.IsEmpty);
+        Assert.AreEqual(expected, container.Length);
+    }
+
     [Test, DotsRuntimeIgnore]
     public void NullListThrow()
     {
         var list = new NativeList<int>();
         Assert.Throws<NullReferenceException>(() => list[0] = 5);
-        Assert.Throws<InvalidOperationException>(() => list.Add(1));
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => list.Add(1));
     }
 
     [Test]
@@ -27,7 +39,7 @@ internal class NativeListTests
         list.Add(1);
         list.Add(2);
 
-        Assert.AreEqual(2, list.Length);
+        ExpectedLength(ref list, 2);
         Assert.AreEqual(1, list[0]);
         Assert.AreEqual(2, list[1]);
 
@@ -64,8 +76,13 @@ internal class NativeListTests
 
         list.Add(1000);
 
-        Assert.AreEqual(2, list.Length);
-        Assert.Throws<System.InvalidOperationException>(() => { array[0] = 1; });
+        ExpectedLength(ref list, 2);
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { array[0] = 1; });
 
         list.Dispose();
     }
@@ -78,11 +95,16 @@ internal class NativeListTests
 
         NativeArray<int> array = list;
 
-        Assert.AreEqual(1, list.Length);
+        ExpectedLength(ref list, 1);
         list.Capacity = 10;
 
         Assert.AreEqual(1, array.Length);
-        Assert.Throws<System.InvalidOperationException>(() => { array[0] = 1; });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { array[0] = 1; });
 
         list.Dispose();
     }
@@ -95,8 +117,19 @@ internal class NativeListTests
         NativeArray<int> array = list;
         list.Dispose();
 
-        Assert.Throws<System.InvalidOperationException>(() => { array[0] = 1; });
-        Assert.Throws<System.InvalidOperationException>(() => { list[0] = 1; });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { array[0] = 1; });
+
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { list[0] = 1; });
     }
 
 #if UNITY_2020_2_OR_NEWER
@@ -135,22 +168,39 @@ internal class NativeListTests
         Assert.AreEqual(42, listCpy[0]);
         Assert.AreEqual(42, list[0]);
         Assert.AreEqual(1, listCpy.Length);
-        Assert.AreEqual(1, list.Length);
+        ExpectedLength(ref list, 1);
 
         list.Dispose();
     }
 
     [Test]
-    public void NativeList_CopyFrom()
+    public void NativeList_CopyFrom_Managed()
     {
         var list = new NativeList<float>(4, Allocator.Persistent);
         var ar = new float[] { 0, 1, 2, 3, 4, 5, 6, 7 };
         list.CopyFrom(ar);
-        Assert.AreEqual(8, list.Length);
+        ExpectedLength(ref list, 8);
         for (int i = 0; i < list.Length; ++i)
         {
             Assert.AreEqual(i, list[i]);
         }
+        list.Dispose();
+    }
+
+    [Test]
+    public void NativeList_CopyFrom_Unmanaged()
+    {
+        var list = new NativeList<float>(4, Allocator.Persistent);
+        var ar = new NativeArray<float>(new float[] { 0, 1, 2, 3, 4, 5, 6, 7 }, Allocator.Persistent);
+
+        list.CopyFrom(ar);
+        ExpectedLength(ref list, 8);
+        for (int i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        ar.Dispose();
         list.Dispose();
     }
 
@@ -172,7 +222,7 @@ internal class NativeListTests
 
 
     [Test]
-    [Ignore("Not supported yet, requires a fix in DisposeSentinel")]
+    [Ignore("Unstable on CI, DOTS-1965")]
     public void TempListInBurstJob()
     {
         var job = new TempListInJob() { Output = new NativeArray<int>(1, Allocator.TempJob) };
@@ -193,8 +243,20 @@ internal class NativeListTests
         list.Dispose();
     }
 
+#if UNITY_2020_2_OR_NEWER
     [Test]
-    [Ignore("Failing due to editor changes, disabled for now: https://unity3d.atlassian.net/browse/DOTS-1442")]
+    public void DisposingNativeListDerivedArrayDoesNotThrow()
+    {
+        var list = new NativeList<int>(Allocator.Persistent);
+        list.Add(1);
+
+        NativeArray<int> array = list;
+        Assert.DoesNotThrow(() => { array.Dispose(); });
+
+        list.Dispose();
+    }
+#else
+    [Test]
     public void DisposingNativeListDerivedArrayThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -205,6 +267,7 @@ internal class NativeListTests
 
         list.Dispose();
     }
+#endif
 
 #endif
 
@@ -218,7 +281,12 @@ internal class NativeListTests
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container.Contains(0); });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container.Contains(0); });
 
         disposeJob.Complete();
     }
@@ -280,17 +348,26 @@ internal class NativeListTests
         deps.Complete();
     }
 
-#if UNITY_2020_1_OR_NEWER
-    [Test]
+    // These tests require:
+    // - JobsDebugger support for static safety IDs (added in 2020.1)
+    // - Asserting throws
+#if !UNITY_DOTSRUNTIME
+    [Test,DotsRuntimeIgnore]
     public void NativeList_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var list = new NativeList<int>(10, Allocator.TempJob);
         list.Add(17);
         list.Dispose();
-        Assert.That(() => list[0], Throws.InvalidOperationException.With.Message.Contains($"The {list.GetType()} has been deallocated"));
+        Assert.That(() => list[0],
+#if UNITY_2020_2_OR_NEWER
+            Throws.Exception.TypeOf<ObjectDisposedException>()
+#else
+            Throws.InvalidOperationException
+#endif
+                .With.Message.Contains($"The {list.GetType()} has been deallocated"));
     }
 
-    [Test]
+    [Test,DotsRuntimeIgnore]
     public void AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
         // All collections that use Allocator.Temp share the same core AtomicSafetyHandle.
@@ -300,10 +377,22 @@ internal class NativeListTests
         var listFloat = new NativeList<float>(10, Allocator.Temp);
         listInt.Add(17);
         listInt.Dispose();
-        Assert.That(() => listInt[0], Throws.InvalidOperationException.With.Message.Contains($"The {listInt.GetType()} has been deallocated"));
+        Assert.That(() => listInt[0],
+#if UNITY_2020_2_OR_NEWER
+            Throws.Exception.TypeOf<ObjectDisposedException>()
+#else
+            Throws.InvalidOperationException
+#endif
+                .With.Message.Contains($"The {listInt.GetType()} has been deallocated"));
         listFloat.Add(1.0f);
         listFloat.Dispose();
-        Assert.That(() => listFloat[0], Throws.InvalidOperationException.With.Message.Contains($"The {listFloat.GetType()} has been deallocated"));
+        Assert.That(() => listFloat[0],
+#if UNITY_2020_2_OR_NEWER
+            Throws.Exception.TypeOf<ObjectDisposedException>()
+#else
+            Throws.InvalidOperationException
+#endif
+                .With.Message.Contains($"The {listFloat.GetType()} has been deallocated"));
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -318,7 +407,7 @@ internal class NativeListTests
         }
     }
 
-    [Test]
+    [Test,DotsRuntimeIgnore]
     public void NativeList_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -337,6 +426,25 @@ internal class NativeListTests
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(list.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-
 #endif
+
+    [Test]
+    public unsafe void NativeList_IndexOf()
+    {
+        using (var list = new NativeList<int>(10, Allocator.Persistent) { 123, 789 })
+        {
+            bool r0 = false, r1 = false, r2 = false;
+
+            GCAllocRecorder.ValidateNoGCAllocs(() =>
+            {
+                r0 = -1 != list.IndexOf(456);
+                r1 = list.Contains(123);
+                r2 = list.Contains(789);
+            });
+
+            Assert.False(r0);
+            Assert.True(r1);
+            Assert.True(r2);
+        }
+    }
 }

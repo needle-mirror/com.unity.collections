@@ -6,7 +6,7 @@ namespace Unity.Collections
     /// <summary>
     /// NativeArray extension methods.
     /// </summary>
-    unsafe static public class NativeArrayExtensions
+    public unsafe static class NativeArrayExtensions
     {
         /// <summary>
         /// Determines whether an element is in the native array.
@@ -34,7 +34,6 @@ namespace Unity.Collections
             return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.Length, value);
         }
 
-#if UNITY_2020_1_OR_NEWER
         /// <summary>
         /// Determines whether an element is in the native array.
         /// </summary>
@@ -60,8 +59,6 @@ namespace Unity.Collections
         {
             return IndexOf<T, U>(array.m_Buffer, array.m_Length, value);
         }
-
-#endif
 
         /// <summary>
         /// Determines whether an element is in the native list.
@@ -173,7 +170,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if the Length & the content of the two NativeArray's are the same.
+        /// Returns true if the Length and the content of the two NativeArray's are the same.
         /// </summary>
         /// <typeparam name="T">Source type of array elements</typeparam>
         /// <param name="array"></param>

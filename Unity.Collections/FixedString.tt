@@ -19,6 +19,9 @@ using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine.Internal;
 using System.Diagnostics;
+#if UNITY_PROPERTIES_EXISTS
+using Unity.Properties;
+#endif
 
 namespace Unity.Collections
 {
@@ -1057,7 +1060,7 @@ namespace Unity.Collections
         internal FixedBytes<#=MAXLENGTH#> bytes;
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckIndexInRange(int index)
+        void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
@@ -1066,7 +1069,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckLengthInRange(int length)
+        void CheckLengthInRange(int length)
         {
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
@@ -1075,12 +1078,21 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckCapacityInRange(int capacity)
+        void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
+
+        /// <summary>
+        ///
+        /// </summary>
         public int Length
         {
             get
@@ -1094,6 +1106,9 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
         public int Capacity
         {
             get
@@ -1106,6 +1121,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public byte this[int index]
         {
             get
@@ -1128,6 +1148,11 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -1161,7 +1186,7 @@ namespace Unity.Collections
                 unsafe
                 {
                     fixed(FixedString<#=BYTES#>* t = &this)
-                        return ref UnsafeUtilityEx.AsRef<FixedListByte<#=BYTES#>>(t);
+                        return ref UnsafeUtility.AsRef<FixedListByte<#=BYTES#>>(t);
                 }
             }
         }
@@ -1668,6 +1693,21 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Compare this FixedString<#=BYTES#> with a FixedString<#=BYTES#> in terms of lexigraphical order,
+        /// and return which of the two strings would come first if sorted.
+        /// </summary>
+        /// <param name="other">The FixedString to compare with</param>
+        /// <returns>
+        /// -1 if this FixedString<#=BYTES#> would appear first if sorted,
+        ///  0 if they are identical, or
+        ///  1 if the other System.String would appear first if sorted.
+        /// </returns>
+        public int CompareTo(FixedString<#=BYTES#> other)
+        {
+            return ToString().CompareTo(other.ToString());
+        }
+
+        /// <summary>
         /// Compare this FixedString<#=BYTES#> with a System.String,
         /// and return whether they contain the same string or not.
         /// </summary>
@@ -1804,6 +1844,11 @@ namespace Unity.Collections
                 }
             }
         }
+
+        /// <summary>
+        /// A property in order to display the value in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] string Value => ToString();
 
         /// <summary>
         /// Compute a hash code of this FixedString<#=BYTES#>: an integer that is likely to be different for

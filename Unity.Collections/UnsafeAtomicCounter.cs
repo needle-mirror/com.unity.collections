@@ -16,7 +16,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="value">Initial value.</param>
+        /// <param name="ptr">Pointer to counter data.</param>
         public UnsafeAtomicCounter32(void* ptr)
         {
             Counter = (int*)ptr;
@@ -38,7 +38,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public int Add(int value)
         {
-            return Interlocked.Add(ref UnsafeUtilityEx.AsRef<int>(Counter), value) - value;
+            return Interlocked.Add(ref UnsafeUtility.AsRef<int>(Counter), value) - value;
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 oldVal = newVal;
                 newVal = newVal >= max ? max : math.min(max, newVal + value);
-                newVal = Interlocked.CompareExchange(ref UnsafeUtilityEx.AsRef<int>(Counter), newVal, oldVal);
+                newVal = Interlocked.CompareExchange(ref UnsafeUtility.AsRef<int>(Counter), newVal, oldVal);
             }
             while (oldVal != newVal && oldVal != max);
 
@@ -83,7 +83,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 oldVal = newVal;
                 newVal = newVal <= min ? min : math.max(min, newVal - value);
-                newVal = Interlocked.CompareExchange(ref UnsafeUtilityEx.AsRef<int>(Counter), newVal, oldVal);
+                newVal = Interlocked.CompareExchange(ref UnsafeUtility.AsRef<int>(Counter), newVal, oldVal);
             }
             while (oldVal != newVal && oldVal != min);
 
@@ -104,7 +104,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="value">Initial value.</param>
+        /// <param name="ptr">Pointer to counter data.</param>
         public UnsafeAtomicCounter64(void* ptr)
         {
             Counter = (long*)ptr;
@@ -126,7 +126,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public long Add(long value)
         {
-            return Interlocked.Add(ref UnsafeUtilityEx.AsRef<long>(Counter), value) - value;
+            return Interlocked.Add(ref UnsafeUtility.AsRef<long>(Counter), value) - value;
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 oldVal = newVal;
                 newVal = newVal >= max ? max : math.min(max, newVal + value);
-                newVal = Interlocked.CompareExchange(ref UnsafeUtilityEx.AsRef<long>(Counter), newVal, oldVal);
+                newVal = Interlocked.CompareExchange(ref UnsafeUtility.AsRef<long>(Counter), newVal, oldVal);
             }
             while (oldVal != newVal && oldVal != max);
 
@@ -171,7 +171,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 oldVal = newVal;
                 newVal = newVal <= min ? min : math.max(min, newVal - value);
-                newVal = Interlocked.CompareExchange(ref UnsafeUtilityEx.AsRef<long>(Counter), newVal, oldVal);
+                newVal = Interlocked.CompareExchange(ref UnsafeUtility.AsRef<long>(Counter), newVal, oldVal);
             }
             while (oldVal != newVal && oldVal != min);
 

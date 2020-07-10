@@ -2,7 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Collections.Tests;
 
-#if !UNITY_DOTSPLAYER
+#if !UNITY_DOTSRUNTIME
 
 internal class GcAllocRecorderTest
 {
@@ -43,7 +43,7 @@ internal class GcAllocRecorderTest
 
 namespace Unity.Collections.Tests
 {
-#if !UNITY_DOTSPLAYER
+#if !UNITY_DOTSRUNTIME
 
     internal static class GCAllocRecorder
     {

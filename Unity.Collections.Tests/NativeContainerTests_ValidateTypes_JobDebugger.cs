@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS && !UNITY_DOTSPLAYER
+#if ENABLE_UNITY_COLLECTIONS_CHECKS && !UNITY_DOTSRUNTIME
 internal class NativeContainderTests_ValidateTypes_JobDebugger : NativeContainerTests_ValidateTypesFixture
 {
     [BurstCompile(CompileSynchronously = true)]

@@ -14,15 +14,20 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine.Internal;
-
 namespace Unity.Collections
 {
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     public static class NativeStringExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dest"></param>
+        /// <param name="src"></param>
+        /// <returns></returns>
         public static int Append<T>(this ref T dest, byte src)
             where T : unmanaged, INativeList<byte>
         {
@@ -32,6 +37,14 @@ namespace Unity.Collections
             return 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="U"></typeparam>
+        /// <param name="dest"></param>
+        /// <param name="src"></param>
+        /// <returns></returns>
         public static int Append<T, U>(this ref T dest, in U src)
             where T : unmanaged, INativeList<byte>
             where U : unmanaged, INativeList<byte>
@@ -49,18 +62,29 @@ namespace Unity.Collections
 <#
     for(var ARGS = 1; ARGS <= 10; ++ARGS)
     {
-        var TYPES = "T0";
-        for(var a = 1; a < ARGS; ++a)
-        {
-            TYPES += ", T" + a;
-        }
+        var TYPES  = "T0";
         var PARAMS = "in T0 arg0";
+        var DOCS   =     "        /// <typeparam name=\"T0\"><undoc /></typeparam>"
+                   + "\r\n        /// <param name=\"arg0\"><undoc /></param>"
+                   ;
+
         for(var a = 1; a < ARGS; ++a)
         {
-            PARAMS += ", in T" + a+ " arg" + a;
+            TYPES  += ", T" + a;
+            PARAMS += ", in T" + a + " arg" + a;
+            DOCS   += "\r\n        /// <typeparam name=\"T" + a + "\"><undoc /></typeparam>"
+                   +  "\r\n        /// <param name=\"arg" + a + "\"><undoc /></param>"
+                   ;
         }
 #>
-
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        /// <typeparam name="T"><undoc /></typeparam>
+        /// <typeparam name="U"><undoc /></typeparam>
+        /// <param name="dest"><undoc /></param>
+        /// <param name="format"><undoc /></param>
+<#=DOCS#>
         public static void Format<T, U, <#=TYPES#>>(this ref T dest, in U format, <#=PARAMS#>)
             where T : unmanaged, INativeList<byte>
             where U : unmanaged, INativeList<byte>

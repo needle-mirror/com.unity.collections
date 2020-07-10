@@ -7,7 +7,6 @@ using Unity.Collections;
 internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 {
     [Test]
-    [Ignore("Failing due to editor changes, disabled for now: https://unity3d.atlassian.net/browse/DOTS-1442")]
     public void NativeMultiHashMap_Read_And_Write()
     {
         var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, Allocator.TempJob);

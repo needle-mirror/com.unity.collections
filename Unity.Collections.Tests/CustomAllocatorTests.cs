@@ -1,4 +1,4 @@
-#if !NET_DOTS // can't use Burst function pointers from DOTS runtime (yet)
+#if !UNITY_DOTSRUNTIME // can't use Burst function pointers from DOTS runtime (yet)
 #define CUSTOM_ALLOCATOR_BURST_FUNCTION_POINTER
 #endif
 

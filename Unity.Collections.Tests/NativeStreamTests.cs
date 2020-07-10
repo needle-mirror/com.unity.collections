@@ -6,7 +6,7 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 
-internal class NativeStreamTests
+internal class NativeStreamTests : CollectionsTestFixture
 {
     [BurstCompile(CompileSynchronously = true)]
     struct WriteInts : IJobParallelFor
@@ -62,6 +62,12 @@ internal class NativeStreamTests
         stream.Dispose();
     }
 
+    static void ExpectedCount(ref NativeStream container, int expected)
+    {
+        Assert.AreEqual(expected == 0, container.IsEmpty());
+        Assert.AreEqual(expected, container.Count());
+    }
+
     [Test]
     public void CreateAndDestroy([Values(1, 100, 200)] int count)
     {
@@ -69,7 +75,7 @@ internal class NativeStreamTests
 
         Assert.IsTrue(stream.IsCreated);
         Assert.IsTrue(stream.ForEachCount == count);
-        Assert.IsTrue(stream.ComputeItemCount() == 0);
+        ExpectedCount(ref stream, 0);
 
         stream.Dispose();
         Assert.IsFalse(stream.IsCreated);
@@ -82,7 +88,7 @@ internal class NativeStreamTests
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         fillInts.Schedule(count, batchSize).Complete();
 
-        Assert.AreEqual(count * (count - 1) / 2, stream.ComputeItemCount());
+        ExpectedCount(ref stream, count * (count - 1) / 2);
 
         stream.Dispose();
     }
@@ -93,6 +99,7 @@ internal class NativeStreamTests
         var stream = new NativeStream(count, Allocator.TempJob);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         fillInts.Schedule(count, batchSize).Complete();
+        ExpectedCount(ref stream, count * (count - 1) / 2);
 
         var array = stream.ToNativeArray<int>(Allocator.Temp);
         int itemIndex = 0;

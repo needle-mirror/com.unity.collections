@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
@@ -27,7 +26,7 @@ namespace Unity.Collections
         /// <summary>
         /// Constructs a new NativeStream using the specified type of memory allocation.
         /// </summary>
-        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
+        /// <param name="foreachCount"></param>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         public NativeStream(int foreachCount, Allocator allocator)
@@ -39,9 +38,13 @@ namespace Unity.Collections
         /// <summary>
         /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
         /// </summary>
+        /// <typeparam name="T">The type of value.</typeparam>
+        /// <param name="stream"></param>
+        /// <param name="forEachCountFromList"></param>
         /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
         public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
@@ -53,13 +56,27 @@ namespace Unity.Collections
         /// <summary>
         /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
         /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="lengthFromIndex0"></param>
+        /// <param name="dependency"></param>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
         public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
             var jobData = new ConstructJob { Length = lengthFromIndex0, Container = stream };
             return jobData.Schedule(dependency);
+        }
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <returns>True if this container empty.</returns>
+        public bool IsEmpty()
+        {
+            CheckReadAccess();
+            return m_Stream.IsEmpty();
         }
 
         /// <summary>
@@ -84,6 +101,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns reader instance.
         /// </summary>
+        /// <returns>Reader instance</returns>
         public Reader AsReader()
         {
             return new Reader(ref this);
@@ -92,28 +110,38 @@ namespace Unity.Collections
         /// <summary>
         /// Returns writer instance.
         /// </summary>
+        /// <returns>Writer instance.</returns>
         public Writer AsWriter()
         {
             return new Writer(ref this);
         }
 
         /// <summary>
-        /// Compute item count.
+        ///
         /// </summary>
-        /// <returns>Item count.</returns>
-        public int ComputeItemCount()
+        /// <returns></returns>
+        [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
+        public int ComputeItemCount() => Count();
+
+        /// <summary>
+        /// The current number of items in the container.
+        /// </summary>
+        /// <returns>The item count.</returns>
+        public int Count()
         {
             CheckReadAccess();
-            return m_Stream.ComputeItemCount();
+            return m_Stream.Count();
         }
 
         /// <summary>
         /// Copies stream data into NativeArray.
         /// </summary>
+        /// <typeparam name="T">The type of value.</typeparam>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
         /// <remarks>The array is a copy of stream data.</remarks>
+        /// <returns></returns>
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
             CheckReadAccess();
@@ -190,12 +218,8 @@ namespace Unity.Collections
 
         static void AllocateBlock(out NativeStream stream, Allocator allocator)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (allocator <= Allocator.None)
-            {
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", "allocator");
-            }
-#endif
+            CheckAllocator(allocator);
+
             UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -206,33 +230,13 @@ namespace Unity.Collections
         void AllocateForEach(int forEachCount)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (forEachCount <= 0)
-            {
-                throw new ArgumentException("foreachCount must be > 0", "foreachCount");
-            }
-
+            CheckForEachCountGreaterThanZero(forEachCount);
             Assert.IsTrue(m_Stream.m_Block->Ranges == null);
             Assert.AreEqual(0, m_Stream.m_Block->RangeCount);
             Assert.AreNotEqual(0, m_Stream.m_Block->BlockCount);
 #endif
 
             m_Stream.AllocateForEach(forEachCount);
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckReadAccess()
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckWriteAccess()
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-#endif
         }
 
         /// <summary>
@@ -269,6 +273,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
+            ///
             /// </summary>
             public int ForEachCount
             {
@@ -282,7 +287,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
+            ///
             /// </summary>
+            /// <param name="foreEachIndex"></param>
             public void PatchMinMaxRange(int foreEachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -296,11 +303,10 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="foreachIndex"></param>
             /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
-            /// <returns>The number of elements at this index.</returns>
             public void BeginForEachIndex(int foreachIndex)
             {
                 //@TODO: Check that no one writes to the same for each index multiple times...
-                BeginForEachIndexChecks(foreachIndex);
+                CheckBeginForEachIndex(foreachIndex);
                 m_Writer.BeginForEachIndex(foreachIndex);
             }
 
@@ -310,7 +316,7 @@ namespace Unity.Collections
             /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
             public void EndForEachIndex()
             {
-                EndForEachIndexChecks();
+                CheckEndForEachIndex();
                 m_Writer.EndForEachIndex();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -322,6 +328,7 @@ namespace Unity.Collections
             /// Write data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <param name="value"></param>
             public void Write<T>(T value) where T : struct
             {
                 ref T dst = ref Allocate<T>();
@@ -332,25 +339,27 @@ namespace Unity.Collections
             /// Allocate space for data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns></returns>
             public ref T Allocate<T>() where T : struct
             {
                 CollectionHelper.CheckIsUnmanaged<T>();
                 int size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtilityEx.AsRef<T>(Allocate(size));
+                return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
 
             /// <summary>
             /// Allocate space for data.
             /// </summary>
             /// <param name="size">Size in bytes.</param>
+            /// <returns></returns>
             public byte* Allocate(int size)
             {
-                AllocateChecks(size);
+                CheckAllocateSize(size);
                 return m_Writer.Allocate(size);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void BeginForEachIndexChecks(int foreachIndex)
+            void CheckBeginForEachIndex(int foreachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -392,7 +401,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void EndForEachIndexChecks()
+            void CheckEndForEachIndex()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -405,7 +414,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void AllocateChecks(int size)
+            void CheckAllocateSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -459,7 +468,7 @@ namespace Unity.Collections
             /// <returns>The number of elements at this index.</returns>
             public int BeginForEachIndex(int foreachIndex)
             {
-                BeginForEachIndexChecks(foreachIndex);
+                CheckBeginForEachIndex(foreachIndex);
 
                 var remainingItemCount = m_Reader.BeginForEachIndex(foreachIndex);
 
@@ -481,16 +490,17 @@ namespace Unity.Collections
             public void EndForEachIndex()
             {
                 m_Reader.EndForEachIndex();
-                EndForEachIndexChecks();
+                CheckEndForEachIndex();
             }
 
             /// <summary>
+            /// Returns for each count.
             /// </summary>
             public int ForEachCount
             {
                 get
                 {
-                    CheckAccess();
+                    CheckRead();
                     return m_Reader.ForEachCount;
                 }
             }
@@ -503,9 +513,11 @@ namespace Unity.Collections
             /// <summary>
             /// Returns pointer to data.
             /// </summary>
+            /// <param name="size">Size in bytes.</param>
+            /// <returns>Pointer to data.</returns>
             public byte* ReadUnsafePtr(int size)
             {
-                ReadChecks(size);
+                CheckReadSize(size);
 
                 m_Reader.m_RemainingItemCount--;
 
@@ -520,15 +532,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_RemainingBlocks--;
 
-                    if (m_RemainingBlocks < 0)
-                    {
-                        throw new System.ArgumentException("Reading out of bounds");
-                    }
-
-                    if (m_RemainingBlocks == 0 && size + sizeof(void*) > m_Reader.m_LastBlockSize)
-                    {
-                        throw new System.ArgumentException("Reading out of bounds");
-                    }
+                    CheckNotReadingOutOfBounds(size);
 
                     if (m_RemainingBlocks <= 0)
                     {
@@ -552,36 +556,57 @@ namespace Unity.Collections
             /// Read data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns>Reference to data.</returns>
             public ref T Read<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
-                return ref UnsafeUtilityEx.AsRef<T>(ReadUnsafePtr(size));
+                return ref UnsafeUtility.AsRef<T>(ReadUnsafePtr(size));
             }
 
             /// <summary>
             /// Peek into data.
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
+            /// <returns>Reference to data.</returns>
             public ref T Peek<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
-                ReadChecks(size);
+                CheckReadSize(size);
 
                 return ref m_Reader.Peek<T>();
             }
 
             /// <summary>
-            /// Compute item count.
+            ///
             /// </summary>
-            /// <returns>Item count.</returns>
-            public int ComputeItemCount()
+            /// <returns></returns>
+            [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
+            public int ComputeItemCount() => Count();
+
+            /// <summary>
+            /// The current number of items in the container.
+            /// </summary>
+            /// <returns>The item count.</returns>
+            public int Count()
             {
-                CheckAccess();
-                return m_Reader.ComputeItemCount();
+                CheckRead();
+                return m_Reader.Count();
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void CheckAccess()
+            void CheckNotReadingOutOfBounds(int size)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                if (m_RemainingBlocks < 0)
+                    throw new System.ArgumentException("Reading out of bounds");
+
+                if (m_RemainingBlocks == 0 && size + sizeof(void*) > m_Reader.m_LastBlockSize)
+                    throw new System.ArgumentException("Reading out of bounds");
+#endif
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -589,7 +614,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void ReadChecks(int size)
+            void CheckReadSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -603,7 +628,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void BeginForEachIndexChecks(int forEachIndex)
+            void CheckBeginForEachIndex(int forEachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -616,7 +641,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void EndForEachIndexChecks()
+            void CheckEndForEachIndex()
             {
                 if (m_Reader.m_RemainingItemCount != 0)
                 {
@@ -628,6 +653,37 @@ namespace Unity.Collections
                     throw new System.ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckAllocator(Allocator allocator)
+        {
+            // Native allocation is only valid for Temp, Job and Persistent.
+            if (allocator <= Allocator.None)
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckForEachCountGreaterThanZero(int forEachCount)
+        {
+            if (forEachCount <= 0)
+                throw new ArgumentException("foreachCount must be > 0", "foreachCount");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckReadAccess()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWriteAccess()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
         }
     }
 }

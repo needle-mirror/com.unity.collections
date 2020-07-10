@@ -5,6 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
+using System.Diagnostics;
 
 namespace Unity.Collections
 {
@@ -109,7 +110,7 @@ namespace Unity.Collections
                         prev = block;
                     }
                     data.m_FirstBlock = (IntPtr)prev;
-#if !NET_DOTS
+#if !UNITY_DOTSRUNTIME
                     AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
 #endif
                 }
@@ -117,7 +118,7 @@ namespace Unity.Collections
             }
         }
 
-#if !NET_DOTS
+#if !UNITY_DOTSRUNTIME
         static void OnDomainUnload(object sender, EventArgs e)
         {
             ref var data = ref *pData;
@@ -140,9 +141,9 @@ namespace Unity.Collections
     {
         public IntPtr m_FirstBlock;
         public IntPtr m_LastBlock;
-        public int    m_MaxItems;
-        public int    m_CurrentRead;
-        public byte*  m_CurrentWriteBlockTLS;
+        public int m_MaxItems;
+        public int m_CurrentRead;
+        public byte* m_CurrentWriteBlockTLS;
 
         internal NativeQueueBlockHeader* GetCurrentWriteBlockTLS(int threadIndex)
         {
@@ -161,7 +162,7 @@ namespace Unity.Collections
             NativeQueueBlockHeader* currentWriteBlock = data->GetCurrentWriteBlockTLS(threadIndex);
 
             if (currentWriteBlock != null
-                &&  currentWriteBlock->m_NumItems == data->m_MaxItems)
+                && currentWriteBlock->m_NumItems == data->m_MaxItems)
             {
                 currentWriteBlock = null;
             }
@@ -202,8 +203,8 @@ namespace Unity.Collections
             data->m_CurrentWriteBlockTLS = (((byte*)data) + queueDataSize);
 
             data->m_FirstBlock = IntPtr.Zero;
-            data->m_LastBlock  = IntPtr.Zero;
-            data->m_MaxItems   = (NativeQueueBlockPoolData.m_BlockSize - UnsafeUtility.SizeOf<NativeQueueBlockHeader>()) / UnsafeUtility.SizeOf<T>();
+            data->m_LastBlock = IntPtr.Zero;
+            data->m_MaxItems = (NativeQueueBlockPoolData.m_BlockSize - UnsafeUtility.SizeOf<NativeQueueBlockHeader>()) / UnsafeUtility.SizeOf<T>();
 
             data->m_CurrentRead = 0;
             for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
@@ -247,16 +248,13 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
 
-#if UNITY_2020_1_OR_NEWER
-        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeQueue<T>>();
+        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeQueue<T>>();
 
         [BurstDiscard]
-        private static void CreateStaticSafetyId()
+        static void CreateStaticSafetyId()
         {
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeQueue<T>>();
         }
-
-#endif
 
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
@@ -281,14 +279,44 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator);
 
-#if UNITY_2020_1_OR_NEWER
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
             }
             AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
 #endif
-#endif
+        }
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <returns>True if this container empty.</returns>
+        public bool IsEmpty()
+        {
+            if (!IsCreated)
+            {
+                return true;
+            }
+
+            CheckRead();
+
+            int count = 0;
+            var currentRead = m_Buffer->m_CurrentRead;
+
+            for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock
+                    ; block != null
+                    ; block = block->m_NextBlock
+            )
+            {
+                count += block->m_NumItems;
+
+                if (count > currentRead)
+                {
+                    return false;
+                }
+            }
+
+            return count == currentRead;
         }
 
         /// <summary>
@@ -298,9 +326,8 @@ namespace Unity.Collections
         {
             get
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
+                CheckRead();
+
                 int count = 0;
 
                 for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock
@@ -338,14 +365,9 @@ namespace Unity.Collections
         /// <returns></returns>
         public T Peek()
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
+            CheckReadNotEmpty();
+
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
-
-            if (firstBlock == null)
-                throw new InvalidOperationException("Trying to peek from an empty queue");
-
             return UnsafeUtility.ReadArrayElement<T>(firstBlock + 1, m_Buffer->m_CurrentRead);
         }
 
@@ -355,9 +377,8 @@ namespace Unity.Collections
         /// <param name="value">The value to be appended.</param>
         public void Enqueue(T value)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-#endif
+            CheckWrite();
+
             NativeQueueBlockHeader* writeBlock = NativeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, 0);
             UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
             ++writeBlock->m_NumItems;
@@ -370,10 +391,10 @@ namespace Unity.Collections
         /// <returns>Returns item from the container.</returns>
         public T Dequeue()
         {
-            T item;
-
-            if (!TryDequeue(out item))
-                throw new InvalidOperationException("Trying to dequeue from an empty queue");
+            if (!TryDequeue(out T item))
+            {
+                ThrowEmpty();
+            }
 
             return item;
         }
@@ -385,9 +406,7 @@ namespace Unity.Collections
         /// <returns>Returns true if item was dequeued.</returns>
         public bool TryDequeue(out T item)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-#endif
+            CheckWrite();
 
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
 
@@ -433,9 +452,8 @@ namespace Unity.Collections
         /// <returns>A NativeArray containing copies of all the items in the queue.</returns>
         public NativeArray<T> ToArray(Allocator allocator)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
+            CheckRead();
+
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
             var outputArray = new NativeArray<T>(Count, allocator);
 
@@ -462,9 +480,8 @@ namespace Unity.Collections
         /// </summary>
         public void Clear()
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-#endif
+            CheckWrite();
+
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
 
             while (firstBlock != null)
@@ -538,6 +555,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns parallel reader instance.
         /// </summary>
+        /// <returns>Parallel writer instance.</returns>
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;
@@ -586,6 +604,39 @@ namespace Unity.Collections
                 UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
                 ++writeBlock->m_NumItems;
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckRead()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckReadNotEmpty()
+        {
+            CheckRead();
+
+            if (m_Buffer->m_FirstBlock == (IntPtr)0)
+            {
+                ThrowEmpty();
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWrite()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void ThrowEmpty()
+        {
+            throw new InvalidOperationException("Trying to read from an empty queue.");
         }
     }
 

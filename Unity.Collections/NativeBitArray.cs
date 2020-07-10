@@ -1,11 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Unity.Burst;
-using Unity.Burst.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
@@ -21,15 +17,14 @@ namespace Unity.Collections
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-#if UNITY_2020_1_OR_NEWER
-        private static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeBitArray>();
+        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeBitArray>();
+
         [BurstDiscard]
-        private static void CreateStaticSafetyId()
+        static void CreateStaticSafetyId()
         {
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeBitArray>();
         }
 
-#endif
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
 #endif
@@ -50,20 +45,14 @@ namespace Unity.Collections
 
         NativeBitArray(int numBits, Allocator allocator, NativeArrayOptions options, int disposeSentinelStackDepth)
         {
-            if (allocator <= Allocator.None)
-            {
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
-            }
-
+            CheckAllocator(allocator);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
-#if UNITY_2020_1_OR_NEWER
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
             }
             AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
-#endif
 #endif
             m_BitArray = new UnsafeBitArray(numBits, allocator, options);
         }
@@ -133,6 +122,27 @@ namespace Unity.Collections
         {
             CheckWrite();
             m_BitArray.Clear();
+        }
+
+        /// <summary>
+        /// Return a native array that aliases the original bit array contents.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <exception cref="InvalidOperationException">Thrown if output size doesn't match input, or if reinterpreted data would be truncated.</exception>
+        /// <returns>Native array view into bit array.</returns>
+        public NativeArray<T> AsNativeArray<T>() where T : unmanaged
+        {
+            CheckReadBounds<T>();
+
+            var bitsPerElement = UnsafeUtility.SizeOf<T>() * 8;
+            var length = m_BitArray.Length / bitsPerElement;
+
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(m_BitArray.Ptr, length, Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.UseSecondaryVersion(ref m_Safety);
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, m_Safety);
+#endif
+            return array;
         }
 
         /// <summary>
@@ -206,6 +216,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Copy block of bits from source to destination.
+        /// </summary>
+        /// <param name="dstPos">Destination position in bit array.</param>
+        /// <param name="srcBitArray">Source bit array from which bits will be copied.</param>
+        /// <param name="srcPos">Source position in bit array.</param>
+        /// <param name="numBits">Number of bits to copy.</param>
+        public void Copy(int dstPos, ref NativeBitArray srcBitArray, int srcPos, int numBits)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(srcBitArray.m_Safety);
+#endif
+            CheckWrite();
+            m_BitArray.Copy(dstPos, ref srcBitArray.m_BitArray, srcPos, numBits);
+        }
+
+        /// <summary>
         /// Returns true if none of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bit array.</param>
@@ -254,7 +280,14 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckRead()
+        static void CheckAllocator(Allocator allocator)
+        {
+            if (allocator <= Allocator.None)
+                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -262,7 +295,25 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private void CheckWrite()
+        void CheckReadBounds<T>() where T : unmanaged
+        {
+            CheckRead();
+
+            var bitsPerElement = UnsafeUtility.SizeOf<T>() * 8;
+            var length = m_BitArray.Length / bitsPerElement;
+
+            if (length == 0)
+            {
+                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray.Length} is not sufficient to cast to NativeArray<T> {UnsafeUtility.SizeOf<T>() * 8}.");
+            }
+            else if (m_BitArray.Length != bitsPerElement* length)
+            {
+                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray.Length} couldn't hold multiple of T {UnsafeUtility.SizeOf<T>()}. Output array would be truncated.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
@@ -273,19 +324,47 @@ namespace Unity.Collections
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    /// <summary>
+    /// NativeBitArray unsafe utility helpers.
+    /// </summary>
     public static class NativeBitArrayUnsafeUtility
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+        /// <summary>
+        /// Retrieve container's atomic safety handle.
+        /// </summary>
+        /// <param name="container"></param>
+        /// <returns>Container's atomic safety handle.</returns>
         public static AtomicSafetyHandle GetAtomicSafetyHandle(in NativeBitArray container)
         {
             return container.m_Safety;
         }
 
-        public static void SetAtomicSafetyHandle<T>(ref NativeBitArray container, AtomicSafetyHandle safety)
+        /// <summary>
+        /// Set container's atomic safety handle.
+        /// </summary>
+        /// <param name="container">Containter to set atomic safety handle on.</param>
+        /// <param name="safety">Atomic safety handle.</param>
+        public static void SetAtomicSafetyHandle(ref NativeBitArray container, AtomicSafetyHandle safety)
         {
             container.m_Safety = safety;
         }
-
 #endif
+
+        /// <summary>
+        /// Convert existing data to bit array container.
+        /// </summary>
+        /// <param name="ptr">Pointer to data.</param>
+        /// <param name="sizeInBytes">Size of data in bytes. Must be multiple of 8-bytes.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>Returns bit array container.</returns>
+        public static unsafe NativeBitArray ConvertExistingDataToNativeBitArray(void* ptr, int sizeInBytes, Allocator allocator)
+        {
+            return new NativeBitArray
+            {
+                m_BitArray = new UnsafeBitArray(ptr, sizeInBytes, allocator),
+            };
+        }
     }
 }

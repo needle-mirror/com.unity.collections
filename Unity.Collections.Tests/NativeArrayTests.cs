@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 
-internal class NativeArrayTests
+internal class NativeArrayTests : CollectionsTestFixture
 {
     [Test]
     public void NativeArray_DisposeJob()
@@ -16,7 +16,12 @@ internal class NativeArrayTests
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-        Assert.Throws<InvalidOperationException>(() => { container[0] = 2; });
+#if UNITY_2020_2_OR_NEWER
+        Assert.Throws<ObjectDisposedException>(
+#else
+        Assert.Throws<InvalidOperationException>(
+#endif
+            () => { container[0] = 2; });
 
         disposeJob.Complete();
     }
@@ -34,7 +39,6 @@ internal class NativeArrayTests
         }
     }
 
-#if UNITY_2020_1_OR_NEWER
     [Test]
     public void NativeArray_DisposeJobWithMissingDependencyThrows()
     {
@@ -44,8 +48,6 @@ internal class NativeArrayTests
         deps.Complete();
         array.Dispose();
     }
-
-#endif
 
     [Test, DotsRuntimeIgnore]
     public void NativeArray_DisposeJobCantBeScheduled()

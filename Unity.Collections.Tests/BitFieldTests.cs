@@ -1,8 +1,9 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
-internal class BitFieldTests
+internal class BitFieldTests : CollectionsTestFixture
 {
     [Test]
     public void BitField32_Get_Set()
