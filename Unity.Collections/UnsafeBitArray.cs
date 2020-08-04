@@ -10,7 +10,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
-    public unsafe struct UnsafeBitArray : IDisposable
+    public unsafe struct UnsafeBitArray
+        : INativeDisposable
     {
         /// <summary>
         /// Pointer to data.

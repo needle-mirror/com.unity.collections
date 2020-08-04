@@ -22,7 +22,6 @@ internal class NativeStreamTests : CollectionsTestFixture
         }
     }
 
-    [BurstCompile(CompileSynchronously = true)]
     struct ReadInts : IJobParallelFor
     {
         public NativeStream.Reader Reader;
@@ -134,7 +133,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void ParallelWriteThrows()
     {
         var stream = new NativeStream(100, Allocator.TempJob);
@@ -147,7 +146,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         stream.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void ScheduleCreateThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -339,11 +338,12 @@ internal class NativeStreamTests : CollectionsTestFixture
         stream.Dispose();
     }
 
+#if !UNITY_DOTSRUNTIME  // managed issue
     struct ManagedRef
     {
         string Value;
     }
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void WriteManagedThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
@@ -358,6 +358,7 @@ internal class NativeStreamTests : CollectionsTestFixture
 
         stream.Dispose();
     }
+#endif
 
 #endif
 }

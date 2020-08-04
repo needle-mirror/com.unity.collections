@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
-using Unity.Collections.Tests;
 
 internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {
@@ -45,6 +44,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("The hash map exception is fatal.")]
     public void NativeHashMap_Read_And_Write_Full()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
@@ -69,12 +69,12 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
 
-        var missing = new HashSet<int>();
+        var missing = new Dictionary<int, bool>();
         for (int i = 0; i < hashMapSize; ++i)
         {
             if (writeStatus[i] == -2)
             {
-                missing.Add(i);
+                missing[i] = true;
                 Assert.AreEqual(-1, readValues[i], "Job read a value form hash map which should not be there");
             }
             else
@@ -115,12 +115,12 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
 
-        var missing = new HashSet<int>();
+        var missing = new Dictionary<int, bool>();
         for (int i = 0; i < hashMapSize; ++i)
         {
             if (writeStatus[i] == -1)
             {
-                missing.Add(i);
+                missing[i] = true;
                 Assert.AreNotEqual(i, readValues[i], "Job read a value form hash map which should not be there");
             }
             else
@@ -148,6 +148,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("Hash map throws when full.")]
     public void NativeHashMap_Clear_And_Write()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
@@ -208,7 +209,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         disposeJob.Complete();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
@@ -218,71 +219,12 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeHashMap_DisposeJobCantBeScheduled()
     {
         var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
         var deps = hashMap.Dispose(default);
         Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
         deps.Complete();
-    }
-
-    [BurstCompile(CompileSynchronously = true)]
-#pragma warning disable 618 // RemovedAfter 2020-07-07
-    struct MergeSharedValues : IJobNativeMultiHashMapMergedSharedKeyIndices
-#pragma warning restore 618 // RemovedAfter 2020-07-07
-    {
-        [NativeDisableParallelForRestriction]
-        public NativeArray<int> sharedCount;
-
-        [NativeDisableParallelForRestriction]
-        public NativeArray<int> sharedIndices;
-
-        public void ExecuteFirst(int index)
-        {
-            sharedIndices[index] = index;
-        }
-
-        public void ExecuteNext(int firstIndex, int index)
-        {
-            sharedIndices[index] = firstIndex;
-            sharedCount[firstIndex]++;
-        }
-    }
-
-    [Test]
-    public void NativeHashMap_MergeCountShared()
-    {
-        var count = 1024;
-        var sharedKeyCount = 16;
-        var sharedCount = new NativeArray<int>(count, Allocator.TempJob);
-        var sharedIndices = new NativeArray<int>(count, Allocator.TempJob);
-        var totalSharedCount = new NativeArray<int>(1, Allocator.TempJob);
-        var hashMap = new NativeMultiHashMap<int, int>(count, Allocator.TempJob);
-
-        for (int i = 0; i < count; i++)
-        {
-            hashMap.Add(i & (sharedKeyCount - 1), i);
-            sharedCount[i] = 1;
-        }
-
-        var mergeSharedValuesJob = new MergeSharedValues
-        {
-            sharedCount = sharedCount,
-            sharedIndices = sharedIndices,
-        };
-
-        var mergetedSharedValuesJobHandle = mergeSharedValuesJob.Schedule(hashMap, 64);
-        mergetedSharedValuesJobHandle.Complete();
-
-        for (int i = 0; i < count; i++)
-        {
-            Assert.AreEqual(count / sharedKeyCount, sharedCount[sharedIndices[i]]);
-        }
-
-        sharedCount.Dispose();
-        sharedIndices.Dispose();
-        totalSharedCount.Dispose();
-        hashMap.Dispose();
     }
 }

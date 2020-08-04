@@ -35,20 +35,15 @@ internal class UnsafeHashMapTests
     }
 
     [Test]
-    public void UnsafeHashMap_ForEach()
+    public void UnsafeHashMap_ForEach([Values(10, 1000)]int n)
     {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
         using (var container = new UnsafeHashMap<int, int>(32, Allocator.TempJob))
         {
-            container.Add(0, 012);
-            container.Add(1, 123);
-            container.Add(2, 234);
-            container.Add(3, 345);
-            container.Add(4, 456);
-            container.Add(5, 567);
-            container.Add(6, 678);
-            container.Add(7, 789);
-            container.Add(8, 890);
-            container.Add(9, 901);
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i, i * 37);
+            }
 
             var count = 0;
             foreach (var kv in container)
@@ -56,11 +51,17 @@ internal class UnsafeHashMapTests
                 int value;
                 Assert.True(container.TryGetValue(kv.Key, out value));
                 Assert.AreEqual(value, kv.Value);
+                Assert.AreEqual(kv.Key * 37, kv.Value);
 
+                seen[kv.Key] = seen[kv.Key] + 1;
                 ++count;
             }
 
             Assert.AreEqual(container.Count(), count);
+            for (int i = 0; i < n; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect key count {i}");
+            }
         }
     }
 }

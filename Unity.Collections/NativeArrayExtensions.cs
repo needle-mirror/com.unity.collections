@@ -126,7 +126,7 @@ namespace Unity.Collections
         /// <param name="length">Number of elements to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        static public int IndexOf<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
+        public static int IndexOf<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
         {
             for (int i = 0; i != length; i++)
             {

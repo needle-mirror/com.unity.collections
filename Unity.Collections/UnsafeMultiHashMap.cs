@@ -16,8 +16,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(UnsafeMultiHashMapDebuggerTypeProxy<,>))]
     public unsafe struct UnsafeMultiHashMap<TKey, TValue>
-        : IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
-        , IDisposable
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
@@ -44,7 +44,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether container is empty.
         /// </summary>
         /// <value>True if this container empty.</value>
-        public bool IsEmpty => !IsCreated || m_Buffer->allocatedIndexLength <= 0;
+        public bool IsEmpty => !IsCreated || UnsafeHashMapData.IsEmpty(m_Buffer);
 
         /// <summary>
         /// The current number of items in the container.
@@ -396,7 +396,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An IEnumerator interface for the container.</returns>
         public KeyValueEnumerator GetEnumerator()
         {
-            return new KeyValueEnumerator { m_Buffer = m_Buffer, m_Index = -1, m_BucketIndex = 0, m_NextIndex = -1 };
+            return new KeyValueEnumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Buffer) };
         }
 
         /// <summary>
@@ -426,10 +426,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public struct KeyValueEnumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
-            internal UnsafeHashMapData* m_Buffer;
-            internal int m_Index;
-            internal int m_BucketIndex;
-            internal int m_NextIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -440,17 +437,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next element of the container.
             /// </summary>
             /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
-            public bool MoveNext() => UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, ref m_NextIndex, out m_Index);
+            public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
             /// Resets the enumerator to the first element of the container.
             /// </summary>
-            public void Reset() { m_Index = -1; m_BucketIndex = 0; m_NextIndex = -1; }
+            public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
             /// Gets the element at the current position of the enumerator in the container.
             /// </summary>
-            public KeyValue<TKey, TValue> Current => new KeyValue<TKey, TValue> { m_Buffer = m_Buffer, m_Index = m_Index };
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
             object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
         }

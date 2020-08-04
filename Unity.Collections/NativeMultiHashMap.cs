@@ -36,8 +36,8 @@ namespace Unity.Collections
     [NativeContainer]
     [DebuggerTypeProxy(typeof(NativeMultiHashMapDebuggerTypeProxy<,>))]
     public unsafe struct NativeMultiHashMap<TKey, TValue>
-        : IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
-        , IDisposable
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
@@ -467,13 +467,10 @@ namespace Unity.Collections
 #endif
             return new KeyValueEnumerator
             {
-                m_Buffer = m_MultiHashMapData.m_Buffer,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Index = -1,
-                m_BucketIndex = 0,
-                m_NextIndex = -1
+                m_Enumerator = new UnsafeHashMapDataEnumerator(m_MultiHashMapData.m_Buffer),
             };
         }
 
@@ -506,14 +503,10 @@ namespace Unity.Collections
         [NativeContainerIsReadOnly]
         public struct KeyValueEnumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
-            [NativeDisableUnsafePtrRestriction]
-            internal UnsafeHashMapData* m_Buffer;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
-            internal int m_Index;
-            internal int m_BucketIndex;
-            internal int m_NextIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -529,7 +522,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, ref m_NextIndex, out m_Index);
+                return m_Enumerator.MoveNext();
             }
 
             /// <summary>
@@ -540,9 +533,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = -1;
-                m_BucketIndex = 0;
-                m_NextIndex = -1;
+                m_Enumerator.Reset();
             }
 
             /// <summary>
@@ -555,7 +546,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                    return new KeyValue<TKey, TValue> { m_Buffer = m_Buffer, m_Index = m_Index };
+                    return m_Enumerator.GetCurrent<TKey, TValue>();
                 }
             }
 

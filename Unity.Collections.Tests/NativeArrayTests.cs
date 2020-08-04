@@ -49,7 +49,7 @@ internal class NativeArrayTests : CollectionsTestFixture
         array.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeArray_DisposeJobCantBeScheduled()
     {
         var array = new NativeArray<int>(1, Allocator.Persistent);

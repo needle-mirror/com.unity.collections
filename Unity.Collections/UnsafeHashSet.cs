@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Jobs;
-using UnityEngine.Internal;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
@@ -15,8 +14,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(UnsafeHashSetDebuggerTypeProxy<>))]
     public unsafe struct UnsafeHashSet<T>
-        : IEnumerable<T>  // Used by collection initializers.
-        , IDisposable
+        : INativeDisposable
+        , IEnumerable<T>  // Used by collection initializers.
         where T : unmanaged, IEquatable<T>
     {
         internal UnsafeHashMap<T, bool> m_Data;
@@ -171,7 +170,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An IEnumerator interface for the container.</returns>
         public Enumerator GetEnumerator()
         {
-            return new Enumerator { m_Buffer = m_Data.m_Buffer, m_Index = -1, m_BucketIndex = 0 };
+            return new Enumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Data.m_Buffer) };
         }
 
         /// <summary>
@@ -201,9 +200,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public struct Enumerator : IEnumerator<T>
         {
-            internal UnsafeHashMapData* m_Buffer;
-            internal int m_Index;
-            internal int m_BucketIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -214,28 +211,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next element of the container.
             /// </summary>
             /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
-            public bool MoveNext() => UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, out m_Index);
+            public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
             /// Resets the enumerator to the first element of the container.
             /// </summary>
-            public void Reset() { m_Index = -1; m_BucketIndex = 0; }
+            public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
             /// Gets the element at the current position of the enumerator in the container.
             /// </summary>
-            public T Current
-            {
-                get
-                {
-                    if (m_Index != -1)
-                    {
-                        UnsafeUtility.ReadArrayElement<T>(m_Buffer->keys, m_Index);
-                    }
-
-                    return default;
-                }
-            }
+            public T Current => m_Enumerator.GetCurrentKey<T>();
 
             object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<T> to avoid boxing");
         }

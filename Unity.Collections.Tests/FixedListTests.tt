@@ -16,17 +16,24 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
 internal class FixedListTests
 {
     struct NonComparableStruct
     {
         public int a;
+    }
+
+    struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
+    {
+        public int Compare(T x, T y) => y.CompareTo(x);
     }
 
 <#
@@ -38,6 +45,7 @@ internal class FixedListTests
             var TYPENAME = String.Format("FixedList{0}", BYTES);
 #>
     [Test]
+    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void <#=TYPENAME #>DebugView()
     {
         var list = new <#=TYPENAME #><NonComparableStruct>();
@@ -159,6 +167,36 @@ internal class FixedListTests
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
+
+    [Test]
+    public void <#=TYPENAME #><#=TYPE#>GenericSortCustomComparer()
+    {
+        var list = new <#=TYPENAME #><<#=TYPE#>>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((<#=TYPE #>)(i));
+        list.Sort(new DescendingComparer<<#=TYPE#>>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void <#=TYPENAME #><#=TYPE#>IndexOf()
+    {
+        var list = new <#=TYPENAME #><<#=TYPE#>>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((<#=TYPE#>)145);
+            r1 = list.Contains((<#=TYPE#>)123);
+            r2 = list.Contains((<#=TYPE#>)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
 <#
                 }
             }

@@ -16,10 +16,9 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(NativeHashSetDebuggerTypeProxy<>))]
     public unsafe struct NativeHashSet<T>
-        : IEnumerable<T> // Used by collection initializers.
-        , IDisposable
-        where T : unmanaged
-        , IEquatable<T>
+        : INativeDisposable
+        , IEnumerable<T> // Used by collection initializers.
+        where T : unmanaged, IEquatable<T>
     {
         internal NativeHashMap<T, bool> m_Data;
 
@@ -179,12 +178,10 @@ namespace Unity.Collections
 #endif
             return new Enumerator
             {
-                m_Buffer = m_Data.m_HashMapData.m_Buffer,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Index = -1,
-                m_BucketIndex = 0
+                m_Enumerator = new UnsafeHashMapDataEnumerator(m_Data.m_HashMapData.m_Buffer),
             };
         }
 
@@ -217,13 +214,10 @@ namespace Unity.Collections
         [NativeContainerIsReadOnly]
         public struct Enumerator : IEnumerator<T>
         {
-            [NativeDisableUnsafePtrRestriction]
-            internal UnsafeHashMapData* m_Buffer;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
-            internal int m_Index;
-            internal int m_BucketIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -239,7 +233,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, out m_Index);
+                return m_Enumerator.MoveNext();
             }
 
             /// <summary>
@@ -250,8 +244,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = -1;
-                m_BucketIndex = 0;
+                m_Enumerator.Reset();
             }
 
             /// <summary>
@@ -264,12 +257,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                    if (m_Index != -1)
-                    {
-                        UnsafeUtility.ReadArrayElement<T>(m_Buffer->keys, m_Index);
-                    }
-
-                    return default;
+                    return m_Enumerator.GetCurrentKey<T>();
                 }
             }
 

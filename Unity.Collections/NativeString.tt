@@ -1303,8 +1303,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString<#=BYTES#>(String source)
         {
             LengthInBytes = 0;
@@ -1317,6 +1318,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString<#=BYTES#>(string b) => new NativeString<#=BYTES#>(b);
 
         /// <summary>

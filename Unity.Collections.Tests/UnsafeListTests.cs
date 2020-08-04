@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
@@ -329,16 +330,16 @@ internal class UnsafeListTests
         int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         fixed (int* r = range) list.AddRange<int>(r, 10);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveAt<int>(100); });
+        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAt<int>(100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveAtSwapBack<int>(100); });
+        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAtSwapBack<int>(100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRangeWithBeginEnd<int>(0, 100); });
+        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveRangeWithBeginEnd<int>(0, 100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentException>(() => { list.RemoveRangeSwapBackWithBeginEnd<int>(0, 100); });
+        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveRangeSwapBackWithBeginEnd<int>(0, 100); });
         Assert.AreEqual(10, list.Length);
 
         Assert.Throws<ArgumentException>(() => { list.RemoveRangeWithBeginEnd<int>(100, 0);  });
@@ -457,5 +458,73 @@ internal class UnsafeListTests
             Assert.True(r1);
             Assert.True(r2);
         }
+    }
+
+    [Test]
+    public void UnsafeListT_GenericSort()
+    {
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(4 - i);
+            }
+
+            container.Sort();
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(i, container[i]);
+            }
+        }
+    }
+
+    struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
+    {
+        public int Compare(T x, T y) => y.CompareTo(x);
+    }
+
+    [Test]
+    public void UnsafeListT_GenericSortCustomComparer()
+    {
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(i);
+            }
+
+            container.Sort(new DescendingComparer<int>());
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(4 - i, container[i]);
+            }
+        }
+    }
+
+    [Test]
+    public void UnsafeListT_InsertRangeWithBeginEnd()
+    {
+        var list = new UnsafeList<byte>(3, Allocator.Persistent);
+        list.Add(0);
+        list.Add(3);
+        list.Add(4);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(0, 8));
+        Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
+
+        Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
+
+        list[1] = 1;
+        list[2] = 2;
+
+        for (var i = 0; i < 5; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        list.Dispose();
     }
 }

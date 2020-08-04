@@ -27,6 +27,12 @@ namespace Unity.Collections
         int Capacity { get; set; }
 
         /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        bool IsEmpty { get; }
+
+        /// <summary>
         ///
         /// </summary>
         /// <param name="index"></param>
@@ -39,6 +45,12 @@ namespace Unity.Collections
         /// <param name="index"></param>
         /// <returns></returns>
         ref T ElementAt(int index);
+
+        /// <summary>
+        /// Clears the list.
+        /// </summary>
+        /// <remarks>List <see cref="Capacity"/> remains unchanged.</remarks>
+        void Clear();
     }
 
     /// <summary>
@@ -50,9 +62,9 @@ namespace Unity.Collections
     [DebuggerDisplay("Length = {Length}")]
     [DebuggerTypeProxy(typeof(NativeListDebugView<>))]
     public unsafe struct NativeList<T>
-        : INativeList<T>
+        : INativeDisposable
+        , INativeList<T>
         , IEnumerable<T> // Used by collection initializers.
-        , IDisposable
         where T : struct
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -273,7 +285,7 @@ namespace Unity.Collections
         /// <remarks>If the list has reached its current capacity, it copies the original, internal array to
         /// a new, larger array, and then deallocates the original.
         /// </remarks>
-        public void Add(T value)
+        public void Add(in T value)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
@@ -296,13 +308,28 @@ namespace Unity.Collections
         /// <param name="elements">A pointer to the buffer.</param>
         /// <param name="count">The number of elements to add to the list.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if count is negative.</exception>
-        public unsafe void AddRange(void* elements, int count)
+        public void AddRange(void* elements, int count)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
             CheckArgPositive(count);
             m_ListData->AddRange<T>(elements, CollectionHelper.AssumePositive(count));
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a container at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_ListData->InsertRangeWithBeginEnd<T>(CollectionHelper.AssumePositive(begin), CollectionHelper.AssumePositive(end));
         }
 
         /// <summary>
@@ -316,7 +343,6 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-            CheckArgInRange(index, Length);
             m_ListData->RemoveAtSwapBack<T>(CollectionHelper.AssumePositive(index));
         }
 
@@ -335,6 +361,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -357,7 +385,6 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-            CheckArgInRange(index, Length);
             m_ListData->RemoveAt<T>(CollectionHelper.AssumePositive(index));
         }
 
@@ -384,6 +411,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -570,7 +599,7 @@ namespace Unity.Collections
         /// }
         /// </code>
         /// </example>
-        public unsafe NativeArray<T> AsDeferredJobArray()
+        public NativeArray<T> AsDeferredJobArray()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
@@ -873,16 +902,6 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
 
             if ((uint)value < (uint)length)
-                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckArgInRange(int value, int length)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-
-            if ((uint)value >= (uint)length)
                 throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
         }
 

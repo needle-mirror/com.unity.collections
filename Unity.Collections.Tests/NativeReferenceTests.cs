@@ -52,7 +52,11 @@ class NativeReferenceTests
     public void NativeReference_NullThrows()
     {
         var reference = new NativeReference<int>();
+#if UNITY_DOTSRUNTIME    // The runtime safety system isn't quite the same, and will return InvalidOperationException in this case.
+        Assert.Throws<InvalidOperationException>(() => reference.Value = 5);
+#else
         Assert.Throws<NullReferenceException>(() => reference.Value = 5);
+#endif
     }
 
     [Test]
@@ -143,7 +147,7 @@ class NativeReferenceTests
         Assert.That(referenceA, Is.EqualTo(referenceB));
 
         referenceB.Value = 54321;
-        Assert.That(referenceA, Is.Not.EqualTo(referenceB));
+        Assert.AreNotEqual(referenceA, referenceB);
 
         referenceA.Dispose();
         referenceB.Dispose();

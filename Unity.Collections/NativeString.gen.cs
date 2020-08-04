@@ -1466,8 +1466,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString32(String source)
         {
             LengthInBytes = 0;
@@ -1480,6 +1481,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString32(string b) => new NativeString32(b);
 
         /// <summary>
@@ -2066,8 +2069,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString64(String source)
         {
             LengthInBytes = 0;
@@ -2080,6 +2084,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString64(string b) => new NativeString64(b);
 
         /// <summary>
@@ -2678,8 +2684,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString128(String source)
         {
             LengthInBytes = 0;
@@ -2692,6 +2699,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString128(string b) => new NativeString128(b);
 
         /// <summary>
@@ -3362,8 +3371,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString512(String source)
         {
             LengthInBytes = 0;
@@ -3376,6 +3386,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString512(string b) => new NativeString512(b);
 
         /// <summary>
@@ -4718,8 +4730,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
+        /// <param name="source"></param>
         public NativeString4096(String source)
         {
             LengthInBytes = 0;
@@ -4732,6 +4745,8 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static implicit operator NativeString4096(string b) => new NativeString4096(b);
 
         /// <summary>

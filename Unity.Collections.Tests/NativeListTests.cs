@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using System;
-using System.Text.RegularExpressions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -8,6 +7,9 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Text.RegularExpressions;
+#endif
 
 internal class NativeListTests : CollectionsTestFixture
 {
@@ -18,11 +20,15 @@ internal class NativeListTests : CollectionsTestFixture
         Assert.AreEqual(expected, container.Length);
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NullListThrow()
     {
         var list = new NativeList<int>();
+#if UNITY_DOTSRUNTIME
+        Assert.Throws<InvalidOperationException>(() => list[0] = 5);
+#else
         Assert.Throws<NullReferenceException>(() => list[0] = 5);
+#endif
 #if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
 #else
@@ -132,7 +138,7 @@ internal class NativeListTests : CollectionsTestFixture
             () => { list[0] = 1; });
     }
 
-#if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void NativeArrayFromNativeListMayDeallocate()
     {
@@ -243,7 +249,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Dispose();
     }
 
-#if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void DisposingNativeListDerivedArrayDoesNotThrow()
     {
@@ -329,7 +335,7 @@ internal class NativeListTests : CollectionsTestFixture
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeQueue_DisposeJobWithMissingDependencyThrows()
     {
         var queue = new NativeQueue<int>(Allocator.Persistent);
@@ -339,7 +345,7 @@ internal class NativeListTests : CollectionsTestFixture
         queue.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeQueue_DisposeJobCantBeScheduled()
     {
         var queue = new NativeQueue<int>(Allocator.Persistent);
@@ -446,5 +452,30 @@ internal class NativeListTests : CollectionsTestFixture
             Assert.True(r1);
             Assert.True(r2);
         }
+    }
+
+    [Test]
+    public void NativeList_InsertRangeWithBeginEnd()
+    {
+        var list = new NativeList<byte>(3, Allocator.Persistent);
+        list.Add(0);
+        list.Add(3);
+        list.Add(4);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(0, 8));
+        Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
+
+        Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
+
+        list[1] = 1;
+        list[2] = 2;
+
+        for (var i = 0; i < 5; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        list.Dispose();
     }
 }

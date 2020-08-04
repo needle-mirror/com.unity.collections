@@ -236,7 +236,8 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    public unsafe struct NativeQueue<T> : IDisposable
+    public unsafe struct NativeQueue<T>
+        : INativeDisposable
         where T : struct
     {
         [NativeDisableUnsafePtrRestriction]
@@ -345,7 +346,7 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        static public int PersistentMemoryBlockCount
+        public static int PersistentMemoryBlockCount
         {
             get { return NativeQueueBlockPool.QueueBlockPool->m_MaxBlocks; }
             set { Interlocked.Exchange(ref NativeQueueBlockPool.QueueBlockPool->m_MaxBlocks, value); }
@@ -354,7 +355,7 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        static public int MemoryBlockSize
+        public static int MemoryBlockSize
         {
             get { return NativeQueueBlockPoolData.m_BlockSize; }
         }

@@ -1,10 +1,14 @@
 using System;
-using System.Linq;
 using NUnit.Framework;
 using Unity.Collections;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Linq;
+#endif
 
 internal class ListExtensionsTests
 {
+#if !UNITY_PORTABLE_TEST_RUNNER
+// https://unity3d.atlassian.net/browse/DOTSR-1432
     [Test]
     public void ListExtensions_RemoveSwapBack_Item()
     {
@@ -28,6 +32,7 @@ internal class ListExtensionsTests
         Assert.False(list.RemoveSwapBack('d'));
         CollectionAssert.IsEmpty(list);
     }
+#endif
 
 #if !NET_DOTS
     [Test]
@@ -56,6 +61,8 @@ internal class ListExtensionsTests
 
 #endif // !NET_DOTS
 
+#if !UNITY_PORTABLE_TEST_RUNNER
+// https://unity3d.atlassian.net/browse/DOTSR-1432
     [Test]
     public void ListExtensions_RemoveAtSwapBack()
     {
@@ -106,4 +113,6 @@ internal class ListExtensionsTests
 
         native.Dispose();
     }
+#endif
 }
+

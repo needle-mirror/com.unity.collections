@@ -14,7 +14,9 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [NativeContainerSupportsDeallocateOnJobCompletion]
-    public unsafe struct NativeReference<T> : IDisposable, IEquatable<NativeReference<T>>
+    public unsafe struct NativeReference<T>
+        : INativeDisposable
+        , IEquatable<NativeReference<T>>
         where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]

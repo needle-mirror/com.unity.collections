@@ -27,8 +27,8 @@ namespace Unity.Collections.Tests
             // force it enabled for all tests, and restore the original value at teardown.
             JobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
-#endif
             Assert.IsTrue(BurstCompiler.Options.EnableBurstSafetyChecks, $"Collections tests must have Burst safety checks enabled! To enable, go to {SafetyChecksMenu}");
+#endif
         }
 
         [TearDown]

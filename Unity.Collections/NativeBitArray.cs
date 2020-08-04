@@ -13,7 +13,8 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
-    public unsafe struct NativeBitArray : IDisposable
+    public unsafe struct NativeBitArray
+        : INativeDisposable
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;

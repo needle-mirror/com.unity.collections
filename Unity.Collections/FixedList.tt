@@ -216,14 +216,32 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -231,55 +249,6 @@ for(var size = 0; size < 5; ++size)
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the <#=TYPENAME#>&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the <#=TYPENAME#>&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the <#=TYPENAME#>&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the <#=TYPENAME#>&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the <#=TYPENAME#>&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the <#=TYPENAME#>&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire <#=TYPENAME#>.
-        /// </summary>
-        /// <param name="item">The T to locate in the <#=TYPENAME#>&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -295,6 +264,8 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -336,19 +307,6 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the <#=TYPENAME#>&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the <#=TYPENAME#>&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -363,6 +321,8 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -397,21 +357,6 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the <#=TYPENAME#>&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the <#=TYPENAME#>&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -421,6 +366,7 @@ for(var size = 0; size < 5; ++size)
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -433,6 +379,8 @@ for(var size = 0; size < 5; ++size)
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -689,6 +637,73 @@ for(var size = 0; size < 5; ++size)
         }
     }
 
+    public unsafe static class <#=TYPENAME#>Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in <#=TYPENAME#>&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the <#=TYPENAME#>&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the <#=TYPENAME#> forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the <#=TYPENAME#></param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the <#=TYPENAME#>&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the <#=TYPENAME#>&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class <#=TYPENAME#>DebugView<T> where T : unmanaged
     {
         <#=TYPENAME#><T> m_List;
@@ -855,9 +870,23 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The <#=TYPE#> to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(<#=TYPE#> item)
+        public void Add(in <#=TYPE#> item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            <#=TYPE#>* data = (<#=TYPE#>*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -865,10 +894,14 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The <#=TYPE#> to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(<#=TYPE#> item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(<#=TYPE#> item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -876,16 +909,6 @@ for(var size = 0; size < 5; ++size)
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the <#=TYPENAME#>.
-        /// </summary>
-        /// <param name="item">The object to locate in the <#=TYPENAME#>.</param>
-        /// <returns></returns>
-        public bool Contains(<#=TYPE#> item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -897,6 +920,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(<#=TYPE#> item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -912,9 +936,20 @@ for(var size = 0; size < 5; ++size)
         /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#>.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(<#=TYPE#> item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the <#=TYPENAME#>.
+        /// </summary>
+        /// <param name="item">The object to locate in the <#=TYPENAME#>.</param>
+        /// <returns></returns>
+        public bool Contains(<#=TYPE#> item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -924,7 +959,15 @@ for(var size = 0; size < 5; ++size)
         /// <returns></returns>
         public int IndexOf(<#=TYPE#> item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -940,6 +983,8 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -985,12 +1030,17 @@ for(var size = 0; size < 5; ++size)
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the <#=TYPENAME#>.</param>
-        public void RemoveSwapBack(<#=TYPE#> item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(<#=TYPE#> item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -1008,6 +1058,8 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -1042,13 +1094,17 @@ for(var size = 0; size < 5; ++size)
         /// and returns true if the <#=TYPE#> was successfully removed.
         /// </summary>
         /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#></param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(<#=TYPE#> item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -1075,6 +1131,8 @@ for(var size = 0; size < 5; ++size)
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -1125,7 +1183,7 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#>.
+        /// Sorts the elements in this <#=TYPENAME#> in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -1134,6 +1192,20 @@ for(var size = 0; size < 5; ++size)
                 NativeSortExtension.Sort((<#=TYPE#>*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this <#=TYPENAME#> using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<<#=TYPE#>>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((<#=TYPE#>*)Buffer, length, comp);
+            }
+        }
+
 <#
 foreach(var OTHERBYTES in SIZES)
 {
@@ -1369,10 +1441,10 @@ for(var size = 0; size < 5; ++size)
 #>
 
         /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#>&lt;T&gt;.
+        /// Sorts the elements in this <#=TYPENAME#>&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref <#=TYPENAME#><T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -1382,6 +1454,27 @@ for(var size = 0; size < 5; ++size)
                 {
                     var c = b + FixedList.PaddingBytes<T>();
                     NativeSortExtension.Sort((T*)c, data.Length);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the elements in this <#=TYPENAME#>&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref <#=TYPENAME#><T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
                 }
             }
         }

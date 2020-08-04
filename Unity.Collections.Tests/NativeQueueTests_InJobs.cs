@@ -34,7 +34,7 @@ internal class NativeQueueTests_InJobs
         enqueue.Complete();
 
         Assert.AreEqual(queueSize, queue.Count, "Job enqueued the wrong number of values");
-        var allValues = new HashSet<int>();
+        var allValues = new NativeHashSet<int>(queueSize, Allocator.Persistent);
         for (int i = 0; i < queueSize; ++i)
         {
             Assert.AreEqual(1, writeStatus[i], "Job failed to enqueue value");
@@ -47,6 +47,7 @@ internal class NativeQueueTests_InJobs
         disposeJob.Complete();
 
         writeStatus.Dispose();
+        allValues.Dispose();
     }
 
     [BurstCompile(CompileSynchronously = true)]

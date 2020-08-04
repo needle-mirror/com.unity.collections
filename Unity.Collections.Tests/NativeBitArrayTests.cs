@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using System;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -9,6 +8,9 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
+#if !NET_DOTS
+using System.Text.RegularExpressions;
+#endif
 
 internal class NativeBitArrayTests : CollectionsTestFixture
 {
@@ -134,7 +136,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     static void SetBitsTest(ref NativeBitArray test, int pos, ulong value, int numBits)
     {
         test.SetBits(pos, value, numBits);
-        Assert.AreEqual(value, test.GetBits(pos, numBits));
+        if (value != test.GetBits(pos, numBits))
+            throw new Exception("Assert.Equals(value, test.GetBits(pos, numBits)) failed");
         test.Clear();
     }
 
@@ -208,6 +211,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("Portable Test Runner can't do the FixedString128 compare.")]
     public unsafe void NativeBitArray_CopyBetweenBitArrays()
     {
         var numBits = 512;
@@ -439,7 +443,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 #else
             Throws.InvalidOperationException
 #endif
-                .With.Message.Contains($"The {test0.GetType()} has been deallocated"));        SetBitsTest(ref test1, 0, 16, 5);
+                .With.Message.Contains($"The {test0.GetType()} has been deallocated"));
+        SetBitsTest(ref test1, 0, 16, 5);
         test1.Dispose();
         Assert.That(() => test1.IsSet(0),
 #if UNITY_2020_2_OR_NEWER
@@ -466,6 +471,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         }
     }
 
+#if !NET_DOTS && !UNITY_DOTSRUNTIME    // DOTS-Runtime does throw an exception.
     [Test]
     public void NativeBitArray_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
@@ -487,4 +493,5 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(test.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
+#endif
 }

@@ -36,7 +36,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void AddElementToListFromJobInvalidatesArray()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -81,7 +81,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void AccessBefore()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -96,7 +96,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void AccessAfter()
     {
         var list = new NativeList<int>(Allocator.TempJob);
@@ -128,7 +128,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose(writeJobHandle);
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void ScheduleDerivedArrayExceptions()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -142,7 +142,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void ScheduleDerivedArrayExceptions2()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -240,7 +240,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void WriteToArrayFromJobThenReadListFromMainThread()
     {
         var list = new NativeList<float>(1, Allocator.Persistent);
@@ -270,7 +270,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         deps.Complete();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeList_DisposeJobWithMissingDependencyThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -280,7 +280,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeList_DisposeJobCantBeScheduled()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -312,7 +312,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         job.list.Dispose();
     }
 
-#if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void DisposeAliasedArrayDoesNotThrow()
     {

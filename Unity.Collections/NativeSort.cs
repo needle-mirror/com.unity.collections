@@ -31,16 +31,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
-        {
-            IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
-        }
-
-        /// <summary>
         /// Sorts an array using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
@@ -51,6 +41,16 @@ namespace Unity.Collections
         public unsafe static void Sort<T, U>(T* array, int length, U comp) where T : unmanaged where U : IComparer<T>
         {
             IntroSort<T, U>(array, length, comp);
+        }
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
+        {
+            IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -76,6 +76,18 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Sorts a list using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public unsafe static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
+        {
+            IntroSort<T, U>(list.GetUnsafePtr(), list.Length, comp);
+        }
+
+        /// <summary>
         /// Sorts a list in ascending order.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
@@ -92,9 +104,19 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="list">List to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public unsafe static void Sort<T, U>(this NativeList<T> list, U comp) where T : struct where U : IComparer<T>
+        public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
         {
-            IntroSort<T, U>(list.GetUnsafePtr(), list.Length, comp);
+            IntroSort<T, U>(list.Ptr, list.Length, comp);
+        }
+
+        /// <summary>
+        /// Sorts a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        public unsafe static void Sort<T>(this UnsafeList<T> list) where T : unmanaged, IComparable<T>
+        {
+            list.Sort(new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -104,7 +126,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="list">List to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
+        public unsafe static void Sort<T, U>(this UnsafeList<T> list, U comp) where T : unmanaged where U : IComparer<T>
         {
             IntroSort<T, U>(list.Ptr, list.Length, comp);
         }

@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
@@ -7,6 +6,9 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Text.RegularExpressions;
+#endif
 
 internal class NativeQueueTests
 {

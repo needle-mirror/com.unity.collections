@@ -76,7 +76,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// A deterministic data streaming supporting parallel reading and parallel writing.
     /// Allows you to write different types or arrays into a single stream.
     /// </summary>
-    public unsafe struct UnsafeStream : IDisposable
+    public unsafe struct UnsafeStream
+        : INativeDisposable
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeStreamBlockData* m_Block;

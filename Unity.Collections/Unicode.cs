@@ -74,14 +74,36 @@ namespace Unity.Collections
     }
 
     /// <summary>
+    ///
     /// </summary>
     public unsafe struct Unicode
     {
         /// <summary>
+        ///
         /// </summary>
         public struct Rune
         {
+            /// <summary>
+            ///
+            /// </summary>
             public int value;
+
+            /// <summary>
+            ///
+            /// </summary>
+            /// <param name="c"></param>
+            /// <returns></returns>
+            public static explicit operator Rune(char c) => new Rune { value = c };
+
+            /// <summary>
+            ///
+            /// </summary>
+            /// <param name="c"></param>
+            /// <returns></returns>
+            public static bool IsDigit(Rune c)
+            {
+                return c.value >= '0' && c.value <= '9';
+            }
         }
 
         /// <summary>
@@ -113,12 +135,12 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        static public Rune ReplacementCharacter => new Rune { value = 0xFFFD };
+        public static Rune ReplacementCharacter => new Rune { value = 0xFFFD };
 
         /// <summary>
         ///
         /// </summary>
-        static public Rune BadRune => new Rune { value = 0 };
+        public static Rune BadRune => new Rune { value = 0 };
 
         /// <summary>
         ///
@@ -551,6 +573,9 @@ namespace Unity.Collections
         /// </summary>
         public const int kMaxCharsPerEntry = 4096;
 
+        /// <summary>
+        ///
+        /// </summary>
         public int Entries => entries;
 
         void Initialize()

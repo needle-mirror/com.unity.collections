@@ -7,7 +7,7 @@ using Unity.Collections.Tests;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixture
 {
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeMultiHashMap_Read_And_Write_Without_Fences()
     {
         var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, Allocator.TempJob);

@@ -43,6 +43,7 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("Hash map throws when full.")]
     public void NativeMultiHashMap_Read_And_Write_Full()
     {
         var hashMap = new NativeMultiHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
@@ -67,12 +68,12 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
         var readJob = readData.Schedule(hashMapSize, 1, writeJob);
         readJob.Complete();
 
-        var missing = new HashSet<int>();
+        var missing = new Dictionary<int, bool>();
         for (int i = 0; i < hashMapSize; ++i)
         {
             if (writeStatus[i] == -2)
             {
-                missing.Add(i);
+                missing[i] = true;
                 Assert.AreEqual(-1, readValues[i], "Job read a value form hash map which should not be there");
             }
             else

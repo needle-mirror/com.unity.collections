@@ -1,6 +1,5 @@
 #if UNITY_2020_1_OR_NEWER || UNITY_DOTSRUNTIME
 using System;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
@@ -8,6 +7,9 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Text.RegularExpressions;
+#endif
 
 class VirtualMemoryUtilityTests
 {
@@ -21,6 +23,7 @@ class VirtualMemoryUtilityTests
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
 
+#if !UNITY_DOTSRUNTIME
     [Test]
     public void VirtualMemory_TryToReserveInvalidPageSize()
     {
@@ -31,6 +34,7 @@ class VirtualMemoryUtilityTests
         LogAssert.Expect(LogType.Error, new Regex("Baselib error:*"));
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
+#endif
 
     [Test]
     public unsafe void VirtualMemory_Allocate()
@@ -63,6 +67,7 @@ class VirtualMemoryUtilityTests
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
 
+#if !UNITY_DOTSRUNTIME
     [Test]
     [Ignore("This doesn't work on all platforms (e.g. MacOS) because baselib might be able to commit memory just fine (or commit does nothing, e.g. WebGL) and then you won't get a NullReferenceException.")]
     public unsafe void VirtualMemory_OvercommitReservedMemory()
@@ -85,7 +90,9 @@ class VirtualMemoryUtilityTests
         }
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
+#endif
 
+#if !UNITY_DOTSRUNTIME    // DOTS-Runtime safety system throws fatally on the NullReferenceException.
     [Test]
     public unsafe void VirtualMemory_Decommit()
     {
@@ -111,6 +118,7 @@ class VirtualMemoryUtilityTests
         }
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
+#endif
 
     [BurstCompile]
     unsafe struct CommitJob : IJobParallelFor

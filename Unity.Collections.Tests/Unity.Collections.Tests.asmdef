@@ -4,9 +4,8 @@
         "Unity.Collections",
         "Unity.Burst",
         "Unity.Jobs",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
-        "Unity.Mathematics"
+        "Unity.Mathematics",
+        "Unity.Collections.BurstCompatibilityGen"
     ],
     "includePlatforms": [
         "Editor"
@@ -22,5 +21,8 @@
         "UNITY_INCLUDE_TESTS"
     ],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": false,
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
 }

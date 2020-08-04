@@ -8,7 +8,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// An unmanaged, untyped, buffer, without any thread safety check features.
     /// </summary>
-    public unsafe struct UnsafeAppendBuffer : IDisposable
+    public unsafe struct UnsafeAppendBuffer
+        : INativeDisposable
     {
         /// <summary>
         /// </summary>

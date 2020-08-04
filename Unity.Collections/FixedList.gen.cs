@@ -205,14 +205,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -220,55 +238,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedList32&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedList32&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList32&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList32&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList32&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList32&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire FixedList32.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList32&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -284,6 +253,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -325,19 +296,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the FixedList32&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedList32&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -352,6 +310,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -386,21 +346,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the FixedList32&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList32&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -410,6 +355,7 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -422,6 +368,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -1001,6 +949,73 @@ namespace Unity.Collections
         }
     }
 
+    public unsafe static class FixedList32Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the FixedList32 forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the FixedList32</param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the FixedList32&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the FixedList32&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class FixedList32DebugView<T> where T : unmanaged
     {
         FixedList32<T> m_List;
@@ -1158,14 +1173,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -1173,55 +1206,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedList64&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedList64&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList64&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList64&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList64&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList64&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire FixedList64.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList64&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -1237,6 +1221,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -1278,19 +1264,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the FixedList64&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedList64&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -1305,6 +1278,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -1339,21 +1314,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the FixedList64&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList64&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -1363,6 +1323,7 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -1375,6 +1336,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -1954,6 +1917,73 @@ namespace Unity.Collections
         }
     }
 
+    public unsafe static class FixedList64Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in FixedList64&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedList64&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the FixedList64 forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the FixedList64</param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the FixedList64&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the FixedList64&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class FixedList64DebugView<T> where T : unmanaged
     {
         FixedList64<T> m_List;
@@ -2111,14 +2141,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -2126,55 +2174,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedList128&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedList128&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList128&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList128&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList128&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList128&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire FixedList128.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList128&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -2190,6 +2189,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -2231,19 +2232,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the FixedList128&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedList128&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -2258,6 +2246,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -2292,21 +2282,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the FixedList128&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList128&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -2316,6 +2291,7 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -2328,6 +2304,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -2907,6 +2885,73 @@ namespace Unity.Collections
         }
     }
 
+    public unsafe static class FixedList128Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in FixedList128&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedList128&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the FixedList128 forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the FixedList128</param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the FixedList128&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the FixedList128&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class FixedList128DebugView<T> where T : unmanaged
     {
         FixedList128<T> m_List;
@@ -3064,14 +3109,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -3079,55 +3142,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedList512&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedList512&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList512&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList512&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList512&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList512&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire FixedList512.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList512&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -3143,6 +3157,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -3184,19 +3200,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the FixedList512&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedList512&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -3211,6 +3214,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -3245,21 +3250,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the FixedList512&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList512&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -3269,6 +3259,7 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -3281,6 +3272,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -3860,6 +3853,73 @@ namespace Unity.Collections
         }
     }
 
+    public unsafe static class FixedList512Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in FixedList512&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedList512&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the FixedList512 forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the FixedList512</param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the FixedList512&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the FixedList512&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class FixedList512DebugView<T> where T : unmanaged
     {
         FixedList512<T> m_List;
@@ -4017,14 +4077,32 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
         /// Adds an element to the list.
         /// </summary>
         /// <param name="item">The T to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(in T item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -4032,55 +4110,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedList4096&lt;T&gt;.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedList4096&lt;T&gt;.</param>
-        /// <returns></returns>
-        public bool Contains(in T item)
-        {
-            return IndexOf(item) >= 0;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList4096&lt;T&gt; that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList4096&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedList4096&lt;T&gt; that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList4096&lt;T&gt;.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        public int IndexOf(in T item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
-        /// Searches for the specified T and returns the zero-based index of the first occurrence within the entire FixedList4096.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList4096&lt;T&gt;.</param>
-        /// <returns></returns>
-        public int IndexOf(T item)
-        {
-            return IndexOf(item, 0, Length);
         }
 
         /// <summary>
@@ -4096,6 +4125,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -4137,19 +4168,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the FixedList4096&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedList4096&lt;T&gt;.</param>
-        public void RemoveSwapBack(in T item)
-        {
-            var index = IndexOf(item);
-            if(index == -1)
-                return;
-            RemoveAtSwapBack(index);
-        }
-
-        /// <summary>
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -4164,6 +4182,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -4198,21 +4218,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified T from the begining of the FixedList4096&lt;T&gt; forward, removes it if possible,
-        /// and returns true if the T was successfully removed.
-        /// </summary>
-        /// <param name="item">The T to locate in the FixedList4096&lt;T&gt;</param>
-        /// <returns></returns>
-        public bool Remove(in T item)
-        {
-            int index = IndexOf(item);
-            if(index < 0)
-                return false;
-            RemoveRangeWithBeginEnd(index, index+1);
-            return true;
-        }
-
-        /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
@@ -4222,6 +4227,7 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
         public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
@@ -4234,6 +4240,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -4813,6 +4821,73 @@ namespace Unity.Collections
         }
     }
 
+    public unsafe static class FixedList4096Extensions
+    {
+        /// <summary>
+        /// Searches for the specified element in FixedList4096&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public static int IndexOf<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedList4096&lt;T&gt;.
+        /// </summary>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True, if element is found.</returns>
+        public static bool Contains<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Searches for the specified item from the begining of the FixedList4096 forward, removes it if possible,
+        /// and returns true if the item was successfully removed.
+        /// </summary>
+        /// <param name="item">The item to locate in the FixedList4096</param>
+        /// <returns>True, if element is removed.</returns>
+        public static bool Remove<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            int index = list.IndexOf(value);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            list.RemoveAt(index);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of an item from the FixedList4096&lt;T&gt; and replaces it with the last element,
+        /// which can be much faster than copying down all subsequent elements.
+        /// </summary>
+        /// <param name="item">The elements to remove from the FixedList4096&lt;T&gt;.</param>
+        /// <returns>Returns true if item is removed.</returns>
+        public static bool RemoveSwapBack<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        {
+            var index = list.IndexOf(value);
+            if (index == -1)
+            {
+                return false;
+            }
+
+            list.RemoveAtSwapBack(index);
+
+            return true;
+        }
+    }
+
     sealed class FixedList4096DebugView<T> where T : unmanaged
     {
         FixedList4096<T> m_List;
@@ -4966,9 +5041,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(byte item)
+        public void Add(in byte item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            byte* data = (byte*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -4976,10 +5065,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(byte item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -4987,16 +5080,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListByte32.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListByte32.</param>
-        /// <returns></returns>
-        public bool Contains(byte item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -5008,6 +5091,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -5023,9 +5107,20 @@ namespace Unity.Collections
         /// <param name="item">The byte to locate in the FixedListByte32.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListByte32.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListByte32.</param>
+        /// <returns></returns>
+        public bool Contains(byte item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -5035,7 +5130,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(byte item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -5051,6 +5154,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -5096,12 +5201,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListByte32.</param>
-        public void RemoveSwapBack(byte item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(byte item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -5119,6 +5229,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -5153,13 +5265,17 @@ namespace Unity.Collections
         /// and returns true if the byte was successfully removed.
         /// </summary>
         /// <param name="item">The byte to locate in the FixedListByte32</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(byte item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -5186,6 +5302,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -5236,7 +5354,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListByte32.
+        /// Sorts the elements in this FixedListByte32 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -5245,6 +5363,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((byte*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListByte32 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<byte>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((byte*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListByte32 and FixedListByte32 have the same value.
@@ -5906,9 +6038,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(byte item)
+        public void Add(in byte item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            byte* data = (byte*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -5916,10 +6062,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(byte item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -5927,16 +6077,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListByte64.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListByte64.</param>
-        /// <returns></returns>
-        public bool Contains(byte item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -5948,6 +6088,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -5963,9 +6104,20 @@ namespace Unity.Collections
         /// <param name="item">The byte to locate in the FixedListByte64.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListByte64.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListByte64.</param>
+        /// <returns></returns>
+        public bool Contains(byte item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -5975,7 +6127,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(byte item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -5991,6 +6151,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -6036,12 +6198,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListByte64.</param>
-        public void RemoveSwapBack(byte item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(byte item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -6059,6 +6226,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -6093,13 +6262,17 @@ namespace Unity.Collections
         /// and returns true if the byte was successfully removed.
         /// </summary>
         /// <param name="item">The byte to locate in the FixedListByte64</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(byte item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -6126,6 +6299,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -6176,7 +6351,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListByte64.
+        /// Sorts the elements in this FixedListByte64 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -6185,6 +6360,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((byte*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListByte64 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<byte>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((byte*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListByte64 and FixedListByte32 have the same value.
@@ -6846,9 +7035,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(byte item)
+        public void Add(in byte item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            byte* data = (byte*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -6856,10 +7059,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(byte item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -6867,16 +7074,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListByte128.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListByte128.</param>
-        /// <returns></returns>
-        public bool Contains(byte item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -6888,6 +7085,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -6903,9 +7101,20 @@ namespace Unity.Collections
         /// <param name="item">The byte to locate in the FixedListByte128.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListByte128.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListByte128.</param>
+        /// <returns></returns>
+        public bool Contains(byte item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -6915,7 +7124,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(byte item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -6931,6 +7148,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -6976,12 +7195,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListByte128.</param>
-        public void RemoveSwapBack(byte item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(byte item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -6999,6 +7223,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -7033,13 +7259,17 @@ namespace Unity.Collections
         /// and returns true if the byte was successfully removed.
         /// </summary>
         /// <param name="item">The byte to locate in the FixedListByte128</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(byte item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -7066,6 +7296,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -7116,7 +7348,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListByte128.
+        /// Sorts the elements in this FixedListByte128 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -7125,6 +7357,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((byte*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListByte128 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<byte>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((byte*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListByte128 and FixedListByte32 have the same value.
@@ -7786,9 +8032,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(byte item)
+        public void Add(in byte item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            byte* data = (byte*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -7796,10 +8056,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(byte item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -7807,16 +8071,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListByte512.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListByte512.</param>
-        /// <returns></returns>
-        public bool Contains(byte item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -7828,6 +8082,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -7843,9 +8098,20 @@ namespace Unity.Collections
         /// <param name="item">The byte to locate in the FixedListByte512.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListByte512.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListByte512.</param>
+        /// <returns></returns>
+        public bool Contains(byte item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -7855,7 +8121,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(byte item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -7871,6 +8145,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -7916,12 +8192,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListByte512.</param>
-        public void RemoveSwapBack(byte item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(byte item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -7939,6 +8220,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -7973,13 +8256,17 @@ namespace Unity.Collections
         /// and returns true if the byte was successfully removed.
         /// </summary>
         /// <param name="item">The byte to locate in the FixedListByte512</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(byte item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -8006,6 +8293,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -8056,7 +8345,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListByte512.
+        /// Sorts the elements in this FixedListByte512 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -8065,6 +8354,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((byte*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListByte512 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<byte>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((byte*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListByte512 and FixedListByte32 have the same value.
@@ -8726,9 +9029,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(byte item)
+        public void Add(in byte item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            byte* data = (byte*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -8736,10 +9053,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The byte to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(byte item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -8747,16 +9068,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListByte4096.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListByte4096.</param>
-        /// <returns></returns>
-        public bool Contains(byte item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -8768,6 +9079,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -8783,9 +9095,20 @@ namespace Unity.Collections
         /// <param name="item">The byte to locate in the FixedListByte4096.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(byte item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListByte4096.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListByte4096.</param>
+        /// <returns></returns>
+        public bool Contains(byte item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -8795,7 +9118,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(byte item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -8811,6 +9142,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -8856,12 +9189,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListByte4096.</param>
-        public void RemoveSwapBack(byte item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(byte item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -8879,6 +9217,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -8913,13 +9253,17 @@ namespace Unity.Collections
         /// and returns true if the byte was successfully removed.
         /// </summary>
         /// <param name="item">The byte to locate in the FixedListByte4096</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(byte item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -8946,6 +9290,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -8996,7 +9342,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListByte4096.
+        /// Sorts the elements in this FixedListByte4096 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -9005,6 +9351,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((byte*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListByte4096 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<byte>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((byte*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListByte4096 and FixedListByte32 have the same value.
@@ -9666,9 +10026,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(int item)
+        public void Add(in int item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            int* data = (int*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -9676,10 +10050,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(int item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -9687,16 +10065,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListInt32.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListInt32.</param>
-        /// <returns></returns>
-        public bool Contains(int item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -9708,6 +10076,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -9723,9 +10092,20 @@ namespace Unity.Collections
         /// <param name="item">The int to locate in the FixedListInt32.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListInt32.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListInt32.</param>
+        /// <returns></returns>
+        public bool Contains(int item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -9735,7 +10115,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(int item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -9751,6 +10139,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -9796,12 +10186,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListInt32.</param>
-        public void RemoveSwapBack(int item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(int item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -9819,6 +10214,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -9853,13 +10250,17 @@ namespace Unity.Collections
         /// and returns true if the int was successfully removed.
         /// </summary>
         /// <param name="item">The int to locate in the FixedListInt32</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(int item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -9886,6 +10287,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -9936,7 +10339,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListInt32.
+        /// Sorts the elements in this FixedListInt32 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -9945,6 +10348,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((int*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListInt32 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<int>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((int*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListInt32 and FixedListInt32 have the same value.
@@ -10606,9 +11023,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(int item)
+        public void Add(in int item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            int* data = (int*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -10616,10 +11047,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(int item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -10627,16 +11062,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListInt64.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListInt64.</param>
-        /// <returns></returns>
-        public bool Contains(int item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -10648,6 +11073,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -10663,9 +11089,20 @@ namespace Unity.Collections
         /// <param name="item">The int to locate in the FixedListInt64.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListInt64.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListInt64.</param>
+        /// <returns></returns>
+        public bool Contains(int item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -10675,7 +11112,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(int item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -10691,6 +11136,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -10736,12 +11183,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListInt64.</param>
-        public void RemoveSwapBack(int item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(int item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -10759,6 +11211,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -10793,13 +11247,17 @@ namespace Unity.Collections
         /// and returns true if the int was successfully removed.
         /// </summary>
         /// <param name="item">The int to locate in the FixedListInt64</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(int item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -10826,6 +11284,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -10876,7 +11336,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListInt64.
+        /// Sorts the elements in this FixedListInt64 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -10885,6 +11345,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((int*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListInt64 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<int>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((int*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListInt64 and FixedListInt32 have the same value.
@@ -11546,9 +12020,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(int item)
+        public void Add(in int item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            int* data = (int*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -11556,10 +12044,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(int item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -11567,16 +12059,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListInt128.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListInt128.</param>
-        /// <returns></returns>
-        public bool Contains(int item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -11588,6 +12070,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -11603,9 +12086,20 @@ namespace Unity.Collections
         /// <param name="item">The int to locate in the FixedListInt128.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListInt128.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListInt128.</param>
+        /// <returns></returns>
+        public bool Contains(int item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -11615,7 +12109,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(int item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -11631,6 +12133,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -11676,12 +12180,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListInt128.</param>
-        public void RemoveSwapBack(int item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(int item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -11699,6 +12208,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -11733,13 +12244,17 @@ namespace Unity.Collections
         /// and returns true if the int was successfully removed.
         /// </summary>
         /// <param name="item">The int to locate in the FixedListInt128</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(int item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -11766,6 +12281,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -11816,7 +12333,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListInt128.
+        /// Sorts the elements in this FixedListInt128 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -11825,6 +12342,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((int*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListInt128 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<int>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((int*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListInt128 and FixedListInt32 have the same value.
@@ -12486,9 +13017,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(int item)
+        public void Add(in int item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            int* data = (int*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -12496,10 +13041,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(int item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -12507,16 +13056,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListInt512.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListInt512.</param>
-        /// <returns></returns>
-        public bool Contains(int item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -12528,6 +13067,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -12543,9 +13083,20 @@ namespace Unity.Collections
         /// <param name="item">The int to locate in the FixedListInt512.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListInt512.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListInt512.</param>
+        /// <returns></returns>
+        public bool Contains(int item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -12555,7 +13106,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(int item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -12571,6 +13130,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -12616,12 +13177,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListInt512.</param>
-        public void RemoveSwapBack(int item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(int item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -12639,6 +13205,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -12673,13 +13241,17 @@ namespace Unity.Collections
         /// and returns true if the int was successfully removed.
         /// </summary>
         /// <param name="item">The int to locate in the FixedListInt512</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(int item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -12706,6 +13278,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -12756,7 +13330,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListInt512.
+        /// Sorts the elements in this FixedListInt512 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -12765,6 +13339,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((int*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListInt512 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<int>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((int*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListInt512 and FixedListInt32 have the same value.
@@ -13426,9 +14014,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(int item)
+        public void Add(in int item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            int* data = (int*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -13436,10 +14038,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The int to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(int item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -13447,16 +14053,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListInt4096.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListInt4096.</param>
-        /// <returns></returns>
-        public bool Contains(int item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -13468,6 +14064,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -13483,9 +14080,20 @@ namespace Unity.Collections
         /// <param name="item">The int to locate in the FixedListInt4096.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(int item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListInt4096.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListInt4096.</param>
+        /// <returns></returns>
+        public bool Contains(int item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -13495,7 +14103,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(int item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -13511,6 +14127,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -13556,12 +14174,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListInt4096.</param>
-        public void RemoveSwapBack(int item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(int item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -13579,6 +14202,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -13613,13 +14238,17 @@ namespace Unity.Collections
         /// and returns true if the int was successfully removed.
         /// </summary>
         /// <param name="item">The int to locate in the FixedListInt4096</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(int item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -13646,6 +14275,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -13696,7 +14327,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListInt4096.
+        /// Sorts the elements in this FixedListInt4096 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -13705,6 +14336,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((int*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListInt4096 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<int>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((int*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListInt4096 and FixedListInt32 have the same value.
@@ -14366,9 +15011,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(float item)
+        public void Add(in float item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            float* data = (float*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -14376,10 +15035,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(float item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -14387,16 +15050,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListFloat32.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListFloat32.</param>
-        /// <returns></returns>
-        public bool Contains(float item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -14408,6 +15061,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -14423,9 +15077,20 @@ namespace Unity.Collections
         /// <param name="item">The float to locate in the FixedListFloat32.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListFloat32.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListFloat32.</param>
+        /// <returns></returns>
+        public bool Contains(float item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -14435,7 +15100,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(float item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -14451,6 +15124,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -14496,12 +15171,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListFloat32.</param>
-        public void RemoveSwapBack(float item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(float item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -14519,6 +15199,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -14553,13 +15235,17 @@ namespace Unity.Collections
         /// and returns true if the float was successfully removed.
         /// </summary>
         /// <param name="item">The float to locate in the FixedListFloat32</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(float item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -14586,6 +15272,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -14636,7 +15324,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListFloat32.
+        /// Sorts the elements in this FixedListFloat32 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -14645,6 +15333,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((float*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListFloat32 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<float>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((float*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListFloat32 and FixedListFloat32 have the same value.
@@ -15306,9 +16008,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(float item)
+        public void Add(in float item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            float* data = (float*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -15316,10 +16032,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(float item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -15327,16 +16047,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListFloat64.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListFloat64.</param>
-        /// <returns></returns>
-        public bool Contains(float item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -15348,6 +16058,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -15363,9 +16074,20 @@ namespace Unity.Collections
         /// <param name="item">The float to locate in the FixedListFloat64.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListFloat64.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListFloat64.</param>
+        /// <returns></returns>
+        public bool Contains(float item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -15375,7 +16097,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(float item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -15391,6 +16121,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -15436,12 +16168,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListFloat64.</param>
-        public void RemoveSwapBack(float item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(float item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -15459,6 +16196,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -15493,13 +16232,17 @@ namespace Unity.Collections
         /// and returns true if the float was successfully removed.
         /// </summary>
         /// <param name="item">The float to locate in the FixedListFloat64</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(float item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -15526,6 +16269,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -15576,7 +16321,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListFloat64.
+        /// Sorts the elements in this FixedListFloat64 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -15585,6 +16330,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((float*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListFloat64 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<float>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((float*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListFloat64 and FixedListFloat32 have the same value.
@@ -16246,9 +17005,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(float item)
+        public void Add(in float item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            float* data = (float*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -16256,10 +17029,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(float item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -16267,16 +17044,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListFloat128.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListFloat128.</param>
-        /// <returns></returns>
-        public bool Contains(float item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -16288,6 +17055,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -16303,9 +17071,20 @@ namespace Unity.Collections
         /// <param name="item">The float to locate in the FixedListFloat128.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListFloat128.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListFloat128.</param>
+        /// <returns></returns>
+        public bool Contains(float item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -16315,7 +17094,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(float item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -16331,6 +17118,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -16376,12 +17165,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListFloat128.</param>
-        public void RemoveSwapBack(float item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(float item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -16399,6 +17193,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -16433,13 +17229,17 @@ namespace Unity.Collections
         /// and returns true if the float was successfully removed.
         /// </summary>
         /// <param name="item">The float to locate in the FixedListFloat128</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(float item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -16466,6 +17266,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -16516,7 +17318,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListFloat128.
+        /// Sorts the elements in this FixedListFloat128 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -16525,6 +17327,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((float*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListFloat128 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<float>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((float*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListFloat128 and FixedListFloat32 have the same value.
@@ -17186,9 +18002,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(float item)
+        public void Add(in float item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            float* data = (float*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -17196,10 +18026,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(float item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -17207,16 +18041,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListFloat512.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListFloat512.</param>
-        /// <returns></returns>
-        public bool Contains(float item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -17228,6 +18052,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -17243,9 +18068,20 @@ namespace Unity.Collections
         /// <param name="item">The float to locate in the FixedListFloat512.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListFloat512.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListFloat512.</param>
+        /// <returns></returns>
+        public bool Contains(float item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -17255,7 +18091,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(float item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -17271,6 +18115,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -17316,12 +18162,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListFloat512.</param>
-        public void RemoveSwapBack(float item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(float item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -17339,6 +18190,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -17373,13 +18226,17 @@ namespace Unity.Collections
         /// and returns true if the float was successfully removed.
         /// </summary>
         /// <param name="item">The float to locate in the FixedListFloat512</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(float item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -17406,6 +18263,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -17456,7 +18315,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListFloat512.
+        /// Sorts the elements in this FixedListFloat512 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -17465,6 +18324,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((float*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListFloat512 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<float>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((float*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListFloat512 and FixedListFloat32 have the same value.
@@ -18126,9 +18999,23 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(float item)
+        public void Add(in float item)
         {
             this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            float* data = (float*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
         }
 
         /// <summary>
@@ -18136,10 +19023,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The float to be added at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item)
-        {
-            this[Length++] = item;
-        }
+        public void AddNoResize(float item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
         /// Clears the list.
@@ -18147,16 +19038,6 @@ namespace Unity.Collections
         public void Clear()
         {
             Length = 0;
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the FixedListFloat4096.
-        /// </summary>
-        /// <param name="item">The object to locate in the FixedListFloat4096.</param>
-        /// <returns></returns>
-        public bool Contains(float item)
-        {
-            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -18168,6 +19049,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <param name="count">The number of elements in the section to search.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index, int count)
         {
             for(var i = index; i < index + count; ++i)
@@ -18183,9 +19065,20 @@ namespace Unity.Collections
         /// <param name="item">The float to locate in the FixedListFloat4096.</param>
         /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
         /// <returns></returns>
+        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
         public int IndexOf(float item, int index)
         {
             return IndexOf(item, index, Length - index);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the FixedListFloat4096.
+        /// </summary>
+        /// <param name="item">The object to locate in the FixedListFloat4096.</param>
+        /// <returns></returns>
+        public bool Contains(float item)
+        {
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -18195,7 +19088,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public int IndexOf(float item)
         {
-            return IndexOf(item, 0, Length);
+            for (var i = 0; i < length; ++i)
+            {
+                if (this[i].Equals(item))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>
@@ -18211,6 +19112,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -18256,12 +19159,17 @@ namespace Unity.Collections
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
         /// <param name="item">The elements to remove from the FixedListFloat4096.</param>
-        public void RemoveSwapBack(float item)
+        /// <returns>Returns true if item is removed.</returns>
+        public bool RemoveSwapBack(float item)
         {
             var index = IndexOf(item);
-            if(index == -1)
-                return;
+            if (index == -1)
+            {
+                return false;
+            }
+
             RemoveAtSwapBack(index);
+            return true;
         }
 
         /// <summary>
@@ -18279,6 +19187,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -18313,13 +19223,17 @@ namespace Unity.Collections
         /// and returns true if the float was successfully removed.
         /// </summary>
         /// <param name="item">The float to locate in the FixedListFloat4096</param>
-        /// <returns></returns>
+        /// <returns>Returns true if item is removed.</returns>
         public bool Remove(float item)
         {
             int index = IndexOf(item);
-            if(index < 0)
+            if (index < 0)
+            {
                 return false;
-            RemoveRangeWithBeginEnd(index, index+1);
+            }
+
+            RemoveAt(index);
+
             return true;
         }
 
@@ -18346,6 +19260,8 @@ namespace Unity.Collections
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             int itemsToRemove = end - begin;
@@ -18396,7 +19312,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Sorts the elements in this FixedListFloat4096.
+        /// Sorts the elements in this FixedListFloat4096 in ascending order.
         /// </summary>
         public void Sort()
         {
@@ -18405,6 +19321,20 @@ namespace Unity.Collections
                 NativeSortExtension.Sort((float*)Buffer, length);
             }
         }
+
+        /// <summary>
+        /// Sorts the elements in this FixedListFloat4096 using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public void Sort<U>(U comp) where U : IComparer<float>
+        {
+            unsafe
+            {
+                NativeSortExtension.Sort((float*)Buffer, length, comp);
+            }
+        }
+
 
         /// <summary>
         /// Determines whether a FixedListFloat4096 and FixedListFloat32 have the same value.
@@ -18930,10 +19860,10 @@ namespace Unity.Collections
     {
 
         /// <summary>
-        /// Sorts the elements in this FixedList32&lt;T&gt;.
+        /// Sorts the elements in this FixedList32&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref FixedList32<T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -18947,12 +19877,33 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// Sorts the elements in this FixedList32&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref FixedList32<T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
+                }
+            }
+        }
+
 
         /// <summary>
-        /// Sorts the elements in this FixedList64&lt;T&gt;.
+        /// Sorts the elements in this FixedList64&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref FixedList64<T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -18966,12 +19917,33 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// Sorts the elements in this FixedList64&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref FixedList64<T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
+                }
+            }
+        }
+
 
         /// <summary>
-        /// Sorts the elements in this FixedList128&lt;T&gt;.
+        /// Sorts the elements in this FixedList128&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref FixedList128<T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -18985,12 +19957,33 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// Sorts the elements in this FixedList128&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref FixedList128<T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
+                }
+            }
+        }
+
 
         /// <summary>
-        /// Sorts the elements in this FixedList512&lt;T&gt;.
+        /// Sorts the elements in this FixedList512&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref FixedList512<T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -19004,12 +19997,33 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// Sorts the elements in this FixedList512&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref FixedList512<T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
+                }
+            }
+        }
+
 
         /// <summary>
-        /// Sorts the elements in this FixedList4096&lt;T&gt;.
+        /// Sorts the elements in this FixedList4096&lt;T&gt; in ascending order.
         /// </summary>
-        /// <param name="data">Container to perform search.</param>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
         public static void Sort<T>(this ref FixedList4096<T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -19019,6 +20033,27 @@ namespace Unity.Collections
                 {
                     var c = b + FixedList.PaddingBytes<T>();
                     NativeSortExtension.Sort((T*)c, data.Length);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the elements in this FixedList4096&lt;T&gt; using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements in the container.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="data">Container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public static void Sort<T, U>(this ref FixedList4096<T> data, U comp)
+        where T : unmanaged, IComparable<T>
+        where U : IComparer<T>
+        {
+            unsafe
+            {
+                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                {
+                    var c = b + FixedList.PaddingBytes<T>();
+                    NativeSortExtension.Sort((T*)c, data.Length, comp);
                 }
             }
         }

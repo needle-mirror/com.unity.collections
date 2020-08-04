@@ -227,6 +227,30 @@ namespace Unity.Collections.LowLevel.Unsafe
             return totalSize;
         }
 
+        internal static bool IsEmpty(UnsafeHashMapData* data)
+        {
+            if (data->allocatedIndexLength <= 0)
+            {
+                return true;
+            }
+
+            var bucketArray = (int*)data->buckets;
+            var bucketNext = (int*)data->next;
+            var capacityMask = data->bucketCapacityMask;
+
+            for (int i = 0; i <= capacityMask; ++i)
+            {
+                int bucket = bucketArray[i];
+
+                if (bucket != -1)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         internal static int GetCount(UnsafeHashMapData* data)
         {
             var bucketArray = (int*)data->buckets;
@@ -248,17 +272,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             return count;
         }
 
-        internal static bool MoveNext(UnsafeHashMapData* data, ref int bucketIndex, out int index)
-        {
-            int nextIndex = -1;
-            return MoveNext(data, ref bucketIndex, ref nextIndex, out index);
-        }
-
         internal static bool MoveNext(UnsafeHashMapData* data, ref int bucketIndex, ref int nextIndex, out int index)
         {
             var bucketArray = (int*)data->buckets;
             var bucketNext = (int*)data->next;
             var capacityMask = data->bucketCapacityMask;
+
+            if (nextIndex != -1)
+            {
+                index = nextIndex;
+                nextIndex = bucketNext[nextIndex];
+                return true;
+            }
 
             for (int i = bucketIndex; i <= capacityMask; ++i)
             {
@@ -266,33 +291,17 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (idx != -1)
                 {
-                    if (nextIndex == -1)
-                    {
-                        nextIndex = bucketNext[idx];
-                    }
-                    else
-                    {
-                        idx = nextIndex;
-                        nextIndex = bucketNext[nextIndex];
-                    }
-
-                    if (nextIndex == -1)
-                    {
-                        bucketIndex = i + 1;
-                        nextIndex = -1;
-                    }
-
                     index = idx;
+                    bucketIndex = i + 1;
+                    nextIndex = bucketNext[idx];
+
                     return true;
-                }
-                else
-                {
-                    bucketIndex = i;
-                    nextIndex = i;
                 }
             }
 
             index = -1;
+            bucketIndex = capacityMask + 1;
+            nextIndex = -1;
             return false;
         }
 
@@ -971,6 +980,53 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
+    internal unsafe struct UnsafeHashMapDataEnumerator
+    {
+        [NativeDisableUnsafePtrRestriction]
+        internal UnsafeHashMapData* m_Buffer;
+        internal int m_Index;
+        internal int m_BucketIndex;
+        internal int m_NextIndex;
+
+        internal unsafe UnsafeHashMapDataEnumerator(UnsafeHashMapData* data)
+        {
+            m_Buffer = data;
+            m_Index = -1;
+            m_BucketIndex = 0;
+            m_NextIndex = -1;
+        }
+
+        internal bool MoveNext()
+        {
+            return UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, ref m_NextIndex, out m_Index);
+        }
+
+        internal void Reset()
+        {
+            m_Index = -1;
+            m_BucketIndex = 0;
+            m_NextIndex = -1;
+        }
+
+        internal KeyValue<TKey, TValue> GetCurrent<TKey, TValue>()
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            return new KeyValue<TKey, TValue> { m_Buffer = m_Buffer, m_Index = m_Index };
+        }
+
+        internal TKey GetCurrentKey<TKey>()
+            where TKey : struct, IEquatable<TKey>
+        {
+            if (m_Index != -1)
+            {
+                return UnsafeUtility.ReadArrayElement<TKey>(m_Buffer->keys, m_Index);
+            }
+
+            return default;
+        }
+    }
+
     /// <summary>
     /// Unordered associative array, a collection of keys and values, without any thread safety check features.
     /// </summary>
@@ -980,8 +1036,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Count = {Count()}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeHashMapDebuggerTypeProxy<,>))]
     public unsafe struct UnsafeHashMap<TKey, TValue>
-        : IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
-        , IDisposable
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
@@ -1012,7 +1068,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether container is empty.
         /// </summary>
         /// <value>True if this container empty.</value>
-        public bool IsEmpty => !IsCreated || m_Buffer->allocatedIndexLength <= 0;
+        public bool IsEmpty => !IsCreated || UnsafeHashMapData.IsEmpty(m_Buffer);
 
         /// <summary>
         /// The current number of items in the container.
@@ -1220,11 +1276,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;
-#if UNITY_DOTSRUNTIME
-            writer.m_ThreadIndex = -1;   // aggressively check that code-gen has patched the ThreadIndex
-#else
-            writer.m_ThreadIndex = 0;    //
-#endif
+            writer.m_ThreadIndex = 0;
             writer.m_Buffer = m_Buffer;
             return writer;
         }
@@ -1276,7 +1328,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An IEnumerator interface for the container.</returns>
         public Enumerator GetEnumerator()
         {
-            return new Enumerator { m_Buffer = m_Buffer, m_Index = -1, m_BucketIndex = 0 };
+            return new Enumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Buffer) };
         }
 
         /// <summary>
@@ -1306,9 +1358,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
-            internal UnsafeHashMapData* m_Buffer;
-            internal int m_Index;
-            internal int m_BucketIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -1319,17 +1369,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next element of the container.
             /// </summary>
             /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
-            public bool MoveNext() => UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, out m_Index);
+            public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
             /// Resets the enumerator to the first element of the container.
             /// </summary>
-            public void Reset() { m_Index = -1; m_BucketIndex = 0; }
+            public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
             /// Gets the element at the current position of the enumerator in the container.
             /// </summary>
-            public KeyValue<TKey, TValue> Current => new KeyValue<TKey, TValue> { m_Buffer = m_Buffer, m_Index = m_Index };
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
             object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
         }
@@ -1384,6 +1434,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     public unsafe struct UntypedUnsafeHashMap
     {
 #pragma warning disable 169
+        [NativeDisableUnsafePtrRestriction]
         UnsafeHashMapData* m_Buffer;
         Allocator m_AllocatorLabel;
 #pragma warning restore 169

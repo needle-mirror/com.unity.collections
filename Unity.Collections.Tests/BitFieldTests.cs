@@ -67,6 +67,7 @@ internal class BitFieldTests : CollectionsTestFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("GetBits() has a throw that isn't supported.")]
     public void BitField32_Throws()
     {
         var test = new BitField32();
@@ -117,6 +118,7 @@ internal class BitFieldTests : CollectionsTestFixture
     }
 
     [Test]
+    [IgnoreInPortableTests("GetBits() has a throw that isn't supported.")]
     public void BitField64_Throws()
     {
         var test = new BitField64();

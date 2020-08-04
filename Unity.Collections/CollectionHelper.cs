@@ -3,15 +3,35 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
+using Unity.Burst.CompilerServices;
+using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
-using Unity.Burst.CompilerServices;
 #if !NET_DOTS
 using System.Reflection;
 #endif
 
 namespace Unity.Collections
 {
+    /// <summary>
+    /// INativeDisposable provides a mechanism for scheduling release of unmanaged resources.
+    /// </summary>
+    public interface INativeDisposable : IDisposable
+    {
+        /// <summary>
+        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// </summary>
+        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
+        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
+        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
+        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
+        /// using it have run.</remarks>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
+        /// the container.</returns>
+        JobHandle Dispose(JobHandle inputDeps);
+    }
+
     /// <summary>
     ///
     /// </summary>

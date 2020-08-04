@@ -15,7 +15,9 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct UnsafeList : IDisposable
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    public unsafe struct UnsafeList
+        : INativeDisposable
     {
         /// <summary>
         /// </summary>
@@ -41,7 +43,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public unsafe UnsafeList(Allocator allocator)
+        public UnsafeList(Allocator allocator)
         {
             Ptr = null;
             Length = 0;
@@ -54,7 +56,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr">Pointer to data.</param>
         /// <param name="length">Lenght of data in bytes.</param>
-        public unsafe UnsafeList(void* ptr, int length)
+        public UnsafeList(void* ptr, int length)
         {
             Ptr = ptr;
             Length = length;
@@ -72,7 +74,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public unsafe UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Allocator = allocator;
             Ptr = null;
@@ -101,7 +103,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public unsafe UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Allocator = allocator;
             Ptr = null;
@@ -206,6 +208,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [NotBurstCompatible] // Due to job scheduling on 2020.1 using statics
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -468,6 +471,57 @@ namespace Unity.Collections.LowLevel.Unsafe
             AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
         }
 
+        void InsertRangeWithBeginEnd(int sizeOf, int alignOf, int begin, int end)
+        {
+            CheckBeginEnd(begin, end);
+
+            int items = end - begin;
+            if (items < 1)
+            {
+                return;
+            }
+
+            var oldLength = Length;
+
+            if (Length + items > Capacity)
+            {
+                Resize(sizeOf, alignOf, Length + items);
+            }
+            else
+            {
+                Length += items;
+            }
+
+            var itemsToCopy = oldLength - begin;
+
+            if (itemsToCopy < 1)
+            {
+                return;
+            }
+
+            var bytesToCopy = itemsToCopy * sizeOf;
+            unsafe
+            {
+                byte* ptr  = (byte*)Ptr;
+                byte* dest = ptr + end * sizeOf;
+                byte* src  = ptr + begin * sizeOf;
+                UnsafeUtility.MemMove(dest, src, bytesToCopy);
+            }
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a container at a specified zero-based index.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd<T>(int begin, int end) where T : struct
+        {
+            InsertRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), begin, end);
+        }
+
         void RemoveRangeSwapBackWithBeginEnd(int sizeOf, int begin, int end)
         {
             CheckBeginEnd(begin, end);
@@ -489,6 +543,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="index">The index of the item to delete.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveAtSwapBack<T>(int index) where T : struct
         {
             RemoveRangeSwapBackWithBeginEnd<T>(index, index + 1);
@@ -511,6 +567,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd<T>(int begin, int end) where T : struct
         {
             RemoveRangeSwapBackWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
@@ -571,6 +629,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd<T>(int begin, int end) where T : struct
         {
             RemoveRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
@@ -748,14 +808,19 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new ArgumentException($"Value for begin {begin} index must less or equal to end {end}.");
             }
 
+            if (begin < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Value for begin {begin} must be positive.");
+            }
+
             if (begin > Length)
             {
-                throw new ArgumentException($"Value for begin {begin} is out of bounds.");
+                throw new ArgumentOutOfRangeException($"Value for begin {begin} is out of bounds.");
             }
 
             if (end > Length)
             {
-                throw new ArgumentException($"Value for end {end} is out of bounds.");
+                throw new ArgumentOutOfRangeException($"Value for end {end} is out of bounds.");
             }
         }
 
@@ -797,9 +862,9 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct UnsafeList<T>
-        : INativeList<T>
+        : INativeDisposable
+        , INativeList<T>
         , IEnumerable<T> // Used by collection initializers.
-        , IDisposable
         where T : unmanaged
     {
         /// <summary>
@@ -867,7 +932,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr">Pointer to data.</param>
         /// <param name="length">Lenght of data in bytes.</param>
-        public unsafe UnsafeList(T* ptr, int length)
+        public UnsafeList(T* ptr, int length)
         {
             Ptr = ptr;
             this.length = length;
@@ -885,7 +950,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public unsafe UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
             length = 0;
@@ -906,7 +971,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public unsafe UnsafeList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
             length = 0;
@@ -1032,9 +1097,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Adds an element to the list.
         /// </summary>
         /// <param name="value">The struct to be added at the end of the list.</param>
-        public void Add(T value)
+        public void Add(in T value)
         {
             this.ListData().Add(value);
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public void AddRange(void* ptr, int length)
+        {
+            this.ListData().AddRange<T>(ptr, length);
         }
 
         /// <summary>
@@ -1044,6 +1119,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void AddRange(UnsafeList<T> list)
         {
             this.ListData().AddRange<T>(list.ListData());
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a container at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
+        {
+            this.ListData().InsertRangeWithBeginEnd<T>(begin, end);
         }
 
         /// <summary>
@@ -1062,6 +1149,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
         public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
 
         /// <summary>
@@ -1070,6 +1158,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeSwapBackWithBeginEnd<T>(begin, end);
@@ -1112,6 +1202,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeWithBeginEnd<T>(begin, end);
@@ -1320,9 +1412,9 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
     public unsafe struct UnsafePtrList
-        : INativeList<IntPtr>
+        : INativeDisposable
+        , INativeList<IntPtr>
         , IEnumerable<IntPtr> // Used by collection initializers.
-        , IDisposable
     {
         /// <summary>
         ///
@@ -1615,9 +1707,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Adds an element to the list.
         /// </summary>
         /// <param name="value">The struct to be added at the end of the list.</param>
+        public void Add(in IntPtr value)
+        {
+            this.ListData().Add(value);
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <param name="value">The struct to be added at the end of the list.</param>
         public void Add(void* value)
         {
             this.ListData().Add((IntPtr)value);
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public void AddRange(void* ptr, int length)
+        {
+            this.ListData().AddRange<IntPtr>(ptr, length);
         }
 
         /// <summary>
@@ -1627,6 +1738,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void AddRange(UnsafePtrList list)
         {
             this.ListData().AddRange<IntPtr>(list.ListData());
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a container at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
+        {
+            this.ListData().InsertRangeWithBeginEnd<IntPtr>(begin, end);
         }
 
         /// <summary>
@@ -1654,6 +1777,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeSwapBackWithBeginEnd<IntPtr>(begin, end);
@@ -1696,6 +1821,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeWithBeginEnd<IntPtr>(begin, end);

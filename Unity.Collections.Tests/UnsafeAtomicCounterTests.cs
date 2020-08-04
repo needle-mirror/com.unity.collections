@@ -4,7 +4,7 @@ using Unity.Collections.Tests;
 
 internal class UnsafeCounterTests
 {
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public unsafe void UnsafeAtomicCounter32_AddSub()
     {
         int value = 0;
@@ -23,7 +23,7 @@ internal class UnsafeCounterTests
         Assert.AreEqual(-256, counter.Add(0));
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public unsafe void UnsafeAtomicCounter64_AddSub()
     {
         long value = 0;

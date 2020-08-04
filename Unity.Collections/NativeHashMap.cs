@@ -14,7 +14,8 @@ namespace Unity.Collections
     /// </summary>
     /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
     /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-    public struct NativeKeyValueArrays<TKey, TValue> : IDisposable
+    public struct NativeKeyValueArrays<TKey, TValue>
+        : INativeDisposable
         where TKey : struct
         where TValue : struct
     {
@@ -83,8 +84,8 @@ namespace Unity.Collections
     [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(NativeHashMapDebuggerTypeProxy<,>))]
     public unsafe struct NativeHashMap<TKey, TValue>
-        : IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
-        , IDisposable
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
@@ -448,12 +449,10 @@ namespace Unity.Collections
 #endif
             return new Enumerator
             {
-                m_Buffer = m_HashMapData.m_Buffer,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Index = -1,
-                m_BucketIndex = 0
+                m_Enumerator = new UnsafeHashMapDataEnumerator(m_HashMapData.m_Buffer),
             };
         }
 
@@ -486,13 +485,10 @@ namespace Unity.Collections
         [NativeContainerIsReadOnly]
         public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
-            [NativeDisableUnsafePtrRestriction]
-            internal UnsafeHashMapData* m_Buffer;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
-            internal int m_Index;
-            internal int m_BucketIndex;
+            internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Disposes enumerator.
@@ -503,12 +499,12 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element of the container.
             /// </summary>
             /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
-            public unsafe bool MoveNext()
+            public bool MoveNext()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, out m_Index);
+                return m_Enumerator.MoveNext();
             }
 
             /// <summary>
@@ -519,14 +515,13 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = -1;
-                m_BucketIndex = 0;
+                m_Enumerator.Reset();
             }
 
             /// <summary>
             /// Gets the element at the current position of the enumerator in the container.
             /// </summary>
-            public KeyValue<TKey, TValue> Current => new KeyValue<TKey, TValue> { m_Buffer = m_Buffer, m_Index = m_Index };
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
             object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
         }

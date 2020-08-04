@@ -148,6 +148,7 @@ public class CustomAllocatorTests
         }
     }
 
+#if !UNITY_DOTSRUNTIME  // Custom allocator not working: https://unity3d.atlassian.net/browse/DOTSR-1870
     [Test]
     public void UserDefinedAllocatorWorks()
     {
@@ -168,6 +169,7 @@ public class CustomAllocatorTests
                         Assert.AreEqual(i, block.Range.Items);
                         Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                         Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+
                         unsafe
                         {
                             Assert.AreEqual(ClearValue, *(byte*)block.Range.Pointer);
@@ -178,6 +180,7 @@ public class CustomAllocatorTests
         }
         AllocatorManager.Shutdown();
     }
+#endif
 
     // this is testing for the case where we want to install a stack allocator that itself allocates from a big hunk
     // of memory provided by the default Persistent allocator, and then make allocations on the stack allocator.
@@ -203,6 +206,7 @@ public class CustomAllocatorTests
         AllocatorManager.Shutdown();
     }
 
+#if !UNITY_DOTSRUNTIME    // Custom allocator not working: https://unity3d.atlassian.net/browse/DOTSR-1870
     // this is testing for the case where we want to install a custom allocator that clears memory to a constant
     // byte value, and then have an UnsafeList use that custom allocator.
     [Test]
@@ -267,4 +271,5 @@ public class CustomAllocatorTests
         }
         AllocatorManager.Shutdown();
     }
+#endif
 }

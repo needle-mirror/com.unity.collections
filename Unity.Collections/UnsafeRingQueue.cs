@@ -81,7 +81,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="T">Source type of elements.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeRingQueueDebugView<>))]
-    public unsafe struct UnsafeRingQueue<T> : IDisposable
+    public unsafe struct UnsafeRingQueue<T>
+        : INativeDisposable
         where T : unmanaged
     {
         /// <summary>

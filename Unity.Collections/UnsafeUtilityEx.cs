@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
@@ -17,8 +18,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="System.InvalidOperationException">Thrown if source and destination memory regions overlap.</exception>
         internal static void MemSwap(void* destination, void* source, long size)
         {
-            byte* dst = (byte*)destination;
-            byte* src = (byte*)source;
+            byte* dst = (byte*) destination;
+            byte* src = (byte*) source;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             if (dst + size > src && src + size > dst)
@@ -58,7 +59,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if ((index > capacity - 1) || (index < 0))
             {
-                throw new IndexOutOfRangeException($"Attempt to read from array index {index}, which is out of bounds. Array capacity is {capacity}. This may lead to a crash or reading invalid data.");
+                throw new IndexOutOfRangeException(
+                    $"Attempt to read from array index {index}, which is out of bounds. Array capacity is {capacity}. This may lead to a crash or reading invalid data.");
             }
 
             return UnsafeUtility.ReadArrayElement<T>(source, index);
@@ -78,12 +80,40 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> and should be used when debuggability is required over performance.</remarks>
         public unsafe static void WriteArrayElementBoundsChecked<T>(void* destination, int index, T value, int capacity)
         {
-            if((index > capacity - 1) || (index < 0))
+            if ((index > capacity - 1) || (index < 0))
             {
                 throw new IndexOutOfRangeException($"Attempt to write to array index {index}, which is out of bounds. Array capacity is {capacity}. This may lead to a crash or data corruption.");
             }
 
             UnsafeUtility.WriteArrayElement<T>(destination, index, value);
+        }
+
+        /// <summary>
+        /// Return the address of the read-only "in" reference parameter.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter.</typeparam>
+        /// <param name="item">The read-only reference to a valuetype of type T.</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void* AddressOf<T>(in T item)
+            where T : struct
+        {
+            return ILSupport.AddressOf(in item);
+        }
+
+        /// <summary>
+        /// Erases the "read-only" "in" part of the given reference argument, and returns a regular ref to it.
+        /// Useful to avoid a defensive copy when calling methods on "in" args.  Be careful not to mutate the reference
+        /// target, as doing so may break assumptions the runtime makes.
+        /// </summary>
+        /// <typeparam name="T">Type of the parameter.</typeparam>
+        /// <param name="item">The read-only reference to a valuetype of type T.</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T AsRef<T>(in T item)
+            where T : struct
+        {
+            return ref ILSupport.AsRef(in item);
         }
     }
 }

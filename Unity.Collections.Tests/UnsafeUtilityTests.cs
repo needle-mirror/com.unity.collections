@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 using Unity.Mathematics;
 
 [TestFixture]
@@ -91,7 +92,7 @@ internal class UnsafeUtilityTests
         }
     }
 
-#if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void AliasCanBeDisposed()
     {
@@ -172,6 +173,18 @@ internal class UnsafeUtilityTests
         bool w;
     }
 
+    struct BoolLong
+    {
+        bool x;
+        long y;
+    }
+
+    struct BoolPtr
+    {
+        bool x;
+        unsafe void* y;
+    }
+
     [Test]
     public void UnsafeUtility_AlignOf()
     {
@@ -188,6 +201,8 @@ internal class UnsafeUtilityTests
         Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfY>());
         Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfZ>());
         Assert.AreEqual(4, UnsafeUtility.AlignOf<AlignOfW>());
+        Assert.AreEqual(8, UnsafeUtility.AlignOf<BoolLong>());
+        Assert.AreEqual(UnsafeUtility.SizeOf<IntPtr>(), UnsafeUtility.AlignOf<BoolPtr>());
     }
 
     [Test]
@@ -246,5 +261,21 @@ internal class UnsafeUtilityTests
             Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.WriteArrayElementBoundsChecked(mem, 6, -98765432, len); });
             Assert.Throws<IndexOutOfRangeException>(() => { UnsafeUtilityExtensions.WriteArrayElementBoundsChecked(mem, -1, -98765432, len); });
         }
+    }
+
+    [Test]
+    public unsafe void UnsafeUtility_AsRefAddressOfIn_Works()
+    {
+        DummyVec thing = default;
+
+        void* thingInPtr = UnsafeUtilityExtensions.AddressOf(in thing);
+        ref DummyVec thingRef = ref UnsafeUtilityExtensions.AsRef(in thing);
+        void* thingInRefPtr = UnsafeUtility.AddressOf(ref thingRef);
+        void* thingRefPtr = UnsafeUtility.AddressOf(ref thing);
+        void* thingPtr = &thing;
+
+        Assert.AreEqual((IntPtr) thingPtr, (IntPtr) thingInPtr);
+        Assert.AreEqual((IntPtr) thingPtr, (IntPtr) thingRefPtr);
+        Assert.AreEqual((IntPtr) thingPtr, (IntPtr) thingInRefPtr);
     }
 }

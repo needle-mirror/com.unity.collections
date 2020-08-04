@@ -1,13 +1,59 @@
-# Changelog
+# Change log
+
+## [0.12.0] - 2020-08-04
+
+### Added
+
+ * Added `Sort` method with custom comparer to `FixedList*` and `UnsafeList<T>`.
+ * Added `IsEmpty` property and `Clear` method to `INativeList` intefrace.
+ * Added `INativeDisposable` interface which provides a mechanism for scheduling
+   release of unmanaged resources.
+ * Added `InsertRangeWithBeginEnd` to `NativeList`, `UnsafeList`, `UnsafeList<T>`,
+   and `UnsafePtrList`.
+ * Added `AddRange` and `AddRangeNoResize` to `FixedList*`.
+ * Added properties to `BaselibErrorState` to check if an operation resulted in success, out of memory, or accessing an invalid address range.
+
+
+### Deprecated
+
+ * Deprecated `FixedList*` method `IndexOf` with `index` and `index/count` arguments.
+
+### Removed
+
+ * Removed:
+    `IJobNativeMultiHashMapMergedSharedKeyIndices`
+    `JobNativeMultiHashMapUniqueHashExtensions`
+    `IJobNativeMultiHashMapVisitKeyValue`
+    `JobNativeMultiHashMapVisitKeyValue`
+    `IJobNativeMultiHashMapVisitKeyMutableValue`
+    `JobNativeMultiHashMapVisitKeyMutableValue`
+    `IJobUnsafeMultiHashMapMergedSharedKeyIndices`
+    `JobUnsafeMultiHashMapUniqueHashExtensions`
+    `IJobUnsafeMultiHashMapVisitKeyValue`
+    `JobUnsafeMultiHashMapVisitKeyValue`
+    `IJobUnsafeMultiHashMapVisitKeyMutableValue`
+    `JobUnsafeMultiHashMapVisitKeyMutableValue`
+
+### Fixed
+
+ * Fixed `*HashMap.IsEmpty` when items are added and removed from `*HashMap. IsEmpty` previously
+   used allocated count only to report emptiness, but returning not-empty didn't actually
+   meant that `*HashMap` is not empty.
+ * Fixed bug where `*HashSet.Enumerator.Current` would always return the default value instead of the actual value from the set.
+ * Fixed bug with `*HashMap/Set.Enumerator` returning wrong index and dereferencing out of bounds memory.
+
 
 ## [0.11.0] - 2020-07-10
 
 ### Added
 
- * Added `VirtualMemoryUtility` which provides low-level virtual memory utility functions backed by baselib.
+ * Added `VirtualMemoryUtility` providing low-level virtual memory utility functions backed by baselib.
  * `*HashMap` and `*HashSet` now implement `IEnumerable<>`.
- * Added `ReadArrayElementBoundsChecked` and `WriteArrayElementBoundsChecked` for ease of debugging `ReadArrayElement` and `WriteArrayElement`. This does not sacrifice performance by adding bounds that check directly to those functions.
- * Added `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd` to list containers. `*WithBeginEnd` in the name shows that the arguments are begin/end instead of the standard index/count. Once `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed, those methods will be added with correct index/count arguments.
+ * `ReadArrayElementBoundsChecked` and `WriteArrayElementBoundsChecked` for ease of debugging `ReadArrayElement` and `WriteArrayElement` without sacrificing performance by adding bounds checking directly to those functions.
+ * Added `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd` to list containers.
+   `*WithBeginEnd` in name signifies that arguments are begin/end instead of more standard index/count. Once
+   `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed,
+   those methods will be added with correct index/count arguments.
 
 ### Changed
 
@@ -16,12 +62,23 @@
  * Changed `*HashSet.Add` API to return bool when adding element to set.
  * `UnsafeUtilityExtensions` is now public.
  * `NativeReference` methods `Equals` and `GetHashCode` will now operate on the value instead of the data pointer.
+ * `FixedString{32,64,128,512,4096}` have been reworked.
+   * Functionality is shared via generics as much as possible.  The API attempts to follow `StringBuilder` semantics.
+   * `Append` methods now consistently append.
+   * `Append` variant to append a char was added (appends the `char`, does not resolve to int overload).
+   * `Format` methods that replaced the contents of the target have been deprecated.  Use `Clear()` followed by `Append()`.  Because FixedStrings start out cleared, in most cases just an `Append` is sufficient.
+   * `Format` that takes a format string has been renamed to `AppendFormat`.  The static `FixedString.Format` methods still exist for convenience, and return a `FixedString128`.
+   * It is possible for users to extend the `Append` family of methods to support appending their own types.  See `FixedStringAppendMethods.cs` for examples of how to declare your own extension methods.
 
 ### Deprecated
 
- * Deprecated `*HashSet.TryAdd`. `*HashSet.Add` its equivalent.
+ * Deprecated `*HashSet.TryAdd`. `*HashSet.Add` is equivalent.
  * Deprecated `NativeString*`. The functionality is replaced by `FixedString*`.
- * Deprecated `InsertRange`, `RemoveRangeSwap`, and `RemoveRange` from list containers, and added `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd`. `*WithBeginEnd` in the name shows that the arguments are begin/end instead of the standard index/count. Once `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed, those methods will be added with correct index/count arguments.
+ * Deprecated `InsertRange`, `RemoveRangeSwap`, and `RemoveRange` from list containers, and added
+   `InsertRangeWithBeginEnd`, `RemoveRangeSwapBackWithBeginEnd`, and `RemoveRangeWithBeginEnd`.
+   `*WithBeginEnd` in name signifies that arguments are begin/end instead of more standard index/count. Once
+   `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed,
+   those methods will be added with correct index/count arguments.
 
 ### Removed
 
@@ -31,9 +88,9 @@
 ### Known Issues
 
 * This version is not compatible with 2020.2.0a17. Please update to the forthcoming alpha.
-* All containers allocated with `Allocator.Temp` on the same thread use a shared `AtomicSafetyHandle` instance. This can be a problem if you use `NativeHashMap`, `NativeMultiHashMap`, `NativeHashSet` and `NativeList` together in situations where their secondary safety handle is used. This means that operations that invalidate an enumerator for either of these collections (or the `NativeArray` returned by `NativeList.AsArray`) also invalidate all other previously acquired enumerators.
 
-For example, the following throws when safety checks are enabled:
+All containers allocated with `Allocator.Temp` on the same thread use a shared `AtomicSafetyHandle` instance. This is problematic when using `NativeHashMap`, `NativeMultiHashMap`, `NativeHashSet` and `NativeList` together in situations where their secondary safety handle is used. This means that operations that invalidate an enumerator for either of these collections (or the `NativeArray` returned by `NativeList.AsArray`) will also invalidate all other previously acquired enumerators.
+For example, this will throw when safety checks are enabled:
 ```
 var list = new NativeList<int>(Allocator.Temp);
 list.Add(1);
@@ -53,6 +110,8 @@ list2.TryAdd(1);
 var x = array[0];
 ```
 This defect will be addressed in a future release.
+
+
 
 
 ## [0.10.0] - 2020-05-27

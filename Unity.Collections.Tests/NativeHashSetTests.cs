@@ -1,14 +1,17 @@
 using System;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 using UnityEngine;
 using UnityEngine.TestTools;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Text.RegularExpressions;
+#endif
 
-internal class NativeHashSetTests
+internal class NativeHashSetTests: CollectionsTestFixture
 {
     static void ExpectedCount<T>(ref NativeHashSet<T> container, int expected)
         where T : unmanaged, IEquatable<T>
@@ -28,12 +31,17 @@ internal class NativeHashSetTests
         Assert.AreEqual(1, container.Capacity);
         ExpectedCount(ref container, 1);
 
+        container.Remove(0);
+        Assert.IsTrue(container.IsEmpty);
+
+        Assert.IsTrue(container.Add(0));
         container.Clear();
         Assert.IsTrue(container.IsEmpty);
 
         container.Dispose();
     }
 
+#if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
     public void NativeHashSet_Full_Throws()
     {
@@ -56,6 +64,7 @@ internal class NativeHashSetTests
 
         container.Dispose();
     }
+#endif
 
     [Test]
     public void NativeHashSet_RemoveOnEmptyMap_DoesNotThrow()
@@ -182,30 +191,55 @@ internal class NativeHashSetTests
     }
 
     [Test]
-    public void NativeHashSet_ForEach()
+    public void NativeHashSet_ForEach_FixedStringInHashMap()
     {
+        using (var stringList = new NativeList<FixedString32>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+        {
+            var container = new NativeHashSet<FixedString128>(50, Allocator.Temp);
+            var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
+            foreach (var str in stringList)
+            {
+                container.Add(str);
+            }
+
+            foreach (var value in container)
+            {
+                int index = stringList.IndexOf(value);
+                Assert.AreEqual(stringList[index], value.ToString());
+                seen[index] = seen[index] + 1;
+            }
+
+            for (int i = 0; i < stringList.Length; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect value count {stringList[i]}");
+            }
+        }
+    }
+
+    [Test]
+    public void NativeHashSet_ForEach([Values(10, 1000)]int n)
+    {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
         using (var container = new NativeHashSet<int>(32, Allocator.TempJob))
         {
-            container.Add(0);
-            container.Add(1);
-            container.Add(2);
-            container.Add(3);
-            container.Add(4);
-            container.Add(5);
-            container.Add(6);
-            container.Add(7);
-            container.Add(8);
-            container.Add(9);
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i);
+            }
 
             var count = 0;
             foreach (var item in container)
             {
                 Assert.True(container.Contains(item));
-
+                seen[item] = seen[item] + 1;
                 ++count;
             }
 
             Assert.AreEqual(container.Count(), count);
+            for (int i = 0; i < n; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
+            }
         }
     }
 

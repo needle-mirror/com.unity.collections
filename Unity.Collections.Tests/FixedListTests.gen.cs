@@ -11,11 +11,13 @@
 //------------------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
 internal class FixedListTests
 {
@@ -24,7 +26,13 @@ internal class FixedListTests
         public int a;
     }
 
+    struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
+    {
+        public int Compare(T x, T y) => y.CompareTo(x);
+    }
+
     [Test]
+    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList32DebugView()
     {
         var list = new FixedList32<NonComparableStruct>();
@@ -45,6 +53,7 @@ internal class FixedListTests
     }
 
     [Test]
+    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList64DebugView()
     {
         var list = new FixedList64<NonComparableStruct>();
@@ -65,6 +74,7 @@ internal class FixedListTests
     }
 
     [Test]
+    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList128DebugView()
     {
         var list = new FixedList128<NonComparableStruct>();
@@ -166,6 +176,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList32byteGenericSortCustomComparer()
+    {
+        var list = new FixedList32<byte>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((byte)(i));
+        list.Sort(new DescendingComparer<byte>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList32byteIndexOf()
+    {
+        var list = new FixedList32<byte>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((byte)145);
+            r1 = list.Contains((byte)123);
+            r2 = list.Contains((byte)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList64byteGenericHasExpectedLayout()
     {
         var actual = new FixedList64<byte>();
@@ -246,6 +286,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList64byteGenericSortCustomComparer()
+    {
+        var list = new FixedList64<byte>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((byte)(i));
+        list.Sort(new DescendingComparer<byte>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList64byteIndexOf()
+    {
+        var list = new FixedList64<byte>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((byte)145);
+            r1 = list.Contains((byte)123);
+            r2 = list.Contains((byte)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList128byteGenericHasExpectedLayout()
     {
         var actual = new FixedList128<byte>();
@@ -324,6 +394,36 @@ internal class FixedListTests
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
+
+    [Test]
+    public void FixedList128byteGenericSortCustomComparer()
+    {
+        var list = new FixedList128<byte>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((byte)(i));
+        list.Sort(new DescendingComparer<byte>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList128byteIndexOf()
+    {
+        var list = new FixedList128<byte>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((byte)145);
+            r1 = list.Contains((byte)123);
+            r2 = list.Contains((byte)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
 
     [Test]
     public void FixedListByte32HasExpectedLayout()
@@ -778,6 +878,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList32intGenericSortCustomComparer()
+    {
+        var list = new FixedList32<int>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((int)(i));
+        list.Sort(new DescendingComparer<int>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList32intIndexOf()
+    {
+        var list = new FixedList32<int>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((int)145);
+            r1 = list.Contains((int)123);
+            r2 = list.Contains((int)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList64intGenericHasExpectedLayout()
     {
         var actual = new FixedList64<int>();
@@ -858,6 +988,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList64intGenericSortCustomComparer()
+    {
+        var list = new FixedList64<int>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((int)(i));
+        list.Sort(new DescendingComparer<int>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList64intIndexOf()
+    {
+        var list = new FixedList64<int>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((int)145);
+            r1 = list.Contains((int)123);
+            r2 = list.Contains((int)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList128intGenericHasExpectedLayout()
     {
         var actual = new FixedList128<int>();
@@ -936,6 +1096,36 @@ internal class FixedListTests
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
+
+    [Test]
+    public void FixedList128intGenericSortCustomComparer()
+    {
+        var list = new FixedList128<int>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((int)(i));
+        list.Sort(new DescendingComparer<int>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList128intIndexOf()
+    {
+        var list = new FixedList128<int>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((int)145);
+            r1 = list.Contains((int)123);
+            r2 = list.Contains((int)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
 
     [Test]
     public void FixedListInt32HasExpectedLayout()
@@ -1390,6 +1580,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList32floatGenericSortCustomComparer()
+    {
+        var list = new FixedList32<float>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((float)(i));
+        list.Sort(new DescendingComparer<float>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList32floatIndexOf()
+    {
+        var list = new FixedList32<float>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((float)145);
+            r1 = list.Contains((float)123);
+            r2 = list.Contains((float)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList64floatGenericHasExpectedLayout()
     {
         var actual = new FixedList64<float>();
@@ -1470,6 +1690,36 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedList64floatGenericSortCustomComparer()
+    {
+        var list = new FixedList64<float>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((float)(i));
+        list.Sort(new DescendingComparer<float>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList64floatIndexOf()
+    {
+        var list = new FixedList64<float>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((float)145);
+            r1 = list.Contains((float)123);
+            r2 = list.Contains((float)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
+
+    [Test]
     public void FixedList128floatGenericHasExpectedLayout()
     {
         var actual = new FixedList128<float>();
@@ -1548,6 +1798,36 @@ internal class FixedListTests
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
+
+    [Test]
+    public void FixedList128floatGenericSortCustomComparer()
+    {
+        var list = new FixedList128<float>();
+        for(var i = 0; i < 5; ++i)
+          list.Add((float)(i));
+        list.Sort(new DescendingComparer<float>());
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(4-i, list[i]);
+    }
+
+    [Test]
+    public unsafe void FixedList128floatIndexOf()
+    {
+        var list = new FixedList128<float>() { 123, 178 };
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != list.IndexOf((float)145);
+            r1 = list.Contains((float)123);
+            r2 = list.Contains((float)178);
+        });
+
+        Assert.False(r0);
+        Assert.True(r1);
+        Assert.True(r2);
+    }
+
 
     [Test]
     public void FixedListFloat32HasExpectedLayout()

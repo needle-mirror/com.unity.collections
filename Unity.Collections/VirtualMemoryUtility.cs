@@ -39,7 +39,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Number of bytes contained in this range.
         /// </summary>
-        public uint SizeInBytes => PageSizeInBytes * pageCount;
+        public ulong SizeInBytes => (ulong)PageSizeInBytes * (ulong)pageCount;
 
         /// <summary>
         ///
@@ -100,6 +100,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Where in the source code this error came from.
         /// </summary>
         public BaselibSourceLocation sourceLocation;
+
+        /// <summary>
+        /// Returns true if result of recorded operation was success.
+        /// </summary>
+        public bool Success => code == (uint)Baselib_ErrorCode.Success;
+
+        /// <summary>
+        /// Returns true when the recorded error state shows failure due to running out of memory.
+        /// </summary>
+        public bool OutOfMemory => code == (uint)Baselib_ErrorCode.OutOfMemory;
+
+        /// <summary>
+        /// Returns true when the recorded error state shows failure due to accessing an invalid address range.
+        /// </summary>
+        public bool InvalidAddressRange => code == (uint)Baselib_ErrorCode.InvalidAddressRange;
     }
 
     /// <summary>
@@ -178,12 +193,23 @@ namespace Unity.Collections.LowLevel.Unsafe
             errorState.sourceLocation.function = wrappedErrorState.sourceLocation.function;
             errorState.sourceLocation.lineNumber = wrappedErrorState.sourceLocation.lineNumber;
 
-            FixedString128 errorString = default;
-            var bytesReturned = Baselib_ErrorState_Explain(&errorState, &errorString.bytes.offset0000.byte0000, FixedString128.UTF8MaxLengthInBytes, Baselib_ErrorState_ExplainVerbosity.ErrorType_SourceLocation_Explanation);
-            errorString.Length = (int)bytesReturned;
-            FixedString128 baselibErrorString = "Baselib error: ";
-            baselibErrorString.Append(errorString);
-            Debug.LogError(baselibErrorString);
+            FixedString512 errorString = "Baselib error: ";
+            byte* errorStringNext = errorString.GetUnsafePtr() + errorString.Length;
+            int errorStringRemainingCap = errorString.Capacity - errorString.Length;
+
+            var bytesReturned = Baselib_ErrorState_Explain(&errorState, errorStringNext, (uint) errorStringRemainingCap, Baselib_ErrorState_ExplainVerbosity.ErrorType_SourceLocation_Explanation);
+            if (bytesReturned > errorStringRemainingCap)
+            {
+                byte* bytes = stackalloc byte[(int)bytesReturned];
+                Baselib_ErrorState_Explain(&errorState, bytes, bytesReturned, Baselib_ErrorState_ExplainVerbosity.ErrorType_SourceLocation_Explanation);
+                errorString.Append(bytes, errorStringRemainingCap);
+            }
+            else
+            {
+                errorString.Length += (int) bytesReturned;
+            }
+
+            Debug.LogError(errorString);
         }
 
         static BaselibErrorState CreateWrappedBaselibErrorState(Baselib_ErrorState errorState)
@@ -228,7 +254,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="rangeToCommit">Reserved virtual address range from which to allocate memory.</param>
         /// <param name="BaselibErrorState">Wrapped copy of Baselib_ErrorState.</param>
-        /// <returns>A VMRange of committed memory.</returns>
         public static void CommitMemory(VMRange rangeToCommit, out BaselibErrorState outErrorState)
         {
             Baselib_ErrorState errorState = default;
