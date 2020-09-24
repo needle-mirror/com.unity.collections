@@ -257,4 +257,90 @@ internal class UnsafeBitArrayTests
 
         test.Dispose();
     }
+
+    [Test]
+    public unsafe void UnsafeBitArray_Find()
+    {
+        var numBits = 512;
+
+        using (var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory))
+        {
+            test.SetBits(0, true, 11);
+
+            for (var i = 0; i < 256; ++i)
+            {
+                Assert.AreEqual(11, test.Find(0, i + 1));
+            }
+
+            for (var j = 0; j < 64; ++j)
+            {
+                for (var i = 0; i < 256; ++i)
+                {
+                    var numBitsToFind = 7 + i;
+                    var pos = 37 + j;
+
+                    test.SetBits(0, true, test.Length);
+                    test.SetBits(pos, false, numBitsToFind);
+
+                    Assert.AreEqual(pos, test.Find(0, numBitsToFind), $"{j}/{i}: pos {pos}, numBitsToFind {numBitsToFind}");
+                    Assert.AreEqual(pos, test.Find(pos, numBitsToFind), $"{j}/{i}:pos {pos}, numBitsToFind {numBitsToFind}");
+
+                    Assert.AreEqual(pos, test.Find(0, numBitsToFind), $"{j}/{i}: pos {pos}, numBitsToFind {numBitsToFind}");
+                    Assert.AreEqual(pos, test.Find(pos, numBitsToFind), $"{j}/{i}: pos {pos}, numBitsToFind {numBitsToFind}");
+
+                    Assert.IsTrue(test.TestNone(test.Find(0, numBitsToFind), numBitsToFind));
+
+                    Assert.AreEqual(int.MaxValue, test.Find(pos + 1, numBitsToFind), $"{j}/{i}: pos {pos}, numBitsToFind {numBitsToFind}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public unsafe void UnsafeBitArray_Find_With_Begin_End()
+    {
+        var numBits = 512;
+
+        using (var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory))
+        {
+            Assert.AreEqual(0, test.Find(0, 2, 1));
+            Assert.AreEqual(1, test.Find(1, 2, 1));
+            test.SetBits(0, true, 6);
+            Assert.AreEqual(int.MaxValue, test.Find(0, 2, 1));
+
+            for (var j = 0; j < 64; ++j)
+            {
+                for (var i = 0; i < 256; ++i)
+                {
+                    var numBitsToFind = 7 + i;
+                    var padding = 11;
+                    var begin = 37 + j;
+                    var end = begin + padding + numBitsToFind;
+                    var count = end - begin;
+
+                    test.Clear();
+                    test.SetBits(begin, true, count);
+                    test.SetBits(begin + padding + 1, false, numBitsToFind - 1);
+
+                    Assert.AreEqual(begin + padding + 1, test.Find(begin, count, numBitsToFind - 1)); //, $"{j}/{i}: begin {begin}, end {end}, count {count}, numBitsToFind {numBitsToFind}");
+                    Assert.AreEqual(int.MaxValue, test.Find(begin, count, numBitsToFind)); //, $"{j}/{i}: begin {begin}, end {end}, count {count}, numBitsToFind {numBitsToFind}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public unsafe void UnsafeBitArray_Find_Throws()
+    {
+        var numBits = 512;
+
+        using (var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory))
+        {
+            Assert.Throws<ArgumentException>(() => { test.Find(0, 0, 1); });   // empty range
+            Assert.Throws<ArgumentException>(() => { test.Find(0, 1, 0); });   // zero bits
+            Assert.Throws<ArgumentException>(() => { test.Find(0, 1, 2); });   // numBits is larger than range
+            Assert.Throws<ArgumentException>(() => { test.Find(10, 0, 0); });  // empty range, numBits is less than 1
+            Assert.Throws<ArgumentException>(() => { test.Find(1, 10, -2); }); // numBits can't be negative
+        }
+    }
 }

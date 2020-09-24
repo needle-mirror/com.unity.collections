@@ -4,7 +4,8 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
-    internal struct Bitwise
+    [BurstCompatible]
+    internal unsafe struct Bitwise
     {
         internal static int AlignDown(int value, int alignPow2)
         {
@@ -60,12 +61,346 @@ namespace Unity.Collections
         {
             return ReplaceBits(input, pos, mask, (ulong)-(long)FromBool(value));
         }
+
+        internal static int lzcnt(byte value)
+        {
+            return math.lzcnt((uint)value) - 24;
+        }
+
+        internal static int tzcnt(byte value)
+        {
+            return math.min(8, math.tzcnt((uint)value));
+        }
+
+        internal static int lzcnt(ushort value)
+        {
+            return math.lzcnt((uint)value) - 16;
+        }
+
+        internal static int tzcnt(ushort value)
+        {
+            return math.min(16, math.tzcnt((uint)value));
+        }
+
+        static int FindUlong(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = ptr;
+            var numSteps = (numBits + 63) >> 6;
+            var numBitsPerStep = 64;
+            var maxBits = numSteps * numBitsPerStep;
+
+            for (int i = beginBit / numBitsPerStep, end = AlignUp(endBit, numBitsPerStep) / numBitsPerStep; i < end; ++i)
+            {
+                if (bits[i] != 0)
+                {
+                    continue;
+                }
+
+                var idx = i * numBitsPerStep;
+                var num = math.min(idx + numBitsPerStep, endBit) - idx;
+
+                if (idx != beginBit)
+                {
+                    var test = bits[idx / numBitsPerStep - 1];
+                    var newIdx = math.max(idx - math.lzcnt(test), beginBit);
+
+                    num += idx - newIdx;
+                    idx = newIdx;
+                }
+
+                for (++i; i < end; ++i)
+                {
+                    if (num >= numBits)
+                    {
+                        return idx;
+                    }
+
+                    var test = bits[i];
+                    var pos = i * numBitsPerStep;
+                    num += math.min(pos + math.tzcnt(test), endBit) - pos;
+
+                    if (test != 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (num >= numBits)
+                {
+                    return idx;
+                }
+            }
+
+            return endBit;
+        }
+
+        static int FindUint(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = (uint*)ptr;
+            var numSteps = (numBits + 31) >> 5;
+            var numBitsPerStep = 32;
+            var maxBits = numSteps * numBitsPerStep;
+
+            for (int i = beginBit / numBitsPerStep, end = AlignUp(endBit, numBitsPerStep) / numBitsPerStep; i < end; ++i)
+            {
+                if (bits[i] != 0)
+                {
+                    continue;
+                }
+
+                var idx = i * numBitsPerStep;
+                var num = math.min(idx + numBitsPerStep, endBit) - idx;
+
+                if (idx != beginBit)
+                {
+                    var test = bits[idx / numBitsPerStep - 1];
+                    var newIdx = math.max(idx - math.lzcnt(test), beginBit);
+
+                    num += idx - newIdx;
+                    idx = newIdx;
+                }
+
+                for (++i; i < end; ++i)
+                {
+                    if (num >= numBits)
+                    {
+                        return idx;
+                    }
+
+                    var test = bits[i];
+                    var pos = i * numBitsPerStep;
+                    num += math.min(pos + math.tzcnt(test), endBit) - pos;
+
+                    if (test != 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (num >= numBits)
+                {
+                    return idx;
+                }
+            }
+
+            return endBit;
+        }
+
+        static int FindUshort(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = (ushort*)ptr;
+            var numSteps = (numBits + 15) >> 4;
+            var numBitsPerStep = 16;
+            var maxBits = numSteps * numBitsPerStep;
+
+            for (int i = beginBit / numBitsPerStep, end = AlignUp(endBit, numBitsPerStep) / numBitsPerStep; i < end; ++i)
+            {
+                if (bits[i] != 0)
+                {
+                    continue;
+                }
+
+                var idx = i * numBitsPerStep;
+                var num = math.min(idx + numBitsPerStep, endBit) - idx;
+
+                if (idx != beginBit)
+                {
+                    var test = bits[idx / numBitsPerStep - 1];
+                    var newIdx = math.max(idx - lzcnt(test), beginBit);
+
+                    num += idx - newIdx;
+                    idx = newIdx;
+                }
+
+                for (++i; i < end; ++i)
+                {
+                    if (num >= numBits)
+                    {
+                        return idx;
+                    }
+
+                    var test = bits[i];
+                    var pos = i * numBitsPerStep;
+                    num += math.min(pos + tzcnt(test), endBit) - pos;
+
+                    if (test != 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (num >= numBits)
+                {
+                    return idx;
+                }
+            }
+
+            return endBit;
+        }
+
+        static int FindByte(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = (byte*)ptr;
+            var numSteps = (numBits + 7) >> 3;
+            var numBitsPerStep = 8;
+            var maxBits = numSteps * numBitsPerStep;
+
+            for (int i = beginBit / numBitsPerStep, end = AlignUp(endBit, numBitsPerStep) / numBitsPerStep; i < end; ++i)
+            {
+                if (bits[i] != 0)
+                {
+                    continue;
+                }
+
+                var idx = i * numBitsPerStep;
+                var num = math.min(idx + numBitsPerStep, endBit) - idx;
+
+                if (idx != beginBit)
+                {
+                    var test = bits[idx / numBitsPerStep - 1];
+                    var newIdx = math.max(idx - lzcnt(test), beginBit);
+
+                    num += idx - newIdx;
+                    idx = newIdx;
+                }
+
+                for (++i; i < end; ++i)
+                {
+                    if (num >= numBits)
+                    {
+                        return idx;
+                    }
+
+                    var test = bits[i];
+                    var pos = i * numBitsPerStep;
+                    num += math.min(pos + tzcnt(test), endBit) - pos;
+
+                    if (test != 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (num >= numBits)
+                {
+                    return idx;
+                }
+            }
+
+            return endBit;
+        }
+
+        static int FindUpto14bits(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = (byte*)ptr;
+
+            var bit = (byte)(beginBit & 7);
+            byte beginMask = (byte)~(0xff << bit);
+
+            var lz = 0;
+            for (int begin = beginBit / 8, end = AlignUp(endBit, 8) / 8, i = begin; i < end; ++i)
+            {
+                var test = bits[i];
+                test |= i == begin ? beginMask : (byte)0;
+
+                if (test == 0xff)
+                {
+                    continue;
+                }
+
+                var pos = i * 8;
+                var tz = math.min(pos + tzcnt(test), endBit) - pos;
+
+                if (lz + tz >= numBits)
+                {
+                    return pos - lz;
+                }
+
+                lz = lzcnt(test);
+
+                var idx = pos + 8;
+                var newIdx = math.max(idx - lz, beginBit);
+                lz = math.min(idx, endBit) - newIdx;
+
+                if (lz >= numBits)
+                {
+                    return newIdx;
+                }
+            }
+
+            return endBit;
+        }
+
+        internal static int FindWithBeginEnd(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            int idx;
+
+            if (numBits >= 127)
+            {
+                idx = FindUlong(ptr, beginBit, endBit, numBits);
+                if (idx != endBit)
+                {
+                    return idx;
+                }
+            }
+
+            if (numBits >= 63)
+            {
+                idx = FindUint(ptr, beginBit, endBit, numBits);
+                if (idx != endBit)
+                {
+                    return idx;
+                }
+            }
+
+            if (numBits >= 128)
+            {
+                // early out - no smaller step will find this gap
+                return int.MaxValue;
+            }
+
+            if (numBits >= 31)
+            {
+                idx = FindUshort(ptr, beginBit, endBit, numBits);
+                if (idx != endBit)
+                {
+                    return idx;
+                }
+            }
+
+            if (numBits >= 64)
+            {
+                // early out - no smaller step will find this gap
+                return int.MaxValue;
+            }
+
+            idx = FindByte(ptr, beginBit, endBit, numBits);
+            if (idx != endBit)
+            {
+                return idx;
+            }
+
+            if (numBits < 15)
+            {
+                idx = FindUpto14bits(ptr, beginBit, endBit, numBits);
+
+                if (idx != endBit)
+                {
+                    return idx;
+                }
+            }
+
+            return int.MaxValue;
+        }
+
+        internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBeginEnd(ptr, pos, pos + count, numBits);
     }
 
     /// <summary>
     /// Fixed size 32-bit array of bits.
     /// </summary>
     [DebuggerTypeProxy(typeof(BitField32DebugView))]
+    [BurstCompatible]
     public struct BitField32
     {
         /// <summary>
@@ -239,6 +574,7 @@ namespace Unity.Collections
     /// Fixed size 64-bit array of bits.
     /// </summary>
     [DebuggerTypeProxy(typeof(BitField64DebugView))]
+    [BurstCompatible]
     public struct BitField64
     {
         /// <summary>

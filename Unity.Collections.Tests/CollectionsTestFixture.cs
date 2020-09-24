@@ -4,6 +4,25 @@ using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections.Tests
 {
+    public class CollectionsTestCommonBase
+    {
+        [SetUp]
+        public virtual void Setup()
+        {
+#if UNITY_DOTSRUNTIME
+            Unity.Core.TempMemoryScope.EnterScope();
+#endif
+        }
+
+        [TearDown]
+        public virtual void TearDown()
+        {
+#if UNITY_DOTSRUNTIME
+            Unity.Core.TempMemoryScope.ExitScope();
+#endif
+        }
+    }
+
     /// <summary>
     /// Collections test fixture to do setup and teardown.
     /// </summary>
@@ -11,32 +30,31 @@ namespace Unity.Collections.Tests
     /// Jobs debugger and safety checks should always be enabled when running collections tests. This fixture verifies
     /// those are enabled to prevent crashing the editor.
     /// </remarks>
-    internal abstract class CollectionsTestFixture
+    internal abstract class CollectionsTestFixture : CollectionsTestCommonBase
     {
         static string SafetyChecksMenu = "Jobs > Burst > Safety Checks";
-
-#if !UNITY_DOTSRUNTIME
         private bool JobsDebuggerWasEnabled;
-#endif
 
         [SetUp]
-        public virtual void Setup()
+        public override void Setup()
         {
-#if !UNITY_DOTSRUNTIME
+            base.Setup();
+
             // Many ECS tests will only pass if the Jobs Debugger enabled;
             // force it enabled for all tests, and restore the original value at teardown.
             JobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
+#if !UNITY_DOTSRUNTIME
             Assert.IsTrue(BurstCompiler.Options.EnableBurstSafetyChecks, $"Collections tests must have Burst safety checks enabled! To enable, go to {SafetyChecksMenu}");
 #endif
         }
 
         [TearDown]
-        public virtual void TearDown()
+        public override void TearDown()
         {
-#if !UNITY_DOTSRUNTIME
             JobsUtility.JobDebuggerEnabled = JobsDebuggerWasEnabled;
-#endif
+
+            base.TearDown();
         }
     }
 }

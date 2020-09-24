@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
@@ -21,12 +22,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             byte* dst = (byte*) destination;
             byte* src = (byte*) source;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (dst + size > src && src + size > dst)
-            {
-                throw new InvalidOperationException("MemSwap memory blocks are overlapped.");
-            }
-#endif
+            CheckMemSwapOverlap(dst, src, size);
 
             var tmp = stackalloc byte[1024];
 
@@ -57,11 +53,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.ReadArrayElement{T}(void*, int)"/> and should be used when debuggability is required over performance.</remarks>
         public unsafe static T ReadArrayElementBoundsChecked<T>(void* source, int index, int capacity)
         {
-            if ((index > capacity - 1) || (index < 0))
-            {
-                throw new IndexOutOfRangeException(
-                    $"Attempt to read from array index {index}, which is out of bounds. Array capacity is {capacity}. This may lead to a crash or reading invalid data.");
-            }
+            CheckIndexRange(index, capacity);
 
             return UnsafeUtility.ReadArrayElement<T>(source, index);
         }
@@ -80,10 +72,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> and should be used when debuggability is required over performance.</remarks>
         public unsafe static void WriteArrayElementBoundsChecked<T>(void* destination, int index, T value, int capacity)
         {
-            if ((index > capacity - 1) || (index < 0))
-            {
-                throw new IndexOutOfRangeException($"Attempt to write to array index {index}, which is out of bounds. Array capacity is {capacity}. This may lead to a crash or data corruption.");
-            }
+            CheckIndexRange(index, capacity);
 
             UnsafeUtility.WriteArrayElement<T>(destination, index, value);
         }
@@ -114,6 +103,27 @@ namespace Unity.Collections.LowLevel.Unsafe
             where T : struct
         {
             return ref ILSupport.AsRef(in item);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static unsafe void CheckMemSwapOverlap(byte* dst, byte* src, long size)
+        {
+            if (dst + size > src && src + size > dst)
+            {
+                throw new InvalidOperationException("MemSwap memory blocks are overlapped.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckIndexRange(int index, int capacity)
+        {
+            if ((index > capacity - 1) || (index < 0))
+            {
+                throw new IndexOutOfRangeException(
+                    $"Attempt to read or write from array index {index}, which is out of bounds. Array capacity is {capacity}. "
+                    +"This may lead to a crash, data corruption, or reading invalid data."
+                    );
+            }
         }
     }
 }

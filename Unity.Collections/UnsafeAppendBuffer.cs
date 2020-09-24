@@ -88,7 +88,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
-                UnsafeUtility.Free(Ptr, Allocator);
+                Memory.Unmanaged.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
             }
 
@@ -147,11 +147,11 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             capacity = math.max(64, math.ceilpow2(capacity));
 
-            var newPtr = (byte*)UnsafeUtility.Malloc(capacity, Alignment, Allocator);
+            var newPtr = (byte*)Memory.Unmanaged.Allocate(capacity, Alignment, Allocator);
             if (Ptr != null)
             {
                 UnsafeUtility.MemCpy(newPtr, Ptr, Length);
-                UnsafeUtility.Free(Ptr, Allocator);
+                Memory.Unmanaged.Free(Ptr, Allocator);
             }
 
             Ptr = newPtr;

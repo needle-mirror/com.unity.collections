@@ -1,25 +1,25 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "0.12.0-preview.13",
+  "version": "0.14.0-preview.16",
   "unity": "2020.1",
   "unityRelease": "0b15",
   "dependencies": {
     "com.unity.test-framework.performance": "2.3.1-preview",
-    "com.unity.burst": "1.3.2"
+    "com.unity.burst": "1.3.7"
   },
-  "description": "The Collections package provides additional native collections like NativeQueue, NativeHashMap, NativeMultiHashMap and NativeList.",
+  "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
   "keywords": [
     "dots",
     "collections",
     "unity"
   ],
   "upmCi": {
-    "footprint": "ce5b83c98317725be29ed4dd3b3cfb0f24155ed9"
+    "footprint": "06ba44ea4584722bc2fe04fbe59990603b5f2dea"
   },
   "repository": {
     "url": "https://github.com/Unity-Technologies/dots.git",
     "type": "git",
-    "revision": "bf6393d24822a1f9622218c9bb8155099aeabb81"
+    "revision": "4cf433ea3c6dc7750e272011e25ae9d1c01009a2"
   }
 }

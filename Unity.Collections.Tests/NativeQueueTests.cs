@@ -10,7 +10,7 @@ using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 #endif
 
-internal class NativeQueueTests
+internal class NativeQueueTests : CollectionsTestCommonBase
 {
     static void ExpectedCount<T>(ref NativeQueue<T> container, int expected) where T : unmanaged
     {

@@ -21,24 +21,6 @@ namespace Unity.Collections
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0>(ref this T dest, in U format, in T0 arg0)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0);
-        }
-
-        /// <summary>
         /// Convenience function to append a formatted string into the given FixedString.
         /// Similar to StringBuilder.AppendFormat, with significant limitations:
         ///   - only supports FixedStringN arguments (convert arguments to FixedString first)
@@ -78,27 +60,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1);
         }
 
         /// <summary>
@@ -145,30 +106,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2);
         }
 
         /// <summary>
@@ -219,33 +156,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3);
         }
 
         /// <summary>
@@ -300,36 +210,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4);
         }
 
         /// <summary>
@@ -388,39 +268,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <typeparam name="T5"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        /// <param name="arg5"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4, arg5);
         }
 
         /// <summary>
@@ -483,42 +330,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <typeparam name="T5"><undoc /></typeparam>
-        /// <typeparam name="T6"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        /// <param name="arg5"><undoc /></param>
-        /// <param name="arg6"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
         /// <summary>
@@ -585,45 +396,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <typeparam name="T5"><undoc /></typeparam>
-        /// <typeparam name="T6"><undoc /></typeparam>
-        /// <typeparam name="T7"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        /// <param name="arg5"><undoc /></param>
-        /// <param name="arg6"><undoc /></param>
-        /// <param name="arg7"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
         /// <summary>
@@ -694,48 +466,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <typeparam name="T5"><undoc /></typeparam>
-        /// <typeparam name="T6"><undoc /></typeparam>
-        /// <typeparam name="T7"><undoc /></typeparam>
-        /// <typeparam name="T8"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        /// <param name="arg5"><undoc /></param>
-        /// <param name="arg6"><undoc /></param>
-        /// <param name="arg7"><undoc /></param>
-        /// <param name="arg8"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
-            where T8 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
 
         /// <summary>
@@ -810,51 +540,6 @@ namespace Unity.Collections
                 else
                     dest.AppendRawByte(formatBytes[i]);
             }
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <typeparam name="T0"><undoc /></typeparam>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-        /// <typeparam name="T4"><undoc /></typeparam>
-        /// <typeparam name="T5"><undoc /></typeparam>
-        /// <typeparam name="T6"><undoc /></typeparam>
-        /// <typeparam name="T7"><undoc /></typeparam>
-        /// <typeparam name="T8"><undoc /></typeparam>
-        /// <typeparam name="T9"><undoc /></typeparam>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <param name="arg0"><undoc /></param>
-        /// <param name="arg1"><undoc /></param>
-        /// <param name="arg2"><undoc /></param>
-        /// <param name="arg3"><undoc /></param>
-        /// <param name="arg4"><undoc /></param>
-        /// <param name="arg5"><undoc /></param>
-        /// <param name="arg6"><undoc /></param>
-        /// <param name="arg7"><undoc /></param>
-        /// <param name="arg8"><undoc /></param>
-        /// <param name="arg9"><undoc /></param>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
-            where T8 : struct, INativeList<byte>, IUTF8Bytes
-            where T9 : struct, INativeList<byte>, IUTF8Bytes
-        {
-            AppendFormat(ref dest, format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using Unity.BuildSystem.NativeProgramSupport;
+using Bee.NativeProgramSupport;
 
 [UsedImplicitly]
 class CustomizerForCollections : AsmDefCSharpProgramCustomizer

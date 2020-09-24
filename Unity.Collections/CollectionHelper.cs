@@ -75,20 +75,6 @@ namespace Unity.Collections
         /// <summary>
         ///
         /// </summary>
-        /// <param name="value"></param>
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        public static void CheckIntPositivePowerOfTwo(int value)
-        {
-            var valid = (value > 0) && ((value & (value - 1)) == 0);
-            if (!valid)
-            {
-                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
         /// <param name="size"></param>
         /// <param name="alignmentPowerOfTwo"></param>
         /// <returns></returns>
@@ -98,6 +84,22 @@ namespace Unity.Collections
                 return size;
 
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+
+            return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="alignmentPowerOfTwo"></param>
+        /// <returns></returns>
+        public static ulong Align(ulong size, ulong alignmentPowerOfTwo)
+        {
+            if (alignmentPowerOfTwo == 0)
+                return size;
+
+            CheckUlongPositivePowerOfTwo(alignmentPowerOfTwo);
 
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
         }
@@ -120,7 +122,7 @@ namespace Unity.Collections
         /// <param name="offset"></param>
         /// <param name="alignmentPowerOfTwo"></param>
         /// <returns></returns>
-        public static unsafe bool IsAligned(ulong offset, int alignmentPowerOfTwo)
+        public static bool IsAligned(ulong offset, int alignmentPowerOfTwo)
         {
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
             return (offset & ((ulong)alignmentPowerOfTwo - 1)) == 0;
@@ -154,18 +156,6 @@ namespace Unity.Collections
                 hash = ((hash << 5) + hash) + c;
             }
             return (uint)hash;
-        }
-
-        /// <summary>
-        /// Throws exeception if type T is managed.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
-        public static void CheckIsUnmanaged<T>()
-        {
-            if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
-                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
         }
 
         internal static void WriteLayout(Type type)
@@ -209,6 +199,36 @@ namespace Unity.Collections
         internal static int AssumePositive(int value)
         {
             return value;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
+        internal static void CheckIsUnmanaged<T>()
+        {
+            if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
+            {
+                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckIntPositivePowerOfTwo(int value)
+        {
+            var valid = (value > 0) && ((value & (value - 1)) == 0);
+            if (!valid)
+            {
+                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckUlongPositivePowerOfTwo(ulong value)
+        {
+            var valid = (value > 0) && ((value & (value - 1)) == 0);
+            if (!valid)
+            {
+                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+            }
         }
     }
 }

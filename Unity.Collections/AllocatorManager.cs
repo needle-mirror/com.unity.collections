@@ -417,18 +417,24 @@ namespace Unity.Collections
             long AllocatedBytes { get; }
         }
 
+        static Allocator LegacyOf(AllocatorHandle handle)
+        {
+            if (handle.Value >= FirstUserIndex)
+                return Allocator.Persistent;
+            return (Allocator) handle.Value;
+        }
+
         static unsafe int TryLegacy(ref Block block)
         {
             if (block.Range.Pointer == IntPtr.Zero) // Allocate
             {
-                block.Range.Pointer =
-                    (IntPtr)UnsafeUtility.Malloc(block.Bytes, block.Alignment, (Allocator)block.Range.Allocator.Value);
+                block.Range.Pointer = (IntPtr)Memory.Unmanaged.Allocate(block.Bytes, block.Alignment, LegacyOf(block.Range.Allocator));
                 block.AllocatedItems = block.Range.Items;
                 return (block.Range.Pointer == IntPtr.Zero) ? -1 : 0;
             }
             if (block.Bytes == 0) // Free
             {
-                UnsafeUtility.Free((void*)block.Range.Pointer, (Allocator)block.Range.Allocator.Value);
+                Memory.Unmanaged.Free((void*) block.Range.Pointer, LegacyOf(block.Range.Allocator));
                 block.Range.Pointer = IntPtr.Zero;
                 block.AllocatedItems = 0;
                 return 0;
@@ -832,14 +838,14 @@ namespace Unity.Collections
         public const ushort FirstUserIndex = 32;
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckFailedToAllocate(int error)
+        internal static void CheckFailedToAllocate(int error)
         {
             if (error != 0)
                 throw new ArgumentException("failed to allocate");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckFailedToFree(int error)
+        internal static void CheckFailedToFree(int error)
         {
             if (error != 0)
                 throw new ArgumentException("failed to free");

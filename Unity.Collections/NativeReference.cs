@@ -13,7 +13,6 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the reference in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    [NativeContainerSupportsDeallocateOnJobCompletion]
     public unsafe struct NativeReference<T>
         : INativeDisposable
         , IEquatable<NativeReference<T>>
@@ -60,7 +59,7 @@ namespace Unity.Collections
             CheckAllocator(allocator);
 
             reference = default;
-            reference.m_Data = UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), allocator);
+            reference.m_Data = Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), allocator);
             reference.m_AllocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -113,7 +112,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
 #endif
-                UnsafeUtility.Free(m_Data, m_AllocatorLabel);
+                Memory.Unmanaged.Free(m_Data, m_AllocatorLabel);
                 m_AllocatorLabel = Allocator.Invalid;
             }
 
@@ -340,7 +339,7 @@ namespace Unity.Collections
 
         public void Dispose()
         {
-            UnsafeUtility.Free(m_Data, m_AllocatorLabel);
+            Memory.Unmanaged.Free(m_Data, m_AllocatorLabel);
         }
     }
 

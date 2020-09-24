@@ -89,6 +89,16 @@ namespace Unity.Collections
             public int value;
 
             /// <summary>
+            /// Construct a rune for the given unicode code point.  No validation
+            /// is done to check whether the code point is valid.
+            /// </summary>
+            /// <param name="codepoint">The codepoint</param>
+            public Rune(int codepoint)
+            {
+                value = codepoint;
+            }
+
+            /// <summary>
             ///
             /// </summary>
             /// <param name="c"></param>
@@ -103,6 +113,27 @@ namespace Unity.Collections
             public static bool IsDigit(Rune c)
             {
                 return c.value >= '0' && c.value <= '9';
+            }
+
+            /// <summary>
+            /// Returns the number of UTF-8 bytes required to encode this Rune.  If the Rune's codepoint
+            /// value is invalid, returns 4 (maximum possible encoding length).
+            /// </summary>
+            /// <returns>Number of bytes required to encode this Rune as UTF-8.</returns>
+            public int LengthInUtf8Bytes()
+            {
+                if (value < 0)
+                    return 4; // invalid codepoint
+                if (value <= 0x7F)
+                    return 1;
+                if (value <= 0x7FF)
+                    return 2;
+                if (value <= 0xFFFF)
+                    return 3;
+                if (value <= 0x1FFFFF)
+                    return 4;
+                // invalid codepoint, max size.
+                return 4;
             }
         }
 

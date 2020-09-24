@@ -76,7 +76,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// Fixed-size circular buffer.
+    /// Fixed-size circular buffer, without any thread safety check features.
     /// </summary>
     /// <typeparam name="T">Source type of elements.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
@@ -138,7 +138,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Allocator = allocator;
             Control = new RingControl(capacity);
             var sizeInBytes = capacity * UnsafeUtility.SizeOf<T>();
-            Ptr = (T*)UnsafeUtility.Malloc(sizeInBytes, 16, allocator);
+            Ptr = (T*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
 
             if (options == NativeArrayOptions.ClearMemory)
             {
@@ -161,7 +161,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
-                UnsafeUtility.Free(Ptr, Allocator);
+                Memory.Unmanaged.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
             }
 

@@ -3,6 +3,7 @@ using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine;
@@ -11,8 +12,9 @@ using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 #endif
 
-class VirtualMemoryUtilityTests
+class VirtualMemoryUtilityTests : CollectionsTestCommonBase
 {
+#if !(UNITY_DOTSRUNTIME && UNITY_WEBGL) // https://unity3d.atlassian.net/browse/DOTSR-2039
     [Test]
     public void VirtualMemory_Reserve1Page()
     {
@@ -228,5 +230,6 @@ class VirtualMemoryUtilityTests
 
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
+#endif
 }
 #endif

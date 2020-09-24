@@ -2,8 +2,9 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
-internal class UnsafeHashMapTests
+internal class UnsafeHashMapTests : CollectionsTestCommonBase
 {
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]

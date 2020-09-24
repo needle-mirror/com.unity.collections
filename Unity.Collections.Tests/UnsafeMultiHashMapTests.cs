@@ -1,10 +1,11 @@
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
-using Unity.Jobs;
+using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 
-internal class UnsafeMultiHashMapTests
+internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
 {
     [BurstCompile(CompileSynchronously = true)]
     public struct UnsafeMultiHashMapAddJob : IJobParallelFor
@@ -85,42 +86,69 @@ internal class UnsafeMultiHashMapTests
 
     [Test]
     public void UnsafeMultiHashMap_ForEach([Values(10, 1000)]int n)
+    {
+        var seenKeys = new NativeArray<int>(n, Allocator.Temp);
+        var seenValues = new NativeArray<int>(n * 2, Allocator.Temp);
+        using (var container = new UnsafeMultiHashMap<int, int>(1, Allocator.Temp))
         {
-            var seenKeys = new NativeArray<int>(n, Allocator.Temp);
-            var seenValues = new NativeArray<int>(n * 2, Allocator.Temp);
-            using (var container = new UnsafeMultiHashMap<int, int>(1, Allocator.Temp))
+            for (int i = 0; i < n; ++i)
             {
-                for (int i = 0; i < n; ++i)
+                container.Add(i, i);
+                container.Add(i, i + n);
+            }
+
+            var count = 0;
+            foreach (var kv in container)
+            {
+                if (kv.Value < n)
                 {
-                    container.Add(i, i);
-                    container.Add(i, i + n);
+                    Assert.AreEqual(kv.Key, kv.Value);
+                }
+                else
+                {
+                    Assert.AreEqual(kv.Key + n, kv.Value);
                 }
 
-                var count = 0;
-                foreach (var kv in container)
-                {
-                    if (kv.Value < n)
-                    {
-                        Assert.AreEqual(kv.Key, kv.Value);
-                    }
-                    else
-                    {
-                        Assert.AreEqual(kv.Key + n, kv.Value);
-                    }
+                seenKeys[kv.Key] = seenKeys[kv.Key] + 1;
+                seenValues[kv.Value] = seenValues[kv.Value] + 1;
 
-                    seenKeys[kv.Key] = seenKeys[kv.Key] + 1;
-                    seenValues[kv.Value] = seenValues[kv.Value] + 1;
+                ++count;
+            }
 
-                    ++count;
-                }
-
-                Assert.AreEqual(container.Count(), count);
-                for (int i = 0; i < n; i++)
-                {
-                    Assert.AreEqual(2, seenKeys[i], $"Incorrect key count {i}");
-                    Assert.AreEqual(1, seenValues[i], $"Incorrect value count {i}");
-                    Assert.AreEqual(1, seenValues[i + n], $"Incorrect value count {i + n}");
-                }
+            Assert.AreEqual(container.Count(), count);
+            for (int i = 0; i < n; i++)
+            {
+                Assert.AreEqual(2, seenKeys[i], $"Incorrect key count {i}");
+                Assert.AreEqual(1, seenValues[i], $"Incorrect value count {i}");
+                Assert.AreEqual(1, seenValues[i + n], $"Incorrect value count {i + n}");
             }
         }
     }
+
+    [Test]
+    public void UnsafeMultiHashMap_GetKeys()
+    {
+        var container = new UnsafeMultiHashMap<int, int>(1, Allocator.Temp);
+        for (int i = 0; i < 30; ++i)
+        {
+            container.Add(i, 2 * i);
+            container.Add(i, 3 * i);
+        }
+        var keys = container.GetKeyArray(Allocator.Temp);
+#if !NET_DOTS // Tuple is not supported by TinyBCL
+        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
+        Assert.AreEqual(30, uniqueLength);
+#endif
+
+        Assert.AreEqual(60, keys.Length);
+        keys.Sort();
+        for (int i = 0; i < 30; ++i)
+        {
+            Assert.AreEqual(i, keys[i * 2 + 0]);
+            Assert.AreEqual(i, keys[i * 2 + 1]);
+#if !NET_DOTS // Tuple is not supported by TinyBCL
+            Assert.AreEqual(i, unique[i]);
+#endif
+        }
+    }
+}

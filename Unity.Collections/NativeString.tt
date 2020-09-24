@@ -900,18 +900,19 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    ///
+    /// <undoc />
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=1)]
     public struct Bytes1
     {
         /// <summary>
+        /// <undoc />
         /// </summary>
         [FieldOffset(0)] public byte byte0000;
     }
 
     /// <summary>
-    ///
+    /// <undoc />
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=16)]
     public struct Bytes16
@@ -922,6 +923,7 @@ namespace Unity.Collections
        var offset = i.ToString("D4");
 #>
         /// <summary>
+        /// <undoc />
         /// </summary>
         [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
@@ -937,7 +939,7 @@ namespace Unity.Collections
 #>
 
     /// <summary>
-    ///
+    /// <undoc />
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size=<#=MAXLENGTH#>)]
     public struct Bytes<#=MAXLENGTH#>
@@ -949,6 +951,7 @@ namespace Unity.Collections
         var offset = i.ToString("D4");
 #>
         /// <summary>
+        /// <undoc />
         /// </summary>
         [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
@@ -959,6 +962,7 @@ namespace Unity.Collections
         var offs = offset.ToString("D4");
 #>
         /// <summary>
+        /// <undoc />
         /// </summary>
         [FieldOffset(<#=offset#>)] public Bytes16 byte<#=offs#>;
 <#
@@ -966,434 +970,5 @@ namespace Unity.Collections
 #>
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-    [Obsolete("NativeString<#=BYTES#> is deprecated, use FixedString<#=BYTES#> instead. (RemovedAfter 2020-09-10). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
-#else
-    [Obsolete("NativeString<#=BYTES#> is deprecated, use FixedString<#=BYTES#> instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> FixedString<#=BYTES#>", false)]
-#endif
-    [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
-    public struct NativeString<#=BYTES#> : IComparable<NativeString<#=BYTES#>>, IEquatable<NativeString<#=BYTES#>>
-    {
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("NativeString<#=BYTES#>.MaxLength is deprecated, use FixedString<#=BYTES#>.UTF8MaxLengthInBytes instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> FixedString<#=BYTES#>.UTF8MaxLengthInBytes", false)]
-        public const int MaxLength = <#=MAXLENGTH#>;
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        [FieldOffset(0)] public ushort LengthInBytes;
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        [FieldOffset(2)] public Bytes<#=MAXLENGTH#> buffer;
-
-        /// <summary>
-        /// When the length in bytes of the UTF-8 buffer is needed, please use this property.
-        /// </summary>
-        public int Utf8BufferLengthInBytes
-        {
-            get
-            {
-                return LengthInBytes;
-            }
-            set
-            {
-                LengthInBytes = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// When the address of the UTF-8 buffer is needed, please use this property.
-        /// </summary>
-        public unsafe ref Bytes1 Utf8Buffer
-        {
-            get
-            {
-                fixed(Bytes<#=MAXLENGTH#>* b = &buffer)
-                    return ref UnsafeUtility.AsRef<Bytes1>(b);
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
-        public ParseError Parse(ref int offset, ref int output)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString{data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="output"></param>
-        /// <param name="decimalSeparator"></param>
-        /// <returns></returns>
-        public ParseError Parse(ref int offset, ref float output, char decimalSeparator = '.')
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    return temp.Parse(ref offset, ref output, decimalSeparator);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public FormatError Format(int input)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    var error = temp.Format(input);
-                    LengthInBytes = (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public FormatError Format(long input)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    var error = temp.Format(input);
-                    LengthInBytes = (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public FormatError Append(int input)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b + LengthInBytes, Length = 0, Capacity = MaxLength - LengthInBytes};
-                    var error = temp.Format(input);
-                    LengthInBytes += (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public FormatError Append(long input)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b + LengthInBytes, Length = 0, Capacity = MaxLength - LengthInBytes};
-                    var error = temp.Format(input);
-                    LengthInBytes += (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="decimalSeparator"></param>
-        /// <returns></returns>
-        public FormatError Format(float input, char decimalSeparator = '.')
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength};
-                    var error = temp.Format(input, decimalSeparator);
-                    LengthInBytes = (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="decimalSeparator"></param>
-        /// <returns></returns>
-        public FormatError Append(float input, char decimalSeparator = '.')
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    NativeString temp = new NativeString {data = b + LengthInBytes, Length = 0, Capacity = MaxLength - LengthInBytes};
-                    var error = temp.Format(input, decimalSeparator);
-                    LengthInBytes += (ushort)temp.Length;
-                    return error;
-                }
-            }
-        }
-
-<#
-    foreach (var OTHERBYTES in SIZES)
-    {
-
-#>
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public unsafe CopyError AppendFrom(NativeString<#=OTHERBYTES#> source)
-        {
-            fixed(byte * b = &buffer.byte0000)
-                return source.AppendTo(b, ref LengthInBytes, MaxLength);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public unsafe CopyError CopyFrom(NativeString<#=OTHERBYTES#> source)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return source.CopyTo(b, out LengthInBytes, MaxLength);
-        }
-
-<#
-        if(OTHERBYTES != BYTES)
-        {
-#>
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="source"></param>
-        public NativeString<#=BYTES#>(ref NativeString<#=OTHERBYTES#> source)
-        {
-            LengthInBytes = 0;
-            buffer = new Bytes<#=MAXLENGTH#>{};
-            var error = CopyFrom(source);
-            if(error != CopyError.None)
-                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");
-        }
-
-<#
-        }
-    }
-#>
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="s"></param>
-        /// <param name="length"></param>
-        /// <returns></returns>
-        public unsafe CopyError CopyFrom(char* s, ushort length)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return NativeString.Copy(b, out LengthInBytes, MaxLength, s, length);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public unsafe CopyError CopyFrom(String source)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                LengthInBytes = 0;
-                return CopyError.None;
-            }
-            fixed(char *c = source)
-                return CopyFrom(c, (ushort)source.Length);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="d"></param>
-        /// <param name="length"></param>
-        /// <param name="maxLength"></param>
-        /// <returns></returns>
-        public unsafe CopyError CopyTo(byte* d, out ushort length, ushort maxLength)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="d"></param>
-        /// <param name="length"></param>
-        /// <param name="maxLength"></param>
-        /// <returns></returns>
-        public unsafe CopyError CopyTo(char* d, out ushort length, ushort maxLength)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return NativeString.Copy(d, out length, maxLength, b, LengthInBytes);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="d"></param>
-        /// <param name="length"></param>
-        /// <param name="maxLength"></param>
-        /// <returns></returns>
-        public unsafe CopyError AppendTo(byte* d, ref ushort length, ushort maxLength)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="d"></param>
-        /// <param name="length"></param>
-        /// <param name="maxLength"></param>
-        /// <returns></returns>
-        public unsafe CopyError AppendTo(char* d, ref ushort length, ushort maxLength)
-        {
-            fixed (byte* b = &buffer.byte0000)
-                return NativeString.Append(d, ref length, maxLength, b, LengthInBytes);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        public NativeString<#=BYTES#>(String source)
-        {
-            LengthInBytes = 0;
-            buffer = new Bytes<#=MAXLENGTH#>{};
-            var error = CopyFrom(source);
-            if(error != CopyError.None)
-                throw new ArgumentException($"NativeString<#=BYTES#>: {error} while copying \"{source}\"");
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static implicit operator NativeString<#=BYTES#>(string b) => new NativeString<#=BYTES#>(b);
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public override String ToString()
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    return new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength}.ToString();
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    return new NativeString {data = b, Length = LengthInBytes, Capacity = MaxLength}.GetHashCode();
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public int CompareTo(NativeString<#=BYTES#> other)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    return NativeString.CompareTo(b, LengthInBytes, &other.buffer.byte0000, other.LengthInBytes);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(NativeString<#=BYTES#> other)
-        {
-            unsafe
-            {
-                fixed (byte* b = &buffer.byte0000)
-                {
-                    return NativeString.Equals(b, LengthInBytes, &other.buffer.byte0000, other.LengthInBytes);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            return obj is NativeString<#=BYTES#> other && Equals(other);
-        }
-    }
 <#}}#>
 }

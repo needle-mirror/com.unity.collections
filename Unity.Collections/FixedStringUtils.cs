@@ -21,6 +21,14 @@ namespace Unity.Collections
         /// </summary>
         /// <returns></returns>
         unsafe byte* GetUnsafePtr();
+
+        /// <summary>
+        /// Attempt to set the size of the underlying buffer.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not.</param>
+        /// <returns>Whether the resize was successful.</returns>
+        bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory);
     }
 
     internal unsafe static class FixedStringUtils

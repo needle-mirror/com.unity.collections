@@ -148,11 +148,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericRemove()
+    public void <#=TYPENAME #><#=TYPE#>GenericRemoveAt()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void <#=TYPENAME #><#=TYPE#>GenericRemove()
+    {
+        var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((<#=TYPE#>)3));
+        Assert.True(list.Remove((<#=TYPE#>)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void <#=TYPENAME #><#=TYPE#>GenericRemoveSwapBack()
+    {
+        var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((<#=TYPE#>)3));
+        Assert.True(list.RemoveSwapBack((<#=TYPE#>)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -271,6 +291,24 @@ internal class FixedListTests
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void <#=TYPENAME #>Remove()
+    {
+        var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void <#=TYPENAME #>RemoveSwapBack()
+    {
+        var list = new <#=TYPENAME #>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 

@@ -1,18 +1,18 @@
-using System;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine.Assertions;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    [BurstCompatible]
     internal unsafe struct UnsafeStreamBlock
     {
         internal UnsafeStreamBlock* Next;
         internal fixed byte Data[1];
     }
 
+    [BurstCompatible]
     internal unsafe struct UnsafeStreamRange
     {
         internal UnsafeStreamBlock* Block;
@@ -24,6 +24,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal int NumberOfBlocks;
     }
 
+    [BurstCompatible]
     internal unsafe struct UnsafeStreamBlockData
     {
         internal const int AllocationSize = 4 * 1024;
@@ -41,27 +42,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Assert.IsTrue(threadIndex < BlockCount && threadIndex >= 0);
 
-            UnsafeStreamBlock* block = (UnsafeStreamBlock*)UnsafeUtility.Malloc(AllocationSize, 16, Allocator);
+            UnsafeStreamBlock* block = (UnsafeStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, Allocator);
             block->Next = null;
 
             if (oldBlock == null)
             {
-                if (Blocks[threadIndex] == null)
-                {
-                    Blocks[threadIndex] = block;
-                }
-                else
-                {
-                    // Walk the linked list and append our new block to the end.
-                    // Otherwise, we leak memory.
-                    UnsafeStreamBlock* head = Blocks[threadIndex];
-                    while (head->Next != null)
-                    {
-                        head = head->Next;
-                    }
-
-                    head->Next = block;
-                }
+                // Append our new block in front of the previous head.
+                block->Next = Blocks[threadIndex];
+                Blocks[threadIndex] = block;
             }
             else
             {
@@ -73,9 +61,10 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// A deterministic data streaming supporting parallel reading and parallel writing.
+    /// A deterministic data streaming supporting parallel reading and parallel writings, without any thread safety check features.
     /// Allows you to write different types or arrays into a single stream.
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeStream
         : INativeDisposable
     {
@@ -104,6 +93,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public static JobHandle ScheduleConstruct<T>(out UnsafeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
@@ -121,6 +111,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public static JobHandle ScheduleConstruct(out UnsafeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
@@ -133,7 +124,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             int blockCount = JobsUtility.MaxJobThreadCount;
 
             int allocationSize = sizeof(UnsafeStreamBlockData) + sizeof(UnsafeStreamBlock*) * blockCount;
-            byte* buffer = (byte*)UnsafeUtility.Malloc(allocationSize, 16, allocator);
+            byte* buffer = (byte*)Memory.Unmanaged.Allocate(allocationSize, 16, allocator);
             UnsafeUtility.MemClear(buffer, allocationSize);
 
             var block = (UnsafeStreamBlockData*)buffer;
@@ -152,7 +143,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal void AllocateForEach(int forEachCount)
         {
             long allocationSize = sizeof(UnsafeStreamRange) * forEachCount;
-            m_Block->Ranges = (UnsafeStreamRange*)UnsafeUtility.Malloc(allocationSize, 16, m_Allocator);
+            m_Block->Ranges = (UnsafeStreamRange*)Memory.Unmanaged.Allocate(allocationSize, 16, m_Allocator);
             m_Block->RangeCount = forEachCount;
             UnsafeUtility.MemClear(m_Block->Ranges, allocationSize);
         }
@@ -210,13 +201,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
-        public int ComputeItemCount() => Count();
-
-        /// <summary>
         /// The current number of items in the container.
         /// </summary>
         /// <returns>The item count.</returns>
@@ -240,6 +224,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
         /// <remarks>The array is a copy of stream data.</remarks>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
             var array = new NativeArray<T>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
@@ -274,13 +259,13 @@ namespace Unity.Collections.LowLevel.Unsafe
                 while (block != null)
                 {
                     UnsafeStreamBlock* next = block->Next;
-                    UnsafeUtility.Free(block, m_Allocator);
+                    Memory.Unmanaged.Free(block, m_Allocator);
                     block = next;
                 }
             }
 
-            UnsafeUtility.Free(m_Block->Ranges, m_Allocator);
-            UnsafeUtility.Free(m_Block, m_Allocator);
+            Memory.Unmanaged.Free(m_Block->Ranges, m_Allocator);
+            Memory.Unmanaged.Free(m_Block, m_Allocator);
             m_Block = null;
             m_Allocator = Allocator.None;
         }
@@ -304,6 +289,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">All jobs spawned will depend on this JobHandle.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
@@ -355,6 +341,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         /// <summary>
         /// </summary>
+        [BurstCompatible]
         public unsafe struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
@@ -432,6 +419,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <param name="value">Value to write.</param>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
             public void Write<T>(T value) where T : struct
             {
                 ref T dst = ref Allocate<T>();
@@ -443,6 +431,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns>Reference to allocated space for data.</returns>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
             public ref T Allocate<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
@@ -489,6 +478,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         /// <summary>
         /// </summary>
+        [BurstCompatible]
         public unsafe struct Reader
         {
             [NativeDisableUnsafePtrRestriction]
@@ -583,6 +573,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns>Reference to data.</returns>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
             public ref T Read<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
@@ -594,6 +585,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns>Reference to data.</returns>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
             public ref T Peek<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
@@ -606,13 +598,6 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 return ref UnsafeUtility.AsRef<T>(ptr);
             }
-
-            /// <summary>
-            ///
-            /// </summary>
-            /// <returns></returns>
-            [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
-            public int ComputeItemCount() => Count();
 
             /// <summary>
             /// The current number of items in the container.

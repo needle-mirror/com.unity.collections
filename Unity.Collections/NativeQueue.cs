@@ -47,7 +47,7 @@ namespace Unity.Collections
                 {
                     Interlocked.Exchange(ref m_AllocLock, 0);
                     Interlocked.Increment(ref m_NumBlocks);
-                    block = (NativeQueueBlockHeader*)UnsafeUtility.Malloc(m_BlockSize, 16, Allocator.Persistent);
+                    block = (NativeQueueBlockHeader*)Memory.Unmanaged.Allocate(m_BlockSize, 16, Allocator.Persistent);
                     return block;
                 }
 
@@ -66,7 +66,7 @@ namespace Unity.Collections
             {
                 if (Interlocked.Decrement(ref m_NumBlocks) + 1 > m_MaxBlocks)
                 {
-                    UnsafeUtility.Free(block, Allocator.Persistent);
+                    Memory.Unmanaged.Free(block, Allocator.Persistent);
                     return;
                 }
 
@@ -96,7 +96,7 @@ namespace Unity.Collections
             {
                 if (pData == null)
                 {
-                    pData = (NativeQueueBlockPoolData*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<NativeQueueBlockPoolData>(), 8, Allocator.Persistent);
+                    pData = (NativeQueueBlockPoolData*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<NativeQueueBlockPoolData>(), 8, Allocator.Persistent);
                     ref var data = ref *pData;
                     data.m_NumBlocks = data.m_MaxBlocks = 256;
                     data.m_AllocLock = 0;
@@ -105,7 +105,7 @@ namespace Unity.Collections
 
                     for (int i = 0; i < data.m_MaxBlocks; ++i)
                     {
-                        NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)UnsafeUtility.Malloc(NativeQueueBlockPoolData.m_BlockSize, 16, Allocator.Persistent);
+                        NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)Memory.Unmanaged.Allocate(NativeQueueBlockPoolData.m_BlockSize, 16, Allocator.Persistent);
                         block->m_NextBlock = prev;
                         prev = block;
                     }
@@ -126,10 +126,10 @@ namespace Unity.Collections
             {
                 NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)data.m_FirstBlock;
                 data.m_FirstBlock = (IntPtr)block->m_NextBlock;
-                UnsafeUtility.Free(block, Allocator.Persistent);
+                Memory.Unmanaged.Free(block, Allocator.Persistent);
                 --data.m_NumBlocks;
             }
-            UnsafeUtility.Free(pData, Allocator.Persistent);
+            Memory.Unmanaged.Free(pData, Allocator.Persistent);
             pData = null;
         }
 
@@ -193,7 +193,7 @@ namespace Unity.Collections
         {
             var queueDataSize = CollectionHelper.Align(UnsafeUtility.SizeOf<NativeQueueData>(), JobsUtility.CacheLineSize);
 
-            var data = (NativeQueueData*)UnsafeUtility.Malloc(
+            var data = (NativeQueueData*)Memory.Unmanaged.Allocate(
                 queueDataSize
                 + JobsUtility.CacheLineSize * JobsUtility.MaxJobThreadCount
                 , JobsUtility.CacheLineSize
@@ -226,7 +226,7 @@ namespace Unity.Collections
                 firstBlock = next;
             }
 
-            UnsafeUtility.Free(data, allocation);
+            Memory.Unmanaged.Free(data, allocation);
         }
     }
 

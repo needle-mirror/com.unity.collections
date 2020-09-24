@@ -523,7 +523,7 @@ namespace Unity.Collections
             /// </summary>
             public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
-            object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
+            object IEnumerator.Current => Current;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

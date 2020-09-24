@@ -235,6 +235,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Returns array populated with keys.
         /// </summary>
+        /// <remarks>Number of returned keys will match number of values in the container. If key contains multiple values it will appear number of times
+        /// how many values are associated to the same key. If only unique key values desired use GetUniqueKeyArray instead.</remarks>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>Array of keys.</returns>
@@ -261,6 +263,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Returns arrays populated with keys and values.
         /// </summary>
+        /// <remarks>If key contains multiple values, returned key array will contain multiple identical keys.</remarks>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>Array of keys-values.</returns>
@@ -282,7 +285,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// Implements iterator over the container.
         /// </summary>
         public struct Enumerator : IEnumerator<TValue>
         {
@@ -294,14 +297,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             NativeMultiHashMapIterator<TKey> iterator;
 
             /// <summary>
-            ///
+            /// Disposes enumerator.
             /// </summary>
             public void Dispose() { }
 
             /// <summary>
-            ///
+            /// Advances the enumerator to the next element of the container.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
             public bool MoveNext()
             {
                 //Avoids going beyond the end of the collection.
@@ -315,21 +318,21 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
-            ///
+            /// Resets the enumerator to the first element of the container.
             /// </summary>
             public void Reset() => isFirst = true;
 
             /// <summary>
-            ///
+            /// Gets the element at the current position of the enumerator in the container.
             /// </summary>
             public TValue Current => value;
 
-            object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<T> to avoid boxing");
+            object IEnumerator.Current => Current;
 
             /// <summary>
-            ///
+            /// Returns IEnumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
             public Enumerator GetEnumerator() { return this; }
         }
 
@@ -449,7 +452,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
-            object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
+            object IEnumerator.Current => Current;
         }
     }
 

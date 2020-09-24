@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
-internal class MathTests
+internal class MathTests : CollectionsTestCommonBase
 {
     [Test]
     public void Tests()
@@ -24,8 +25,7 @@ internal class MathTests
     }
 }
 
-
-internal class NativeArraySortTests
+internal class NativeArraySortTests : CollectionsTestCommonBase
 {
     [Test]
     public void SortNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
@@ -291,7 +291,7 @@ internal class NativeArraySortTests
 }
 
 
-internal class NativeSliceTests
+internal class NativeSliceTests : CollectionsTestCommonBase
 {
     [Test]
     public void NativeSlice_CopyTo()
@@ -361,7 +361,7 @@ internal class NativeSliceTests
             array[i] = random.NextInt(int.MinValue, int.MaxValue);
         }
 
-        array.SortJob().Complete();
+        array.Sort(default).Complete();
 
         int min = int.MinValue;
         foreach (var i in array)
@@ -384,7 +384,7 @@ internal class NativeSliceTests
             array[i] = i;
         }
 
-        array.SortJob().Complete();
+        array.Sort(default).Complete();
 
         int min = int.MinValue;
         foreach (var i in array)
@@ -407,13 +407,41 @@ internal class NativeSliceTests
             array[i] = (byte)random.NextInt(byte.MinValue, byte.MinValue);
         }
 
-        array.SortJob().Complete();
+        array.Sort(default).Complete();
 
         int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
             min = i;
+        }
+        array.Dispose();
+    }
+
+    struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
+    {
+        public int Compare(T x, T y) => y.CompareTo(x);
+    }
+
+    [Test]
+    public void SortJobNativeArray_RandomBytes_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000, 100000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<byte> array = new NativeArray<byte>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (byte)random.NextInt(byte.MinValue, byte.MinValue);
+        }
+
+        array.Sort(new DescendingComparer<byte>(), default).Complete();
+
+        int max = int.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
         }
         array.Dispose();
     }
@@ -430,13 +458,36 @@ internal class NativeSliceTests
             array[i] = (short)random.NextInt(short.MinValue, short.MaxValue);
         }
 
-        array.SortJob().Complete();
+        array.Sort(default).Complete();
 
         int min = int.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
             min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    public void SortJobNativeArray_RandomShorts_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<short> array = new NativeArray<short>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (short)random.NextInt(short.MinValue, short.MaxValue);
+        }
+
+        array.Sort(new DescendingComparer<short>(), default).Complete();
+
+        int max = int.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
         }
         array.Dispose();
     }
@@ -453,13 +504,36 @@ internal class NativeSliceTests
             array[i] = (float)random.NextDouble();
         }
 
-        array.SortJob().Complete();
+        array.Sort(default).Complete();
 
         float min = float.MinValue;
         foreach (var i in array)
         {
             Assert.LessOrEqual(min, i);
             min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    public void SortJobNativeArray_RandomFloats_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (float)random.NextDouble();
+        }
+
+        array.Sort(new DescendingComparer<float>(), default).Complete();
+
+        float max = float.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
         }
         array.Dispose();
     }

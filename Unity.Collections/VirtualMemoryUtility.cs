@@ -53,6 +53,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             log2PageSize = rangeLog2PageSize;
             pageCount = rangePageCount;
         }
+
+        /// <summary>
+        /// Constructs a VMRange from a pointer, range size in bytes, and page size in bytes.
+        /// </summary>
+        /// <param name="rangePtr">Pointer to beginning of address range.</param>
+        /// <param name="rangeBytes">Size of address range in bytes.</param>
+        /// <param name="pageSizeInBytes">Size of pages in bytes.</param>
+        public VMRange(IntPtr rangePtr, uint rangeBytes, uint pageSizeInBytes)
+        {
+            this = new VMRange {ptr = rangePtr, pageCount = VirtualMemoryUtility.BytesToPageCount(rangeBytes, pageSizeInBytes), PageSizeInBytes = pageSizeInBytes};
+        }
     }
 
     /// <summary>
@@ -286,6 +297,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             Baselib_ErrorState errorState = default;
             Baselib_Memory_ReleasePages(pages, &errorState);
             outErrorState = CreateWrappedBaselibErrorState(errorState);
+        }
+
+        /// <summary>
+        /// Computes the number of pages required to cover a contiguous area of memory.
+        /// </summary>
+        /// <param name="bytes">Bytes of the contiguous area of memory.</param>
+        /// <param name="pageSizeInBytes">Size of the virtual memory page in bytes.</param>
+        /// <returns>The page count required to cover the contiguous area of memory.</returns>
+        public static uint BytesToPageCount(uint bytes, uint pageSizeInBytes)
+        {
+            return (bytes + pageSizeInBytes - 1) / pageSizeInBytes;
         }
     }
 }

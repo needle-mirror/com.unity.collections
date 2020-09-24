@@ -69,7 +69,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
+    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
     /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
@@ -117,7 +117,7 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -131,9 +131,9 @@ namespace Unity.Collections
         //
 
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes.
-        /// The string is guaranteed to he null-terminated.  The length value
-        /// does not include the null terminating byte.
+        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
+        /// null-terminated. The length value does not include the null terminating byte. It is valid to
+        /// read the null byte at the Length position when accessing this data by raw pointer.
         /// </summary>
         public int Length
         {
@@ -153,16 +153,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("UTF8LengthInBytes has been renamed to just Length. (RemovedAfter 2020-08-01) (UnityUpgradable) -> Length", true)]
-        public int UTF8LengthInBytes => Length;
-
-        /// <summary>
-        /// The maximum length of the UTF-8 encopded string, in bytes.
+        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
         /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
         /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.
+        /// has space for a null terminating byte.  For FixedString32, attempting to set this value
+        /// to anything lower than 29 will throw.  The Capacity will always be 29.
         /// </summary>
         public int Capacity
         {
@@ -174,6 +169,34 @@ namespace Unity.Collections
             {
                 CheckCapacityInRange(value);
             }
+        }
+
+        /// <summary>
+        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
+        /// <returns>Whether the resize was successful.</returns>
+        public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
+        {
+            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+                return false;
+            if (newLength == utf8LengthInBytes)
+                return true;
+            unsafe
+            {
+                if (clearOptions == NativeArrayOptions.ClearMemory)
+                {
+                    if (newLength > utf8LengthInBytes)
+                        UnsafeUtility.MemClear(GetUnsafePtr() + utf8LengthInBytes, newLength - utf8LengthInBytes);
+                    else
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, utf8LengthInBytes - newLength);
+                }
+                utf8LengthInBytes = (ushort)newLength;
+                // always null terminate
+                GetUnsafePtr()[utf8LengthInBytes] = 0;
+            }
+            return true;
         }
 
         /// <summary>
@@ -212,8 +235,8 @@ namespace Unity.Collections
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The byte index to access</param>
+        /// <returns>A ref byte for the requested index</returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -224,7 +247,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        /// Clear this string by setting its Length to 0.
         /// </summary>
         public void Clear()
         {
@@ -232,9 +255,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Append the given byte value to this string. The string will remain null-terminated after the new
+        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
+        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
@@ -359,11 +384,22 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if (error != CopyError.None)
-                        throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                    CheckCopyError(error, source);
                     this.Length = utf8LengthInBytes;
                 }
             }
+        }
+
+        /// <summary>
+        /// Construct a FixedString32 by repeating the given Unicode.Rune a number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat</param>
+        /// <param name="count">The number of times to repeat, default 1</param>
+        public FixedString32(Unicode.Rune rune, int count = 1)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            this.Append(rune, count);
         }
 
         /// <summary>
@@ -394,14 +430,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -419,7 +455,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -430,7 +466,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -467,14 +503,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -492,7 +528,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -503,7 +539,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -513,7 +549,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -547,14 +583,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -572,7 +608,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -583,7 +619,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -593,7 +629,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -627,14 +663,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -652,7 +688,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -663,7 +699,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -673,7 +709,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -707,14 +743,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -732,7 +768,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -743,7 +779,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -753,7 +789,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -823,8 +859,22 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
-            if (capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+            if (capacity > utf8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckCopyError(CopyError error, String source)
+        {
+            if (error != CopyError.None)
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckFormatError(FormatError error)
+        {
+            if (error != FormatError.None)
+                throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
 
@@ -852,7 +902,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
+    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
     /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
@@ -900,7 +950,7 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -914,9 +964,9 @@ namespace Unity.Collections
         //
 
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes.
-        /// The string is guaranteed to he null-terminated.  The length value
-        /// does not include the null terminating byte.
+        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
+        /// null-terminated. The length value does not include the null terminating byte. It is valid to
+        /// read the null byte at the Length position when accessing this data by raw pointer.
         /// </summary>
         public int Length
         {
@@ -936,16 +986,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("UTF8LengthInBytes has been renamed to just Length. (RemovedAfter 2020-08-01) (UnityUpgradable) -> Length", true)]
-        public int UTF8LengthInBytes => Length;
-
-        /// <summary>
-        /// The maximum length of the UTF-8 encopded string, in bytes.
+        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
         /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
         /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.
+        /// has space for a null terminating byte.  For FixedString64, attempting to set this value
+        /// to anything lower than 61 will throw.  The Capacity will always be 61.
         /// </summary>
         public int Capacity
         {
@@ -957,6 +1002,34 @@ namespace Unity.Collections
             {
                 CheckCapacityInRange(value);
             }
+        }
+
+        /// <summary>
+        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
+        /// <returns>Whether the resize was successful.</returns>
+        public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
+        {
+            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+                return false;
+            if (newLength == utf8LengthInBytes)
+                return true;
+            unsafe
+            {
+                if (clearOptions == NativeArrayOptions.ClearMemory)
+                {
+                    if (newLength > utf8LengthInBytes)
+                        UnsafeUtility.MemClear(GetUnsafePtr() + utf8LengthInBytes, newLength - utf8LengthInBytes);
+                    else
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, utf8LengthInBytes - newLength);
+                }
+                utf8LengthInBytes = (ushort)newLength;
+                // always null terminate
+                GetUnsafePtr()[utf8LengthInBytes] = 0;
+            }
+            return true;
         }
 
         /// <summary>
@@ -995,8 +1068,8 @@ namespace Unity.Collections
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The byte index to access</param>
+        /// <returns>A ref byte for the requested index</returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -1007,7 +1080,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        /// Clear this string by setting its Length to 0.
         /// </summary>
         public void Clear()
         {
@@ -1015,9 +1088,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Append the given byte value to this string. The string will remain null-terminated after the new
+        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
+        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
@@ -1142,11 +1217,22 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if (error != CopyError.None)
-                        throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                    CheckCopyError(error, source);
                     this.Length = utf8LengthInBytes;
                 }
             }
+        }
+
+        /// <summary>
+        /// Construct a FixedString64 by repeating the given Unicode.Rune a number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat</param>
+        /// <param name="count">The number of times to repeat, default 1</param>
+        public FixedString64(Unicode.Rune rune, int count = 1)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            this.Append(rune, count);
         }
 
         /// <summary>
@@ -1177,14 +1263,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1202,7 +1288,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1213,7 +1299,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -1250,14 +1336,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1275,7 +1361,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1286,7 +1372,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -1323,14 +1409,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1348,7 +1434,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1359,7 +1445,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -1369,7 +1455,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -1403,14 +1489,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1428,7 +1514,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1439,7 +1525,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -1449,7 +1535,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -1483,14 +1569,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1508,7 +1594,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1519,7 +1605,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -1529,7 +1615,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -1599,8 +1685,22 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
-            if (capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+            if (capacity > utf8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckCopyError(CopyError error, String source)
+        {
+            if (error != CopyError.None)
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckFormatError(FormatError error)
+        {
+            if (error != FormatError.None)
+                throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
 
@@ -1632,7 +1732,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
+    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
     /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
@@ -1680,7 +1780,7 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1694,9 +1794,9 @@ namespace Unity.Collections
         //
 
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes.
-        /// The string is guaranteed to he null-terminated.  The length value
-        /// does not include the null terminating byte.
+        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
+        /// null-terminated. The length value does not include the null terminating byte. It is valid to
+        /// read the null byte at the Length position when accessing this data by raw pointer.
         /// </summary>
         public int Length
         {
@@ -1716,16 +1816,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("UTF8LengthInBytes has been renamed to just Length. (RemovedAfter 2020-08-01) (UnityUpgradable) -> Length", true)]
-        public int UTF8LengthInBytes => Length;
-
-        /// <summary>
-        /// The maximum length of the UTF-8 encopded string, in bytes.
+        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
         /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
         /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.
+        /// has space for a null terminating byte.  For FixedString128, attempting to set this value
+        /// to anything lower than 125 will throw.  The Capacity will always be 125.
         /// </summary>
         public int Capacity
         {
@@ -1737,6 +1832,34 @@ namespace Unity.Collections
             {
                 CheckCapacityInRange(value);
             }
+        }
+
+        /// <summary>
+        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
+        /// <returns>Whether the resize was successful.</returns>
+        public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
+        {
+            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+                return false;
+            if (newLength == utf8LengthInBytes)
+                return true;
+            unsafe
+            {
+                if (clearOptions == NativeArrayOptions.ClearMemory)
+                {
+                    if (newLength > utf8LengthInBytes)
+                        UnsafeUtility.MemClear(GetUnsafePtr() + utf8LengthInBytes, newLength - utf8LengthInBytes);
+                    else
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, utf8LengthInBytes - newLength);
+                }
+                utf8LengthInBytes = (ushort)newLength;
+                // always null terminate
+                GetUnsafePtr()[utf8LengthInBytes] = 0;
+            }
+            return true;
         }
 
         /// <summary>
@@ -1775,8 +1898,8 @@ namespace Unity.Collections
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The byte index to access</param>
+        /// <returns>A ref byte for the requested index</returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -1787,7 +1910,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        /// Clear this string by setting its Length to 0.
         /// </summary>
         public void Clear()
         {
@@ -1795,9 +1918,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Append the given byte value to this string. The string will remain null-terminated after the new
+        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
+        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
@@ -1922,11 +2047,22 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if (error != CopyError.None)
-                        throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                    CheckCopyError(error, source);
                     this.Length = utf8LengthInBytes;
                 }
             }
+        }
+
+        /// <summary>
+        /// Construct a FixedString128 by repeating the given Unicode.Rune a number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat</param>
+        /// <param name="count">The number of times to repeat, default 1</param>
+        public FixedString128(Unicode.Rune rune, int count = 1)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            this.Append(rune, count);
         }
 
         /// <summary>
@@ -1957,14 +2093,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1982,7 +2118,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -1993,7 +2129,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2030,14 +2166,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2055,7 +2191,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2066,7 +2202,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2103,14 +2239,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2128,7 +2264,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2139,7 +2275,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2176,14 +2312,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2201,7 +2337,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2212,7 +2348,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2222,7 +2358,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -2256,14 +2392,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2281,7 +2417,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2292,7 +2428,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2302,7 +2438,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -2372,8 +2508,22 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
-            if (capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+            if (capacity > utf8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckCopyError(CopyError error, String source)
+        {
+            if (error != CopyError.None)
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckFormatError(FormatError error)
+        {
+            if (error != FormatError.None)
+                throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
 
@@ -2429,7 +2579,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
+    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
     /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
@@ -2477,7 +2627,7 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2491,9 +2641,9 @@ namespace Unity.Collections
         //
 
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes.
-        /// The string is guaranteed to he null-terminated.  The length value
-        /// does not include the null terminating byte.
+        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
+        /// null-terminated. The length value does not include the null terminating byte. It is valid to
+        /// read the null byte at the Length position when accessing this data by raw pointer.
         /// </summary>
         public int Length
         {
@@ -2513,16 +2663,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("UTF8LengthInBytes has been renamed to just Length. (RemovedAfter 2020-08-01) (UnityUpgradable) -> Length", true)]
-        public int UTF8LengthInBytes => Length;
-
-        /// <summary>
-        /// The maximum length of the UTF-8 encopded string, in bytes.
+        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
         /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
         /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.
+        /// has space for a null terminating byte.  For FixedString512, attempting to set this value
+        /// to anything lower than 509 will throw.  The Capacity will always be 509.
         /// </summary>
         public int Capacity
         {
@@ -2534,6 +2679,34 @@ namespace Unity.Collections
             {
                 CheckCapacityInRange(value);
             }
+        }
+
+        /// <summary>
+        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
+        /// <returns>Whether the resize was successful.</returns>
+        public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
+        {
+            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+                return false;
+            if (newLength == utf8LengthInBytes)
+                return true;
+            unsafe
+            {
+                if (clearOptions == NativeArrayOptions.ClearMemory)
+                {
+                    if (newLength > utf8LengthInBytes)
+                        UnsafeUtility.MemClear(GetUnsafePtr() + utf8LengthInBytes, newLength - utf8LengthInBytes);
+                    else
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, utf8LengthInBytes - newLength);
+                }
+                utf8LengthInBytes = (ushort)newLength;
+                // always null terminate
+                GetUnsafePtr()[utf8LengthInBytes] = 0;
+            }
+            return true;
         }
 
         /// <summary>
@@ -2572,8 +2745,8 @@ namespace Unity.Collections
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The byte index to access</param>
+        /// <returns>A ref byte for the requested index</returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -2584,7 +2757,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        /// Clear this string by setting its Length to 0.
         /// </summary>
         public void Clear()
         {
@@ -2592,9 +2765,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Append the given byte value to this string. The string will remain null-terminated after the new
+        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
+        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
@@ -2719,11 +2894,22 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if (error != CopyError.None)
-                        throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                    CheckCopyError(error, source);
                     this.Length = utf8LengthInBytes;
                 }
             }
+        }
+
+        /// <summary>
+        /// Construct a FixedString512 by repeating the given Unicode.Rune a number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat</param>
+        /// <param name="count">The number of times to repeat, default 1</param>
+        public FixedString512(Unicode.Rune rune, int count = 1)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            this.Append(rune, count);
         }
 
         /// <summary>
@@ -2754,14 +2940,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2779,7 +2965,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2790,7 +2976,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2827,14 +3013,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2852,7 +3038,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2863,7 +3049,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2900,14 +3086,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2925,7 +3111,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2936,7 +3122,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -2973,14 +3159,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -2998,7 +3184,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3009,7 +3195,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -3046,14 +3232,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3071,7 +3257,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3082,7 +3268,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -3092,7 +3278,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="fs"></param>
         /// <returns></returns>
@@ -3162,8 +3348,22 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
-            if (capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+            if (capacity > utf8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckCopyError(CopyError error, String source)
+        {
+            if (error != CopyError.None)
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckFormatError(FormatError error)
+        {
+            if (error != FormatError.None)
+                throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
 
@@ -3443,7 +3643,7 @@ namespace Unity.Collections
 
     /// <summary>
     /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is NOT guaranteed to be null-terminated, though in many cases it may be by accident.
+    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
     /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
     /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
     /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
@@ -3491,7 +3691,7 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3505,9 +3705,9 @@ namespace Unity.Collections
         //
 
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes.
-        /// The string is guaranteed to he null-terminated.  The length value
-        /// does not include the null terminating byte.
+        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
+        /// null-terminated. The length value does not include the null terminating byte. It is valid to
+        /// read the null byte at the Length position when accessing this data by raw pointer.
         /// </summary>
         public int Length
         {
@@ -3527,16 +3727,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        [Obsolete("UTF8LengthInBytes has been renamed to just Length. (RemovedAfter 2020-08-01) (UnityUpgradable) -> Length", true)]
-        public int UTF8LengthInBytes => Length;
-
-        /// <summary>
-        /// The maximum length of the UTF-8 encopded string, in bytes.
+        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
         /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
         /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.
+        /// has space for a null terminating byte.  For FixedString4096, attempting to set this value
+        /// to anything lower than 4093 will throw.  The Capacity will always be 4093.
         /// </summary>
         public int Capacity
         {
@@ -3548,6 +3743,34 @@ namespace Unity.Collections
             {
                 CheckCapacityInRange(value);
             }
+        }
+
+        /// <summary>
+        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// </summary>
+        /// <param name="newLength">The new length of the string</param>
+        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
+        /// <returns>Whether the resize was successful.</returns>
+        public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
+        {
+            if (newLength < 0 || newLength > utf8MaxLengthInBytes)
+                return false;
+            if (newLength == utf8LengthInBytes)
+                return true;
+            unsafe
+            {
+                if (clearOptions == NativeArrayOptions.ClearMemory)
+                {
+                    if (newLength > utf8LengthInBytes)
+                        UnsafeUtility.MemClear(GetUnsafePtr() + utf8LengthInBytes, newLength - utf8LengthInBytes);
+                    else
+                        UnsafeUtility.MemClear(GetUnsafePtr() + newLength, utf8LengthInBytes - newLength);
+                }
+                utf8LengthInBytes = (ushort)newLength;
+                // always null terminate
+                GetUnsafePtr()[utf8LengthInBytes] = 0;
+            }
+            return true;
         }
 
         /// <summary>
@@ -3586,8 +3809,8 @@ namespace Unity.Collections
         /// must be in the range of [0..Length).  The ref byte is a direct reference into
         /// this FixedString, and is only valid while this FixedString is valid.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The byte index to access</param>
+        /// <returns>A ref byte for the requested index</returns>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -3598,7 +3821,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        /// Clear this string by setting its Length to 0.
         /// </summary>
         public void Clear()
         {
@@ -3606,9 +3829,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Append the given byte value to this string. The string will remain null-terminated after the new
+        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
+        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
@@ -3733,11 +3958,22 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if (error != CopyError.None)
-                        throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                    CheckCopyError(error, source);
                     this.Length = utf8LengthInBytes;
                 }
             }
+        }
+
+        /// <summary>
+        /// Construct a FixedString4096 by repeating the given Unicode.Rune a number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat</param>
+        /// <param name="count">The number of times to repeat, default 1</param>
+        public FixedString4096(Unicode.Rune rune, int count = 1)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            this.Append(rune, count);
         }
 
         /// <summary>
@@ -3768,14 +4004,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3793,7 +4029,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3804,7 +4040,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -3841,14 +4077,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3866,7 +4102,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3877,7 +4113,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -3914,14 +4150,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3939,7 +4175,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -3950,7 +4186,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -3987,14 +4223,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -4012,7 +4248,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -4023,7 +4259,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -4060,14 +4296,14 @@ namespace Unity.Collections
                 byte* dstBytes = GetUnsafePtr();
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
                 var srcLength = source.utf8LengthInBytes;
-                if (UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength) != FormatError.None)
-                    throw new ArgumentException("Source is too long to fit into fixed string of this size");
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                CheckFormatError(error);
                 this.Length = len;
             }
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -4085,7 +4321,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -4096,7 +4332,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
@@ -4169,8 +4405,22 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
-            if (capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+            if (capacity > utf8MaxLengthInBytes)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckCopyError(CopyError error, String source)
+        {
+            if (error != CopyError.None)
+                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckFormatError(FormatError error)
+        {
+            if (error != FormatError.None)
+                throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
 }

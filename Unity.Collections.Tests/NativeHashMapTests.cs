@@ -181,6 +181,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
         }
     }
 
+    #if !(UNITY_DOTSRUNTIME && UNITY_WEBGL) // https://unity3d.atlassian.net/browse/DOTSR-2039
     [Test]
     public unsafe void NativeHashMap_Key_Collisions_FromJobs()
     {
@@ -218,6 +219,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
         keys.Dispose();
     }
+    #endif
 
     [Test]
     public void NativeHashMap_HashMapSupportsAutomaticCapacityChange()

@@ -5,7 +5,7 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 
-class NativeReferenceTests
+class NativeReferenceTests : CollectionsTestCommonBase
 {
     [Test]
     public void NativeReference_AllocateDeallocate_ReadWrite()

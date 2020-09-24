@@ -28,7 +28,10 @@ internal class FixedStringSizedTests
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
-        aa.AssertNullTerminated();
+        if (expectedError == FormatError.None)
+            aa.AssertNullTerminated();
+        else
+            Assert.AreEqual(0, aa.Length);
     }
 
     [Test]
@@ -107,7 +110,10 @@ internal class FixedStringSizedTests
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
-        aa.AssertNullTerminated();
+        if (expectedError == FormatError.None)
+            aa.AssertNullTerminated();
+        else
+            Assert.AreEqual(0, aa.Length);
     }
 
     [Test]
@@ -186,7 +192,10 @@ internal class FixedStringSizedTests
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
-        aa.AssertNullTerminated();
+        if (expectedError == FormatError.None)
+            aa.AssertNullTerminated();
+        else
+            Assert.AreEqual(0, aa.Length);
     }
 
     [Test]
@@ -265,7 +274,10 @@ internal class FixedStringSizedTests
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
-        aa.AssertNullTerminated();
+        if (expectedError == FormatError.None)
+            aa.AssertNullTerminated();
+        else
+            Assert.AreEqual(0, aa.Length);
     }
 
     [Test]
@@ -344,7 +356,10 @@ internal class FixedStringSizedTests
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
-        aa.AssertNullTerminated();
+        if (expectedError == FormatError.None)
+            aa.AssertNullTerminated();
+        else
+            Assert.AreEqual(0, aa.Length);
     }
 
     [Test]

@@ -26,13 +26,6 @@ namespace Unity.Collections
 {
     struct FixedList
     {
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static void CheckElementAccess(int index, int Length)
-        {
-            if (index < 0 || index >= Length)
-                throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
-        }
-
         internal static int PaddingBytes<T>() where T : struct
         {
             return math.max(0, math.min(6, (1 << math.tzcnt(UnsafeUtility.SizeOf<T>())) - 2));
@@ -46,6 +39,13 @@ namespace Unity.Collections
         internal static int Capacity<BUFFER,T>() where BUFFER : struct where T : struct
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckElementAccess(int index, int Length)
+        {
+            if (index < 0 || index >= Length)
+                throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -116,13 +116,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -245,14 +238,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -301,15 +286,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -344,19 +320,6 @@ namespace Unity.Collections
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -947,6 +910,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class FixedList32Extensions
@@ -959,7 +929,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -972,7 +942,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -983,7 +953,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The item to locate in the FixedList32</param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -1002,7 +972,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The elements to remove from the FixedList32&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -1084,13 +1054,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -1213,14 +1176,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedList64&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -1269,15 +1224,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -1312,19 +1258,6 @@ namespace Unity.Collections
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -1915,6 +1848,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class FixedList64Extensions
@@ -1927,7 +1867,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -1940,7 +1880,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -1951,7 +1891,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The item to locate in the FixedList64</param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -1970,7 +1910,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The elements to remove from the FixedList64&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -2052,13 +1992,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -2181,14 +2114,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedList128&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -2237,15 +2162,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -2280,19 +2196,6 @@ namespace Unity.Collections
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -2883,6 +2786,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class FixedList128Extensions
@@ -2895,7 +2805,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -2908,7 +2818,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -2919,7 +2829,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The item to locate in the FixedList128</param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -2938,7 +2848,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The elements to remove from the FixedList128&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -3020,13 +2930,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -3149,14 +3052,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedList512&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -3205,15 +3100,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -3248,19 +3134,6 @@ namespace Unity.Collections
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -3851,6 +3724,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class FixedList512Extensions
@@ -3863,7 +3743,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -3876,7 +3756,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -3887,7 +3767,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The item to locate in the FixedList512</param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -3906,7 +3786,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The elements to remove from the FixedList512&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -3988,13 +3868,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -4117,14 +3990,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedList4096&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -4173,15 +4038,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -4216,19 +4072,6 @@ namespace Unity.Collections
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -4819,6 +4662,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class FixedList4096Extensions
@@ -4831,7 +4681,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -4844,7 +4694,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -4855,7 +4705,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The item to locate in the FixedList4096</param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -4874,7 +4724,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="item">The elements to remove from the FixedList4096&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -4957,13 +4807,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<byte>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -5146,14 +4989,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -5220,15 +5055,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -5278,19 +5104,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -5883,6 +5696,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListByte32DebugView
@@ -5954,13 +5774,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<byte>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -6143,14 +5956,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -6217,15 +6022,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -6275,19 +6071,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -6880,6 +6663,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListByte64DebugView
@@ -6951,13 +6741,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<byte>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -7140,14 +6923,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -7214,15 +6989,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -7272,19 +7038,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -7877,6 +7630,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListByte128DebugView
@@ -7948,13 +7708,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<byte>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -8137,14 +7890,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -8211,15 +7956,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -8269,19 +8005,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -8874,6 +8597,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListByte512DebugView
@@ -8945,13 +8675,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<byte>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -9134,14 +8857,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -9208,15 +8923,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -9266,19 +8972,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -9871,6 +9564,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListByte4096DebugView
@@ -9942,13 +9642,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<int>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -10131,14 +9824,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -10205,15 +9890,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -10263,19 +9939,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -10868,6 +10531,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListInt32DebugView
@@ -10939,13 +10609,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<int>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -11128,14 +10791,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -11202,15 +10857,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -11260,19 +10906,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -11865,6 +11498,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListInt64DebugView
@@ -11936,13 +11576,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<int>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -12125,14 +11758,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -12199,15 +11824,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -12257,19 +11873,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -12862,6 +12465,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListInt128DebugView
@@ -12933,13 +12543,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<int>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -13122,14 +12725,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -13196,15 +12791,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -13254,19 +12840,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -13859,6 +13432,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListInt512DebugView
@@ -13930,13 +13510,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<int>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -14119,14 +13692,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -14193,15 +13758,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -14251,19 +13807,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -14856,6 +14399,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListInt4096DebugView
@@ -14927,13 +14477,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<float>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -15116,14 +14659,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -15190,15 +14725,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -15248,19 +14774,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -15853,6 +15366,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListFloat32DebugView
@@ -15924,13 +15444,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<float>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -16113,14 +15626,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -16187,15 +15692,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -16245,19 +15741,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -16850,6 +16333,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListFloat64DebugView
@@ -16921,13 +16411,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<float>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -17110,14 +16593,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -17184,15 +16659,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -17242,19 +16708,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -17847,6 +17300,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListFloat128DebugView
@@ -17918,13 +17378,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<float>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -18107,14 +17560,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -18181,15 +17626,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -18239,19 +17675,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -18844,6 +18267,13 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     sealed class FixedListFloat512DebugView
@@ -18915,13 +18345,6 @@ namespace Unity.Collections
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<float>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -19104,14 +18527,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -19178,15 +18593,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -19236,19 +18642,6 @@ namespace Unity.Collections
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -19840,6 +19233,13 @@ namespace Unity.Collections
         IEnumerator<float> IEnumerable<float>.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
     }
 

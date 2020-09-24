@@ -1,0 +1,87 @@
+<#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
+<#@ template debug="True" #>
+<#@ output extension=".gen.cs" #>
+<#@ assembly name="System.Core" #>
+using System;
+
+namespace Unity.Collections.LowLevel.Unsafe
+{
+    public unsafe static class HashSetExtensions
+    {
+<#
+{
+    foreach (var ContainerType in new[] {
+        ( "NativeHashSet" ),
+        ( "UnsafeHashSet" ),
+    }) {
+
+    foreach (var OtherContainerType in new[] {
+        ( "FixedList128" ),
+        ( "FixedList32" ),
+        ( "FixedList4096" ),
+        ( "FixedList512" ),
+        ( "FixedList64" ),
+        ( "NativeArray" ),
+        ( "NativeHashSet" ),
+        ( "NativeList" ),
+        ( "UnsafeHashSet" ),
+        ( "UnsafeList" ),
+    }) {
+#>
+        /// <summary>
+        /// Modifies this container to remove all values that are present in the other container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">Container to modify.</param>
+        /// <param name="other">The container to compare to this container.</param>
+        public static void ExceptWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            foreach (var item in other)
+            {
+                container.Remove(item);
+            }
+        }
+
+        /// <summary>
+        /// Modifies this container to keep only values that are present in both containers.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">Container to modify.</param>
+        /// <param name="other">The container to compare to this container.</param>
+        public static void IntersectWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
+
+            foreach (var item in other)
+            {
+                if (container.Contains(item))
+                {
+                    result.Add(item);
+                }
+            }
+
+            container.Clear();
+            container.UnionWith(result);
+
+            result.Dispose();
+        }
+
+        /// <summary>
+        /// Modifies this container to contain values from both containers.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">Container to modify.</param>
+        /// <param name="other">The container to compare to this container.</param>
+        public static void UnionWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            foreach (var item in other)
+            {
+                container.Add(item);
+            }
+        }
+<#}}}#>
+    }
+}

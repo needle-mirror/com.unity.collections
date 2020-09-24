@@ -20,7 +20,8 @@ public class CustomAllocatorTests
         {
             using (var block = AllocatorManager.Persistent.Allocate<int>(Items: i))
             {
-                Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
+                if(i != 0)
+                    Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
@@ -72,7 +73,8 @@ public class CustomAllocatorTests
             for (int i = 0; i < kLength; ++i)
             {
                 var block = allocateJob.m_blocks[i];
-                Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
+                if(i != 0)
+                    Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
                 Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);

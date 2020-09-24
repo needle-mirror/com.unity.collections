@@ -8,13 +8,14 @@ namespace Unity.Collections
     /// </summary>
     public static class NativeHashMapExtensions
     {
-#if !NET_DOTS
+#if !NET_DOTS // Tuple is not supported by TinyBCL
         /// <summary>
-        ///
+        /// Eliminates duplicates from every consecutive group of equivalent elements.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="array"></param>
-        /// <returns></returns>
+        /// <remarks>Array should be sorted before running unique operation.</remarks>
+        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <param name="array">Array to perform unique operation on.</param>
+        /// <returns>Number of unique elements in array.</returns>
         public static int Unique<T>(this NativeArray<T> array)
             where T : struct, IEquatable<T>
         {
@@ -38,21 +39,41 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns array populated with unique keys.
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="hashMap"></param>
-        /// <param name="allocator"></param>
-        /// <returns></returns>
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
+        /// <param name="container">This container.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>Unique keys of the container.</returns>
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, Allocator allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
         {
-            var withDuplicates = hashMap.GetKeyArray(allocator);
-            withDuplicates.Sort();
-            int uniques = withDuplicates.Unique();
-            return (withDuplicates, uniques);
+            var result = container.GetKeyArray(allocator);
+            result.Sort();
+            int uniques = result.Unique();
+            return (result, uniques);
+        }
+
+        /// <summary>
+        /// Returns array populated with unique keys.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
+        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+        /// <param name="container">This container.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns>Unique keys of the container.</returns>
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, Allocator allocator)
+            where TKey : struct, IEquatable<TKey>, IComparable<TKey>
+            where TValue : struct
+        {
+            var result = container.GetKeyArray(allocator);
+            result.Sort();
+            int uniques = result.Unique();
+            return (result, uniques);
         }
 
 #endif
@@ -64,13 +85,13 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="hashMap"></param>
+        /// <param name="container">This container.</param>
         /// <returns>Returns internal bucked data structure.</returns>
-        public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> hashMap)
+        public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            return hashMap.m_HashMapData.m_Buffer->GetBucketData();
+            return container.m_HashMapData.m_Buffer->GetBucketData();
         }
 
         /// <summary>
@@ -80,13 +101,13 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="multiHashMap">This container.</param>
+        /// <param name="container">This container.</param>
         /// <returns>Returns internal bucked data structure.</returns>
-        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> multiHashMap)
+        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
-            return multiHashMap.m_MultiHashMapData.m_Buffer->GetBucketData();
+            return container.m_MultiHashMapData.m_Buffer->GetBucketData();
         }
 
         /// <summary>
@@ -94,15 +115,15 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="multiHashMap">This container.</param>
+        /// <param name="container">This container.</param>
         /// <param name="key">The key of the element to remove.</param>
         /// <param name="value">The value of the element to remove.</param>
-        public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> multiHashMap, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
+        public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(multiHashMap.m_Safety);
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(container.m_Safety);
 #endif
-            multiHashMap.m_MultiHashMapData.Remove(key, value);
+            container.m_MultiHashMapData.Remove(key, value);
         }
     }
 }

@@ -10,7 +10,7 @@ using Unity.Mathematics;
 namespace Unity.Collections
 {
     /// <summary>
-    ///
+    /// Extension methods for sorting various containers.
     /// </summary>
     public static class NativeSortExtension
     {
@@ -48,6 +48,132 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18).", false)]
+        public unsafe static JobHandle SortJob<T>(T* array, int length) where T : unmanaged, IComparable<T> => Sort<T>(array, length, new JobHandle());
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
+#else
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). (UnityUpgradable) -> Sort(*)", false)]
+#endif
+        public unsafe static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps) where T : unmanaged, IComparable<T> => Sort<T>(array, length, inputDeps);
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(T* array, int length, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return Sort(array, length, new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts an array using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(T* array, int length, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            if (length == 0)
+            {
+                return inputDeps;
+            }
+
+            var segmentCount = (length + 1023) / 1024;
+
+            var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
+            var workerSegmentCount = segmentCount / workerCount;
+            var segmentSortJob = new SegmentSort<T, U> { Data = array, Comp = comp, Length = length, SegmentWidth = 1024 };
+            var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
+            var segmentSortMergeJob = new SegmentSortMerge<T, U> { Data = array, Comp = comp, Length = length, SegmentWidth = 1024 };
+            var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
+            return segmentSortMergeJobHandle;
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="ptr">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform binary search.</param>
+        /// <param name="value">The value to search in sorted array.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T>(T* ptr, int length, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return BinarySearch(ptr, length, value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted array.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="ptr">Array to perform binary search.</param>
+        /// <param name="length">Number of elements to perform binary search.</param>
+        /// <param name="value">The value to search in sorted array.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(T* ptr, int length, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            var offset = 0;
+
+            for (var l = length; l != 0; l >>= 1)
+            {
+                var idx = offset + (l >> 1);
+                var curr = ptr[idx];
+                var r = comp.Compare(value, curr);
+                if (r == 0)
+                {
+                    return idx;
+                }
+
+                if (r > 0)
+                {
+                    offset = idx + 1;
+                    --l;
+                }
+            }
+
+            return ~offset;
+        }
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
         public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
         {
             IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
@@ -63,6 +189,93 @@ namespace Unity.Collections
         public unsafe static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(array.GetUnsafePtr(), array.Length, comp);
+        }
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18).", false)]
+        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array) where T : unmanaged, IComparable<T> => Sort<T>(array, new JobHandle());
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
+#else
+        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). (UnityUpgradable) -> Sort(*)", false)]
+#endif
+        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps) where T : unmanaged, IComparable<T> => Sort<T>(array, inputDeps);
+
+        /// <summary>
+        /// Sorts an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(this NativeArray<T> array, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts an array using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">Array to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(this NativeArray<T> array, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this NativeArray<T> container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this NativeArray<T> container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(container), container.Length, value, comp);
         }
 
         /// <summary>
@@ -88,6 +301,67 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Sorts the container in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(this NativeList<T> container, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.Sort(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts the container using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(this NativeList<T> container, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return Sort((T*)container.GetUnsafePtr(), container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this NativeList<T> container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this NativeList<T> container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch((T*)container.GetUnsafePtr(), container.Length, value, comp);
+        }
+
+        /// <summary>
         /// Sorts a list in ascending order.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
@@ -107,6 +381,67 @@ namespace Unity.Collections
         public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : struct where U : IComparer<T>
         {
             IntroSort<T, U>(list.Ptr, list.Length, comp);
+        }
+
+        /// <summary>
+        /// Sorts the container in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(this UnsafeList container, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.Sort<T, DefaultComparer<T>>(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts the container using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(this UnsafeList container, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return Sort((T*)container.Ptr, container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this UnsafeList container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this UnsafeList container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch((T*)container.Ptr, container.Length, value, comp);
         }
 
         /// <summary>
@@ -132,6 +467,67 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Sorts the container in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(this UnsafeList<T> container, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.Sort(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts the container using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(this UnsafeList<T> container, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return Sort(container.Ptr, container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this UnsafeList<T> container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this UnsafeList<T> container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch(container.Ptr, container.Length, value, comp);
+        }
+
+        /// <summary>
         /// Sorts a slice in ascending order.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
@@ -152,6 +548,67 @@ namespace Unity.Collections
         {
             CheckStrideMatchesSize<T>(slice.Stride);
             IntroSort<T, U>(slice.GetUnsafePtr(), slice.Length, comp);
+        }
+
+        /// <summary>
+        /// Sorts the container in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T>(this NativeSlice<T> container, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.Sort(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Sorts the container using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        public unsafe static JobHandle Sort<T, U>(this NativeSlice<T> container, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return Sort((T*)container.GetUnsafePtr(), container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this NativeSlice<T> container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this NativeSlice<T> container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch((T*)container.GetUnsafePtr(), container.Length, value, comp);
         }
 
         /// -- Internals
@@ -276,7 +733,7 @@ namespace Unity.Collections
                 if (comp.Compare(UnsafeUtility.ReadArrayElement<T>(array, (lo + child - 1)), val) < 0)
                     break;
 
-                UnsafeUtility.WriteArrayElement<T>(array, lo + i - 1, UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1));
+                UnsafeUtility.WriteArrayElement(array, lo + i - 1, UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1));
                 i = child;
             }
             UnsafeUtility.WriteArrayElement(array, lo + i - 1, val);
@@ -285,8 +742,8 @@ namespace Unity.Collections
         unsafe static void Swap<T>(void* array, int lhs, int rhs) where T : struct
         {
             T val = UnsafeUtility.ReadArrayElement<T>(array, lhs);
-            UnsafeUtility.WriteArrayElement<T>(array, lhs, UnsafeUtility.ReadArrayElement<T>(array, rhs));
-            UnsafeUtility.WriteArrayElement<T>(array, rhs, val);
+            UnsafeUtility.WriteArrayElement(array, lhs, UnsafeUtility.ReadArrayElement<T>(array, rhs));
+            UnsafeUtility.WriteArrayElement(array, rhs, val);
         }
 
         unsafe static void SwapIfGreaterWithItems<T, U>(void* array, int lhs, int rhs, U comp) where T : struct where U : IComparer<T>
@@ -301,11 +758,13 @@ namespace Unity.Collections
         }
 
         [BurstCompile]
-        unsafe struct SegmentSort<T> : IJobParallelFor
-            where T : unmanaged, IComparable<T>
+        unsafe struct SegmentSort<T, U> : IJobParallelFor
+            where T : unmanaged
+            where U : IComparer<T>
         {
             [NativeDisableUnsafePtrRestriction]
             public T* Data;
+            public U Comp;
 
             public int Length;
             public int SegmentWidth;
@@ -314,15 +773,19 @@ namespace Unity.Collections
             {
                 var startIndex = index * SegmentWidth;
                 var segmentLength = ((Length - startIndex) < SegmentWidth) ? (Length - startIndex) : SegmentWidth;
-                Sort(Data + startIndex, segmentLength);
+                Sort(Data + startIndex, segmentLength, Comp);
             }
         }
 
         [BurstCompile]
-        unsafe struct SegmentSortMerge<T> : IJob
-            where T : unmanaged, IComparable<T>
+        unsafe struct SegmentSortMerge<T, U> : IJob
+            where T : unmanaged
+            where U : IComparer<T>
         {
-            [NativeDisableUnsafePtrRestriction] public T* Data;
+            [NativeDisableUnsafePtrRestriction]
+            public T* Data;
+            public U Comp;
+
             public int Length;
             public int SegmentWidth;
 
@@ -331,7 +794,7 @@ namespace Unity.Collections
                 var segmentCount = (Length + (SegmentWidth - 1)) / SegmentWidth;
                 var segmentIndex = stackalloc int[segmentCount];
 
-                var resultCopy = (T*)UnsafeUtility.Malloc(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
+                var resultCopy = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
 
                 for (int sortIndex = 0; sortIndex < Length; sortIndex++)
                 {
@@ -350,7 +813,7 @@ namespace Unity.Collections
                         var nextValue = Data[startIndex + offset];
                         if (bestSegmentIndex != -1)
                         {
-                            if (nextValue.CompareTo(bestValue) > 0)
+                            if (Comp.Compare(nextValue, bestValue) > 0)
                                 continue;
                         }
 
@@ -364,46 +827,6 @@ namespace Unity.Collections
 
                 UnsafeUtility.MemCpy(Data, resultCopy, UnsafeUtility.SizeOf<T>() * Length);
             }
-        }
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
-        {
-            return SortJob((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, inputDeps);
-        }
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="length">Number of elements to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-        public unsafe static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps = new JobHandle()) where T : unmanaged, IComparable<T>
-        {
-            if (length == 0)
-            {
-                return inputDeps;
-            }
-
-            var segmentCount = (length + 1023) / 1024;
-
-            var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
-            var workerSegmentCount = segmentCount / workerCount;
-            var segmentSortJob = new SegmentSort<T> { Data = array, Length = length, SegmentWidth = 1024 };
-            var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
-            var segmentSortMergeJob = new SegmentSortMerge<T> { Data = array, Length = length, SegmentWidth = 1024 };
-            var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
-            return segmentSortMergeJobHandle;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

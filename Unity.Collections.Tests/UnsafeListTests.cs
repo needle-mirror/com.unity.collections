@@ -6,8 +6,9 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using System.Collections;
 
-internal class UnsafeListTests
+internal class UnsafeListTests : CollectionsTestCommonBase
 {
     [Test]
     public unsafe void UnsafeList_Init_ClearMemory()
@@ -477,6 +478,21 @@ internal class UnsafeListTests
                 Assert.AreEqual(i, container[i]);
             }
         }
+
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(4 - i);
+            }
+
+            container.Sort(default).Complete();
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(i, container[i]);
+            }
+        }
     }
 
     struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
@@ -495,6 +511,21 @@ internal class UnsafeListTests
             }
 
             container.Sort(new DescendingComparer<int>());
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(4 - i, container[i]);
+            }
+        }
+
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(i);
+            }
+
+            container.Sort(new DescendingComparer<int>(), default).Complete();
 
             for (var i = 0; i < 5; ++i)
             {
@@ -526,5 +557,122 @@ internal class UnsafeListTests
         }
 
         list.Dispose();
+    }
+
+    [Test]
+    public void UnsafeListT_BinarySearch()
+    {
+        using (var container = new UnsafeList<int>(16, Allocator.Persistent) { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53 })
+        {
+            for (int i = 0, num = container.Length; i < num; ++i)
+            {
+                Assert.AreEqual(i, container.BinarySearch(container[i]));
+            }
+        }
+    }
+
+    [Test]
+    public void UnsafeListT_BinarySearch_NotFound()
+    {
+        {
+            var container = new UnsafeList<int>(1, Allocator.Temp);
+            Assert.AreEqual(-1, container.BinarySearch(1));
+
+            container.Add(1);
+
+            Assert.AreEqual( 0, container.BinarySearch( 1));
+            Assert.AreEqual(-1, container.BinarySearch(-2));
+            Assert.AreEqual(-2, container.BinarySearch( 2));
+        }
+
+        using (var container = new UnsafeList<int>(16, Allocator.Temp) { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
+        {
+            for (int i = 0, num = container.Length; i < num; ++i)
+            {
+                Assert.AreEqual(~container.Length, container.BinarySearch(i + 16));
+            }
+        }
+
+        using (var container = new UnsafeList<int>(8, Allocator.Temp) { 0, 2, 4, 6, 8, 10, 12, 14 })
+        {
+            for (int i = 0, num = container.Length; i < num; ++i)
+            {
+                Assert.AreEqual(~(i + 1) /* ~index of first greatest value searched */, container.BinarySearch(i * 2 + 1));
+            }
+        }
+    }
+
+#if !UNITY_DOTSRUNTIME
+    [Test]
+    public void UnsafeListT_BinarySearch_NotFound_Reference_ArrayList()
+    {
+        {
+            var reference = new ArrayList();
+            var container = new UnsafeList<int>(1, Allocator.Temp);
+            Assert.AreEqual(-1, reference.BinarySearch(1));
+            Assert.AreEqual(-1, container.BinarySearch(1));
+
+            reference.Add(1);
+            container.Add(1);
+
+            Assert.AreEqual(0, reference.BinarySearch(1));
+            Assert.AreEqual(0, container.BinarySearch(1));
+
+            Assert.AreEqual(-1, reference.BinarySearch(-2));
+            Assert.AreEqual(-1, container.BinarySearch(-2));
+
+            Assert.AreEqual(-2, reference.BinarySearch(2));
+            Assert.AreEqual(-2, container.BinarySearch(2));
+        }
+
+        using (var container = new UnsafeList<int>(16, Allocator.Temp) { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
+        {
+            var reference = new ArrayList() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+            for (int i = 0, num = container.Length; i < num; ++i)
+            {
+                Assert.AreEqual(~reference.Count, reference.BinarySearch(i + 16));
+                Assert.AreEqual(~container.Length, container.BinarySearch(i + 16));
+            }
+        }
+
+        using (var container = new UnsafeList<int>(8, Allocator.Temp) { 0, 2, 4, 6, 8, 10, 12, 14 })
+        {
+            var reference = new ArrayList() { 0, 2, 4, 6, 8, 10, 12, 14 };
+
+            for (int i = 0, num = container.Length; i < num; ++i)
+            {
+                Assert.AreEqual(~(i + 1) /* ~index of first greatest value searched */, reference.BinarySearch(i * 2 + 1));
+                Assert.AreEqual(~(i + 1) /* ~index of first greatest value searched */, container.BinarySearch(i * 2 + 1));
+            }
+        }
+    }
+#endif
+
+    [Test]
+    public void UnsafeListT_ForEach([Values(10, 1000)]int n)
+    {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
+        using (var container = new UnsafeList<int>(32, Allocator.TempJob))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i);
+            }
+
+            var count = 0;
+            foreach (var item in container)
+            {
+                Assert.True(container.Contains(item));
+                seen[item] = seen[item] + 1;
+                ++count;
+            }
+
+            Assert.AreEqual(container.Length, count);
+            for (int i = 0; i < n; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
+            }
+        }
     }
 }

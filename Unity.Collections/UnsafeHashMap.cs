@@ -117,7 +117,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             IsBlittableAndThrow<TKey, TValue>();
 
-            UnsafeHashMapData* data = (UnsafeHashMapData*)UnsafeUtility.Malloc(sizeof(UnsafeHashMapData), UnsafeUtility.AlignOf<UnsafeHashMapData>(), label);
+            UnsafeHashMapData* data = (UnsafeHashMapData*)Memory.Unmanaged.Allocate(sizeof(UnsafeHashMapData), UnsafeUtility.AlignOf<UnsafeHashMapData>(), label);
 
             bucketLength = math.ceilpow2(bucketLength);
 
@@ -127,7 +127,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             int keyOffset, nextOffset, bucketOffset;
             int totalSize = CalculateDataSize<TKey, TValue>(length, bucketLength, out keyOffset, out nextOffset, out bucketOffset);
 
-            data->values = (byte*)UnsafeUtility.Malloc(totalSize, JobsUtility.CacheLineSize, label);
+            data->values = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             data->keys = data->values + keyOffset;
             data->next = data->values + nextOffset;
             data->buckets = data->values + bucketOffset;
@@ -151,7 +151,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             int keyOffset, nextOffset, bucketOffset;
             int totalSize = CalculateDataSize<TKey, TValue>(newCapacity, newBucketCapacity, out keyOffset, out nextOffset, out bucketOffset);
 
-            byte* newData = (byte*)UnsafeUtility.Malloc(totalSize, JobsUtility.CacheLineSize, label);
+            byte* newData = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             byte* newKeys = newData + keyOffset;
             byte* newNext = newData + nextOffset;
             byte* newBuckets = newData + bucketOffset;
@@ -186,7 +186,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            UnsafeUtility.Free(data->values, label);
+            Memory.Unmanaged.Free(data->values, label);
             if (data->allocatedIndexLength > data->keyCapacity)
             {
                 data->allocatedIndexLength = data->keyCapacity;
@@ -202,8 +202,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal static void DeallocateHashMap(UnsafeHashMapData* data, Allocator allocator)
         {
-            UnsafeUtility.Free(data->values, allocator);
-            UnsafeUtility.Free(data, allocator);
+            Memory.Unmanaged.Free(data->values, allocator);
+            Memory.Unmanaged.Free(data, allocator);
         }
 
         internal static int CalculateDataSize<TKey, TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
@@ -253,23 +253,26 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal static int GetCount(UnsafeHashMapData* data)
         {
-            var bucketArray = (int*)data->buckets;
-            var bucketNext = (int*)data->next;
-            var capacityMask = data->bucketCapacityMask;
-
-            int count = 0;
-            for (int i = 0; i <= capacityMask; ++i)
+            if (data->allocatedIndexLength <= 0)
             {
-                int bucket = bucketArray[i];
+                return 0;
+            }
 
-                while (bucket != -1)
+            var bucketNext = (int*)data->next;
+            var freeListSize = 0;
+
+            for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
+            {
+                for (var freeIdx = data->firstFreeTLS[tls * IntsPerCacheLine]
+                    ; freeIdx >= 0
+                    ; freeIdx = bucketNext[freeIdx]
+                )
                 {
-                    count++;
-                    bucket = bucketNext[bucket];
+                    ++freeListSize;
                 }
             }
 
-            return count;
+            return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
 
         internal static bool MoveNext(UnsafeHashMapData* data, ref int bucketIndex, ref int nextIndex, out int index)
@@ -311,8 +314,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             var bucketArray = (int*)data->buckets;
             var bucketNext = (int*)data->next;
 
-            int count = 0;
-            for (int i = 0; i <= data->bucketCapacityMask; ++i)
+            for (int i = 0, count = 0, max = result.Length; i <= data->bucketCapacityMask && count < max; ++i)
             {
                 int bucket = bucketArray[i];
 
@@ -330,8 +332,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             var bucketArray = (int*)data->buckets;
             var bucketNext = (int*)data->next;
 
-            int count = 0;
-            for (int i = 0; i <= data->bucketCapacityMask; ++i)
+            for (int i = 0, count = 0, max = result.Length, capacityMask = data->bucketCapacityMask
+                ; i <= capacityMask && count < max
+                ; ++i
+                )
             {
                 int bucket = bucketArray[i];
 
@@ -350,8 +354,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             var bucketArray = (int*)data->buckets;
             var bucketNext = (int*)data->next;
 
-            var count = 0;
-            for (int i = 0; i <= data->bucketCapacityMask; ++i)
+            for (int i = 0, count = 0, max = result.Length, capacityMask = data->bucketCapacityMask
+                ; i <= capacityMask && count < max
+                ; ++i
+                )
             {
                 int bucket = bucketArray[i];
 
@@ -1074,15 +1080,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The current number of items in the container.
         /// </summary>
         /// <returns>The item count.</returns>
-        public int Count()
-        {
-            if (m_Buffer->allocatedIndexLength <= 0)
-            {
-                return 0;
-            }
-
-            return UnsafeHashMapData.GetCount(m_Buffer);
-        }
+        public int Count() => UnsafeHashMapData.GetCount(m_Buffer);
 
         /// <summary>
         /// The number of items that can fit in the container.
@@ -1381,7 +1379,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
-            object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<KeyValue<TKey, TValue>> to avoid boxing");
+            object IEnumerator.Current => Current;
         }
     }
 

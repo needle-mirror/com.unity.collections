@@ -6,7 +6,7 @@ using Unity.Collections.Tests;
 using Unity.Mathematics;
 
 [TestFixture]
-internal class UnsafeUtilityTests
+internal class UnsafeUtilityTests : CollectionsTestCommonBase
 {
 #pragma warning disable 649
     struct DummyVec

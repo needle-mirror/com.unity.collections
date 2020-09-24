@@ -41,6 +41,19 @@ internal class NativeHashSetTests: CollectionsTestFixture
         container.Dispose();
     }
 
+    [Test]
+    public void UnsafeHashSet_Capacity()
+    {
+        var container = new NativeHashSet<int>(0, Allocator.Persistent);
+        Assert.IsTrue(container.IsEmpty);
+        Assert.AreEqual(0, container.Capacity);
+
+        container.Capacity = 10;
+        Assert.AreEqual(10, container.Capacity);
+
+        container.Dispose();
+    }
+
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
     public void NativeHashSet_Full_Throws()
@@ -341,5 +354,114 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             jobHandle.Complete();
         }
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_ExceptWith_Empty()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        setA.ExceptWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_ExceptWith_AxB()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.ExceptWith(setB);
+
+        ExpectedCount(ref setA, 3);
+        Assert.True(setA.Contains(0));
+        Assert.True(setA.Contains(1));
+        Assert.True(setA.Contains(2));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_ExceptWith_BxA()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setB.ExceptWith(setA);
+
+        ExpectedCount(ref setB, 3);
+        Assert.True(setB.Contains(6));
+        Assert.True(setB.Contains(7));
+        Assert.True(setB.Contains(8));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_IntersectWith_Empty()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        setA.IntersectWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_IntersectWith()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.IntersectWith(setB);
+
+        ExpectedCount(ref setA, 3);
+        Assert.True(setA.Contains(3));
+        Assert.True(setA.Contains(4));
+        Assert.True(setA.Contains(5));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_UnionWith_Empty()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        setA.UnionWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_EIU_UnionWith()
+    {
+        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.UnionWith(setB);
+
+        ExpectedCount(ref setA, 9);
+        Assert.True(setA.Contains(0));
+        Assert.True(setA.Contains(1));
+        Assert.True(setA.Contains(2));
+        Assert.True(setA.Contains(3));
+        Assert.True(setA.Contains(4));
+        Assert.True(setA.Contains(5));
+        Assert.True(setA.Contains(6));
+        Assert.True(setA.Contains(7));
+        Assert.True(setA.Contains(8));
+
+        setA.Dispose();
+        setB.Dispose();
     }
 }

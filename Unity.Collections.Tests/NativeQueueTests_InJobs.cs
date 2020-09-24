@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 
-internal class NativeQueueTests_InJobs
+internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 {
     [BurstCompile(CompileSynchronously = true)]
     struct ConcurrentEnqueue : IJobParallelFor

@@ -208,7 +208,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [NotBurstCompatible] // Due to job scheduling on 2020.1 using statics
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -557,16 +557,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack<T>(int begin, int end) where T : struct => RemoveRangeSwapBackWithBeginEnd<T>(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd<T>(int begin, int end) where T : struct
@@ -603,20 +593,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             RemoveRangeWithBeginEnd<T>(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange<T>(int begin, int end) where T : struct => RemoveRangeWithBeginEnd<T>(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -1149,15 +1125,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -1189,46 +1156,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
         /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first intex of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeWithBeginEnd<T>(begin, end);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -1315,6 +1247,70 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 Writer.AddRangeNoResize<T>(list.ListData());
             }
+        }
+
+        /// <summary>
+        /// Returns an IEnumerator interface for the container.
+        /// </summary>
+        /// <returns>An IEnumerator interface for the container.</returns>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator { m_Ptr = Ptr, m_Length = Length, m_Index = -1 };
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// </summary>
+        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Implements iterator over the container.
+        /// </summary>
+        public struct Enumerator : IEnumerator<T>
+        {
+            internal T* m_Ptr;
+            internal int m_Length;
+            internal int m_Index;
+
+            /// <summary>
+            /// Disposes enumerator.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the container.
+            /// </summary>
+            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
+            public bool MoveNext() => ++m_Index < m_Length;
+
+            /// <summary>
+            /// Resets the enumerator to the first element of the container.
+            /// </summary>
+            public void Reset() => m_Index = -1;
+
+            /// <summary>
+            /// Gets the element at the current position of the enumerator in the container.
+            /// </summary>
+            public T Current => m_Ptr[m_Index];
+
+            object IEnumerator.Current => Current;
         }
     }
 
@@ -1768,15 +1764,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -1797,19 +1784,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             this.ListData().RemoveAt<IntPtr>(index);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list

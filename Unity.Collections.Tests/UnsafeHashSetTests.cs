@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.Tests;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -10,10 +11,10 @@ using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 #endif
 
-internal class UnsafeHashSetTests
+internal class UnsafeHashSetTests : CollectionsTestCommonBase
 {
-    static void ExpectedCount<TT>(ref UnsafeHashSet<TT> container, int expected)
-        where TT : unmanaged, IEquatable<TT>
+    static void ExpectedCount<T>(ref UnsafeHashSet<T> container, int expected)
+        where T : unmanaged, IEquatable<T>
     {
         Assert.AreEqual(expected == 0, container.IsEmpty);
         Assert.AreEqual(expected, container.Count());
@@ -36,6 +37,19 @@ internal class UnsafeHashSetTests
         Assert.IsTrue(container.Add(0));
         container.Clear();
         Assert.IsTrue(container.IsEmpty);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_Capacity()
+    {
+        var container = new UnsafeHashSet<int>(0, Allocator.Persistent);
+        Assert.IsTrue(container.IsEmpty);
+        Assert.AreEqual(0, container.Capacity);
+
+        container.Capacity = 10;
+        Assert.AreEqual(10, container.Capacity);
 
         container.Dispose();
     }
@@ -170,5 +184,114 @@ internal class UnsafeHashSetTests
                 Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
             }
         }
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_ExceptWith_Empty()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        setA.ExceptWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_ExceptWith_AxB()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.ExceptWith(setB);
+
+        ExpectedCount(ref setA, 3);
+        Assert.True(setA.Contains(0));
+        Assert.True(setA.Contains(1));
+        Assert.True(setA.Contains(2));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_ExceptWith_BxA()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setB.ExceptWith(setA);
+
+        ExpectedCount(ref setB, 3);
+        Assert.True(setB.Contains(6));
+        Assert.True(setB.Contains(7));
+        Assert.True(setB.Contains(8));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_IntersectWith_Empty()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        setA.IntersectWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_IntersectWith()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.IntersectWith(setB);
+
+        ExpectedCount(ref setA, 3);
+        Assert.True(setA.Contains(3));
+        Assert.True(setA.Contains(4));
+        Assert.True(setA.Contains(5));
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_UnionWith_Empty()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        setA.UnionWith(setB);
+
+        ExpectedCount(ref setA, 0);
+
+        setA.Dispose();
+        setB.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_EIU_UnionWith()
+    {
+        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        setA.UnionWith(setB);
+
+        ExpectedCount(ref setA, 9);
+        Assert.True(setA.Contains(0));
+        Assert.True(setA.Contains(1));
+        Assert.True(setA.Contains(2));
+        Assert.True(setA.Contains(3));
+        Assert.True(setA.Contains(4));
+        Assert.True(setA.Contains(5));
+        Assert.True(setA.Contains(6));
+        Assert.True(setA.Contains(7));
+        Assert.True(setA.Contains(8));
+
+        setA.Dispose();
+        setB.Dispose();
     }
 }

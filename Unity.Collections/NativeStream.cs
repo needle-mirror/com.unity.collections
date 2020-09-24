@@ -117,13 +117,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
-        public int ComputeItemCount() => Count();
-
-        /// <summary>
         /// The current number of items in the container.
         /// </summary>
         /// <returns>The item count.</returns>
@@ -382,7 +375,7 @@ namespace Unity.Collections
 
                     if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
                     {
-                        throw new ArgumentException($"Index {foreachIndex} is out of restricted IJobParallelFor range [{m_MinIndex}...{m_MaxIndex}] in BlockStream.");
+                        throw new ArgumentException($"Index {foreachIndex} is out of restricted IJobParallelFor range [{m_MinIndex}...{m_MaxIndex}] in NativeStream.");
                     }
                 }
 
@@ -575,13 +568,6 @@ namespace Unity.Collections
 
                 return ref m_Reader.Peek<T>();
             }
-
-            /// <summary>
-            ///
-            /// </summary>
-            /// <returns></returns>
-            [Obsolete("Use Count() instead. (RemovedAfter 2020-08-12). (UnityUpgradable) -> Count()")]
-            public int ComputeItemCount() => Count();
 
             /// <summary>
             /// The current number of items in the container.

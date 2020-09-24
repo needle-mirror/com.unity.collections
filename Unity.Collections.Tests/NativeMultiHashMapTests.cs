@@ -261,14 +261,17 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_GetKeys()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
-            hashMap.Add(i, 2 * i);
-            hashMap.Add(i, 3 * i);
+            container.Add(i, 2 * i);
+            container.Add(i, 3 * i);
         }
-        var keys = hashMap.GetKeyArray(Allocator.Temp);
-        hashMap.Dispose();
+        var keys = container.GetKeyArray(Allocator.Temp);
+#if !NET_DOTS // Tuple is not supported by TinyBCL
+        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
+        Assert.AreEqual(30, uniqueLength);
+#endif
 
         Assert.AreEqual(60, keys.Length);
         keys.Sort();
@@ -276,8 +279,10 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         {
             Assert.AreEqual(i, keys[i * 2 + 0]);
             Assert.AreEqual(i, keys[i * 2 + 1]);
+#if !NET_DOTS // Tuple is not supported by TinyBCL
+            Assert.AreEqual(i, unique[i]);
+#endif
         }
-        keys.Dispose();
     }
 
 #if !UNITY_DOTSRUNTIME

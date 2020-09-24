@@ -1,5 +1,53 @@
 # Change log
 
+## [0.14.0] - 2020-09-24
+
+### Added
+
+* `*UnsafeBitArray.Find` with pos/count search range arguments.
+
+### Changed
+
+* `UnsafeStream` block allocation performance has been improved by ~16% by appending to the start of the per-thread block lists rather than the end.
+* Burst package updated to `1.3.7`
+
+### Removed
+
+* `FixedList*.InsertRange`, `FixedList*.RemoveRangeSwapBack`, `FixedList*.RemoveRange`, `NativeString*`, `NativeList.RemoveRangeSwapBack`, `NativeList.RemoveRange`, `UnsafeList.RemoveRangeSwapBack`, `UnsafeList.RemoveRange`, `FixedString*.Format`, `FixedString*.AppendFrom`, `NativeHashSet.TryAdd`, `UnsafeHashSet.TryAdd`.
+* `[NativeContainerSupportsDeallocateOnJobCompletion]` attribute from `NativeReference` container. It didn't work properly. Users can use `Dispose(JobHandle)` method instead.
+
+### Fixed
+
+* `FixedList<T>` `Remove` and `RemoveSwapBack` extension methods were modifying copy, fixed by passing `this` by reference to modify actual container.
+
+## [0.13.0] - 2020-08-26
+
+### Added
+
+* Added `*BitArray.Find` linear search for 0-bit range.
+* Added `SortJob` extension methods for `NativeList`, `UnsafeList`, `UnsafeList<T>`, and `NativeSlice`.
+* Added `Sort` method that accepts custom comparator, and job dependency, to all supported containers.
+* Added `BinarySearch` extension methods for `NativeArray`, `NativeList`, `UnsafeList`, `UnsafeList<T>`, and `NativeSlice`.
+* Added `foreach` support to `UnsafeList<T>`.
+
+### Changed
+
+* `Sort` functions that take an `IComparer` no longer require the sorted elements to be `IComparable`
+* Bumped Burst to 1.3.5.
+
+### Deprecated
+
+* Deprecated `SortJob` with default job dependency argument. Use `Sort` that require an explicit JobHandle argument. If no dependency is needed, pass a default valued JobHandle.
+
+### Removed
+
+* Removed: `UnsafeUtilityEx`, `Unity.Collections.Experimental*`,`FixedString*.UTF8LengthInBytes`, and `*Stream.ComputeItemCount()`
+
+### Fixed
+
+* Fixed performance regression of `*HashMap.Count()` introduced in Collections 0.10.0.
+
+
 ## [0.12.0] - 2020-08-04
 
 ### Added
@@ -12,6 +60,9 @@
    and `UnsafePtrList`.
  * Added `AddRange` and `AddRangeNoResize` to `FixedList*`.
  * Added properties to `BaselibErrorState` to check if an operation resulted in success, out of memory, or accessing an invalid address range.
+ * Added `HeapString` type, for arbitrary-length (up to 2GB) heap-allocated strings
+   compatible with the `FixedString*` methods.  Allocating a `HeapString` requires
+   specifying an allocator and disposing appropriately.
 
 
 ### Deprecated
@@ -54,7 +105,7 @@
    `*WithBeginEnd` in name signifies that arguments are begin/end instead of more standard index/count. Once
    `InsertRange`, `RemoveRangeSwapBack`, and `RemoveRange` are completely deprecated and removed,
    those methods will be added with correct index/count arguments.
-
+ * Added `xxHash3` type to expose 64/128bits hashing API using xxHash3 algorithm (corresponding to the C++ version https://github.com/Cyan4973/xxHash/releases/tag/v0.8.0)
 ### Changed
 
  * Updated minimum Unity Editor version to 2020.1.0b15 (40d9420e7de8)

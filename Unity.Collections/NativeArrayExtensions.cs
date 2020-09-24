@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
@@ -151,13 +152,8 @@ namespace Unity.Collections
             var byteLen = ((long)array.Length) * tSize;
             var uLen = byteLen / uSize;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (uLen * uSize != byteLen)
-            {
-                throw new InvalidOperationException($"Types {typeof(T)} (array length {array.Length}) and {typeof(U)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
-            }
+            CheckReinterpretSize<T, U>(ref array);
 
-#endif
             var ptr = NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array);
             var result = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<U>(ptr, (int)uLen, Allocator.None);
 
@@ -188,6 +184,21 @@ namespace Unity.Collections
             }
 
             return true;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckReinterpretSize<T, U>(ref NativeArray<T> array) where U : struct where T : struct
+        {
+            var tSize = UnsafeUtility.SizeOf<T>();
+            var uSize = UnsafeUtility.SizeOf<U>();
+
+            var byteLen = ((long)array.Length) * tSize;
+            var uLen = byteLen / uSize;
+
+            if (uLen * uSize != byteLen)
+            {
+                throw new InvalidOperationException($"Types {typeof(T)} (array length {array.Length}) and {typeof(U)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
+            }
         }
     }
 }

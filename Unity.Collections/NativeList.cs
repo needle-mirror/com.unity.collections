@@ -352,15 +352,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -387,19 +378,6 @@ namespace Unity.Collections
 #endif
             m_ListData->RemoveAt<T>(CollectionHelper.AssumePositive(index));
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list

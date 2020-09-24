@@ -51,7 +51,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
         /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
         /// old array to the new one, and then deallocates the original array memory.</remarks>
-        public int Capacity => m_Data.Capacity;
+        public int Capacity { get => m_Data.Capacity; set => m_Data.Capacity = value; }
 
         /// <summary>
         /// Reports whether memory for the container is allocated.
@@ -84,14 +84,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <remarks>Containers capacity remains unchanged.</remarks>
         public void Clear() => m_Data.Clear();
-
-        /// <summary>
-        /// Try to add the specified element into the container. If the specified element already exists in the container it returns false.
-        /// </summary>
-        /// <param name="item">The element to add to the container.</param>
-        /// <returns>Returns true if the specified element is added into the container, otherwise returns false.</returns>
-        [Obsolete("TryAdd is deprecated use Add instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> Add(*)", false)]
-        public bool TryAdd(T item) => m_Data.TryAdd(item, false);
 
         /// <summary>
         /// Add the specified element into the container. If the specified element already exists in the container it returns false.
@@ -147,14 +139,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
             /// old array to the new one, and then deallocates the original array memory.</remarks>
             public int Capacity => m_Data.Capacity;
-
-            /// <summary>
-            /// Try to add the specified element into the container. If the specified element already exists in the container it returns false.
-            /// </summary>
-            /// <param name="item">The element to add to the container.</param>
-            /// <returns>Returns true if the specified element is added into the container, otherwise returns false.</returns>
-            [Obsolete("TryAdd is deprecated use Add instead. (RemovedAfter 2020-09-10). (UnityUpgradable) -> Add(*)", false)]
-            public bool TryAdd(T item) => m_Data.TryAdd(item, false);
 
             /// <summary>
             /// Add the specified element into the container. If the specified element already exists in the container it returns false.
@@ -223,7 +207,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             public T Current => m_Enumerator.GetCurrentKey<T>();
 
-            object IEnumerator.Current => throw new InvalidOperationException("Use IEnumerator<T> to avoid boxing");
+            object IEnumerator.Current => Current;
         }
     }
 

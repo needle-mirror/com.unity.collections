@@ -18,11 +18,10 @@ namespace Unity.Collections
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
             var len = fs.Length;
-            var err = fs.Write(ref len, a);
-            if (err != FormatError.None)
-                return err;
-            fs.Length = len;
-            return FormatError.None;
+            var runeLen = a.LengthInUtf8Bytes();
+            if (!fs.TryResize(len + runeLen, NativeArrayOptions.UninitializedMemory))
+                return FormatError.Overflow;
+            return fs.Write(ref len, a);
         }
 
         /// <summary>
@@ -35,11 +34,7 @@ namespace Unity.Collections
         public static FormatError Append<T>(ref this T fs, char a)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
-            FormatError err = FormatError.None;
-            err |= fs.Append((Unicode.Rune) a);
-            if (err != FormatError.None)
-                return err;
-            return FormatError.None;
+            return fs.Append((Unicode.Rune) a);
         }
 
         /// <summary>
@@ -52,10 +47,10 @@ namespace Unity.Collections
         public static FormatError AppendRawByte<T>(ref this T fs, byte a)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
-            if (fs.Length + 1 > fs.Capacity)
+            var origLength = fs.Length;
+            if (!fs.TryResize(origLength + 1, NativeArrayOptions.UninitializedMemory))
                 return FormatError.Overflow;
-            fs.GetUnsafePtr()[fs.Length] = a;
-            fs.Length += 1;
+            fs.GetUnsafePtr()[origLength] = a;
             return FormatError.None;
         }
 
@@ -70,19 +65,21 @@ namespace Unity.Collections
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune, int count)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
-            var utf8MaxLengthInBytes = fs.Capacity;
-            var b = fs.GetUnsafePtr();
+            var origLength = fs.Length;
 
-            int offset = fs.Length;
+            if (!fs.TryResize(origLength + rune.LengthInUtf8Bytes() * count, NativeArrayOptions.UninitializedMemory))
+                return FormatError.Overflow;
+
+            var cap = fs.Capacity;
+            var b = fs.GetUnsafePtr();
+            int offset = origLength;
             for (int i = 0; i < count; ++i)
             {
-                var error = Unicode.UcsToUtf8(b, ref offset, utf8MaxLengthInBytes, rune);
+                var error = Unicode.UcsToUtf8(b, ref offset, cap, rune);
                 if (error != ConversionError.None)
                     return FormatError.Overflow;
-                //throw new ArgumentException($"FixedString32: {error} while constructing from char {rune.value} and count {count}");
             }
 
-            fs.Length = (ushort) offset;
             return FormatError.None;
         }
 
@@ -120,13 +117,8 @@ namespace Unity.Collections
                 while (input != 0);
                 temp[--offset] = (byte)'-';
             }
-            var newCharsLength = maximumDigits - offset;
-            var oldLength = fs.Length;
-            if (oldLength + newCharsLength > fs.Capacity)
-                return FormatError.Overflow;
-            fs.Length = oldLength + newCharsLength;
-            UnsafeUtility.MemCpy(fs.GetUnsafePtr() + oldLength, temp + offset, newCharsLength);
-            return FormatError.None;
+
+            return fs.Append(temp + offset, maximumDigits - offset);
         }
 
         /// <summary>
@@ -160,13 +152,8 @@ namespace Unity.Collections
                 input /= 10;
             }
             while (input != 0);
-            var newCharsLength = maximumDigits - offset;
-            var oldLength = fs.Length;
-            if (oldLength + newCharsLength > fs.Capacity)
-                return FormatError.Overflow;
-            fs.Length = oldLength + newCharsLength;
-            UnsafeUtility.MemCpy(fs.GetUnsafePtr() + oldLength, temp + offset, newCharsLength);
-            return FormatError.None;
+
+            return fs.Append(temp + offset, maximumDigits - offset);
         }
 
         /// <summary>
@@ -276,38 +263,6 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
-#if false
-        /// <summary>
-        /// Append the UTF-8 representation of a given double to the contents of this IUTF8Bytes.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fs"></param>
-        /// <param name="input">The double to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <param name="decimalSeparator">The character used to separate the integral part from the fractional part.
-        /// A period by default.</param>
-        /// <returns>An error code, if any, in the case that the format fails.</returns>
-        public static FormatError Append<T>(ref this T fs, double input, char decimalSeparator = '.')
-            where T : struct, INativeList<byte>, IUTF8Bytes
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fs"></param>
-        /// <param name="input"></param>
-        /// <param name="decimalSeparator"></param>
-        /// <returns></returns>
-        public static FormatError Format<T>(ref this T fs, double input, char decimalSeparator = '.')
-            where T : struct, INativeList<byte>, IUTF8Bytes
-        {
-            fs.Length = 0;
-            return fs.Append(input, decimalSeparator);
-        }
-#endif
-
         /// <summary>
         ///
         /// </summary>
@@ -321,13 +276,7 @@ namespace Unity.Collections
             where T2 : struct, INativeList<byte>, IUTF8Bytes
         {
             ref var input = ref UnsafeUtilityExtensions.AsRef(inputIn);
-            var fsLength = fs.Length;
-            var inputLength = input.Length;
-            if (fs.Length + input.Length > fs.Capacity)
-                return FormatError.Overflow;
-            UnsafeUtility.MemCpy(fs.GetUnsafePtr() + fsLength, input.GetUnsafePtr(), inputLength);
-            fs.Length += inputLength;
-            return FormatError.None;
+            return fs.Append(input.GetUnsafePtr(), input.Length);
         }
 
         /// <summary>
@@ -360,10 +309,10 @@ namespace Unity.Collections
         public unsafe static FormatError Append<T>(ref this T fs, byte* utf8Bytes, int utf8BytesLength)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
-            if (fs.Length + utf8BytesLength > fs.Capacity)
+            var origLength = fs.Length;
+            if (!fs.TryResize(origLength + utf8BytesLength, NativeArrayOptions.UninitializedMemory))
                 return FormatError.Overflow;
-            UnsafeUtility.MemCpy(fs.GetUnsafePtr() + fs.Length, utf8Bytes, utf8BytesLength);
-            fs.Length += utf8BytesLength;
+            UnsafeUtility.MemCpy(fs.GetUnsafePtr() + origLength, utf8Bytes, utf8BytesLength);
             return FormatError.None;
         }
 
@@ -377,15 +326,21 @@ namespace Unity.Collections
         public unsafe static FormatError Append<T>(ref this T fs, string s)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
+            // we don't know how big the expansion from UTF16 to UTF8 will be, so we account for worst case.
+            int worstCaseCapacity = s.Length * 4;
+            byte* utf8Bytes = stackalloc byte[worstCaseCapacity];
+            int utf8Len;
+
             fixed (char* chars = s)
             {
-                int len;
-                var err = UTF8ArrayUnsafeUtility.Copy(fs.GetUnsafePtr() + fs.Length, out len, fs.Capacity - fs.Length, chars, s.Length);
-                fs.Length = len;
+                var err = UTF8ArrayUnsafeUtility.Copy(utf8Bytes, out utf8Len, worstCaseCapacity, chars, s.Length);
                 if (err != CopyError.None)
+                {
                     return FormatError.Overflow;
+                }
             }
-            return FormatError.None;
+
+            return fs.Append(utf8Bytes, utf8Len);
         }
 
         /// <summary>

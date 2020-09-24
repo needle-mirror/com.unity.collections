@@ -2,8 +2,9 @@ using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
-internal class UnsafeAppendBufferTests
+internal class UnsafeAppendBufferTests : CollectionsTestCommonBase
 {
     struct TestHeader
     {

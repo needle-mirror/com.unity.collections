@@ -10,6 +10,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
+    [BurstCompatible]
     public unsafe struct UnsafeBitArray
         : INativeDisposable
     {
@@ -51,12 +52,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <note>Allocated number of bits will be aligned-up to closest 64-bits. For example, passing 1 as numBits will create BitArray that's
+        /// 64-bit (8 bytes) long.</note>
         public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             CheckAllocator(allocator);
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
-            Ptr = (ulong*)UnsafeUtility.Malloc(sizeInBytes, 16, allocator);
+            Ptr = (ulong*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
             Length = sizeInBytes * 8;
 
             if (options == NativeArrayOptions.ClearMemory)
@@ -80,7 +83,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
-                UnsafeUtility.Free(Ptr, Allocator);
+                Memory.Unmanaged.Free(Ptr, Allocator);
                 Allocator = Allocator.Invalid;
             }
 
@@ -99,6 +102,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -366,6 +370,44 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// </summary>
+        /// <param name="pos">Position to start search in bit array.</param>
+        /// <param name="numBits">Number of 0-bits to find.</param>
+        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if:
+        ///  - Number of bits is less than 1.
+        ///  - Range searched has less than `numBits`.
+        ///  - `pos` is not within accepted range [0 - Length].
+        /// </exception>
+        public int Find(int pos, int numBits)
+        {
+            var count = Length - pos;
+            CheckArgsPosCount(pos, count, numBits);
+            return Bitwise.Find(Ptr, pos, count, numBits);
+        }
+
+        /// <summary>
+        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// </summary>
+        /// <param name="pos">Position to start search in bit array.</param>
+        /// <param name="count">Number of bits to search.</param>
+        /// <param name="numBits">Number of 0-bits to find.</param>
+        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown if:
+        ///  - Number of bits is less than 1.
+        ///  - Range searched has less than `numBits`.
+        ///  - `pos` or `count` are not within accepted range [0 - Length].
+        /// </exception>
+        public int Find(int pos, int count, int numBits)
+        {
+            CheckArgsPosCount(pos, count, numBits);
+            return Bitwise.Find(Ptr, pos, count, numBits);
+        }
+
+        /// <summary>
         /// Returns true if none of bits in range are set.
         /// </summary>
         /// <param name="pos">Position in bit array.</param>
@@ -543,6 +585,25 @@ namespace Unity.Collections.LowLevel.Unsafe
                 || numBits < 1)
             {
                 throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length - 1}), numBits {numBits} (must be greater than 0).");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckArgsPosCount(int begin, int count, int numBits)
+        {
+            if (begin < 0 || begin >= Length)
+            {
+                throw new ArgumentException($"BitArray invalid argument: begin {begin} (must be 0-{Length - 1}).");
+            }
+
+            if (count < 0 || count > Length)
+            {
+                throw new ArgumentException($"BitArray invalid argument: count {count} (must be 0-{Length}).");
+            }
+
+            if (numBits < 1 || count < numBits)
+            {
+                throw new ArgumentException($"BitArray invalid argument: numBits {numBits} (must be greater than 0).");
             }
         }
 

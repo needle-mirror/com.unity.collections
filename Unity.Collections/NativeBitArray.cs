@@ -39,6 +39,8 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <note>Allocated number of bits will be aligned-up to closest 64-bits. For example, passing 1 as numBits will create BitArray that's
+        /// 64-bit (8 bytes) long.</note>
         public NativeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             : this(numBits, allocator, options, 2)
         {
@@ -230,6 +232,31 @@ namespace Unity.Collections
 #endif
             CheckWrite();
             m_BitArray.Copy(dstPos, ref srcBitArray.m_BitArray, srcPos, numBits);
+        }
+
+        /// <summary>
+        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// </summary>
+        /// <param name="pos">Position to start search in bit array.</param>
+        /// <param name="numBits">Number of 0-bits to find.</param>
+        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
+        public int Find(int pos, int numBits)
+        {
+            CheckRead();
+            return m_BitArray.Find(pos, numBits);
+        }
+
+        /// <summary>
+        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// </summary>
+        /// <param name="pos">Position to start search in bit array.</param>
+        /// <param name="count">Number of bits to search.</param>
+        /// <param name="numBits">Number of 0-bits to find.</param>
+        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
+        public int Find(int pos, int count, int numBits)
+        {
+            CheckRead();
+            return m_BitArray.Find(pos, count, numBits);
         }
 
         /// <summary>

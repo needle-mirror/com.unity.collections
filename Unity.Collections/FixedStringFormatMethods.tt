@@ -35,27 +35,6 @@ namespace Unity.Collections
         var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<param name=\"arg{n}\"><undoc /></param>"));
 #>
         /// <summary>
-        /// <undoc />
-        /// </summary>
-        /// <typeparam name="T"><undoc /></typeparam>
-        /// <typeparam name="U"><undoc /></typeparam>
-        /// <#=TxDOCS#>
-        /// <param name="dest"><undoc /></param>
-        /// <param name="format"><undoc /></param>
-        /// <#=ARGxDOCS#>
-        [Obsolete("FixedStringN.Format has been renamed to AppendFormat. (RemovedAfter 2020-09-01) (UnityUpgradable) -> AppendFormat(*)", false)]
-        public static void Format<T, U, <#=TYPES#>>(ref this T dest, in U format, <#=PARAMS#>)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-<#
-        for (var a = 0; a < ARGS; ++a)
-            WriteLine("            where T{0} : struct, INativeList<byte>, IUTF8Bytes", a);
-#>
-        {
-            AppendFormat(ref dest, format, <#=ARGNAMES#>);
-        }
-
-        /// <summary>
         /// Convenience function to append a formatted string into the given FixedString.
         /// Similar to StringBuilder.AppendFormat, with significant limitations:
         ///   - only supports FixedStringN arguments (convert arguments to FixedString first)

@@ -4,8 +4,9 @@ using Unity.Collections;
 #if !UNITY_PORTABLE_TEST_RUNNER
 using System.Linq;
 #endif
+using Unity.Collections.Tests;
 
-internal class ListExtensionsTests
+internal class ListExtensionsTests : CollectionsTestCommonBase
 {
 #if !UNITY_PORTABLE_TEST_RUNNER
 // https://unity3d.atlassian.net/browse/DOTSR-1432

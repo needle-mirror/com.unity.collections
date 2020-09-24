@@ -32,13 +32,6 @@ namespace Unity.Collections
 {
     struct FixedList
     {
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static void CheckElementAccess(int index, int Length)
-        {
-            if (index < 0 || index >= Length)
-                throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
-        }
-
         internal static int PaddingBytes<T>() where T : struct
         {
             return math.max(0, math.min(6, (1 << math.tzcnt(UnsafeUtility.SizeOf<T>())) - 2));
@@ -52,6 +45,13 @@ namespace Unity.Collections
         internal static int Capacity<BUFFER,T>() where BUFFER : struct where T : struct
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckElementAccess(int index, int Length)
+        {
+            if (index < 0 || index >= Length)
+                throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -127,13 +127,6 @@ for(var size = 0; size < 5; ++size)
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<T>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -256,14 +249,6 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -312,15 +297,6 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -355,19 +331,6 @@ for(var size = 0; size < 5; ++size)
         {
             RemoveRangeWithBeginEnd(index, index + 1);
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -635,6 +598,13 @@ for(var size = 0; size < 5; ++size)
         {
             throw new NotImplementedException();
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }
     }
 
     public unsafe static class <#=TYPENAME#>Extensions
@@ -647,7 +617,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public static int IndexOf<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -660,7 +630,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
-        public static bool Contains<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -671,7 +641,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The item to locate in the <#=TYPENAME#></param>
         /// <returns>True, if element is removed.</returns>
-        public static bool Remove<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -690,7 +660,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The elements to remove from the <#=TYPENAME#>&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
-        public static bool RemoveSwapBack<T, U>(this <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -786,13 +756,6 @@ for(var size = 0; size < 5; ++size)
                 fixed(byte* b = &buffer.offset0000.byte0000)
                     return b + FixedList.PaddingBytes<<#=TYPE#>>();
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
 
         /// <summary>
@@ -975,14 +938,6 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        [Obsolete("InsertRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> InsertRangeWithBeginEnd(*)", false)]
-        public void InsertRange(int begin, int end) => InsertRangeWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Inserts a number of items into a <#=TYPENAME#> at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
@@ -1049,15 +1004,6 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
-        [Obsolete("RemoveRangeSwapBack is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeSwapBackWithBeginEnd(*)", false)]
-        public void RemoveRangeSwapBack(int begin, int end) => RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
@@ -1107,19 +1053,6 @@ for(var size = 0; size < 5; ++size)
 
             return true;
         }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        [Obsolete("RemoveRange is obsolete. (RemovedAfter 2020-09-15). (UnityUpgradable) -> RemoveRangeWithBeginEnd(*)", false)]
-        public void RemoveRange(int begin, int end) => RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
@@ -1411,6 +1344,13 @@ foreach(var OTHERBYTES in SIZES)
         IEnumerator<<#=TYPE#>> IEnumerable<<#=TYPE#>>.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
     }
 

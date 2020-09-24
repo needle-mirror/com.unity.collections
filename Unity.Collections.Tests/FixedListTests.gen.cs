@@ -155,11 +155,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList32byteGenericRemove()
+    public void FixedList32byteGenericRemoveAt()
     {
         var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32byteGenericRemove()
+    {
+        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((byte)3));
+        Assert.True(list.Remove((byte)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32byteGenericRemoveSwapBack()
+    {
+        var list = new FixedList32<byte>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((byte)3));
+        Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -265,11 +285,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList64byteGenericRemove()
+    public void FixedList64byteGenericRemoveAt()
     {
         var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64byteGenericRemove()
+    {
+        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((byte)3));
+        Assert.True(list.Remove((byte)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64byteGenericRemoveSwapBack()
+    {
+        var list = new FixedList64<byte>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((byte)3));
+        Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -375,11 +415,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList128byteGenericRemove()
+    public void FixedList128byteGenericRemoveAt()
     {
         var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128byteGenericRemove()
+    {
+        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((byte)3));
+        Assert.True(list.Remove((byte)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128byteGenericRemoveSwapBack()
+    {
+        var list = new FixedList128<byte>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((byte)3));
+        Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -481,6 +541,24 @@ internal class FixedListTests
         var list = new FixedListByte32() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListByte32Remove()
+    {
+        var list = new FixedListByte32() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListByte32RemoveSwapBack()
+    {
+        var list = new FixedListByte32() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -611,6 +689,24 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedListByte64Remove()
+    {
+        var list = new FixedListByte64() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListByte64RemoveSwapBack()
+    {
+        var list = new FixedListByte64() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
     public void FixedListByte64RemoveRangeWithBeginEnd()
     {
         var list = new FixedListByte64() { 0, 3, 3, 1, 2 };
@@ -731,6 +827,24 @@ internal class FixedListTests
         var list = new FixedListByte128() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListByte128Remove()
+    {
+        var list = new FixedListByte128() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListByte128RemoveSwapBack()
+    {
+        var list = new FixedListByte128() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -857,11 +971,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList32intGenericRemove()
+    public void FixedList32intGenericRemoveAt()
     {
         var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32intGenericRemove()
+    {
+        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((int)3));
+        Assert.True(list.Remove((int)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32intGenericRemoveSwapBack()
+    {
+        var list = new FixedList32<int>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((int)3));
+        Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -967,11 +1101,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList64intGenericRemove()
+    public void FixedList64intGenericRemoveAt()
     {
         var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64intGenericRemove()
+    {
+        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((int)3));
+        Assert.True(list.Remove((int)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64intGenericRemoveSwapBack()
+    {
+        var list = new FixedList64<int>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((int)3));
+        Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1077,11 +1231,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList128intGenericRemove()
+    public void FixedList128intGenericRemoveAt()
     {
         var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128intGenericRemove()
+    {
+        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((int)3));
+        Assert.True(list.Remove((int)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128intGenericRemoveSwapBack()
+    {
+        var list = new FixedList128<int>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((int)3));
+        Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1183,6 +1357,24 @@ internal class FixedListTests
         var list = new FixedListInt32() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListInt32Remove()
+    {
+        var list = new FixedListInt32() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListInt32RemoveSwapBack()
+    {
+        var list = new FixedListInt32() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1313,6 +1505,24 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedListInt64Remove()
+    {
+        var list = new FixedListInt64() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListInt64RemoveSwapBack()
+    {
+        var list = new FixedListInt64() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
     public void FixedListInt64RemoveRangeWithBeginEnd()
     {
         var list = new FixedListInt64() { 0, 3, 3, 1, 2 };
@@ -1433,6 +1643,24 @@ internal class FixedListTests
         var list = new FixedListInt128() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListInt128Remove()
+    {
+        var list = new FixedListInt128() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListInt128RemoveSwapBack()
+    {
+        var list = new FixedListInt128() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1559,11 +1787,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList32floatGenericRemove()
+    public void FixedList32floatGenericRemoveAt()
     {
         var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32floatGenericRemove()
+    {
+        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((float)3));
+        Assert.True(list.Remove((float)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32floatGenericRemoveSwapBack()
+    {
+        var list = new FixedList32<float>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((float)3));
+        Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1669,11 +1917,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList64floatGenericRemove()
+    public void FixedList64floatGenericRemoveAt()
     {
         var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64floatGenericRemove()
+    {
+        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((float)3));
+        Assert.True(list.Remove((float)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64floatGenericRemoveSwapBack()
+    {
+        var list = new FixedList64<float>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((float)3));
+        Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1779,11 +2047,31 @@ internal class FixedListTests
     }
 
     [Test]
-    public void FixedList128floatGenericRemove()
+    public void FixedList128floatGenericRemoveAt()
     {
         var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128floatGenericRemove()
+    {
+        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove((float)3));
+        Assert.True(list.Remove((float)3));
+        for(var i = 0; i < 3; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128floatGenericRemoveSwapBack()
+    {
+        var list = new FixedList128<float>() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack((float)3));
+        Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1885,6 +2173,24 @@ internal class FixedListTests
         var list = new FixedListFloat32() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListFloat32Remove()
+    {
+        var list = new FixedListFloat32() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListFloat32RemoveSwapBack()
+    {
+        var list = new FixedListFloat32() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2015,6 +2321,24 @@ internal class FixedListTests
     }
 
     [Test]
+    public void FixedListFloat64Remove()
+    {
+        var list = new FixedListFloat64() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListFloat64RemoveSwapBack()
+    {
+        var list = new FixedListFloat64() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
     public void FixedListFloat64RemoveRangeWithBeginEnd()
     {
         var list = new FixedListFloat64() { 0, 3, 3, 1, 2 };
@@ -2135,6 +2459,24 @@ internal class FixedListTests
         var list = new FixedListFloat128() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListFloat128Remove()
+    {
+        var list = new FixedListFloat128() { 0, 3, 3, 1, 2 };
+        Assert.True(list.Remove(3));
+        Assert.True(list.Remove(3));
+        Expected(ref list, 3, new int[] { 0, 1, 2 });
+    }
+
+    [Test]
+    public void FixedListFloat128RemoveSwapBack()
+    {
+        var list = new FixedListFloat128() { 0, 3, 3, 2, 1 };
+        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack(3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
