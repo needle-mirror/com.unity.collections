@@ -1,4 +1,3 @@
-#if UNITY_2020_1_OR_NEWER || UNITY_DOTSRUNTIME
 using System;
 using Unity.Burst;
 using Unity.Mathematics;
@@ -10,6 +9,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// A range of virtual memory with a pointer to the beginning of a range of bytes, log2 of the page size in bytes, and number of pages in this allocation.
     /// </summary>
+    [BurstCompatible]
     public struct VMRange
     {
         /// <summary>
@@ -90,6 +90,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// C# analog of Baselib_ErrorState.
     /// </summary>
+    [BurstCompatible]
     public struct BaselibErrorState
     {
         /// <summary>
@@ -131,8 +132,10 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     ///
     /// </summary>
+    [BurstCompatible]
     public unsafe struct VirtualMemoryUtility
     {
+        [BurstCompatible]
         unsafe internal struct PageSizeInfo
         {
             byte log2DefaultPageSize;
@@ -158,6 +161,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
+        [BurstCompatible]
         internal sealed class StaticPageSizeInfo
         {
             StaticPageSizeInfo() { }
@@ -311,4 +315,3 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 }
-#endif

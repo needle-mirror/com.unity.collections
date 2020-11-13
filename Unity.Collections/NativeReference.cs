@@ -13,6 +13,7 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the reference in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeReference<T>
         : INativeDisposable
         , IEquatable<NativeReference<T>>
@@ -52,6 +53,18 @@ namespace Unity.Collections
             {
                 UnsafeUtility.MemClear(m_Data, UnsafeUtility.SizeOf<T>());
             }
+        }
+
+        /// <summary>
+        /// Constructs a new reference container using the specified type of memory allocation, and initialize it to specific value.
+        /// </summary>
+        /// <param name="value">The value of this container.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        public NativeReference(T value, Allocator allocator)
+        {
+            Allocate(allocator, out this);
+            *(T*)m_Data = value;
         }
 
         static void Allocate(Allocator allocator, out NativeReference<T> reference)
@@ -98,6 +111,13 @@ namespace Unity.Collections
         /// <summary>
         /// Determine whether or not this container is created.
         /// </summary>
+        /// <remarks>
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_Data != null;
 
         /// <summary>
@@ -128,6 +148,7 @@ namespace Unity.Collections
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs using it have run.</remarks>
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             CheckNotDisposed();
@@ -192,6 +213,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A container to compare with this container.</param>
         /// <returns><see langword="true"/> if this container is equal to the <paramref name="other"/> parameter, otherwise <see langword="false"/>.</returns>
+        [NotBurstCompatible]
         public bool Equals(NativeReference<T> other)
         {
             return Value.Equals(other.Value);
@@ -202,6 +224,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="obj">An object to compare with this object.</param>
         /// <returns><see langword="true"/> if this object is equal to the <paramref name="obj"/> parameter, otherwise <see langword="false"/>.</returns>
+        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -274,6 +297,7 @@ namespace Unity.Collections
         /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ReadOnly
         {
             [NativeDisableUnsafePtrRestriction]
@@ -360,6 +384,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// <see cref="NativeReference{T}"/> unsafe utilities.
     /// </summary>
+    [BurstCompatible]
     public static class NativeReferenceUnsafeUtility
     {
         /// <summary>
@@ -368,6 +393,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the reference in the container.</typeparam>
         /// <param name="reference">The reference container.</param>
         /// <returns>The data pointer.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafePtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
@@ -383,6 +409,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the reference in the container.</typeparam>
         /// <param name="reference">The reference container.</param>
         /// <returns>The data pointer.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
@@ -398,6 +425,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the reference in the container.</typeparam>
         /// <param name="reference">The reference container.</param>
         /// <returns>The data pointer.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafePtrWithoutChecks<T>(NativeReference<T> reference)
             where T : unmanaged
         {

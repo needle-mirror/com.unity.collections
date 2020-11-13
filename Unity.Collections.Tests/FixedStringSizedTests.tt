@@ -1,6 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8"#>
 <#@ assembly name="System.Core" #>
 
 //------------------------------------------------------------------------------
@@ -18,6 +18,9 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
+#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
+using UnityEngine;
+#endif
 
 namespace FixedStringTests
 {
@@ -32,8 +35,25 @@ foreach(var BYTES in SIZES)
     var ALMOST_TOO_BIG = new String('o', BYTES - 3);
     var TOO_BIG = new String('o', BYTES - 2);
 #>
-    [TestCase("<#=ALMOST_TOO_BIG#>", FormatError.None)]
-    [TestCase("<#=TOO_BIG#>", FormatError.Overflow)]
+
+#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
+    class ScriptableObjectFixedString<#=BYTES#> : UnityEngine.ScriptableObject
+    {
+        public FixedString<#=BYTES#> String;
+    }
+
+    [Test]
+    public void FixedString<#=BYTES#>Serializes()
+    {
+        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObjectFixedString<#=BYTES#>>();
+        a.String = "Hello World";
+        var b = UnityEngine.Object.Instantiate(a);
+        Assert.AreEqual(a.String, b.String);
+    }
+#endif
+
+    [TestCase("<#=ALMOST_TOO_BIG#>", FormatError.None, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Almost")]
+    [TestCase("<#=TOO_BIG#>", FormatError.Overflow, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Over")]
     public void FixedString<#=BYTES#>AtMaximumSizeWorks(String a, FormatError expectedError)
     {
         FixedString<#=BYTES#> aa = default;

@@ -33,6 +33,7 @@ namespace Unity.Collections
         /// <param name="dest"></param>
         /// <param name="format"></param>
         /// <param name="arg0"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/) })]
         public static unsafe void AppendFormat<T, U, T0>(ref this T dest, in U format, in T0 arg0)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -77,6 +78,7 @@ namespace Unity.Collections
         /// <param name="format"></param>
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -125,6 +127,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -177,6 +180,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -233,6 +237,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <param name="arg4"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -293,6 +298,7 @@ namespace Unity.Collections
         /// <param name="arg3"><undoc /></param>
         /// <param name="arg4"><undoc /></param>
         /// <param name="arg5"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -357,6 +363,7 @@ namespace Unity.Collections
         /// <param name="arg4"><undoc /></param>
         /// <param name="arg5"><undoc /></param>
         /// <param name="arg6"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -425,6 +432,7 @@ namespace Unity.Collections
         /// <param name="arg5"><undoc /></param>
         /// <param name="arg6"><undoc /></param>
         /// <param name="arg7"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -497,6 +505,7 @@ namespace Unity.Collections
         /// <param name="arg6"><undoc /></param>
         /// <param name="arg7"><undoc /></param>
         /// <param name="arg8"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/), typeof(FixedString128 /*T8*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -573,6 +582,7 @@ namespace Unity.Collections
         /// <param name="arg7"><undoc /></param>
         /// <param name="arg8"><undoc /></param>
         /// <param name="arg9"><undoc /></param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/), typeof(FixedString128 /*T8*/), typeof(FixedString128 /*T9*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes

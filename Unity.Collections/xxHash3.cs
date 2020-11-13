@@ -25,6 +25,7 @@ namespace Unity.Collections
     ///    (*) Only when the hashing size justifies such transition.
     /// </remarks>
     [BurstCompile]
+    [BurstCompatible]
     public static partial class xxHash3
     {
         #region Public API
@@ -41,6 +42,17 @@ namespace Unity.Collections
             {
                 return ToUint2(Hash64Internal((byte*) input, null, length, (byte*) secret, 0));
             }
+        }
+
+        /// <summary>
+        /// Compute a 64bits hash from the contents of the input struct
+        /// </summary>
+        /// <param name="input">The input struct that will be hashed</param>
+        /// <returns>The hash result</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        public static unsafe uint2 Hash64<T>(in T input) where T : unmanaged
+        {
+            return Hash64(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());
         }
 
         /// <summary>
@@ -71,6 +83,17 @@ namespace Unity.Collections
                 Hash128Internal((byte*) input, null, length, (byte*) secret, 0, out var result);
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Compute a 128bits hash from the contents of the input struct
+        /// </summary>
+        /// <param name="input">The input struct that will be hashed</param>
+        /// <returns>The hash result</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        public static unsafe uint4 Hash128<T>(in T input) where T : unmanaged
+        {
+            return Hash128(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());
         }
 
         /// <summary>
@@ -176,7 +199,7 @@ namespace Unity.Collections
         #region Burst Proxy
 
         // To call the burst version of Hash64/128Long independent of the callsite being burst or not
-#if !(NET_DOTS || (UNITY_2020_1_OR_NEWER && UNITY_IOS))
+#if !(NET_DOTS || UNITY_IOS)
         static bool _initialized = false;
 
         [BurstDiscard]
@@ -235,7 +258,7 @@ namespace Unity.Collections
         private static unsafe ulong Hash64Long(byte* input, byte* dest, long length, byte* secret)
         {
             ulong result;
-#if !(NET_DOTS || (UNITY_2020_1_OR_NEWER && UNITY_IOS))
+#if !(NET_DOTS || UNITY_IOS)
             if (IsMono())
             {
                 _forward_mono_Hash64Long(input, dest, length, secret, out result);
@@ -249,7 +272,7 @@ namespace Unity.Collections
 
         private static unsafe void Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
         {
-#if !(NET_DOTS || (UNITY_2020_1_OR_NEWER && UNITY_IOS))
+#if !(NET_DOTS || UNITY_IOS)
             if (IsMono())
             {
                 _forward_mono_Hash128Long(input, dest, length, secret, out result);

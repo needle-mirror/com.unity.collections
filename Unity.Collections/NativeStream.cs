@@ -12,6 +12,7 @@ namespace Unity.Collections
     /// Allows you to write different types or arrays into a single stream.
     /// </summary>
     [NativeContainer]
+    [BurstCompatible]
     public unsafe struct NativeStream : IDisposable
     {
         UnsafeStream m_Stream;
@@ -45,6 +46,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
@@ -62,6 +64,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
@@ -83,8 +86,16 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_Stream.IsCreated;
 
         /// <summary>
@@ -135,6 +146,7 @@ namespace Unity.Collections
         /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
         /// <remarks>The array is a copy of stream data.</remarks>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
             CheckReadAccess();
@@ -163,6 +175,7 @@ namespace Unity.Collections
         /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle dependency)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -236,6 +249,7 @@ namespace Unity.Collections
         /// </summary>
         [NativeContainer]
         [NativeContainerSupportsMinMaxWriteRestriction]
+        [BurstCompatible]
         public unsafe struct Writer
         {
             UnsafeStream.Writer m_Writer;
@@ -322,6 +336,7 @@ namespace Unity.Collections
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <param name="value"></param>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void Write<T>(T value) where T : struct
             {
                 ref T dst = ref Allocate<T>();
@@ -333,6 +348,7 @@ namespace Unity.Collections
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns></returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Allocate<T>() where T : struct
             {
                 CollectionHelper.CheckIsUnmanaged<T>();
@@ -434,6 +450,7 @@ namespace Unity.Collections
         /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
+        [BurstCompatible]
         public unsafe struct Reader
         {
             UnsafeStream.Reader m_Reader;
@@ -550,6 +567,7 @@ namespace Unity.Collections
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns>Reference to data.</returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Read<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();
@@ -561,6 +579,7 @@ namespace Unity.Collections
             /// </summary>
             /// <typeparam name="T">The type of value.</typeparam>
             /// <returns>Reference to data.</returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Peek<T>() where T : struct
             {
                 int size = UnsafeUtility.SizeOf<T>();

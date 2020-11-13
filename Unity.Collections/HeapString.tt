@@ -1,5 +1,5 @@
 <#@ template language="C#" debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 
 //------------------------------------------------------------------------------
@@ -39,6 +39,7 @@ namespace Unity.Collections
     /// This structure is a native collection, and as such requires creating with an allocator
     /// and requires being disposed.
     /// </summary>
+    [BurstCompatible]
     public partial struct HeapString
         : INativeList<byte>
         , IDisposable
@@ -114,8 +115,16 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_Data.IsCreated;
 
         /// <summary>
@@ -213,6 +222,7 @@ namespace Unity.Collections
         /// </summary>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
@@ -295,6 +305,7 @@ namespace Unity.Collections
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
+        [NotBurstCompatible]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -306,6 +317,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
+        [NotBurstCompatible]
         public bool Equals(String other)
         {
             return ToString().Equals(other);
@@ -442,6 +454,7 @@ namespace Unity.Collections
         /// Convert this HeapString to a System.String.
         /// </summary>
         /// <returns>A System.String with a copy of this HeapString</returns>
+        [NotBurstCompatible]
         public override String ToString()
         {
             if (!m_Data.IsCreated)
@@ -464,6 +477,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="obj">The object to compare for equality</param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;

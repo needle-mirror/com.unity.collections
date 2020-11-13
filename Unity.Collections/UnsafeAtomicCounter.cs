@@ -6,6 +6,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// 32-bit atomic counter.
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeAtomicCounter32
     {
         /// <summary>
@@ -94,6 +95,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// 64-bit atomic counter.
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeAtomicCounter64
     {
         /// <summary>

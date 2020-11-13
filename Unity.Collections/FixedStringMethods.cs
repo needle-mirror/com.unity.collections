@@ -6,6 +6,7 @@ namespace Unity.Collections
     /// <summary>
     /// <undoc />
     /// </summary>
+    [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
@@ -17,6 +18,7 @@ namespace Unity.Collections
         /// <param name="bytes"></param>
         /// <param name="bytesLen"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int IndexOf<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -45,6 +47,7 @@ namespace Unity.Collections
         /// <param name="startIndex"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int IndexOf<T>(ref this T fs, byte* bytes, int bytesLen, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -71,6 +74,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="other"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static int IndexOf<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -91,6 +95,7 @@ namespace Unity.Collections
         /// <param name="startIndex"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static int IndexOf<T,T2>(ref this T fs, in T2 other, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -108,6 +113,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="other"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static bool Contains<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -124,6 +130,7 @@ namespace Unity.Collections
         /// <param name="bytes"></param>
         /// <param name="bytesLen"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int LastIndexOf<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -152,7 +159,8 @@ namespace Unity.Collections
         /// <param name="startIndex"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
-        public static int LastIndexOf<T>(ref this T fs, byte* bytes, int bytesLen, int startIndex, int distance = Int32.MaxValue)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        public static int LastIndexOf<T>(ref this T fs, byte* bytes, int bytesLen, int startIndex, int distance = int.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
             var dst = fs.GetUnsafePtr();
@@ -179,6 +187,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="other"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static int LastIndexOf<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -199,6 +208,7 @@ namespace Unity.Collections
         /// <param name="startIndex"></param>
         /// <param name="distance"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static int LastIndexOf<T,T2>(ref this T fs, in T2 other, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -217,6 +227,7 @@ namespace Unity.Collections
         /// <param name="bytes"></param>
         /// <param name="bytesLen"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int CompareTo<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -247,6 +258,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="other"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static int CompareTo<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -263,6 +275,7 @@ namespace Unity.Collections
         /// <param name="bytes"></param>
         /// <param name="bytesLen"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static bool Equals<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -283,6 +296,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="other"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static bool Equals<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -300,6 +314,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static Unicode.Rune Peek<T>(ref this T fs, int offset)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -321,6 +336,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static Unicode.Rune Read<T>(ref this T fs, ref int offset)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -341,6 +357,7 @@ namespace Unity.Collections
         /// <param name="offset"></param>
         /// <param name="rune"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Write<T>(ref this T fs, ref int offset, Unicode.Rune rune)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -356,6 +373,7 @@ namespace Unity.Collections
         /// <typeparam name="T"></typeparam>
         /// <param name="fs"></param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public static String ConvertToString<T>(ref this T fs)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -371,6 +389,7 @@ namespace Unity.Collections
         /// <typeparam name="T"></typeparam>
         /// <param name="fs"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int ComputeHashCode<T>(ref this T fs)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -387,6 +406,7 @@ namespace Unity.Collections
         /// <typeparam name="T"></typeparam>
         /// <param name="fs"></param>
         /// <returns>The effective size of this struct in bytes.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static int EffectiveSizeOf<T>(ref this T fs)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

@@ -5,6 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// <undoc />
     /// </summary>
+    [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
@@ -16,6 +17,7 @@ namespace Unity.Collections
         /// <param name="offset">The zero-based byte offset from the beginning of the string.</param>
         /// <param name="output">The int parsed, if any.</param>
         /// <returns>An error code, if any, in the case that the parse fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref int output)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -62,6 +64,7 @@ namespace Unity.Collections
         /// <param name="decimalSeparator">The character used to separate the integral part from the fractional part.
         /// Defaults to a period.</param>
         /// <returns>An error code, if any, in the case that the parse fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref float output, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

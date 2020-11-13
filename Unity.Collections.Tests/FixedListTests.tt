@@ -1,6 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Globalization" #>
 
@@ -23,8 +23,11 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
+#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
+using UnityEngine;
+#endif
 
-internal class FixedListTests
+internal class FixedListTests : CollectionsTestFixture
 {
     struct NonComparableStruct
     {
@@ -83,6 +86,21 @@ internal class FixedListTests
                 var TYPENAME = String.Format("FixedList{0}", BYTES);
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
 #>
+
+    [Test]
+    public void <#=TYPENAME #><#=TYPE#>ToNativeArrayWorks()
+    {
+        var list = new <#=TYPENAME #><<#=TYPE#>>();
+
+        for(var i = 0; i < <#=EXPECTEDCAPACITY#>; ++i)
+            list.Add((<#=TYPE#>)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < <#=EXPECTEDCAPACITY#>; ++i)
+                Assert.AreEqual((<#=TYPE#>)(i * 123 + 234), array[i]);
+        }
+    }
 
     [Test]
     public void <#=TYPENAME #><#=TYPE#>GenericHasExpectedLayout()
@@ -260,6 +278,24 @@ internal class FixedListTests
             list.Add((<#=TYPE #>)i);
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
+
+#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
+    class ScriptableObject<#=TYPENAME#> : UnityEngine.ScriptableObject
+    {
+        public <#=TYPENAME#> List;
+    }
+
+    [Test]
+    public void <#=TYPENAME#>Serializes()
+    {
+        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObject<#=TYPENAME#> >();
+        for(int i = 0; i < a.List.Capacity; ++i)
+            a.List.Add((<#=TYPE #>)i);
+        var b = UnityEngine.Object.Instantiate(a);
+        CollectionAssert.AreEqual(a.List, b.List);
+    }
+#endif
+
 <#
                 if (EXPECTEDCAPACITY >= 5)
                 {

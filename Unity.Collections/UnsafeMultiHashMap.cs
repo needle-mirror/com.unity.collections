@@ -15,6 +15,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="TValue">The type of the values in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(UnsafeMultiHashMapDebuggerTypeProxy<,>))]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public unsafe struct UnsafeMultiHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
@@ -117,6 +118,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="TValueEQ"></typeparam>
         /// <param name="key">The key of the element to remove.</param>
         /// <param name="value">The value of the element to remove.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void Remove<TValueEQ>(TKey key, TValueEQ value)
             where TValueEQ : struct, IEquatable<TValueEQ>
         {
@@ -201,8 +203,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => m_Buffer != null;
 
         /// <summary>
@@ -225,6 +234,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafeHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
@@ -358,6 +368,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
         /// </summary>
         [NativeContainerIsAtomicWriteOnly]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]

@@ -331,6 +331,45 @@ namespace Unity.Collections
             return endBit;
         }
 
+        static int FindUpto6bits(ulong* ptr, int beginBit, int endBit, int numBits)
+        {
+            var bits = (byte*)ptr;
+
+            byte beginMask = (byte)~(0xff << (beginBit & 7));
+            byte endMask = (byte)~(0xff >> ((8-(endBit & 7) & 7)));
+
+            var mask = 1 << numBits - 1;
+
+            for (int begin = beginBit / 8, end = AlignUp(endBit, 8) / 8, i = begin; i < end; ++i)
+            {
+                var test = bits[i];
+                test |= i == begin ? beginMask : (byte)0;
+                test |= i == end - 1 ? endMask : (byte)0;
+
+                if (test == 0xff)
+                {
+                    continue;
+                }
+
+                for (int pos = i * 8, posEnd = pos + 7; pos < posEnd; ++pos)
+                {
+                    var tz = tzcnt((byte)(test^0xff));
+                    test >>= tz;
+
+                    pos += tz;
+
+                    if ((test & mask) == 0)
+                    {
+                        return pos;
+                    }
+
+                    test >>= 1;
+                }
+            }
+
+            return endBit;
+        }
+
         internal static int FindWithBeginEnd(ulong* ptr, int beginBit, int endBit, int numBits)
         {
             int idx;
@@ -387,6 +426,19 @@ namespace Unity.Collections
                 if (idx != endBit)
                 {
                     return idx;
+                }
+
+                if (numBits < 7)
+                {
+                    // The worst case scenario when every byte boundary bit is set (pattern 0x81),
+                    // and we're looking for 6 or less bits. It will rescan byte-by-byte to find
+                    // any inner byte gap.
+                    idx = FindUpto6bits(ptr, beginBit, endBit, numBits);
+
+                    if (idx != endBit)
+                    {
+                        return idx;
+                    }
                 }
             }
 

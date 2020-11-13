@@ -8,6 +8,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// An unmanaged, untyped, buffer, without any thread safety check features.
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeAppendBuffer
         : INativeDisposable
     {
@@ -77,8 +78,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -108,6 +116,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -173,6 +182,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">Source type of elements.</typeparam>
         /// <param name="value">The struct to be added at the end of the container.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void Add<T>(T value) where T : struct
         {
             var structSize = UnsafeUtility.SizeOf<T>();
@@ -200,6 +210,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements.</typeparam>
         /// <param name="ptr">A pointer to copy into the container.</param>
         /// <param name="length">The number of elements to add to the container.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddArray<T>(void* ptr, int length) where T : struct
         {
             Add(length);
@@ -213,6 +224,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">Source type of elements.</typeparam>
         /// <param name="value">Other container to copy elements from.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void Add<T>(NativeArray<T> value) where T : struct
         {
             Add(value.Length);
@@ -223,6 +235,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Adds string into the container.
         /// </summary>
         /// <param name="value">String to copy to container.</param>
+        [NotBurstCompatible]
         public void Add(string value)
         {
             if (value != null)
@@ -244,6 +257,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">Source type of elements.</typeparam>
         /// <returns>Returns value.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public T Pop<T>() where T : struct
         {
             int structSize = UnsafeUtility.SizeOf<T>();
@@ -275,6 +289,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Copy contents of the container into byte array.
         /// </summary>
         /// <returns>Array of bytes.</returns>
+        [NotBurstCompatible]
         public byte[] ToBytes()
         {
             var dst = new byte[Length];
@@ -297,6 +312,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Buffer reader.
         /// </summary>
+        [BurstCompatible]
         public unsafe struct Reader
         {
             /// <summary>
@@ -347,6 +363,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">Source type of elements.</typeparam>
             /// <param name="value"></param>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void ReadNext<T>(out T value) where T : struct
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
@@ -361,6 +378,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <typeparam name="T">Source type of elements.</typeparam>
             /// <returns></returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public T ReadNext<T>() where T : struct
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
@@ -392,6 +410,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="value"></param>
             /// <param name="allocator">A member of the
             /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void ReadNext<T>(out NativeArray<T> value, Allocator allocator) where T : struct
             {
                 var length = ReadNext<int>();
@@ -410,6 +429,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T">Source type of elements.</typeparam>
             /// <param name="length"></param>
             /// <returns></returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void* ReadNextArray<T>(out int length) where T : struct
             {
                 length = ReadNext<int>();
@@ -421,6 +441,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Read string data from buffer.
             /// </summary>
             /// <param name="value">Output string value.</param>
+            [NotBurstCompatible]
             public void ReadNext(out string value)
             {
                 int length;

@@ -1,8 +1,8 @@
-using System;
 using NUnit.Framework;
+using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Collections.Tests;
+using Unity.Mathematics;
 
 internal class UnsafeBitArrayTests
 {
@@ -341,6 +341,86 @@ internal class UnsafeBitArrayTests
             Assert.Throws<ArgumentException>(() => { test.Find(0, 1, 2); });   // numBits is larger than range
             Assert.Throws<ArgumentException>(() => { test.Find(10, 0, 0); });  // empty range, numBits is less than 1
             Assert.Throws<ArgumentException>(() => { test.Find(1, 10, -2); }); // numBits can't be negative
+        }
+    }
+
+    void findWithPattern(ref UnsafeBitArray test, byte pattern, int numBits)
+    {
+        for (int pos = 0; pos < test.Length; pos += 8)
+        {
+            test.SetBits(pos, pattern, 8);
+        }
+
+        var bitCount = math.countbits((int)pattern);
+        var numEmptyBits = test.Length - (test.Length / 8 * bitCount);
+
+        for (int i = 0; i < numEmptyBits; i += numBits)
+        {
+            var pos = test.Find(0, numBits);
+            Assert.AreNotEqual(int.MaxValue, pos, $"{i}");
+            test.SetBits(pos, true, numBits);
+        }
+
+        Assert.True(test.TestAll(0, test.Length));
+    }
+
+    [Test]
+    public void UnsafeBitArray_FindWithPattern()
+    {
+        var test = new UnsafeBitArray(512, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        // Separated test for some more interesting patterns
+        findWithPattern(ref test, 0x81, 1);
+        findWithPattern(ref test, 0x81, 2);
+        findWithPattern(ref test, 0x81, 3);
+        findWithPattern(ref test, 0x81, 6);
+        findWithPattern(ref test, 0x88, 3);
+        findWithPattern(ref test, 0x99, 2);
+        findWithPattern(ref test, 0xaa, 1);
+        findWithPattern(ref test, 0xc3, 1);
+        findWithPattern(ref test, 0xc3, 2);
+        findWithPattern(ref test, 0xc3, 4);
+        findWithPattern(ref test, 0xe7, 1);
+        findWithPattern(ref test, 0xe7, 2);
+
+        // Test all patterns
+        for (int i = 0; i < 256; i++)
+        {
+            findWithPattern(ref test, (byte)i, 1);
+        }
+
+        test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_FindInTinyBitArray()
+    {
+        var test = new UnsafeBitArray(3, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        Assert.AreEqual(3, test.Length);
+
+        test.SetBits(0, 0x55, test.Length);
+
+        Assert.AreEqual(1, test.Find(0, 1));
+        Assert.AreEqual(1, test.Find(0, test.Length, 1));
+        test.SetBits(1, true, 1);
+        Assert.True(test.TestAll(0, test.Length));
+        Assert.AreEqual(int.MaxValue, test.Find(0, test.Length, 1));
+
+        test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_FindLastUnsetBit([NUnit.Framework.Range(1, 64)] int numBits)
+    {
+        using (var bits = new UnsafeBitArray(numBits, Allocator.Persistent))
+        {
+            // Set all bits to one then unset a single bit to find.
+            for (int i = 0; i < numBits; ++i)
+            {
+                bits.SetBits(0, true, numBits);
+                bits.Set(i, false);
+                Assert.AreEqual(i, bits.Find(0, 1));
+            }
         }
     }
 }

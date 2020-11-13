@@ -1,7 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
-<#@ assembly name="System.Collections" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 
 //------------------------------------------------------------------------------
@@ -32,12 +31,14 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
 {
+    [BurstCompatible]
     internal unsafe struct NativeString
     {
         /// <summary>
         ///
         /// </summary>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override String ToString()
         {
             var c = stackalloc char[Length * 2];

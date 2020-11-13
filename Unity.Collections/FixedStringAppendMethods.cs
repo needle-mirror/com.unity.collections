@@ -5,6 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// <undoc />
     /// </summary>
+    [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
@@ -14,6 +15,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="a"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune a)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -31,6 +33,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="a"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, char a)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -44,6 +47,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="a"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError AppendRawByte<T>(ref this T fs, byte a)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -62,6 +66,7 @@ namespace Unity.Collections
         /// <param name="rune">The Unicode.Rune to repeat</param>
         /// <param name="count">The number of times to repeat the Unicode.Rune</param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune, int count)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -90,6 +95,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, long input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -128,6 +134,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, int input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -139,6 +146,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, ulong input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -161,6 +169,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, uint input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -176,6 +185,7 @@ namespace Unity.Collections
         /// <param name="decimalSeparator">The character used to separate the integral part from the fractional part.
         /// A period by default.</param>
         /// <returns>An error code, if any, in the case that the format fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, float input, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -271,6 +281,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="inputIn"></param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static FormatError Append<T,T2>(ref this T fs, in T2 inputIn)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -287,6 +298,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="input"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static CopyError CopyFrom<T, T2>(ref this T fs, in T2 input)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -306,6 +318,7 @@ namespace Unity.Collections
         /// <param name="utf8Bytes"></param>
         /// <param name="utf8BytesLength"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public unsafe static FormatError Append<T>(ref this T fs, byte* utf8Bytes, int utf8BytesLength)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -323,6 +336,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="s"></param>
         /// <returns>An error code, if any, in the case that the append fails.</returns>
+        [NotBurstCompatible]
         public unsafe static FormatError Append<T>(ref this T fs, string s)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -350,6 +364,7 @@ namespace Unity.Collections
         /// <param name="fs"></param>
         /// <param name="s"></param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public static CopyError CopyFrom<T>(ref this T fs, string s)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

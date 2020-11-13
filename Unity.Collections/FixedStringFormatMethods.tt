@@ -1,6 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 
@@ -33,6 +33,7 @@ namespace Unity.Collections
         var ARGNAMES = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"arg{n}"));
         var TxDOCS   = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<typeparam name=\"T{n}\"><undoc /></typeparam>"));
         var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<param name=\"arg{n}\"><undoc /></param>"));
+        var BCOMPAT  = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"typeof(FixedString128 /*T{n}*/)"));
 #>
         /// <summary>
         /// Convenience function to append a formatted string into the given FixedString.
@@ -47,6 +48,7 @@ namespace Unity.Collections
         /// <param name="dest"></param>
         /// <param name="format"></param>
         /// <#=ARGxDOCS#>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), <#=BCOMPAT#> })]
         public static unsafe void AppendFormat<T, U, <#=TYPES#>>(ref this T dest, in U format, <#=PARAMS#>)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes

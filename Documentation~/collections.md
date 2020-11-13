@@ -50,6 +50,12 @@ should not be any significant performance difference between `Unsafe*` and `Nati
 containers. `Unsafe*` containers are in `Unity.Collections.LowLevel.Unsafe`
 namespace, while `Native*` containers are in `Unity.Collections` namespace.
 
+## Determinism
+
+Populating containers from parallel jobs is never deterministic, except when
+using `NativeStream` or `UnsafeStream`. If determinism is required, consider
+sorting the container as a separate step or post-process it on a single thread.
+
 ## Known Issues
 
 All containers allocated with `Allocator.Temp` on the same thread use a shared

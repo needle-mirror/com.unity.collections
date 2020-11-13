@@ -1,5 +1,56 @@
 # Change log
 
+## [0.15.0] - 2020-11-13
+
+### Added
+
+* `NativeReference` constructor to initialize it with existing value.
+* `T[] *HashSet.ToArray()` returns an array of all elements in the set.
+* xxHash3 now also has a utility method to hash a struct directly (Previously it was only pointer + size)
+* `[BurstCompatible]` attribute to FixedList and extensions.
+* `[BurstCompatible]` attribute to CollectionHelper.
+* `[BurstCompatible]` attribute to FixedBytesN.
+* `[BurstCompatible]` attribute to HeapString.
+* `[BurstCompatible]` attribute to NativeArrayExtensions.
+* `[BurstCompatible]` attribute to NativeBitArray.
+* `[BurstCompatible]` attribute to NativeBitArrayUnsafeUtility.
+* `[BurstCompatible]` attribute to NativeHashMap.
+* `[BurstCompatible]` attribute to NativeHashMapExtensions.
+* `[BurstCompatible]` attribute to NativeHashSet.
+* `[BurstCompatible]` attribute to NativeList.
+* `[BurstCompatible]` attribute to NativeListUnsafeUtility.
+* `[BurstCompatible]` attribute to NativeMultiHashMap.
+* `[BurstCompatible]` attribute to NativeQueue.
+* `[BurstCompatible]` attribute to NativeReference.
+* `[BurstCompatible]` attribute to NativeStream.
+* `[BurstCompatible]` attribute to NativeString.
+* `[BurstCompatible]` attribute to UTF8ArrayUnsafeUtility.
+* `[BurstCompatible]` attribute to Unicode and Rune.
+* `[BurstCompatible]` attribute to NativeStringView.
+* `[BurstCompatible]` attribute to UnsafeAppendBuffer.
+* `[BurstCompatible]` attribute to UnsafeAtomicCounter32 and UnsafeAtomicCounter64.
+* `[BurstCompatible]` attribute to UnsafeHashMap.
+* `[BurstCompatible]` attribute to UnsafeHashSet.
+* `[BurstCompatible]` attribute to UnsafeList, UnsafeListExtensions, UnsafePtrList, UnsafePtrListExtensions.
+* `[BurstCompatible]` attribute to UnsafeRingQueue.
+* `[BurstCompatible]` attribute to UnsafeScratchAllocator.
+* `[BurstCompatible]` attribute to UnsafeUtilityExtensions.
+* `[BurstCompatible]` attribute to VMRange, Baselib_ErrorState, and VirtualMemoryUtility.
+* `[BurstCompatible]` attribute to xxHash3.
+
+### Changed
+
+* Update burst to 1.4.1.
+* *BitArray `Length` would previously report backing capacity which is always 64-bit aligned, changed it to report number of bits user requested on allocation. For example, allocating 3 bits will now report `Length` 3 instead capacity which is always aligned to 64-bits.
+* Update minimum editor version to 2020.1.2f1
+
+### Fixed
+
+* Code generation for indexers in structs with [BurstCompatible] attribute.
+* *BitArray search for empty bits when number of bits is less than 7 and backing storage is fragmented with 0x81 bit pattern.
+* Namespace for `*HashSet.ExceptWith/IntersectWith/UnionWith` extension methods, so that use of `Unity.Collections.LowLevel.Unsafe` namespace is not necessary.
+* using FixedList.ToNativeArray with collection checks enabled used to throw a null reference exception.
+
 ## [0.14.0] - 2020-09-24
 
 ### Added
@@ -9,7 +60,6 @@
 ### Changed
 
 * `UnsafeStream` block allocation performance has been improved by ~16% by appending to the start of the per-thread block lists rather than the end.
-* Burst package updated to `1.3.7`
 
 ### Removed
 

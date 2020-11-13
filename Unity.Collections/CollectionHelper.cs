@@ -35,6 +35,7 @@ namespace Unity.Collections
     /// <summary>
     ///
     /// </summary>
+    [BurstCompatible]
     public static class CollectionHelper
     {
         /// <summary>
@@ -158,6 +159,7 @@ namespace Unity.Collections
             return (uint)hash;
         }
 
+        [NotBurstCompatible]
         internal static void WriteLayout(Type type)
         {
 #if !NET_DOTS
@@ -203,6 +205,7 @@ namespace Unity.Collections
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
+        [NotBurstCompatible]
         internal static void CheckIsUnmanaged<T>()
         {
             if (!UnsafeUtility.IsValidNativeContainerElementType<T>())

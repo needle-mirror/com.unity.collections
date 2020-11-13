@@ -31,6 +31,7 @@ namespace Unity.Collections
         bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory);
     }
 
+    [BurstCompatible]
     internal unsafe static class FixedStringUtils
     {
         [StructLayout(LayoutKind.Explicit)]

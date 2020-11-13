@@ -1,6 +1,6 @@
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Globalization" #>
 <#@ import namespace="System.Security.Cryptography" #>
@@ -16,32 +16,38 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
-using System.Diagnostics;
-using Unity.Collections.LowLevel.Unsafe;
-using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using UnityEngine.Internal;
 using System.Collections;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
+using UnityEngine.Internal;
+using UnityEngine;
 #if UNITY_PROPERTIES_EXISTS
 using Unity.Properties;
 #endif
 
 namespace Unity.Collections
 {
+    [BurstCompatible]
     struct FixedList
     {
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static int PaddingBytes<T>() where T : struct
         {
             return math.max(0, math.min(6, (1 << math.tzcnt(UnsafeUtility.SizeOf<T>())) - 2));
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static int StorageBytes<BUFFER,T>() where BUFFER : struct where T : struct
         {
             return UnsafeUtility.SizeOf<BUFFER>() - PaddingBytes<T>();
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static int Capacity<BUFFER,T>() where BUFFER : struct where T : struct
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
@@ -54,6 +60,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal static void CheckResize<BUFFER,T>(int newLength) where BUFFER : struct where T : struct
         {
@@ -76,7 +83,9 @@ for(var size = 0; size < 5; ++size)
     /// It is <#=BYTES#> bytes in size, and contains all the memory it needs.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the container.</typeparam>
+    [Serializable]
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView<>))]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
     public struct <#=TYPENAME#><T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -89,8 +98,8 @@ for(var size = 0; size < 5; ++size)
     }
 #>    where T : unmanaged
     {
-        internal ushort length;
-        internal FixedBytes<#=BUFFER_BYTES#> buffer;
+        [SerializeField] internal ushort length;
+        [SerializeField] internal FixedBytes<#=BUFFER_BYTES#> buffer;
 
         /// <summary>
         /// The current number of items in the list.
@@ -365,6 +374,7 @@ for(var size = 0; size < 5; ++size)
         /// Creates a managed Array of T that is a copy of this <#=TYPENAME#>&lt;T&gt;.
         /// </summary>
         /// <returns></returns>
+        [NotBurstCompatible]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -387,9 +397,9 @@ for(var size = 0; size < 5; ++size)
         {
             unsafe
             {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(s, Length, Allocator.None);
-                return new NativeArray<T>(copy, allocator);
+                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
+                return copy;
             }
         }
 
@@ -505,6 +515,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="obj">The specified object to compare with for equality</param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
 <#
@@ -617,6 +628,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -630,6 +642,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -641,6 +654,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The item to locate in the <#=TYPENAME#></param>
         /// <returns>True, if element is removed.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -660,6 +674,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="item">The elements to remove from the <#=TYPENAME#>&lt;T&gt;.</param>
         /// <returns>Returns true if item is removed.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -704,8 +719,10 @@ for(var size = 0; size < 5; ++size)
     /// An unmanaged, resizable list of <#=TYPE#> that does not allocate memory.
     /// It is <#=BYTES#> bytes in size, and contains all the memory it needs.
     /// </summary>
+    [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView))]
+    [BurstCompatible]
     public struct <#=TYPENAME#>
     : INativeList<<#=TYPE#>>
     , IEnumerable<<#=TYPE#>> // Used by collection initializers.
@@ -718,8 +735,8 @@ for(var size = 0; size < 5; ++size)
     }
 #>
     {
-        [FieldOffset(0)] internal ushort length;
-        [FieldOffset(2)] internal FixedBytes<#=BUFFER_BYTES#> buffer;
+        [SerializeField] [FieldOffset(0)] internal ushort length;
+        [SerializeField] [FieldOffset(2)] internal FixedBytes<#=BUFFER_BYTES#> buffer;
 
         /// <summary>
         /// The current number of items in the list.
@@ -1087,6 +1104,7 @@ for(var size = 0; size < 5; ++size)
         /// Creates a managed Array of <#=TYPE#> that is a copy of this <#=TYPENAME#>.
         /// </summary>
         /// <returns></returns>
+        [NotBurstCompatible]
         public <#=TYPE#>[] ToArray()
         {
             var result = new <#=TYPE#>[Length];
@@ -1131,6 +1149,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(NativeSortExtension.DefaultComparer<<#=TYPE#>>) })]
         public void Sort<U>(U comp) where U : IComparer<<#=TYPE#>>
         {
             unsafe
@@ -1252,6 +1271,7 @@ foreach(var OTHERBYTES in SIZES)
         /// </summary>
         /// <param name="obj">The specified object to compare with for equality</param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
 <#
@@ -1385,6 +1405,7 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
         /// <param name="data">Container to perform sort.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref <#=TYPENAME#><T> data)
         where T : unmanaged, IComparable<T>
         {
@@ -1405,6 +1426,7 @@ for(var size = 0; size < 5; ++size)
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="data">Container to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref <#=TYPENAME#><T> data, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>

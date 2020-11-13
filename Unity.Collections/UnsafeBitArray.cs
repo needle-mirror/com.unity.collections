@@ -60,7 +60,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
             Ptr = (ulong*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
-            Length = sizeInBytes * 8;
+            Length = numBits;
 
             if (options == NativeArrayOptions.ClearMemory)
             {
@@ -72,8 +72,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>

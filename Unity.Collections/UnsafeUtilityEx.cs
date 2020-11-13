@@ -8,6 +8,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// Unsafe utility extensions.
     /// </summary>
+    [BurstCompatible]
     public unsafe static class UnsafeUtilityExtensions
     {
         /// <summary>
@@ -51,6 +52,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Reading data out of bounds from an unsafe buffer can lead to crashes and data corruption.
         /// <seealso cref="UnsafeUtility.ReadArrayElement{T}(void*, int)"/> does not do any bounds checking, so it's fast, but provides no debugging or safety capabilities.
         /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.ReadArrayElement{T}(void*, int)"/> and should be used when debuggability is required over performance.</remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static T ReadArrayElementBoundsChecked<T>(void* source, int index, int capacity)
         {
             CheckIndexRange(index, capacity);
@@ -70,6 +72,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Writing data out of bounds to an unsafe buffer can lead to crashes and data corruption.
         /// <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> does not do any bounds checking, so it's fast, but provides no debugging or safety capabilities.
         /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> and should be used when debuggability is required over performance.</remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static void WriteArrayElementBoundsChecked<T>(void* destination, int index, T value, int capacity)
         {
             CheckIndexRange(index, capacity);
@@ -84,6 +87,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">The read-only reference to a valuetype of type T.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static void* AddressOf<T>(in T item)
             where T : struct
         {
@@ -99,6 +103,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">The read-only reference to a valuetype of type T.</param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static ref T AsRef<T>(in T item)
             where T : struct
         {

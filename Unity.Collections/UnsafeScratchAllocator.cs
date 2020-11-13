@@ -6,6 +6,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     ///
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeScratchAllocator
     {
         void* m_Pointer;
@@ -57,6 +58,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T"></typeparam>
         /// <param name="count"></param>
         /// <returns></returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void* Allocate<T>(int count = 1) where T : struct
         {
             return Allocate(UnsafeUtility.SizeOf<T>() * count, UnsafeUtility.AlignOf<T>());

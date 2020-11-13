@@ -10,6 +10,7 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
+    [BurstCompatible]
     public static partial class xxHash3
     {
         /// <summary>
@@ -19,6 +20,7 @@ namespace Unity.Collections
         /// Allow to feed the internal hashing accumulators with data through multiple calls to <see cref="Update"/>, then retrieving the final hash value using <see cref="DigestHash64"/> or <see cref="DigestHash128"/>.
         /// More info about how to use this class in its constructor.
         /// </remarks>
+        [BurstCompatible]
         public struct StreamingState
         {
             #region Public API
@@ -86,7 +88,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="input">The memory buffer, can't be null</param>
             /// <param name="length">The length of the data to accumulate, can be zero</param>
-            /// <remarks>This API allows you to feed very small data to be hash, avoiding you to accumulate them in a big buffer, then computing the hash value from.</remarks>
+            /// <remarks>This API allows you to feed very small data to be hashed, avoiding you to accumulate them in a big buffer, then computing the hash value from.</remarks>
             public unsafe void Update(void* input, int length)
             {
                 var bInput = (byte*) input;
@@ -131,6 +133,18 @@ namespace Unity.Collections
                     State.BufferedSize = (int) newBufferedSize;
                 }
             }
+
+            /// <summary>
+            /// Add the contents of input struct to the hash.
+            /// </summary>
+            /// <param name="input">The input struct that will be hashed</param>
+            /// <remarks>This API allows you to feed very small data to be hashed, avoiding you to accumulate them in a big buffer, then computing the hash value from.</remarks>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            public unsafe void Update<T>(in T input) where T : unmanaged
+            {
+                Update(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());
+            }
+
 
             /// <summary>
             /// Compute the 128bits value based on all the data that have been accumulated

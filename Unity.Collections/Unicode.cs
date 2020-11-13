@@ -76,11 +76,13 @@ namespace Unity.Collections
     /// <summary>
     ///
     /// </summary>
+    [BurstCompatible]
     public unsafe struct Unicode
     {
         /// <summary>
         ///
         /// </summary>
+        [BurstCompatible]
         public struct Rune
         {
             /// <summary>
@@ -146,8 +148,8 @@ namespace Unity.Collections
         {
             if (ucs > 0x10FFFF) // maximum valid code point
                 return false;
-            if (ucs >= 0xD800 && ucs <= 0xDFFF) // surrogate pair
-                return false;
+//            if (ucs >= 0xD800 && ucs <= 0xDFFF) // surrogate pair
+//                return false;
             if (ucs < 0) // negative?
                 return false;
             return true;
@@ -261,6 +263,16 @@ namespace Unity.Collections
             return ConversionError.Encoding;
         }
 
+        static bool IsLeadingSurrogate(char c)
+        {
+            return c >= 0xD800 && c <= 0xDBFF;
+        }
+
+        static bool IsTrailingSurrogate(char c)
+        {
+            return c >= 0xDC00 && c <= 0xDFFF;
+        }
+
         /// <summary>
         ///
         /// </summary>
@@ -275,28 +287,24 @@ namespace Unity.Collections
             rune = ReplacementCharacter;
             if (offset + 1 > capacity)
                 return ConversionError.Overflow;
-            if (buffer[offset] >= 0xD800 && buffer[offset] <= 0xDBFF)
+            if (!IsLeadingSurrogate(buffer[offset]) || (offset + 2 > capacity))
             {
-                if (offset + 2 > capacity)
-                {
-                    offset += 1;
-                    return ConversionError.Overflow;
-                }
-                code = (buffer[offset + 0] & 0x03FF);
-                char next = buffer[offset + 1];
-                if (next < 0xDC00 || next > 0xDFFF)
-                {
-                    offset += 1;
-                    return ConversionError.Encoding;
-                }
-                code = (code << 10) | (buffer[offset + 1] & 0x03FF);
-                code += 0x10000;
-                rune.value = code;
-                offset += 2;
+                rune.value = buffer[offset];
+                offset += 1;
                 return ConversionError.None;
             }
-            rune.value = buffer[offset + 0];
-            offset += 1;
+            code =                (buffer[offset + 0] & 0x03FF);
+            char next = buffer[offset + 1];
+            if (!IsTrailingSurrogate(next))
+            {
+                rune.value = buffer[offset];
+                offset += 1;
+                return ConversionError.None;
+            }
+            code = (code << 10) | (buffer[offset + 1] & 0x03FF);
+            code += 0x10000;
+            rune.value = code;
+            offset += 2;
             return ConversionError.None;
         }
 
@@ -483,70 +491,6 @@ namespace Unity.Collections
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <remarks>
-    /// A "NativeStringView" does not manage its own memory - it expects some other object to manage its memory
-    /// on its behalf.
-    /// </remarks>
-    public struct NativeStringView
-    {
-        unsafe char* pointer;
-        int length;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="p"></param>
-        /// <param name="l"></param>
-        public unsafe NativeStringView(char* p, int l)
-        {
-            pointer = p;
-            length = l;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public unsafe char this[int index]
-        {
-            get => UnsafeUtility.ReadArrayElement<char>(pointer, index);
-            set => UnsafeUtility.WriteArrayElement<char>(pointer, index, value);
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int Length => length;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            unsafe
-            {
-                return new string(pointer, 0, length);
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(pointer, Length * sizeof(char));
-            }
-        }
-    }
-
     sealed class WordStorageDebugView
     {
         WordStorage m_wordStorage;
@@ -556,44 +500,60 @@ namespace Unity.Collections
             m_wordStorage = wordStorage;
         }
 
-        public NativeStringView[] Table
+        public FixedString128[] Table
         {
             get
             {
-                var table = new NativeStringView[m_wordStorage.Entries];
+                var table = new FixedString128[m_wordStorage.Entries];
                 for (var i = 0; i < m_wordStorage.Entries; ++i)
-                    table[i] = m_wordStorage.GetNativeStringView(i);
+                    m_wordStorage.GetFixedString(i, ref table[i]);
                 return table;
             }
         }
+    }
+
+    sealed class WordStorageStatic
+    {
+        private WordStorageStatic()
+        {
+        }
+        public struct Thing
+        {
+            public WordStorage Data;
+        }
+        public static Thing Ref = default;
     }
 
     /// <summary>
     ///
     /// </summary>
     [DebuggerTypeProxy(typeof(WordStorageDebugView))]
-    public class WordStorage : IDisposable
+    [BurstCompatible]
+    public struct WordStorage
     {
-        NativeArray<ushort> buffer; // all the UTF-16 encoded bytes in one place
-        NativeArray<int> offset; // one offset for each text in "buffer"
-        NativeArray<ushort> length; // one length for each text in "buffer"
+        struct Entry
+        {
+            public int offset;
+            public int length;
+        }
+
+        NativeArray<byte> buffer; // all the UTF-8 encoded bytes in one place
+        NativeArray<Entry> entry; // one offset for each text in "buffer"
         NativeMultiHashMap<int, int> hash; // from string hash to table entry
         int chars; // bytes in buffer allocated so far
         int entries; // number of strings allocated so far
-        static WordStorage _Instance;
 
         /// <summary>
         ///
         /// </summary>
-        public static WordStorage Instance
+        [NotBurstCompatible]
+        public static ref WordStorage Instance
         {
             get
             {
-                if (_Instance == null)
-                    _Instance = new WordStorage();
-                return _Instance;
+                Initialize();
+                return ref WordStorageStatic.Ref.Data;
             }
-            set { _Instance = value; }
         }
 
         const int kMaxEntries = 16 << 10;
@@ -609,35 +569,53 @@ namespace Unity.Collections
         /// </summary>
         public int Entries => entries;
 
-        void Initialize()
+        [NotBurstCompatible]
+        public static void Initialize()
         {
-            buffer = new NativeArray<ushort>(kMaxChars, Allocator.Persistent);
-            offset = new NativeArray<int>(kMaxEntries, Allocator.Persistent);
-            length = new NativeArray<ushort>(kMaxEntries, Allocator.Persistent);
-            hash = new NativeMultiHashMap<int, int>(kMaxEntries, Allocator.Persistent);
-            chars = 0;
-            entries = 0;
-            GetOrCreateIndex(new NativeStringView()); // make sure that Index=0 means empty string
-
-#if UNITY_EDITOR
+            if (WordStorageStatic.Ref.Data.buffer.IsCreated)
+                return;
+            WordStorageStatic.Ref.Data.buffer = new NativeArray<byte>(kMaxChars, Allocator.Persistent);
+            WordStorageStatic.Ref.Data.entry = new NativeArray<Entry>(kMaxEntries, Allocator.Persistent);
+            WordStorageStatic.Ref.Data.hash = new NativeMultiHashMap<int, int>(kMaxEntries, Allocator.Persistent);
+            Clear();
+#if !UNITY_DOTSRUNTIME
             // Free storage on domain unload, which happens when iterating on the Entities module a lot.
-            AppDomain.CurrentDomain.DomainUnload += (_, __) => { this.Dispose(); };
+            AppDomain.CurrentDomain.DomainUnload += (_, __) => { Shutdown(); };
 #endif
-        }
-
-        WordStorage()
-        {
-            Initialize();
         }
 
         /// <summary>
         ///
         /// </summary>
+        [NotBurstCompatible]
+        public static void Shutdown()
+        {
+            if (!WordStorageStatic.Ref.Data.buffer.IsCreated)
+                return;
+            WordStorageStatic.Ref.Data.buffer.Dispose();
+            WordStorageStatic.Ref.Data.entry.Dispose();
+            WordStorageStatic.Ref.Data.hash.Dispose();
+            WordStorageStatic.Ref.Data = default;
+        }
+
+        [NotBurstCompatible]
+        public static void Clear()
+        {
+            Initialize();
+            WordStorageStatic.Ref.Data.chars = 0;
+            WordStorageStatic.Ref.Data.entries = 0;
+            WordStorageStatic.Ref.Data.hash.Clear();
+            var temp = new FixedString32();
+            WordStorageStatic.Ref.Data.GetOrCreateIndex(ref temp); // make sure that Index=0 means empty string
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        [NotBurstCompatible]
         public static void Setup()
         {
-            if (Instance.buffer.Length > 0)
-                Instance.Dispose();
-            Instance.Initialize();
+            Clear();
         }
 
         /// <summary>
@@ -645,54 +623,50 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public unsafe NativeStringView GetNativeStringView(int index)
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(FixedString32) })]
+        public unsafe void GetFixedString<T>(int index, ref T temp)
+        where T : IUTF8Bytes, INativeList<byte>
         {
             Assert.IsTrue(index < entries);
-            var o = offset[index];
-            var l = length[index];
-            Assert.IsTrue(l <= kMaxCharsPerEntry);
-            return new NativeStringView((char*)buffer.GetUnsafePtr() + o, l);
+            var e = entry[index];
+            Assert.IsTrue(e.length <= kMaxCharsPerEntry);
+            temp.Length = e.length;
+            UnsafeUtility.MemCpy(temp.GetUnsafePtr(), (byte*)buffer.GetUnsafePtr() + e.offset, temp.Length);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="h"></param>
-        /// <param name="temp"></param>
-        /// <returns></returns>
-        public int GetIndex(int h, NativeStringView temp)
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(FixedString32) })]
+        public int GetIndexFromHashAndFixedString<T>(int h, ref T temp)
+        where T : IUTF8Bytes, INativeList<byte>
         {
             Assert.IsTrue(temp.Length <= kMaxCharsPerEntry); // about one printed page of text
             int itemIndex;
             NativeMultiHashMapIterator<int> iter;
             if (hash.TryGetFirstValue(h, out itemIndex, out iter))
             {
-                var l = length[itemIndex];
-                Assert.IsTrue(l <= kMaxCharsPerEntry);
-                if (l == temp.Length)
+                do
                 {
-                    var o = offset[itemIndex];
-                    int matches;
-                    for (matches = 0; matches < l; ++matches)
-                        if (temp[matches] != buffer[o + matches])
-                            break;
-                    if (matches == temp.Length)
-                        return itemIndex;
-                }
+                    var e = entry[itemIndex];
+                    Assert.IsTrue(e.length <= kMaxCharsPerEntry);
+                    if (e.length == temp.Length)
+                    {
+                        int matches;
+                        for (matches = 0; matches < e.length; ++matches)
+                            if (temp[matches] != buffer[e.offset + matches])
+                                break;
+                        if (matches == temp.Length)
+                            return itemIndex;
+                    }
+                } while (hash.TryGetNextValue(out itemIndex, ref iter));
             }
-            while (hash.TryGetNextValue(out itemIndex, ref iter)) ;
             return -1;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public bool Contains(NativeStringView value)
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(FixedString32) })]
+        public bool Contains<T>(ref T value)
+        where T : IUTF8Bytes, INativeList<byte>
         {
             int h = value.GetHashCode();
-            return GetIndex(h, value) != -1;
+            return GetIndexFromHashAndFixedString(h, ref value) != -1;
         }
 
         /// <summary>
@@ -700,21 +674,19 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public unsafe bool Contains(string value)
         {
-            fixed (char* c = value)
-                return Contains(new NativeStringView(c, value.Length));
+            FixedString512 temp = value;
+            return Contains(ref temp);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public int GetOrCreateIndex(NativeStringView value)
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(FixedString32) })]
+        public int GetOrCreateIndex<T>(ref T value)
+        where T : IUTF8Bytes, INativeList<byte>
         {
             int h = value.GetHashCode();
-            var itemIndex = GetIndex(h, value);
+            var itemIndex = GetIndexFromHashAndFixedString(h, ref value);
             if (itemIndex != -1)
                 return itemIndex;
             Assert.IsTrue(entries < kMaxEntries);
@@ -723,24 +695,9 @@ namespace Unity.Collections
             var l = (ushort)value.Length;
             for (var i = 0; i < l; ++i)
                 buffer[chars++] = value[i];
-            offset[entries] = o;
-            length[entries] = l;
+            entry[entries] = new Entry { offset = o, length = l };
             hash.Add(h, entries);
             return entries++;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public void Dispose()
-        {
-            if (buffer.IsCreated)
-            {
-                buffer.Dispose();
-                offset.Dispose();
-                length.Dispose();
-                hash.Dispose();
-            }
         }
     }
 
@@ -762,13 +719,10 @@ namespace Unity.Collections
     {
         int Index;
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
-        public NativeStringView ToNativeStringView()
+        public void ToFixedString<T>(ref T value)
+        where T : IUTF8Bytes, INativeList<byte>
         {
-            return WordStorage.Instance.GetNativeStringView(Index);
+            WordStorage.Instance.GetFixedString(Index, ref value);
         }
 
         /// <summary>
@@ -777,7 +731,15 @@ namespace Unity.Collections
         /// <returns></returns>
         public override string ToString()
         {
-            return WordStorage.Instance.GetNativeStringView(Index).ToString();
+            FixedString512 temp = default;
+            ToFixedString(ref temp);
+            return temp.ToString();
+        }
+
+        public void SetFixedString<T>(ref T value)
+        where T : IUTF8Bytes, INativeList<byte>
+        {
+            Index = WordStorage.Instance.GetOrCreateIndex(ref value);
         }
 
         /// <summary>
@@ -786,8 +748,8 @@ namespace Unity.Collections
         /// <param name="value"></param>
         public unsafe void SetString(string value)
         {
-            fixed (char* c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, value.Length));
+            FixedString512 temp = value;
+            SetFixedString(ref temp);
         }
     }
 
@@ -802,6 +764,7 @@ namespace Unity.Collections
     /// Will cost 8MB + a single copy of "FooBarBazBifBoo", instead of ~48MB.
     /// They say that this is a thing, too.
     /// </remarks>
+    [BurstCompatible]
     public struct NumberedWords
     {
         int Index;
@@ -839,6 +802,7 @@ namespace Unity.Collections
 
         bool HasPositiveNumericSuffix => PositiveNumericSuffix != 0;
 
+        [NotBurstCompatible]
         string NewString(char c, int count)
         {
             char[] temp = new char[count];
@@ -847,31 +811,60 @@ namespace Unity.Collections
             return new string(temp, 0, count);
         }
 
+        [NotBurstCompatible]
+        public int ToFixedString<T>(ref T result)
+        where T : IUTF8Bytes, INativeList<byte>
+        {
+            unsafe
+            {
+                var positiveNumericSuffix = PositiveNumericSuffix;
+                var leadingZeroes = LeadingZeroes;
+
+                WordStorage.Instance.GetFixedString(Index, ref result);
+                if(positiveNumericSuffix == 0 && leadingZeroes == 0)
+                    return 0;
+
+                // print the numeric suffix, if any, backwards, as ASCII, to a little buffer.
+                const int maximumDigits = kMaxLeadingZeroes + 10;
+                var buffer = stackalloc byte[maximumDigits];
+                var firstDigit = maximumDigits;
+                while(positiveNumericSuffix > 0)
+                {
+                    buffer[--firstDigit] = (byte)('0' + positiveNumericSuffix % 10);
+                    positiveNumericSuffix /= 10;
+                }
+                while(leadingZeroes-- > 0)
+                    buffer[--firstDigit] = (byte)'0';
+
+                // make space in the output for leading zeroes if any, followed by the positive numeric index if any.
+                var dest = result.GetUnsafePtr() + result.Length;
+                result.Length += maximumDigits - firstDigit;
+                while(firstDigit < maximumDigits)
+                    *dest++ = buffer[firstDigit++];
+                return 0;
+            }
+        }
+
         /// <summary>
         ///
         /// </summary>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override string ToString()
         {
-            string temp = WordStorage.Instance.GetNativeStringView(Index).ToString();
-            var leadingZeroes = LeadingZeroes;
-            if (leadingZeroes > 0)
-                temp += NewString('0', leadingZeroes);
-            if (HasPositiveNumericSuffix)
-                temp += PositiveNumericSuffix;
-            return temp;
+            FixedString512 temp = default;
+            ToFixedString(ref temp);
+            return temp.ToString();
         }
 
-        bool IsDigit(char c)
+        bool IsDigit(byte b)
         {
-            return c >= '0' && c <= '9';
+            return b >= '0' && b <= '9';
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="value"></param>
-        public unsafe void SetString(string value)
+        [NotBurstCompatible]
+        public void SetString<T>(ref T value)
+        where T : IUTF8Bytes, INativeList<byte>
         {
             int beginningOfDigits = value.Length;
 
@@ -926,14 +919,28 @@ namespace Unity.Collections
             LeadingZeroes = leadingZeroes;
 
             // truncate the string, if there were digits at the end that we encoded.
-            int length = value.Length;
-            if (beginningOfDigits != value.Length)
-                length = beginningOfDigits;
+            var truncated = value;
+            int length = truncated.Length;
+            if (beginningOfDigits != truncated.Length)
+                truncated.Length = beginningOfDigits;
 
             // finally, set the string to its index in the global string blob thing.
 
-            fixed (char* c = value)
-                Index = WordStorage.Instance.GetOrCreateIndex(new NativeStringView(c, length));
+            unsafe
+            {
+                Index = WordStorage.Instance.GetOrCreateIndex(ref truncated);
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        [NotBurstCompatible]
+        public void SetString(string value)
+        {
+            FixedString512 temp = value;
+            SetString(ref temp);
         }
     }
 }

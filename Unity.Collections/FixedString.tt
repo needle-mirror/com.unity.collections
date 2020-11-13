@@ -1,7 +1,7 @@
 
 <#/*THIS IS A T4 FILE - see t4_text_templating.md for what it is and how to run codegen*/#>
 <#@ template debug="True" #>
-<#@ output extension=".gen.cs" #>
+<#@ output extension=".gen.cs" encoding="utf-8" #>
 <#@ assembly name="System.Core" #>
 
 //------------------------------------------------------------------------------
@@ -15,13 +15,16 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System;
+using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine.Internal;
+using UnityEngine;
 #if UNITY_PROPERTIES_EXISTS
 using Unity.Properties;
 #endif
@@ -29,15 +32,22 @@ using Unity.Properties;
 namespace Unity.Collections
 {
 
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
-    internal struct FixedBytes16
+    [BurstCompatible]
+    public struct FixedBytes16
     {
 <#
     for(var i = 0; i < 16; ++i)
     {
        var offset = i.ToString("D4");
 #>
-      [FieldOffset(<#=i#>)] internal byte byte<#=offset#>;
+      [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
     }
 #>
@@ -51,22 +61,29 @@ namespace Unity.Collections
       var MAXLENGTH = BYTES - 2;
 #>
 
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=MAXLENGTH#>)]
-    internal struct FixedBytes<#=MAXLENGTH#>
+    [BurstCompatible]
+    public struct FixedBytes<#=MAXLENGTH#>
     {
 <#
       for(var i = 0; i < (MAXLENGTH/16)*16; i += 16)
       {
         var offset = i.ToString("D4");
 #>
-        [FieldOffset(<#=i#>)] internal FixedBytes16 offset<#=offset#>;
+        [FieldOffset(<#=i#>)] public FixedBytes16 offset<#=offset#>;
 <#
       }
       for(var i = (MAXLENGTH/16)*16; i < MAXLENGTH; ++i)
       {
         var offset = i.ToString("D4");
 #>
-        [FieldOffset(<#=i#>)] internal byte byte<#=offset#>;
+        [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 <#
       }
 #>
@@ -87,7 +104,9 @@ namespace Unity.Collections
     /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
     /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
     /// </summary>
+    [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=<#=BYTES#>)]
+    [BurstCompatible]
     public partial struct FixedString<#=BYTES#>
         : INativeList<byte>
         , IUTF8Bytes
@@ -105,8 +124,8 @@ namespace Unity.Collections
     {
         internal const ushort utf8MaxLengthInBytes = <#=MAXLENGTH-1#>;
 
-        internal ushort utf8LengthInBytes;
-        internal FixedBytes<#=MAXLENGTH#> bytes;
+        [SerializeField] internal ushort utf8LengthInBytes;
+        [SerializeField] internal FixedBytes<#=MAXLENGTH#> bytes;
 
         /// <summary>
         /// Returns the maximum number of utf8 bytes that can be stored in this type.
@@ -118,6 +137,7 @@ namespace Unity.Collections
         /// </summary>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
@@ -349,6 +369,7 @@ namespace Unity.Collections
         ///  0 if they are identical, or
         ///  1 if the other System.String would appear first if sorted.
         /// </returns>
+        [NotBurstCompatible]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -360,6 +381,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The System.String to compare with</param>
         /// <returns>true if they are equal, or false if they are not.</returns>
+        [NotBurstCompatible]
         public bool Equals(String other)
         {
             return ToString().Equals(other);
@@ -507,12 +529,14 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">The System.String object to convert to a FixedString<#=BYTES#></param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public static implicit operator FixedString<#=BYTES#>(string b) => new FixedString<#=BYTES#>(b);
 
         /// <summary>
         /// Convert this FixedString<#=BYTES#> to a System.String.
         /// </summary>
         /// <returns>A System.String with a copy of this FixedString<#=BYTES#></returns>
+        [NotBurstCompatible]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -533,6 +557,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="obj">The object to compare for equality</param>
         /// <returns></returns>
+        [NotBurstCompatible]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;

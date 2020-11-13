@@ -5,6 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// <undoc />
     /// </summary>
+    [BurstCompatible]
     public static unsafe class UTF8ArrayUnsafeUtility
     {
         /// <summary>

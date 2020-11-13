@@ -13,6 +13,7 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
+    [BurstCompatible]
     public unsafe struct NativeBitArray
         : INativeDisposable
     {
@@ -64,8 +65,16 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_BitArray.IsCreated;
 
         /// <summary>
@@ -91,6 +100,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -133,6 +143,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements in the container.</typeparam>
         /// <exception cref="InvalidOperationException">Thrown if output size doesn't match input, or if reinterpreted data would be truncated.</exception>
         /// <returns>Native array view into bit array.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public NativeArray<T> AsNativeArray<T>() where T : unmanaged
         {
             CheckReadBounds<T>();
@@ -355,6 +366,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// NativeBitArray unsafe utility helpers.
     /// </summary>
+    [BurstCompatible]
     public static class NativeBitArrayUnsafeUtility
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

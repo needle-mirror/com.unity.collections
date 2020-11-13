@@ -61,6 +61,7 @@ namespace Unity.Collections
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}")]
     [DebuggerTypeProxy(typeof(NativeListDebugView<>))]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeList<T>
         : INativeDisposable
         , INativeList<T>
@@ -409,8 +410,16 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_ListData != null;
 
         /// <summary>
@@ -436,6 +445,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -599,6 +609,7 @@ namespace Unity.Collections
         /// A copy of this list as a [NativeArray](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1.html).
         /// </summary>
         /// <returns>A NativeArray containing copies of all the items in the list.</returns>
+        [NotBurstCompatible]
         public T[] ToArray()
         {
             return AsArray().ToArray();
@@ -654,6 +665,7 @@ namespace Unity.Collections
         /// Overwrites this list with the elements of an array.
         /// </summary>
         /// <param name="array">A managed array to copy  into this list.</param>
+        [NotBurstCompatible]
         public void CopyFrom(T[] array)
         {
             Clear();
@@ -728,6 +740,7 @@ namespace Unity.Collections
         /// </summary>
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
@@ -892,6 +905,7 @@ namespace Unity.Collections
     }
 
     [NativeContainer]
+    [BurstCompatible]
     internal unsafe struct NativeListDispose
     {
         [NativeDisableUnsafePtrRestriction]
@@ -908,6 +922,7 @@ namespace Unity.Collections
     }
 
     [BurstCompile]
+    [BurstCompatible]
     internal unsafe struct NativeListDisposeJob : IJob
     {
         internal NativeListDispose Data;
@@ -936,6 +951,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// Utilities for unsafe access to a <see cref="NativeList{T}"/>.
     /// </summary>
+    [BurstCompatible]
     public unsafe static class NativeListUnsafeUtility
     {
         /// <summary>
@@ -944,6 +960,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The NativeList containing the buffer.</param>
         /// <typeparam name="T">The type of list element.</typeparam>
         /// <returns>A pointer to the memory buffer.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static void* GetUnsafePtr<T>(this NativeList<T> list) where T : struct
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -959,6 +976,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of list element.</typeparam>
         /// <returns>A pointer to the memory buffer.</returns>
         /// <remarks>Thread safety mechanism is informed that this pointer will be used for read-only operations.</remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeList<T> list) where T : struct
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -976,6 +994,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of list element.</typeparam>
         /// <returns>The atomic safety handle for the list.</returns>
         /// <remarks>The symbol, `ENABLE_UNITY_COLLECTIONS_CHECKS` must be defined for this function to be available.</remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static AtomicSafetyHandle GetAtomicSafetyHandle<T>(ref NativeList<T> list) where T : struct
         {
             return list.m_Safety;
@@ -989,6 +1008,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The NativeList.</param>
         /// <typeparam name="T">The type of list element.</typeparam>
         /// <returns>A pointer to the list data.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static void* GetInternalListDataPtrUnchecked<T>(ref NativeList<T> list) where T : struct
         {
             return list.m_ListData;

@@ -177,8 +177,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -268,6 +275,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="length">The new length of the list.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void Resize<T>(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where T : struct
         {
             Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
@@ -315,6 +323,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="capacity">The number of items that the container can hold before it resizes its internal storage.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void SetCapacity<T>(int capacity) where T : struct
         {
             SetCapacity(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), capacity);
@@ -324,6 +333,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Sets the capacity to the actual number of elements in the container.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void TrimExcess<T>() where T : struct
         {
             if (Capacity != Length)
@@ -338,6 +348,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="value"></param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public int IndexOf<T>(T value) where T : struct, IEquatable<T>
         {
             return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
@@ -349,6 +360,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="value"></param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public bool Contains<T>(T value) where T : struct, IEquatable<T>
         {
             return IndexOf(value) != -1;
@@ -362,6 +374,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddNoResize<T>(T value) where T : struct
         {
             CheckNoResizeHasEnoughCapacity(1);
@@ -386,6 +399,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
         {
             AddRangeNoResize(UnsafeUtility.SizeOf<T>(), ptr, length);
@@ -399,6 +413,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddRangeNoResize<T>(UnsafeList list) where T : struct
         {
             AddRangeNoResize(UnsafeUtility.SizeOf<T>(), list.Ptr, CollectionHelper.AssumePositive(list.Length));
@@ -413,6 +428,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// If the list has reached its current capacity, it copies the original, internal array to
         /// a new, larger array, and then deallocates the original.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void Add<T>(T value) where T : struct
         {
             var idx = Length;
@@ -452,6 +468,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="ptr">A pointer to the buffer.</param>
         /// <param name="length">The number of elements to add to the list.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddRange<T>(void* ptr, int length) where T : struct
         {
             AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
@@ -466,6 +483,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <param name="list">Other container to copy elements from.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void AddRange<T>(UnsafeList list) where T : struct
         {
             AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
@@ -517,6 +535,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void InsertRangeWithBeginEnd<T>(int begin, int end) where T : struct
         {
             InsertRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), begin, end);
@@ -545,6 +564,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="index">The index of the item to delete.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void RemoveAtSwapBack<T>(int index) where T : struct
         {
             RemoveRangeSwapBackWithBeginEnd<T>(index, index + 1);
@@ -559,6 +579,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void RemoveRangeSwapBackWithBeginEnd<T>(int begin, int end) where T : struct
         {
             RemoveRangeSwapBackWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
@@ -589,6 +610,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
         /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void RemoveAt<T>(int index) where T : struct
         {
             RemoveRangeWithBeginEnd<T>(index, index + 1);
@@ -607,6 +629,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void RemoveRangeWithBeginEnd<T>(int begin, int end) where T : struct
         {
             RemoveRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
@@ -649,6 +672,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T"></typeparam>
             /// <param name="value"></param>
             /// <returns></returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public int IndexOf<T>(T value) where T : struct, IEquatable<T>
             {
                 return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
@@ -660,6 +684,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T"></typeparam>
             /// <param name="value"></param>
             /// <returns></returns>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public bool Contains<T>(T value) where T : struct, IEquatable<T>
             {
                 return IndexOf(value) != -1;
@@ -706,6 +731,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void AddNoResize<T>(T value) where T : struct
             {
                 var idx = Interlocked.Increment(ref ListData->Length) - 1;
@@ -730,6 +756,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
             {
                 AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
@@ -743,6 +770,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
+            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void AddRangeNoResize<T>(UnsafeList list) where T : struct
             {
                 AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
@@ -837,6 +865,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafeList<T>
         : INativeDisposable
         , INativeList<T>
@@ -968,8 +997,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -991,6 +1027,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return this.ListData().Dispose(inputDeps);
@@ -1064,6 +1101,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public void AddRangeNoResize(UnsafeList<T> list)
         {
             this.ListData().AddRangeNoResize<T>(list.ListData());
@@ -1092,6 +1130,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Adds the elements of a UnsafePtrList to this list.
         /// </summary>
         /// <param name="list">Other container to copy elements from.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public void AddRange(UnsafeList<T> list)
         {
             this.ListData().AddRange<T>(list.ListData());
@@ -1175,6 +1214,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Implements parallel reader. Use AsParallelReader to obtain it from container.
         /// </summary>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelReader
         {
             /// <summary>
@@ -1207,6 +1247,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         ///
         /// </summary>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
@@ -1317,8 +1358,10 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// UnsafeList extension methods.
     /// </summary>
+    [BurstCompatible]
     public unsafe static class UnsafeListExtensions
     {
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafeList<T>, UnsafeList>(ref from);
 
         /// Type parameter has the same name as the type parameter from outer type
@@ -1330,6 +1373,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The container to locate value.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
@@ -1343,6 +1387,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The container to locate value.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -1357,6 +1402,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The container to locate value.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
@@ -1370,6 +1416,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">The container to locate value.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -1407,6 +1454,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
+    [BurstCompatible]
     public unsafe struct UnsafePtrList
         : INativeDisposable
         , INativeList<IntPtr>
@@ -1573,8 +1621,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
@@ -1596,6 +1651,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return this.ListData().Dispose(inputDeps);
@@ -1836,6 +1892,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Implements parallel reader. Use AsParallelReader to obtain it from container.
         /// </summary>
+        [BurstCompatible]
         public unsafe struct ParallelReader
         {
             /// <summary>
@@ -1893,6 +1950,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         ///
         /// </summary>
+        [BurstCompatible]
         public unsafe struct ParallelWriter
         {
             /// <summary>
@@ -1952,6 +2010,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
+    [BurstCompatible]
     internal static class UnsafePtrListExtensions
     {
         public static ref UnsafeList ListData(ref this UnsafePtrList from) => ref UnsafeUtility.As<UnsafePtrList, UnsafeList>(ref from);

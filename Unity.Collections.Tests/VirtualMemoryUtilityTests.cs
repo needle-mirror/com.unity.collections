@@ -1,4 +1,3 @@
-#if UNITY_2020_1_OR_NEWER || UNITY_DOTSRUNTIME
 using System;
 using NUnit.Framework;
 using Unity.Burst;
@@ -232,4 +231,3 @@ class VirtualMemoryUtilityTests : CollectionsTestCommonBase
     }
 #endif
 }
-#endif

@@ -11,6 +11,7 @@ namespace Unity.Collections
     //    2. If we mark this as obsolete, then warnings-as-errors in Samples project kicks in for errors in serialization, and errors out
     //
     // This should be fixed with an upcoming release of Serialization, and then we can make this obsolete.
+    [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
@@ -21,6 +22,7 @@ namespace Unity.Collections
         /// <param name="input"></param>
         /// <returns></returns>
         //[Obsolete("Format with a single argument has been removed.  Please use Clear() if necessary followed by Append(). (RemovedAfter 2020-09-01)", false)]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Format<T>(ref this T fs, long input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -36,6 +38,7 @@ namespace Unity.Collections
         /// <param name="input"></param>
         /// <returns></returns>
         //[Obsolete("Format with a single argument has been removed.  Please use Clear() if necessary followed by Append(). (RemovedAfter 2020-09-01)", false)]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Format<T>(ref this T fs, int input)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -52,6 +55,7 @@ namespace Unity.Collections
         /// <param name="decimalSeparator"></param>
         /// <returns></returns>
         //[Obsolete("Format with a single argument has been removed.  Please use Clear() if necessary followed by Append(). (RemovedAfter 2020-09-01)", false)]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Format<T>(ref this T fs, float input, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

@@ -142,7 +142,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     [Test]
     public void NativeReference_Equals()
     {
-        var referenceA = new NativeReference<int>(Allocator.Persistent) { Value = 12345 };
+        var referenceA = new NativeReference<int>(12345, Allocator.Persistent);
         var referenceB = new NativeReference<int>(Allocator.Persistent) { Value = 12345 };
         Assert.That(referenceA, Is.EqualTo(referenceB));
 
@@ -157,7 +157,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     public void NativeReference_GetHashCode()
     {
         var integer = 42;
-        var reference = new NativeReference<int>(Allocator.Persistent) { Value = integer };
+        var reference = new NativeReference<int>(integer, Allocator.Persistent);
         Assert.That(reference.GetHashCode(), Is.EqualTo(integer.GetHashCode()));
 
         reference.Dispose();

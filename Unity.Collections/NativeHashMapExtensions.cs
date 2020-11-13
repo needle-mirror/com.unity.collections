@@ -6,6 +6,7 @@ namespace Unity.Collections
     /// <summary>
     /// NativeHashMap extensions.
     /// </summary>
+    [BurstCompatible]
     public static class NativeHashMapExtensions
     {
 #if !NET_DOTS // Tuple is not supported by TinyBCL
@@ -16,6 +17,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values in the array.</typeparam>
         /// <param name="array">Array to perform unique operation on.</param>
         /// <returns>Number of unique elements in array.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static int Unique<T>(this NativeArray<T> array)
             where T : struct, IEquatable<T>
         {
@@ -47,6 +49,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>Unique keys of the container.</returns>
+        [NotBurstCompatible]
         public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, Allocator allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
@@ -66,6 +69,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns>Unique keys of the container.</returns>
+        [NotBurstCompatible]
         public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, Allocator allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
@@ -87,6 +91,7 @@ namespace Unity.Collections
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
         /// <param name="container">This container.</param>
         /// <returns>Returns internal bucked data structure.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
@@ -103,6 +108,7 @@ namespace Unity.Collections
         /// <typeparam name="TValue">The type of the values in the container.</typeparam>
         /// <param name="container">This container.</param>
         /// <returns>Returns internal bucked data structure.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
@@ -118,6 +124,7 @@ namespace Unity.Collections
         /// <param name="container">This container.</param>
         /// <param name="key">The key of the element to remove.</param>
         /// <param name="value">The value of the element to remove.</param>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

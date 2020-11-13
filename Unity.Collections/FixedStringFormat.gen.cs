@@ -21,6 +21,7 @@ namespace Unity.Collections
     /// <summary>
     /// <undoc />
     /// </summary>
+    [BurstCompatible]
     public static class FixedString
     {
 
@@ -38,6 +39,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, int arg3)
 
         {
@@ -66,6 +68,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, int arg3)
 
         {
@@ -94,6 +97,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, int arg3)
 
         {
@@ -123,6 +127,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -151,6 +156,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, int arg3)
 
         {
@@ -179,6 +185,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, int arg3)
 
         {
@@ -207,6 +214,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, int arg3)
 
         {
@@ -236,6 +244,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -264,6 +273,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, int arg3)
 
         {
@@ -292,6 +302,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, int arg3)
 
         {
@@ -320,6 +331,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, int arg3)
 
         {
@@ -349,6 +361,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -378,6 +391,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -407,6 +421,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -436,6 +451,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -466,6 +482,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -494,6 +511,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, int arg3)
 
         {
@@ -522,6 +540,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, int arg3)
 
         {
@@ -550,6 +569,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, int arg3)
 
         {
@@ -579,6 +599,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -607,6 +628,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, int arg3)
 
         {
@@ -635,6 +657,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, int arg3)
 
         {
@@ -663,6 +686,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, int arg3)
 
         {
@@ -692,6 +716,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -720,6 +745,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, int arg3)
 
         {
@@ -748,6 +774,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, int arg3)
 
         {
@@ -776,6 +803,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, int arg3)
 
         {
@@ -805,6 +833,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -834,6 +863,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -863,6 +893,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -892,6 +923,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -922,6 +954,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -950,6 +983,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, int arg3)
 
         {
@@ -978,6 +1012,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, int arg3)
 
         {
@@ -1006,6 +1041,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, int arg3)
 
         {
@@ -1035,6 +1071,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1063,6 +1100,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, int arg3)
 
         {
@@ -1091,6 +1129,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, int arg3)
 
         {
@@ -1119,6 +1158,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, int arg3)
 
         {
@@ -1148,6 +1188,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1176,6 +1217,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, int arg3)
 
         {
@@ -1204,6 +1246,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, int arg3)
 
         {
@@ -1232,6 +1275,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, int arg3)
 
         {
@@ -1261,6 +1305,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1290,6 +1335,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1319,6 +1365,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1348,6 +1395,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1378,6 +1426,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1407,6 +1456,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1436,6 +1486,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1465,6 +1516,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1495,6 +1547,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1524,6 +1577,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1553,6 +1607,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1582,6 +1637,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1612,6 +1668,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1641,6 +1698,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1670,6 +1728,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1699,6 +1758,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1729,6 +1789,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1759,6 +1820,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1789,6 +1851,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1819,6 +1882,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1850,6 +1914,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -1878,6 +1943,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, float arg3)
 
         {
@@ -1906,6 +1972,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, float arg3)
 
         {
@@ -1934,6 +2001,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, float arg3)
 
         {
@@ -1963,6 +2031,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -1991,6 +2060,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, float arg3)
 
         {
@@ -2019,6 +2089,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, float arg3)
 
         {
@@ -2047,6 +2118,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, float arg3)
 
         {
@@ -2076,6 +2148,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2104,6 +2177,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, float arg3)
 
         {
@@ -2132,6 +2206,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, float arg3)
 
         {
@@ -2160,6 +2235,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, float arg3)
 
         {
@@ -2189,6 +2265,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2218,6 +2295,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2247,6 +2325,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2276,6 +2355,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2306,6 +2386,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -2334,6 +2415,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, float arg3)
 
         {
@@ -2362,6 +2444,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, float arg3)
 
         {
@@ -2390,6 +2473,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, float arg3)
 
         {
@@ -2419,6 +2503,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2447,6 +2532,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, float arg3)
 
         {
@@ -2475,6 +2561,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, float arg3)
 
         {
@@ -2503,6 +2590,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, float arg3)
 
         {
@@ -2532,6 +2620,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2560,6 +2649,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, float arg3)
 
         {
@@ -2588,6 +2678,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, float arg3)
 
         {
@@ -2616,6 +2707,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, float arg3)
 
         {
@@ -2645,6 +2737,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2674,6 +2767,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2703,6 +2797,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2732,6 +2827,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2762,6 +2858,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -2790,6 +2887,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, float arg3)
 
         {
@@ -2818,6 +2916,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, float arg3)
 
         {
@@ -2846,6 +2945,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, float arg3)
 
         {
@@ -2875,6 +2975,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -2903,6 +3004,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, float arg3)
 
         {
@@ -2931,6 +3033,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, float arg3)
 
         {
@@ -2959,6 +3062,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, float arg3)
 
         {
@@ -2988,6 +3092,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3016,6 +3121,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, float arg3)
 
         {
@@ -3044,6 +3150,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, float arg3)
 
         {
@@ -3072,6 +3179,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, float arg3)
 
         {
@@ -3101,6 +3209,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3130,6 +3239,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3159,6 +3269,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3188,6 +3299,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3218,6 +3330,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3247,6 +3360,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3276,6 +3390,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3305,6 +3420,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3335,6 +3451,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3364,6 +3481,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3393,6 +3511,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3422,6 +3541,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3452,6 +3572,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3481,6 +3602,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3510,6 +3632,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3539,6 +3662,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3569,6 +3693,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3599,6 +3724,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3629,6 +3755,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3659,6 +3786,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3690,6 +3818,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -3718,6 +3847,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, string arg3)
 
         {
@@ -3746,6 +3876,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, string arg3)
 
         {
@@ -3774,6 +3905,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, string arg3)
 
         {
@@ -3803,6 +3935,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3831,6 +3964,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, string arg3)
 
         {
@@ -3859,6 +3993,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, string arg3)
 
         {
@@ -3887,6 +4022,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, string arg3)
 
         {
@@ -3916,6 +4052,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -3944,6 +4081,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, string arg3)
 
         {
@@ -3972,6 +4110,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, string arg3)
 
         {
@@ -4000,6 +4139,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, string arg3)
 
         {
@@ -4029,6 +4169,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4058,6 +4199,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4087,6 +4229,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4116,6 +4259,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4146,6 +4290,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -4174,6 +4319,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, string arg3)
 
         {
@@ -4202,6 +4348,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, string arg3)
 
         {
@@ -4230,6 +4377,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, string arg3)
 
         {
@@ -4259,6 +4407,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4287,6 +4436,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, string arg3)
 
         {
@@ -4315,6 +4465,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, string arg3)
 
         {
@@ -4343,6 +4494,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, string arg3)
 
         {
@@ -4372,6 +4524,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4400,6 +4553,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, string arg3)
 
         {
@@ -4428,6 +4582,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, string arg3)
 
         {
@@ -4456,6 +4611,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, string arg3)
 
         {
@@ -4485,6 +4641,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4514,6 +4671,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4543,6 +4701,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4572,6 +4731,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4602,6 +4762,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -4630,6 +4791,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, string arg3)
 
         {
@@ -4658,6 +4820,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, string arg3)
 
         {
@@ -4686,6 +4849,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, string arg3)
 
         {
@@ -4715,6 +4879,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4743,6 +4908,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, string arg3)
 
         {
@@ -4771,6 +4937,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, string arg3)
 
         {
@@ -4799,6 +4966,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, string arg3)
 
         {
@@ -4828,6 +4996,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4856,6 +5025,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, string arg3)
 
         {
@@ -4884,6 +5054,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, string arg3)
 
         {
@@ -4912,6 +5083,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, string arg3)
 
         {
@@ -4941,6 +5113,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4970,6 +5143,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -4999,6 +5173,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5028,6 +5203,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5058,6 +5234,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5087,6 +5264,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5116,6 +5294,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5145,6 +5324,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5175,6 +5355,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5204,6 +5385,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5233,6 +5415,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5262,6 +5445,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5292,6 +5476,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5321,6 +5506,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5350,6 +5536,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5379,6 +5566,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5409,6 +5597,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5439,6 +5628,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5469,6 +5659,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5499,6 +5690,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5530,6 +5722,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5559,6 +5752,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5588,6 +5782,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5617,6 +5812,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5647,6 +5843,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5676,6 +5873,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5705,6 +5903,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5734,6 +5933,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5764,6 +5964,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5793,6 +5994,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5822,6 +6024,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5851,6 +6054,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -5881,6 +6085,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5911,6 +6116,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5941,6 +6147,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -5971,6 +6178,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6002,6 +6210,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6031,6 +6240,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6060,6 +6270,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6089,6 +6300,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6119,6 +6331,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6148,6 +6361,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6177,6 +6391,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6206,6 +6421,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6236,6 +6452,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6265,6 +6482,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6294,6 +6512,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6323,6 +6542,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, float arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6353,6 +6573,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6383,6 +6604,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6413,6 +6635,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6443,6 +6666,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, float arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6474,6 +6698,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6503,6 +6728,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6532,6 +6758,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6561,6 +6788,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6591,6 +6819,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6620,6 +6849,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6649,6 +6879,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6678,6 +6909,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6708,6 +6940,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6737,6 +6970,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6766,6 +7000,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6795,6 +7030,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -6825,6 +7061,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6855,6 +7092,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6885,6 +7123,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6915,6 +7154,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6946,6 +7186,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -6976,6 +7217,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7006,6 +7248,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7036,6 +7279,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7067,6 +7311,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7097,6 +7342,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7127,6 +7373,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7157,6 +7404,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7188,6 +7436,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7218,6 +7467,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7248,6 +7498,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7278,6 +7529,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7309,6 +7561,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7340,6 +7593,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7371,6 +7625,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7402,6 +7657,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7434,6 +7690,7 @@ namespace Unity.Collections
         /// <param name="arg2"><undoc /></param>
         /// <param name="arg3"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/), typeof(FixedString32 /*$T4*/) } )]
         public static FixedString512 Format<T1,T2,T3,T4>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, T4 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7461,6 +7718,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, int arg2)
 
         {
@@ -7487,6 +7745,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, int arg2)
 
         {
@@ -7513,6 +7772,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, int arg2)
 
         {
@@ -7540,6 +7800,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7566,6 +7827,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, int arg2)
 
         {
@@ -7592,6 +7854,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, int arg2)
 
         {
@@ -7618,6 +7881,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, int arg2)
 
         {
@@ -7645,6 +7909,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7671,6 +7936,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, int arg2)
 
         {
@@ -7697,6 +7963,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, int arg2)
 
         {
@@ -7723,6 +7990,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, int arg2)
 
         {
@@ -7750,6 +8018,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7777,6 +8046,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7804,6 +8074,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7831,6 +8102,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7859,6 +8131,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -7885,6 +8158,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, float arg2)
 
         {
@@ -7911,6 +8185,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, float arg2)
 
         {
@@ -7937,6 +8212,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, float arg2)
 
         {
@@ -7964,6 +8240,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -7990,6 +8267,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, float arg2)
 
         {
@@ -8016,6 +8294,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, float arg2)
 
         {
@@ -8042,6 +8321,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, float arg2)
 
         {
@@ -8069,6 +8349,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8095,6 +8376,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, float arg2)
 
         {
@@ -8121,6 +8403,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, float arg2)
 
         {
@@ -8147,6 +8430,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, float arg2)
 
         {
@@ -8174,6 +8458,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8201,6 +8486,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8228,6 +8514,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8255,6 +8542,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8283,6 +8571,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -8309,6 +8598,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, string arg2)
 
         {
@@ -8335,6 +8625,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, string arg2)
 
         {
@@ -8361,6 +8652,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, string arg2)
 
         {
@@ -8388,6 +8680,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8414,6 +8707,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, string arg2)
 
         {
@@ -8440,6 +8734,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, string arg2)
 
         {
@@ -8466,6 +8761,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, string arg2)
 
         {
@@ -8493,6 +8789,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8519,6 +8816,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, string arg2)
 
         {
@@ -8545,6 +8843,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, string arg2)
 
         {
@@ -8571,6 +8870,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, string arg2)
 
         {
@@ -8598,6 +8898,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8625,6 +8926,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8652,6 +8954,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8679,6 +8982,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8707,6 +9011,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -8734,6 +9039,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8761,6 +9067,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8788,6 +9095,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8816,6 +9124,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, int arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -8843,6 +9152,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8870,6 +9180,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8897,6 +9208,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8925,6 +9237,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, float arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -8952,6 +9265,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -8979,6 +9293,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9006,6 +9321,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9034,6 +9350,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, string arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9062,6 +9379,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, int arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9090,6 +9408,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, float arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9118,6 +9437,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, string arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9147,6 +9467,7 @@ namespace Unity.Collections
         /// <param name="arg1"><undoc /></param>
         /// <param name="arg2"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
         public static FixedString128 Format<T1,T2,T3>(FixedString128 formatString, T1 arg0, T2 arg1, T3 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9172,6 +9493,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1)
 
         {
@@ -9196,6 +9518,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1)
 
         {
@@ -9220,6 +9543,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1)
 
         {
@@ -9245,6 +9569,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9269,6 +9594,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1)
 
         {
@@ -9293,6 +9619,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1)
 
         {
@@ -9317,6 +9644,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1)
 
         {
@@ -9342,6 +9670,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9366,6 +9695,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1)
 
         {
@@ -9390,6 +9720,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1)
 
         {
@@ -9414,6 +9745,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1)
 
         {
@@ -9439,6 +9771,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9464,6 +9797,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9489,6 +9823,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9514,6 +9849,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
@@ -9540,6 +9876,7 @@ namespace Unity.Collections
         /// <param name="arg0"><undoc /></param>
         /// <param name="arg1"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
         public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -9563,6 +9900,7 @@ namespace Unity.Collections
 
         /// <param name="arg0"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, int arg0)
 
         {
@@ -9585,6 +9923,7 @@ namespace Unity.Collections
 
         /// <param name="arg0"><undoc /></param>
         /// <returns><undoc /></returns>
+        
         public static FixedString128 Format(FixedString128 formatString, float arg0)
 
         {
@@ -9607,6 +9946,7 @@ namespace Unity.Collections
 
         /// <param name="arg0"><undoc /></param>
         /// <returns><undoc /></returns>
+        [NotBurstCompatible]
         public static FixedString128 Format(FixedString128 formatString, string arg0)
 
         {
@@ -9630,6 +9970,7 @@ namespace Unity.Collections
 
         /// <param name="arg0"><undoc /></param>
         /// <returns><undoc /></returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
         public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 

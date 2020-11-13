@@ -2,7 +2,9 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Collections.LowLevel.Unsafe.NotBurstCompatible;
 using Unity.Collections.Tests;
+using System;
 
 internal class UnsafeHashMapTests : CollectionsTestCommonBase
 {
@@ -65,4 +67,20 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
             }
         }
     }
+
+#if !NET_DOTS // Array.Sort is not supported
+    [Test]
+    public void UnsafeHashSet_ToArray()
+    {
+        using (var set = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 })
+        {
+            var array = set.ToArray();
+            Array.Sort(array);
+            for (int i = 0, num = set.Count(); i < num; i++)
+            {
+                Assert.AreEqual(array[i], i);
+            }
+        }
+    }
+#endif
 }

@@ -1,6 +1,7 @@
-using System;
+﻿using System;
+using Unity.Collections.LowLevel.Unsafe;
 
-namespace Unity.Collections.LowLevel.Unsafe
+namespace Unity.Collections
 {
     public unsafe static class HashSetExtensions
     {
@@ -436,6 +437,13 @@ namespace Unity.Collections.LowLevel.Unsafe
                 container.Add(item);
             }
         }
+    }
+}
+
+namespace Unity.Collections.LowLevel.Unsafe
+{
+    public unsafe static class HashSetExtensions
+    {
         /// <summary>
         /// Modifies this container to remove all values that are present in the other container.
         /// </summary>
@@ -544,6 +552,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 container.Add(item);
             }
         }
+
         /// <summary>
         /// Modifies this container to remove all values that are present in the other container.
         /// </summary>

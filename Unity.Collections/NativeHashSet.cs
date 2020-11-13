@@ -15,6 +15,7 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the values in the container.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(NativeHashSetDebuggerTypeProxy<>))]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeHashSet<T>
         : INativeDisposable
         , IEnumerable<T> // Used by collection initializers.
@@ -59,8 +60,16 @@ namespace Unity.Collections
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
+        /// </remarks>
         public bool IsCreated => m_Data.IsCreated;
 
         /// <summary>
@@ -79,6 +88,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps) => m_Data.Dispose(inputDeps);
 
         /// <summary>
@@ -129,6 +139,7 @@ namespace Unity.Collections
         /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
         /// </summary>
         [NativeContainerIsAtomicWriteOnly]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public struct ParallelWriter
         {
             internal NativeHashMap<T, bool>.ParallelWriter m_Data;

@@ -7,6 +7,7 @@ namespace Unity.Collections
     /// <summary>
     /// NativeArray extension methods.
     /// </summary>
+    [BurstCompatible]
     public unsafe static class NativeArrayExtensions
     {
         /// <summary>
@@ -17,6 +18,7 @@ namespace Unity.Collections
         /// <param name="array">Array to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeArray<T> array, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.Length, value) != -1;
@@ -30,6 +32,7 @@ namespace Unity.Collections
         /// <param name="array">Array to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeArray<T> array, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.Length, value);
@@ -43,6 +46,7 @@ namespace Unity.Collections
         /// <param name="array">Array to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(array.m_Buffer, array.m_Length, value) != -1;
@@ -56,6 +60,7 @@ namespace Unity.Collections
         /// <param name="array">Array to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(array.m_Buffer, array.m_Length, value);
@@ -69,6 +74,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeList<T> list, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value) != -1;
@@ -82,6 +88,7 @@ namespace Unity.Collections
         /// <param name="list">List to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeList<T> list, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value);
@@ -96,6 +103,7 @@ namespace Unity.Collections
         /// <param name="length">Number of elements to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True, if element is found.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
         {
             return IndexOf<T, U>(ptr, length, value) != -1;
@@ -108,6 +116,7 @@ namespace Unity.Collections
         /// <param name="array">Array to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static int IndexOf<T>(this NativeArray<T> array, T value) where T : struct, IComparable<T>
         {
             for (int i = 0; i != array.Length; i++)
@@ -127,6 +136,7 @@ namespace Unity.Collections
         /// <param name="length">Number of elements to perform search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
         {
             for (int i = 0; i != length; i++)
@@ -144,6 +154,7 @@ namespace Unity.Collections
         /// <typeparam name="T">Source type of array elements</typeparam>
         /// <typeparam name="U">Target type of array elements</typeparam>
         /// <returns>The same array, with a different type of element</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static NativeArray<U> Reinterpret<T, U>(this NativeArray<T> array) where U : struct where T : struct
         {
             var tSize = UnsafeUtility.SizeOf<T>();
@@ -172,6 +183,7 @@ namespace Unity.Collections
         /// <param name="array"></param>
         /// <param name="other"></param>
         /// <returns>Returns true if both array are equal.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static bool ArraysEqual<T>(this NativeArray<T> array, NativeArray<T> other) where T : struct, IEquatable<T>
         {
             if (array.Length != other.Length)

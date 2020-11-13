@@ -15,6 +15,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     ///
     /// </summary>
+    [BurstCompatible]
     public unsafe struct UnsafeHashMapBucketData
     {
         internal UnsafeHashMapBucketData(byte* v, byte* k, byte* n, byte* b, int bcm)
@@ -53,6 +54,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     [StructLayout(LayoutKind.Explicit)]
+    [BurstCompatible]
     internal unsafe struct UnsafeHashMapData
     {
         [FieldOffset(0)]
@@ -102,6 +104,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [NotBurstCompatible]
         internal static void IsBlittableAndThrow<TKey, TValue>()
             where TKey : struct
             where TValue : struct
@@ -110,6 +113,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             CollectionHelper.CheckIsUnmanaged<TValue>();
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
             out UnsafeHashMapData* outBuf)
             where TKey : struct
@@ -135,6 +139,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             outBuf = data;
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static void ReallocateHashMap<TKey, TValue>(UnsafeHashMapData* data, int newCapacity, int newBucketCapacity, Allocator label)
             where TKey : struct
             where TValue : struct
@@ -206,6 +211,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Memory.Unmanaged.Free(data, allocator);
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static int CalculateDataSize<TKey, TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
             where TKey : struct
             where TValue : struct
@@ -308,6 +314,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return false;
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static void GetKeyArray<TKey>(UnsafeHashMapData* data, NativeArray<TKey> result)
             where TKey : struct
         {
@@ -326,6 +333,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static void GetValueArray<TValue>(UnsafeHashMapData* data, NativeArray<TValue> result)
             where TValue : struct
         {
@@ -347,6 +355,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static void GetKeyValueArrays<TKey, TValue>(UnsafeHashMapData* data, NativeKeyValueArrays<TKey, TValue> result)
             where TKey : struct
             where TValue : struct
@@ -385,6 +394,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     [NativeContainer]
+    [BurstCompatible]
     internal unsafe struct UnsafeHashMapDataDispose
     {
         [NativeDisableUnsafePtrRestriction]
@@ -413,6 +423,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     internal struct UnsafeHashMapBase<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -788,6 +799,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             data->firstFreeTLS[0] = it.EntryIndex;
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static unsafe void RemoveKeyValue<TValueEQ>(UnsafeHashMapData* data, TKey key, TValueEQ value)
             where TValueEQ : struct, IEquatable<TValueEQ>
         {
@@ -925,6 +937,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
     /// <typeparam name="TValue">The type of the values in the container.</typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public unsafe struct KeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -1041,6 +1054,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerDisplay("Count = {Count()}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeHashMapDebuggerTypeProxy<,>))]
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public unsafe struct UnsafeHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
@@ -1197,8 +1211,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether memory for the container is allocated.
         /// </summary>
         /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.</remarks>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
         public bool IsCreated => m_Buffer != null;
 
         /// <summary>
@@ -1221,6 +1242,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
+        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             var jobHandle = new UnsafeHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
@@ -1283,6 +1305,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
         /// </summary>
         [NativeContainerIsAtomicWriteOnly]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]
