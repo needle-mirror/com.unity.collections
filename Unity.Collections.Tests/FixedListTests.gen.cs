@@ -99,6 +99,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList32byteFixedBytes30ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<byte,FixedBytes30>();
+
+        for(var i = 0; i < 30; ++i)
+            list.Add((byte)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 30; ++i)
+                Assert.AreEqual((byte)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList32byteToNativeArrayWorks()
     {
         var list = new FixedList32<byte>();
@@ -154,10 +169,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32byteGenericRemoveRangeWithBeginEnd()
+    public void FixedList32byteGenericRemoveRange()
     {
         var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -244,6 +259,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList64byteFixedBytes62ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<byte,FixedBytes62>();
+
+        for(var i = 0; i < 62; ++i)
+            list.Add((byte)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 62; ++i)
+                Assert.AreEqual((byte)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList64byteToNativeArrayWorks()
     {
         var list = new FixedList64<byte>();
@@ -299,10 +329,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64byteGenericRemoveRangeWithBeginEnd()
+    public void FixedList64byteGenericRemoveRange()
     {
         var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -389,6 +419,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList128byteFixedBytes126ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<byte,FixedBytes126>();
+
+        for(var i = 0; i < 126; ++i)
+            list.Add((byte)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 126; ++i)
+                Assert.AreEqual((byte)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList128byteToNativeArrayWorks()
     {
         var list = new FixedList128<byte>();
@@ -444,10 +489,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128byteGenericRemoveRangeWithBeginEnd()
+    public void FixedList128byteGenericRemoveRange()
     {
         var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -629,10 +674,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte32RemoveRangeWithBeginEnd()
+    public void FixedListByte32RemoveRange()
     {
         var list = new FixedListByte32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -646,10 +691,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte32RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListByte32RemoveRangeSwapBack()
     {
         var list = new FixedListByte32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -791,10 +836,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte64RemoveRangeWithBeginEnd()
+    public void FixedListByte64RemoveRange()
     {
         var list = new FixedListByte64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -808,10 +853,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte64RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListByte64RemoveRangeSwapBack()
     {
         var list = new FixedListByte64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -951,10 +996,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte128RemoveRangeWithBeginEnd()
+    public void FixedListByte128RemoveRange()
     {
         var list = new FixedListByte128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -968,10 +1013,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListByte128RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListByte128RemoveRangeSwapBack()
     {
         var list = new FixedListByte128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1011,6 +1056,21 @@ internal class FixedListTests : CollectionsTestFixture
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedListByte64(a); } );
+    }
+
+    [Test]
+    public void FixedList32intFixedBytes30ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<int,FixedBytes30>();
+
+        for(var i = 0; i < 7; ++i)
+            list.Add((int)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 7; ++i)
+                Assert.AreEqual((int)(i * 123 + 234), array[i]);
+        }
     }
 
     [Test]
@@ -1069,10 +1129,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32intGenericRemoveRangeWithBeginEnd()
+    public void FixedList32intGenericRemoveRange()
     {
         var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1159,6 +1219,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList64intFixedBytes62ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<int,FixedBytes62>();
+
+        for(var i = 0; i < 15; ++i)
+            list.Add((int)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 15; ++i)
+                Assert.AreEqual((int)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList64intToNativeArrayWorks()
     {
         var list = new FixedList64<int>();
@@ -1214,10 +1289,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64intGenericRemoveRangeWithBeginEnd()
+    public void FixedList64intGenericRemoveRange()
     {
         var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1304,6 +1379,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList128intFixedBytes126ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<int,FixedBytes126>();
+
+        for(var i = 0; i < 31; ++i)
+            list.Add((int)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 31; ++i)
+                Assert.AreEqual((int)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList128intToNativeArrayWorks()
     {
         var list = new FixedList128<int>();
@@ -1359,10 +1449,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128intGenericRemoveRangeWithBeginEnd()
+    public void FixedList128intGenericRemoveRange()
     {
         var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1544,10 +1634,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt32RemoveRangeWithBeginEnd()
+    public void FixedListInt32RemoveRange()
     {
         var list = new FixedListInt32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1561,10 +1651,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt32RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListInt32RemoveRangeSwapBack()
     {
         var list = new FixedListInt32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1706,10 +1796,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt64RemoveRangeWithBeginEnd()
+    public void FixedListInt64RemoveRange()
     {
         var list = new FixedListInt64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1723,10 +1813,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt64RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListInt64RemoveRangeSwapBack()
     {
         var list = new FixedListInt64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1866,10 +1956,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt128RemoveRangeWithBeginEnd()
+    public void FixedListInt128RemoveRange()
     {
         var list = new FixedListInt128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1883,10 +1973,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListInt128RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListInt128RemoveRangeSwapBack()
     {
         var list = new FixedListInt128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -1926,6 +2016,21 @@ internal class FixedListTests : CollectionsTestFixture
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedListInt64(a); } );
+    }
+
+    [Test]
+    public void FixedList32floatFixedBytes30ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<float,FixedBytes30>();
+
+        for(var i = 0; i < 7; ++i)
+            list.Add((float)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 7; ++i)
+                Assert.AreEqual((float)(i * 123 + 234), array[i]);
+        }
     }
 
     [Test]
@@ -1984,10 +2089,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32floatGenericRemoveRangeWithBeginEnd()
+    public void FixedList32floatGenericRemoveRange()
     {
         var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2074,6 +2179,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList64floatFixedBytes62ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<float,FixedBytes62>();
+
+        for(var i = 0; i < 15; ++i)
+            list.Add((float)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 15; ++i)
+                Assert.AreEqual((float)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList64floatToNativeArrayWorks()
     {
         var list = new FixedList64<float>();
@@ -2129,10 +2249,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64floatGenericRemoveRangeWithBeginEnd()
+    public void FixedList64floatGenericRemoveRange()
     {
         var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2219,6 +2339,21 @@ internal class FixedListTests : CollectionsTestFixture
 
 
     [Test]
+    public void FixedList128floatFixedBytes126ToNativeArrayWorksGeneric()
+    {
+        var list = new FixedList<float,FixedBytes126>();
+
+        for(var i = 0; i < 31; ++i)
+            list.Add((float)(i * 123 + 234));
+
+        using(var array = list.ToNativeArray(Allocator.Temp))
+        {
+            for(var i = 0; i < 31; ++i)
+                Assert.AreEqual((float)(i * 123 + 234), array[i]);
+        }
+    }
+
+    [Test]
     public void FixedList128floatToNativeArrayWorks()
     {
         var list = new FixedList128<float>();
@@ -2274,10 +2409,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128floatGenericRemoveRangeWithBeginEnd()
+    public void FixedList128floatGenericRemoveRange()
     {
         var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2459,10 +2594,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat32RemoveRangeWithBeginEnd()
+    public void FixedListFloat32RemoveRange()
     {
         var list = new FixedListFloat32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2476,10 +2611,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat32RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListFloat32RemoveRangeSwapBack()
     {
         var list = new FixedListFloat32() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2621,10 +2756,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat64RemoveRangeWithBeginEnd()
+    public void FixedListFloat64RemoveRange()
     {
         var list = new FixedListFloat64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2638,10 +2773,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat64RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListFloat64RemoveRangeSwapBack()
     {
         var list = new FixedListFloat64() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2781,10 +2916,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat128RemoveRangeWithBeginEnd()
+    public void FixedListFloat128RemoveRange()
     {
         var list = new FixedListFloat128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeWithBeginEnd(1,3);
+        list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
@@ -2798,10 +2933,10 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedListFloat128RemoveRangeSwapBackWithBeginEnd()
+    public void FixedListFloat128RemoveRangeSwapBack()
     {
         var list = new FixedListFloat128() { 0, 3, 3, 1, 2 };
-        list.RemoveRangeSwapBackWithBeginEnd(1,3);
+        list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 

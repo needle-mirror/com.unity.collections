@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Burst;
@@ -44,6 +44,7 @@ namespace Unity.Collections
             /// <summary>
             /// Reset the state of the streaming instance using the given seed value.
             /// </summary>
+            /// <param name="isHash64"></param>
             /// <param name="seed">The seed value to alter the computed hash value from</param>
             /// <remarks> Call this method to start a new streaming session based on this instance</remarks>
             public unsafe void Reset(bool isHash64, ulong seed=0UL)
@@ -137,6 +138,7 @@ namespace Unity.Collections
             /// <summary>
             /// Add the contents of input struct to the hash.
             /// </summary>
+            /// <typeparam name="T">The input type.</typeparam>
             /// <param name="input">The input struct that will be hashed</param>
             /// <remarks>This API allows you to feed very small data to be hashed, avoiding you to accumulate them in a big buffer, then computing the hash value from.</remarks>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]

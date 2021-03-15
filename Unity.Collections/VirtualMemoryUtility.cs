@@ -246,9 +246,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Reserves a contiguous range of address space.
         /// </summary>
-        /// <param name="sizeOfAddressRangeInBytes">Size of a virtual address range to reserve, in bytes.</param>
+        /// <param name="sizeOfAddressRangeInPages">Size of a virtual address range to reserve, in pages.</param>
         /// <param name="pageSizeInBytes">Size of a page of virtual memory, in bytes.</param>
-        /// <param name="BaselibErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
         /// <returns>A VMRange. Upon failure, the returned VMRange will have a null pointer, 0 sized pages, and 0 page count.</returns>
         public static VMRange ReserveAddressSpace(ulong sizeOfAddressRangeInPages, ulong pageSizeInBytes, out BaselibErrorState outErrorState)
         {
@@ -268,7 +268,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Commits memory from reserved address space.
         /// </summary>
         /// <param name="rangeToCommit">Reserved virtual address range from which to allocate memory.</param>
-        /// <param name="BaselibErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
         public static void CommitMemory(VMRange rangeToCommit, out BaselibErrorState outErrorState)
         {
             Baselib_ErrorState errorState = default;
@@ -281,7 +281,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Decommits committed memory from reserved address space.
         /// </summary>
         /// <param name="rangeToFree">Virtual address range from which to free allocated memory.</param>
-        /// <param name="BaselibErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
         public static void DecommitMemory(VMRange rangeToFree, out BaselibErrorState outErrorState)
         {
             Baselib_ErrorState errorState = default;
@@ -294,7 +294,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Frees reserved address space.
         /// </summary>
         /// <param name="reservedAddressRange">Virtual address range to release.</param>
-        /// <param name="BaselibErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
         public static void FreeAddressSpace(VMRange reservedAddressRange, out BaselibErrorState outErrorState)
         {
             var pages = new Baselib_Memory_PageAllocation { ptr = reservedAddressRange.ptr, pageSize = reservedAddressRange.PageSizeInBytes, pageCount = reservedAddressRange.pageCount };

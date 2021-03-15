@@ -92,7 +92,6 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         }
     }
 
-#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void AliasCanBeDisposed()
     {
@@ -104,19 +103,6 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         }
     }
 
-#else
-    [Test]
-    public void CannotDisposeAlias()
-    {
-        using (var src = MakeTestArray(12))
-        {
-            var dst = src.Reinterpret<int, float>();
-            Assert.Throws<InvalidOperationException>(() => dst.Dispose());
-        }
-    }
-
-#endif
-
     [Test]
     public void CannotUseAliasAfterSourceIsDisposed()
     {
@@ -125,11 +111,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         {
             alias = src.Reinterpret<int, float>();
         }
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => alias[0] = 1.0f);
     }
 

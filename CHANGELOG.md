@@ -1,5 +1,60 @@
 # Change log
 
+## [0.17.0] - 2021-03-15
+
+### Added
+
+* `[NotBurstCompatible]` attribute to FixedStringN constructors that use a String argument.
+* `[NotBurstCompatible]` attribute to NativeQueue constructor.
+* `UnsafeList<T>.Create` and `UnsafeList<T>.Destroy` API.
+* BurstCompatibilityTests now has a constructor that accepts multiple assembly names to verify Burst compatibility. This allows one test to verify multiple assemblies and can dramatically reduce CI times by avoiding costly setup overhead.
+* `UnsafePtrList<T>` to replace deprecated untyped `UnsafePtrList`.
+* Burst compatibility tests now also write the generated code to the Temp directory in order to make it easier to inspect.
+* `FixedList*.RemoveRange*` with index/count arguments.
+* FixedString parsing to type uint
+
+### Deprecated
+
+* untyped UnsafePtrList, and added `UnsafePtrList<T>` as replacement.
+* `FixedList*.RemoveRange*WithBeginEnd` methods with begin/end arguments in favor of `FixedList*.RemoveRange*` with index/count arguments.
+
+### Removed
+
+* Removed single arg `FixedString*.Format` extension methods, use `Clear()` followed by `Append()`.
+* CollectionsBurstTests has been removed and placed into the Entities test project.
+* `com.unity.test-framework.performance` preview package dependency, and moved performance unit tests depending on it into different location.
+
+### Fixed
+
+* `*BitArray.Clear` when clearing with very short bit arrays.
+* `NativeQueue.AsParallelWriter` doesn't need to be cached when chaining jobs. Removed unnecessary safety handle that was preventing calling `NativeQueue.AsParallelWriter()` multiple times when scheduling jobs.
+
+### Changed
+
+ - Updated dependencies for using com.unity.burst@1.5.3
+
+
+
+## [0.16.0] - 2021-01-26
+
+### Deprecated
+
+* Sort methods that return a JobHandle deprecated in favor of new SortJob methods that return a job struct. Less conveniently, the user is responsible for calling Schedule on the struct, but this pattern better accommodates scheduling generic jobs from Bursted code (See https://docs.unity3d.com/Packages/com.unity.entities@latest/index.html?subfolder=/manual/ecs_generic_jobs.html).
+
+### Removed
+
+* Removed deprecated `FixedListN.IndexOf` and `SortJob` variants
+
+### Fixed
+
+* An ENABLE_UNITY_COLLECTIONS_CHECKS define was misspelled. Now Memory is checked for reasonable byte length when enabled.
+* Many methods that use `IJob` were marked as `[NotBurstCompatible]` to reflect their true Burst compatibility.
+
+### Changed
+
+* Updated `com.unity.burst` to `1.4.4`
+
+
 ## [0.15.0] - 2020-11-13
 
 ### Added

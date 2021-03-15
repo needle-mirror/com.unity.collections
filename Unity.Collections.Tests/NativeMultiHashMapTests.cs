@@ -23,11 +23,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         container.Add(0, 123);
         container.Dispose();
         Assert.That(() => container.ContainsKey(0),
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
 
@@ -176,11 +172,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     {
         var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.TempJob);
         hashMap.Dispose();
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { hashMap.Dispose(); });
     }
 
@@ -416,11 +408,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
                 container.Add(i, 60 + i);
             }
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var kv in container)
                 {
@@ -428,11 +416,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
                 }
             });
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var kv in container)
                 {
@@ -496,11 +480,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
 
             }.Schedule(1, 2);
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 while (iter.MoveNext())
                 {

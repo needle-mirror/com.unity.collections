@@ -30,7 +30,6 @@ internal class FixedStringCultureTests
     {
         backupCulture = Thread.CurrentThread.CurrentCulture;
         Thread.CurrentThread.CurrentCulture = testCulture;
-        WordStorage.Setup();
     }
 
     [TearDown]
@@ -40,17 +39,24 @@ internal class FixedStringCultureTests
     }
 
     [TestCase("red", 0, 0, ParseError.Syntax)]
+    [TestCase("-red", 0, 0, ParseError.Syntax)]
+    [TestCase("+red", 0, 0, ParseError.Syntax)]
     [TestCase("0", 1, 0, ParseError.None)]
-    [TestCase("-1", 2, -1, ParseError.None)]
+    [TestCase("+0", 2, 0, ParseError.None)]
     [TestCase("-0", 2, 0, ParseError.None)]
+    [TestCase("-1", 2, -1, ParseError.None)]
     [TestCase("100", 3, 100, ParseError.None)]
+    [TestCase("+100", 4, 100, ParseError.None)]
     [TestCase("-100", 4, -100, ParseError.None)]
     [TestCase("100.50", 3, 100, ParseError.None)]
     [TestCase("-100ab", 4, -100, ParseError.None)]
     [TestCase("2147483647", 10, 2147483647, ParseError.None)]
+    [TestCase("+2147483647", 11, 2147483647, ParseError.None)]
     [TestCase("-2147483648", 11, -2147483648, ParseError.None)]
     [TestCase("2147483648", 10, 0, ParseError.Overflow)]
     [TestCase("-2147483649", 11, 0, ParseError.Overflow)]
+    [TestCase("2147483648000", 13, 0, ParseError.Overflow)]
+    [TestCase("-2147483649000", 14, 0, ParseError.Overflow)]
     public void FixedStringNParseIntWorks(String a, int expectedOffset, int expectedOutput, ParseError expectedResult)
     {
         FixedStringN aa = new FixedStringN(a);
@@ -65,11 +71,51 @@ internal class FixedStringCultureTests
         }
     }
 
+    [TestCase("red", 0, 0u, ParseError.Syntax)]
+    [TestCase("-red", 0, 0u, ParseError.Syntax)]
+    [TestCase("+red", 0, 0u, ParseError.Syntax)]
+    [TestCase("0", 1, 0u, ParseError.None)]
+    [TestCase("+0", 2, 0u, ParseError.None)]
+    [TestCase("-0", 2, 0u, ParseError.None)]
+    [TestCase("-1", 2, 0u, ParseError.Overflow)]
+    [TestCase("100", 3, 100u, ParseError.None)]
+    [TestCase("+100", 4, 100u, ParseError.None)]
+    [TestCase("-100", 4, 0u, ParseError.Overflow)]
+    [TestCase("100.50", 3, 100u, ParseError.None)]
+    [TestCase("-100.50", 4, 0u, ParseError.Overflow)]
+    [TestCase("100ab", 3, 100u, ParseError.None)]
+    [TestCase("-100ab", 4, 0u, ParseError.Overflow)]
+    [TestCase("2147483647", 10, 2147483647u, ParseError.None)]
+    [TestCase("-2147483648", 11, 0u, ParseError.Overflow)]
+    [TestCase("2147483648", 10, 2147483648u, ParseError.None)]
+    [TestCase("-2147483649", 11, 0u, ParseError.Overflow)]
+    [TestCase("4294967295", 10, 4294967295u, ParseError.None)]
+    [TestCase("+4294967295", 11, 4294967295u, ParseError.None)]
+    [TestCase("4294967296", 10, 0u, ParseError.Overflow)]
+    [TestCase("2147483648000", 13, 0u, ParseError.Overflow)]
+    [TestCase("-2147483649000", 14, 0u, ParseError.Overflow)]
+    public void FixedStringNParseUIntWorks(String a, int expectedOffset, uint expectedOutput, ParseError expectedResult)
+    {
+        FixedStringN aa = new FixedStringN(a);
+        int offset = 0;
+        uint output = 0;
+        var result = aa.Parse(ref offset, ref output);
+        Assert.AreEqual(expectedResult, result);
+        Assert.AreEqual(expectedOffset, offset);
+        if (result == ParseError.None)
+        {
+            Assert.AreEqual(expectedOutput, output);
+        }
+    }
+
     [TestCase("red", 0, ParseError.Syntax)]
+    [TestCase("-red", 0, ParseError.Syntax)]
+    [TestCase("+red", 0, ParseError.Syntax)]
     [TestCase("0", 1,  ParseError.None)]
     [TestCase("-1", 2, ParseError.None)]
     [TestCase("-0", 2, ParseError.None)]
     [TestCase("100", 3, ParseError.None)]
+    [TestCase("+100", 4, ParseError.None)]
     [TestCase("-100", 4, ParseError.None)]
     [TestCase("100.50", 6, ParseError.None)]
     [TestCase("2147483648", 10, ParseError.None)]
@@ -77,10 +123,19 @@ internal class FixedStringCultureTests
     [TestCase("-10E10", 6, ParseError.None)]
     [TestCase("-10E-10", 7, ParseError.None)]
     [TestCase("-10E+10", 7, ParseError.None)]
-    [TestCase("10E-40", 5, ParseError.Underflow)]
-    [TestCase("10E+40", 5, ParseError.Overflow)]
-    [TestCase("-Infinity", 9, ParseError.None)]
-    [TestCase("Infinity", 8, ParseError.None)]
+    [TestCase("+10E10", 6, ParseError.None)]
+    [TestCase("+10E-10", 7, ParseError.None)]
+    [TestCase("+10E+10", 7, ParseError.None)]
+    [TestCase("10E-40", 6, ParseError.Underflow)]
+    [TestCase("10E+40", 6, ParseError.Overflow)]
+    // These tests are highly inconsistent among .NET versions. All 6 cases below parse correctly in
+    // .NET 5 however, so once we have updated they should be tried again.
+    //[TestCase("-nan", 4, ParseError.None)]
+    //[TestCase("+nan", 4, ParseError.None)]
+    //[TestCase("nan", 3, ParseError.None)]
+    //[TestCase("-infinity", 9, ParseError.None)]
+    //[TestCase("+infinity", 9, ParseError.None)]
+    //[TestCase("infinity", 8, ParseError.None)]
     [TestCase("1000001",       7, ParseError.None)]
     [TestCase("10000001",      8, ParseError.None)]
     [TestCase("100000001",     9, ParseError.None)]
@@ -103,6 +158,44 @@ internal class FixedStringCultureTests
         {
             Assert.AreEqual(expectedOutput, output);
         }
+    }
+
+    // While .NET 5 supports all combinations and capitalizations of "nan", "-nan", and "+nan",
+    // the implementation in Unity currently only supports "NaN" specifically
+    [Test]
+    public void FixedStringNParseFloatNan()
+    {
+        FixedStringN aa = new FixedStringN("NaN");
+        int offset = 0;
+        float output = 0;
+        var result = aa.Parse(ref offset, ref output);
+        Assert.AreEqual(ParseError.None, result);
+        Assert.IsTrue(Single.IsNaN(output));
+    }
+
+    // While .NET 5 supports all combinations and capitalizations of "infinity", "-infinity", and "+infinity",
+    // the mono implementation in Unity currently only supports "Infinity" and "-Infinity" specifically
+    // (not even "+Infinity")
+    [Test]
+    public void FixedStringNParseFloatInfinity()
+    {
+        FixedStringN aa = new FixedStringN("Infinity");
+        int offset = 0;
+        float output = 0;
+        var result = aa.Parse(ref offset, ref output);
+        Assert.AreEqual(ParseError.None, result);
+        Assert.IsTrue(Single.IsPositiveInfinity(output));
+    }
+
+    [Test]
+    public void FixedStringNParseFloatNegativeInfinity()
+    {
+        FixedStringN aa = new FixedStringN("-Infinity");
+        int offset = 0;
+        float output = 0;
+        var result = aa.Parse(ref offset, ref output);
+        Assert.AreEqual(ParseError.None, result);
+        Assert.IsTrue(Single.IsNegativeInfinity(output));
     }
 
     [TestCase(-2147483648)]
@@ -318,17 +411,6 @@ internal class FixedStringCultureTests
         {
             Thread.CurrentThread.CurrentCulture = original;
         }
-    }
-
-    [Test]
-    public void FixedStringNParseFloatNan()
-    {
-        FixedStringN aa = new FixedStringN("NaN");
-        int offset = 0;
-        float output = 0;
-        var result = aa.Parse(ref offset, ref output);
-        Assert.AreEqual(ParseError.None, result);
-        Assert.IsTrue(Single.IsNaN(output));
     }
 }
 

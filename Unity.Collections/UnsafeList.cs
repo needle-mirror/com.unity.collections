@@ -64,6 +64,34 @@ namespace Unity.Collections.LowLevel.Unsafe
             Allocator = Collections.Allocator.None;
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal void Initialize<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            Allocator = allocator.Handle;
+            Ptr = null;
+            Length = 0;  
+            Capacity = 0;
+
+            if (initialCapacity != 0)
+            {
+                SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && Ptr != null)
+            {
+                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
+            }
+        }
+
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static UnsafeList New<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var temp = new UnsafeList();
+            temp.Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
+            return temp;
+        }
+
         /// <summary>
         /// Constructs a new container with the specified initial capacity and type of memory allocation.
         /// </summary>
@@ -76,21 +104,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            Allocator = allocator;
-            Ptr = null;
-            Length = 0;
-            Capacity = 0;
-
-            if (initialCapacity != 0)
-            {
-                SetCapacity(sizeOf, alignOf, initialCapacity);
-            }
-
-            if (options == NativeArrayOptions.ClearMemory
-                && Ptr != null)
-            {
-                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
-            }
+            this = default;
+            Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
         }
 
         /// <summary>
@@ -135,7 +150,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>New initialized container.</returns>
         public static UnsafeList* Create(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            var handle = new AllocatorManager.AllocatorHandle { Value = (int)allocator };
+            var handle = (AllocatorManager.AllocatorHandle)allocator;
             UnsafeList* listData = AllocatorManager.Allocate<UnsafeList>(handle);
             UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
 
@@ -153,6 +168,44 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             return listData;
+        }
+
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static UnsafeList* Create<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            UnsafeList* listData = allocator.Allocate(default(UnsafeList), 1);
+            UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
+
+            listData->Allocator = allocator.Handle;
+
+            if (initialCapacity != 0)
+            {
+                listData->SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && listData->Ptr != null)
+            {
+                UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
+            }
+
+            return listData;
+        }
+
+        /// <summary>
+        /// Destroys container.
+        /// </summary>
+        /// <typeparam name="U">The allocator type.</typeparam>
+        /// <param name="listData">Container to destroy.</param>
+        /// <param name="allocator">Allocator to use</param>
+        /// <param name="sizeOf">Size in bytes of each item</param>
+        /// <param name="alignOf">Alignment in bytes of each item</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static void Destroy<U>(UnsafeList* listData, ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            CheckNull(listData);
+            listData->Dispose(ref allocator, sizeOf, alignOf);
+            allocator.Free(listData, UnsafeUtility.SizeOf<UnsafeList>(), UnsafeUtility.AlignOf<UnsafeList>(),1);
         }
 
         /// <summary>
@@ -205,6 +258,22 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Disposes of this container and deallocates its memory immediately.
+        /// <typeparam name="U">The allocator type.</typeparam>
+        /// <param name="allocator">allocator to use when disposing</param>
+        /// <param name="sizeOf">size, in bytes, of each item</param>
+        /// <param name="alignOf">alignment, in bytes, of each item</param>
+        /// </summary>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]        
+        internal void Dispose<U>(ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            allocator.Free(Ptr, sizeOf, alignOf, Length); 
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+        }
+
+        /// <summary>
         /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
         /// </summary>
         /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
@@ -215,7 +284,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -281,14 +350,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
         }
 
-        void Realloc(int sizeOf, int alignOf, int capacity)
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        void Realloc<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
         {
-            CheckAllocator(Allocator);
             void* newPointer = null;
 
             if (capacity > 0)
             {
-                newPointer = AllocatorManager.Allocate(Allocator, sizeOf, alignOf, capacity);
+                newPointer = allocator.Allocate(sizeOf, alignOf, capacity);
 
                 if (Capacity > 0)
                 {
@@ -298,14 +367,20 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            AllocatorManager.Free(Allocator, Ptr);
+            allocator.Free(Ptr, sizeOf, alignOf, Capacity);
 
             Ptr = newPointer;
             Capacity = capacity;
             Length = math.min(Length, capacity);
         }
 
-        void SetCapacity(int sizeOf, int alignOf, int capacity)
+        void Realloc(int sizeOf, int alignOf, int capacity) 
+        {
+            Realloc(ref Allocator, sizeOf, alignOf, capacity);
+        }
+
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        void SetCapacity<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
         {
             var newCapacity = math.max(capacity, 64 / sizeOf);
             newCapacity = math.ceilpow2(newCapacity);
@@ -315,7 +390,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return;
             }
 
-            Realloc(sizeOf, alignOf, newCapacity);
+            Realloc(ref allocator, sizeOf, alignOf, newCapacity);
+        }
+
+        void SetCapacity(int sizeOf, int alignOf, int capacity)
+        {
+            SetCapacity(ref Allocator, sizeOf, alignOf, capacity);
         }
 
         /// <summary>
@@ -853,7 +933,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         public void Execute()
         {
-            var handle = new AllocatorManager.AllocatorHandle { Value = (int)Allocator };
+            var handle = (AllocatorManager.AllocatorHandle)Allocator;
             AllocatorManager.Free(handle, Ptr);
         }
     }
@@ -987,6 +1067,55 @@ namespace Unity.Collections.LowLevel.Unsafe
             this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
         }
 
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal void Initialize<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            Ptr = null;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
+            var sizeOf = UnsafeUtility.SizeOf<T>();
+            var alignOf = UnsafeUtility.AlignOf<T>();
+            this.ListData() = UnsafeList.New(sizeOf, alignOf, initialCapacity, ref allocator, options);
+        }
+         
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static UnsafeList<T> New<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            UnsafeList<T> instance = default;
+            instance.Initialize(initialCapacity, ref allocator, options);
+            return instance;
+        }
+
+        /// <summary>
+        /// Creates a new container with the specified initial capacity and type of memory allocation.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
+        /// the internal array is copied to a new, larger array.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <returns>New initialized container.</returns>
+        public static UnsafeList<T>* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            var handle = (AllocatorManager.AllocatorHandle)allocator;
+            UnsafeList<T>* listData = AllocatorManager.Allocate<UnsafeList<T>>(handle);
+            *listData = new UnsafeList<T>(initialCapacity, allocator, options);
+            return listData;
+        }
+
+        /// <summary>
+        /// Destroys container.
+        /// </summary>
+        /// <param name="listData">Container to destroy.</param>
+        public static void Destroy(UnsafeList<T>* listData)
+        {
+            CheckNull(listData);
+            var allocator = listData->Allocator;
+            listData->Dispose();
+            AllocatorManager.Free(allocator, listData);
+        }
+
         /// <summary>
         /// Reports whether container is empty.
         /// </summary>
@@ -1027,7 +1156,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return this.ListData().Dispose(inputDeps);
@@ -1353,6 +1482,15 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             object IEnumerator.Current => Current;
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckNull(void* listData)
+        {
+            if (listData == null)
+            {
+                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
+            }
+        }
     }
 
     /// <summary>
@@ -1453,18 +1591,19 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// An unmanaged, resizable list, without any thread safety check features.
     /// </summary>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
-    [DebuggerTypeProxy(typeof(UnsafePtrListDebugView))]
-    [BurstCompatible]
-    public unsafe struct UnsafePtrList
+    [DebuggerTypeProxy(typeof(UnsafePtrListTDebugView<>))]
+    [StructLayout(LayoutKind.Sequential)]
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    public unsafe struct UnsafePtrList<T>
         : INativeDisposable
-        , INativeList<IntPtr>
         , IEnumerable<IntPtr> // Used by collection initializers.
+        where T : unmanaged
     {
         /// <summary>
         ///
         /// </summary>
         [NativeDisableUnsafePtrRestriction]
-        public readonly void** Ptr;
+        public readonly T** Ptr;
 
         /// <summary>
         ///
@@ -1496,10 +1635,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public IntPtr this[int index]
+        public T* this[int index]
         {
-            get { return new IntPtr(Ptr[index]); }
-            set { Ptr[index] = (void*)value; }
+            get { return Ptr[index]; }
+            set { Ptr[index] = value; }
         }
 
         /// <summary>
@@ -1507,9 +1646,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public ref IntPtr ElementAt(int index)
+        public ref T* ElementAt(int index)
         {
-            return ref ((IntPtr*)Ptr)[index];
+            return ref Ptr[index];
         }
 
         /// <summary>
@@ -1517,7 +1656,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr"></param>
         /// <param name="length"></param>
-        public unsafe UnsafePtrList(void** ptr, int length)
+        public unsafe UnsafePtrList(T** ptr, int length)
         {
             Ptr = ptr;
             this.length = length;
@@ -1542,8 +1681,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             capacity = 0;
             Allocator = AllocatorManager.None;
 
-            var sizeOf = IntPtr.Size;
-            this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
+            this.ListData() = new UnsafeList<IntPtr>(initialCapacity, allocator, options);
         }
 
         /// <summary>
@@ -1563,8 +1701,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             capacity = 0;
             Allocator = AllocatorManager.None;
 
-            var sizeOf = IntPtr.Size;
-            this.ListData() = new UnsafeList(sizeOf, sizeOf, initialCapacity, allocator, options);
+            this.ListData() = new UnsafeList<IntPtr>(initialCapacity, allocator, options);
         }
 
         /// <summary>
@@ -1573,10 +1710,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="ptr"></param>
         /// <param name="length"></param>
         /// <returns>New initialized container.</returns>
-        public static UnsafePtrList* Create(void** ptr, int length)
+        public static UnsafePtrList<T>* Create(T** ptr, int length)
         {
-            UnsafePtrList* listData = AllocatorManager.Allocate<UnsafePtrList>(AllocatorManager.Persistent);
-            *listData = new UnsafePtrList(ptr, length);
+            UnsafePtrList<T>* listData = AllocatorManager.Allocate<UnsafePtrList<T>>(AllocatorManager.Persistent);
+            *listData = new UnsafePtrList<T>(ptr, length);
             return listData;
         }
 
@@ -1589,10 +1726,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         /// <returns>New initialized container.</returns>
-        public static UnsafePtrList* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public static UnsafePtrList<T>* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            UnsafePtrList* listData = AllocatorManager.Allocate<UnsafePtrList>(allocator);
-            *listData = new UnsafePtrList(initialCapacity, allocator, options);
+            UnsafePtrList<T>* listData = AllocatorManager.Allocate<UnsafePtrList<T>>(allocator);
+            *listData = new UnsafePtrList<T>(initialCapacity, allocator, options);
             return listData;
         }
 
@@ -1600,7 +1737,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Destroys list.
         /// </summary>
         /// <param name="listData">Container to destroy.</param>
-        public static void Destroy(UnsafePtrList* listData)
+        public static void Destroy(UnsafePtrList<T>* listData)
         {
             UnsafeList.CheckNull(listData);
             var allocator = listData->ListData().Allocator.Value == AllocatorManager.Invalid.Value
@@ -1651,7 +1788,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return this.ListData().Dispose(inputDeps);
@@ -1673,7 +1810,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            this.ListData().Resize<IntPtr>(length, options);
+            this.ListData().Resize(length, options);
         }
 
         /// <summary>
@@ -1682,7 +1819,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="capacity">The number of items that the list can hold before it resizes its internal storage.</param>
         public void SetCapacity(int capacity)
         {
-            this.ListData().SetCapacity<IntPtr>(capacity);
+            this.ListData().SetCapacity(capacity);
         }
 
         /// <summary>
@@ -1690,7 +1827,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void TrimExcess()
         {
-            this.ListData().TrimExcess<IntPtr>();
+            this.ListData().TrimExcess();
         }
 
         /// <summary>
@@ -1740,7 +1877,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddRangeNoResize(void** ptr, int length)
         {
-            this.ListData().AddRangeNoResize<IntPtr>(ptr, length);
+            this.ListData().AddRangeNoResize(ptr, length);
         }
 
         /// <summary>
@@ -1750,9 +1887,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
         /// </remarks>
-        public void AddRangeNoResize(UnsafePtrList list)
+        public void AddRangeNoResize(UnsafePtrList<T> list)
         {
-            this.ListData().AddRangeNoResize<IntPtr>(list.Ptr, list.Length);
+            this.ListData().AddRangeNoResize(list.Ptr, list.Length);
         }
 
         /// <summary>
@@ -1780,16 +1917,16 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="length">The number of elements to add to the list.</param>
         public void AddRange(void* ptr, int length)
         {
-            this.ListData().AddRange<IntPtr>(ptr, length);
+            this.ListData().AddRange(ptr, length);
         }
 
         /// <summary>
         /// Adds the elements of a UnsafePtrList to this list.
         /// </summary>
         /// <param name="list">Other container to copy elements from.</param>
-        public void AddRange(UnsafePtrList list)
+        public void AddRange(UnsafePtrList<T> list)
         {
-            this.ListData().AddRange<IntPtr>(list.ListData());
+            this.ListData().AddRange(list.ListData());
         }
 
         /// <summary>
@@ -1801,7 +1938,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
-            this.ListData().InsertRangeWithBeginEnd<IntPtr>(begin, end);
+            this.ListData().InsertRangeWithBeginEnd(begin, end);
         }
 
         /// <summary>
@@ -1811,7 +1948,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            this.ListData().RemoveAtSwapBack<IntPtr>(index);
+            this.ListData().RemoveAtSwapBack(index);
         }
 
         /// <summary>
@@ -1824,7 +1961,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
-            this.ListData().RemoveRangeSwapBackWithBeginEnd<IntPtr>(begin, end);
+            this.ListData().RemoveRangeSwapBackWithBeginEnd(begin, end);
         }
 
         /// <summary>
@@ -1838,7 +1975,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void RemoveAt(int index)
         {
-            this.ListData().RemoveAt<IntPtr>(index);
+            this.ListData().RemoveAt(index);
         }
 
         /// <summary>
@@ -1855,7 +1992,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
-            this.ListData().RemoveRangeWithBeginEnd<IntPtr>(begin, end);
+            this.ListData().RemoveRangeWithBeginEnd(begin, end);
         }
 
         /// <summary>
@@ -1892,21 +2029,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Implements parallel reader. Use AsParallelReader to obtain it from container.
         /// </summary>
-        [BurstCompatible]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelReader
         {
             /// <summary>
             ///
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public readonly void** Ptr;
+            public readonly T** Ptr;
 
             /// <summary>
             ///
             /// </summary>
             public readonly int Length;
 
-            internal ParallelReader(void** ptr, int length)
+            internal ParallelReader(T** ptr, int length)
             {
                 Ptr = ptr;
                 Length = length;
@@ -1944,28 +2081,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Parallel writer instance.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            return new ParallelWriter(Ptr, (UnsafeList*)UnsafeUtility.AddressOf(ref this));
+            return new ParallelWriter(Ptr, (UnsafeList<IntPtr>*)UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
         ///
         /// </summary>
-        [BurstCompatible]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
             ///
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public readonly void* Ptr;
+            public readonly T** Ptr;
 
             /// <summary>
             ///
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeList* ListData;
+            public UnsafeList<IntPtr>* ListData;
 
-            internal unsafe ParallelWriter(void* ptr, UnsafeList* listData)
+            internal unsafe ParallelWriter(T** ptr, UnsafeList<IntPtr>* listData)
             {
                 Ptr = ptr;
                 ListData = listData;
@@ -1978,7 +2115,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
-            public void AddNoResize(void* value)
+            public void AddNoResize(T* value)
             {
                 ListData->AddNoResize((IntPtr)value);
             }
@@ -1991,9 +2128,9 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
-            public void AddRangeNoResize(void** ptr, int length)
+            public void AddRangeNoResize(T** ptr, int length)
             {
-                ListData->AddRangeNoResize<IntPtr>(ptr, length);
+                ListData->AddRangeNoResize(ptr, length);
             }
 
             /// <summary>
@@ -2003,37 +2140,39 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
             /// </remarks>
-            public void AddRangeNoResize(UnsafePtrList list)
+            public void AddRangeNoResize(UnsafePtrList<T> list)
             {
-                ListData->AddRangeNoResize<IntPtr>(list.Ptr, list.Length);
+                ListData->AddRangeNoResize(list.Ptr, list.Length);
             }
         }
     }
 
     [BurstCompatible]
-    internal static class UnsafePtrListExtensions
+    internal static class UnsafePtrListTExtensions
     {
-        public static ref UnsafeList ListData(ref this UnsafePtrList from) => ref UnsafeUtility.As<UnsafePtrList, UnsafeList>(ref from);
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public static ref UnsafeList<IntPtr> ListData<T>(ref this UnsafePtrList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafePtrList<T>, UnsafeList<IntPtr>>(ref from);
     }
 
-    internal sealed class UnsafePtrListDebugView
+    internal sealed class UnsafePtrListTDebugView<T>
+        where T : unmanaged
     {
-        UnsafePtrList Data;
+        UnsafePtrList<T> Data;
 
-        public UnsafePtrListDebugView(UnsafePtrList data)
+        public UnsafePtrListTDebugView(UnsafePtrList<T> data)
         {
             Data = data;
         }
 
-        public unsafe IntPtr[] Items
+        public unsafe T*[] Items
         {
             get
             {
-                IntPtr[] result = new IntPtr[Data.Length];
+                T*[] result = new T*[Data.Length];
 
                 for (var i = 0; i < result.Length; ++i)
                 {
-                    result[i] = (IntPtr)Data.Ptr[i];
+                    result[i] = Data.Ptr[i];
                 }
 
                 return result;

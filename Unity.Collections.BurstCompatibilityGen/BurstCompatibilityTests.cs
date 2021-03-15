@@ -3,49 +3,111 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
-using UnityEngine;
+using UnityEditor.Build.Reporting;
 using UnityEngine.TestTools;
+using Assembly = System.Reflection.Assembly;
+using Debug = UnityEngine.Debug;
 
 namespace Unity.Collections.Tests
 {
     /// <summary>
-    /// Base class for semu-automated burst compatibility testing.
+    /// Base class for semi-automated burst compatibility testing.
     /// </summary>
+    /// <remarks>
+    /// To create Burst compatibility tests for your assembly, you must do the following:<para/> <para/>
+    ///
+    /// 1. Set up a directory to contain the generated Burst compatibility code.<para/> <para/>
+    ///
+    /// 2. Create a new asmdef in that directory. You should set up the references so you can access Burst and
+    /// your assembly. This new asmdef *must* support all platforms because the Burst compatibility tests use player
+    /// builds to compile the code in parallel.<para/> <para/>
+    ///
+    /// 3. If you wish to test internal methods, you should make internals visible to the new asmdef you created in
+    /// step 2.<para/> <para/>
+    ///
+    /// 4. Create a new class and inherit BurstCompatibilityTests. Call the base constructor with the appropriate
+    /// arguments so BurstCompatibilityTests knows which assemblies to scan for the [BurstCompatible] attribute and
+    /// where to put the generated Burst compatibility code. This new class should live in an editor only assembly and
+    /// the generated Burst compatibility code should be a part of the multiplatform asmdef you created in step 2.
+    /// <para/> <para/>
+    ///
+    /// 5. If your generated code will live in your package directory, you may need to add the [EmbeddedPackageOnlyTest]
+    /// attribute to your new class.<para/> <para/>
+    ///
+    /// 6. Start adding [BurstCompatible] or [NotBurstCompatible] attributes to your types or methods.<para/> <para/>
+    ///
+    /// 7. In the test runner, run the test called CompatibilityTests that can be found nested under the name of your
+    /// new test class you implemented in step 4.<para/> <para/>
+    /// </remarks>
     public abstract class BurstCompatibilityTests
     {
-        private string m_AssetPath;
-        private string m_AssemblyName;
+        private string m_GeneratedCodePath;
+        private HashSet<string> m_AssembliesToVerify = new HashSet<string>();
+        private string m_GeneratedCodeAssemblyName;
         private static readonly string s_GeneratedClassName = "_generated_burst_compat_tests";
 
-        protected BurstCompatibilityTests(string asset, string assemblyName)
+        /// <summary>
+        /// Sets up the code generator for Burst compatibility tests.
+        /// </summary>
+        /// <param name="assemblyNameToVerifyBurstCompatibility">Name of the assembly to verify Burst compatibility.</param>
+        /// <param name="generatedCodePath">Destination path for the generated Burst compatibility code.</param>
+        /// <param name="generatedCodeAssemblyName">Name of the assembly that will contain the generated Burst compatibility code.</param>
+        protected BurstCompatibilityTests(string assemblyNameToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName)
         {
-            m_AssetPath = asset;
-            m_AssemblyName = assemblyName;
+            m_GeneratedCodePath = generatedCodePath;
+            m_AssembliesToVerify.Add(assemblyNameToVerifyBurstCompatibility);
+            m_GeneratedCodeAssemblyName = generatedCodeAssemblyName;
+        }
+
+        /// <summary>
+        /// Sets up the code generator for Burst compatibility tests.
+        /// </summary>
+        /// <remarks>
+        /// This constructor takes multiple assembly names to verify, which allows you to check multiple assemblies with
+        /// one test. Prefer to use this instead of separate tests that verify a single assembly if you need to minimize
+        /// CI time.
+        /// </remarks>
+        /// <param name="assemblyNamesToVerifyBurstCompatibility">Names of the assemblies to verify Burst compatibility.</param>
+        /// <param name="generatedCodePath">Destination path for the generated Burst compatibility code.</param>
+        /// <param name="generatedCodeAssemblyName">Name of the assembly that will contain the generated Burst compatibility code.</param>
+        protected BurstCompatibilityTests(string[] assemblyNamesToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName)
+        {
+            m_GeneratedCodePath = generatedCodePath;
+
+            foreach (var assemblyName in assemblyNamesToVerifyBurstCompatibility)
+            {
+                m_AssembliesToVerify.Add(assemblyName);
+            }
+
+            m_GeneratedCodeAssemblyName = generatedCodeAssemblyName;
         }
 
         struct MethodData : IComparable<MethodData>
         {
-            public MethodInfo Info;
+            public MethodBase methodBase;
             public Type InstanceType;
             public Type[] MethodGenericTypeArguments;
             public Type[] InstanceTypeGenericTypeArguments;
             public Dictionary<string, Type> MethodGenericArgumentLookup;
             public Dictionary<string, Type> InstanceTypeGenericArgumentLookup;
             public string RequiredDefine;
+            public BurstCompatibleAttribute.BurstCompatibleCompileTarget CompileTarget;
 
             public int CompareTo(MethodData other)
             {
-                var lhs = Info;
-                var rhs = other.Info;
+                var lhs = methodBase;
+                var rhs = other.methodBase;
 
-                var ltn = Info.DeclaringType.FullName;
-                var rtn = other.Info.DeclaringType.FullName;
+                var ltn = methodBase.DeclaringType.FullName;
+                var rtn = other.methodBase.DeclaringType.FullName;
 
                 int tc = ltn.CompareTo(rtn);
                 if (tc != 0) return tc;
@@ -103,24 +165,49 @@ namespace Unity.Collections.Tests
                 }
                 else
                 {
-                    throw new ArgumentException($"'{genericType.Name}' in '{InstanceType.Name}.{Info.Name}' has no generic type replacement in the generic argument lookups! Did you forget to specify GenericTypeArguments in the [BurstCompatible] attribute?");
+                    throw new ArgumentException($"'{genericType.Name}' in '{InstanceType.Name}.{methodBase.Name}' has no generic type replacement in the generic argument lookups! Did you forget to specify GenericTypeArguments in the [BurstCompatible] attribute?");
                 }
             }
         }
 
-        private void UpdateGeneratedFile(string path)
+        private int UpdateGeneratedFile(string path)
         {
             var buf = new StringBuilder();
-
             var methods = GetTestMethods();
 
-            buf.AppendLine("// auto-generated");
-            buf.AppendLine("#if !NET_DOTS");
-            buf.AppendLine("using System;");
-            buf.AppendLine("using NUnit.Framework;");
-            buf.AppendLine("using Unity.Burst;");
-            buf.AppendLine("using Unity.Collections;");
-            buf.AppendLine("using Unity.Collections.LowLevel.Unsafe;");
+            buf.AppendLine(
+@"// auto-generated
+#if !NET_DOTS
+using System;
+using System.Collections.Generic;
+using NUnit.Framework;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;");
+
+            // This serves to force the player build to skip all the shader variants which dramatically
+            // reduces the player build time. Since we only care about burst compilation, this is fine
+            // and desirable. The reason why this code is generated is that as soon as this definition
+            // exists, the player build pipeline will start using it. Since we don't want to bloat user
+            // build pipelines with extra callbacks or modify their behavior, we generate the code here
+            // for test use only.
+            buf.AppendLine(@"
+#if UNITY_EDITOR
+using UnityEngine;
+using UnityEditor.Build;
+using UnityEditor.Rendering;
+
+class BurstCompatibleSkipShaderVariants : IPreprocessShaders
+{
+    public int callbackOrder => 0;
+
+    public void OnProcessShader(Shader shader, ShaderSnippetData snippet, IList<ShaderCompilerData> data)
+    {
+        data.Clear();
+    }
+}
+#endif
+");
 
             buf.AppendLine("[BurstCompile]");
             buf.AppendLine($"public unsafe class {s_GeneratedClassName}");
@@ -131,7 +218,7 @@ namespace Unity.Collections.Tests
 
             foreach (var methodData in methods)
             {
-                var method = methodData.Info;
+                var method = methodData.methodBase;
                 var isGetter = method.Name.StartsWith("get_");
                 var isSetter = method.Name.StartsWith("set_");
                 var isProperty = isGetter | isSetter;
@@ -152,6 +239,14 @@ namespace Unity.Collections.Tests
                 if (methodData.RequiredDefine != null)
                 {
                     buf.AppendLine($"#if {methodData.RequiredDefine}");
+                }
+
+                if (methodData.CompileTarget == BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)
+                {
+                    // Emit #if UNITY_EDITOR in case BurstCompatible attribute doesn't have any required
+                    // unity defines. We want to be sure that we actually test the editor only code when
+                    // we are actually in the editor.
+                    buf.AppendLine("#if UNITY_EDITOR");
                 }
 
                 buf.AppendLine("    [BurstCompile(CompileSynchronously = true)]");
@@ -185,17 +280,35 @@ namespace Unity.Collections.Tests
                     }
                     else
                     {
-                        buf.Append($"var v{i} = default(");
+                        buf.Append($"        var v{i} = default(");
                         TypeToString(pt, buf, methodData);
                         buf.AppendLine(");");
                     }
                 }
 
+                var info = method as MethodInfo;
+                var refStr = "";
+                var readonlyStr = "";
+
+                // [MayOnlyLiveInBlobStorage] forces types to be referred to by reference only, so we
+                // must be sure to make any local vars use ref whenever something is a ref return.
+                //
+                // Furthermore, we also care about readonly since some returns are ref readonly returns.
+                // Detecting readonly is done by checking the required custom modifiers for the InAttribute.
+                if (info != null && info.ReturnType.IsByRef)
+                {
+                    refStr = "ref ";
+
+                    if (info.ReturnParameter.GetRequiredCustomModifiers().Contains(typeof(InAttribute)))
+                    {
+                        readonlyStr = "readonly ";
+                    }
+                }
 
                 if (method.IsStatic)
                 {
                     if (isGetter)
-                        buf.Append("var __result = ");
+                        buf.Append($"        {refStr}{readonlyStr}var __result = {refStr}");
                     TypeToString(methodData.InstanceType, buf, methodData);
                     buf.Append($".{sourceName}");
                 }
@@ -208,14 +321,20 @@ namespace Unity.Collections.Tests
                     if (isIndexer)
                     {
                         if (isGetter)
-                            buf.Append("        var __result = instance");
+                            buf.Append($"        {refStr}{readonlyStr}var __result = {refStr}instance");
                         else if (isSetter)
                             buf.Append("        instance");
+                    }
+                    else if (method.IsConstructor)
+                    {
+                        // Begin the setup for the constructor call. Arguments will be handled later.
+                        buf.Append("        instance = new ");
+                        TypeToString(methodData.InstanceType, buf, methodData);
                     }
                     else
                     {
                         if (isGetter)
-                            buf.Append("var __result = ");
+                            buf.Append($"        {refStr}{readonlyStr}var __result = {refStr}");
                         buf.Append($"        instance.{sourceName}");
                     }
                 }
@@ -291,13 +410,29 @@ namespace Unity.Collections.Tests
                     buf.Append(")");
 
                 buf.AppendLine(";");
-
                 buf.AppendLine("    }");
 
-                buf.AppendLine($"    public static void BurstCompile_{safeName}()");
-                buf.AppendLine("    {");
-                buf.AppendLine($"        BurstCompiler.CompileFunctionPointer<TestFunc>(Burst_{safeName});");
-                buf.AppendLine("    }");
+                if (methodData.CompileTarget == BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)
+                {
+                    // Closes #if UNITY_EDITOR that surrounds the actual method/property being tested.
+                    buf.AppendLine("#endif");
+                }
+
+                // Set up the call to BurstCompiler.CompileFunctionPointer only in the cases where it is necessary.
+                switch (methodData.CompileTarget)
+                {
+                    case BurstCompatibleAttribute.BurstCompatibleCompileTarget.PlayerAndEditor:
+                    case BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor:
+                    {
+                        buf.AppendLine("#if UNITY_EDITOR");
+                        buf.AppendLine($"    public static void BurstCompile_{safeName}()");
+                        buf.AppendLine("    {");
+                        buf.AppendLine($"        BurstCompiler.CompileFunctionPointer<TestFunc>(Burst_{safeName});");
+                        buf.AppendLine("    }");
+                        buf.AppendLine("#endif");
+                        break;
+                    }
+                }
 
                 if (methodData.RequiredDefine != null)
                 {
@@ -309,6 +444,7 @@ namespace Unity.Collections.Tests
             buf.AppendLine("#endif");
 
             File.WriteAllText(path, buf.ToString());
+            return methods.Length;
         }
 
         private static void TypeToString(Type t, StringBuilder buf, in MethodData methodData)
@@ -452,34 +588,30 @@ namespace Unity.Collections.Tests
 
         MethodData[] GetTestMethods()
         {
-            var seenMethods = new HashSet<MethodInfo>();
+            var seenMethods = new HashSet<MethodBase>();
             var result = new List<MethodData>();
 
-            void MaybeAddMethod(MethodInfo m, Type[] methodGenericTypeArguments, Type[] declaredTypeGenericTypeArguments, string requiredDefine)
+            void MaybeAddMethod(MethodBase m, Type[] methodGenericTypeArguments, Type[] declaredTypeGenericTypeArguments, string requiredDefine, MemberInfo attributeHolder, BurstCompatibleAttribute.BurstCompatibleCompileTarget compileTarget)
             {
                 if (m.IsPrivate)
                     return;
 
-                PropertyInfo property = m.Name.StartsWith("get_") || m.Name.StartsWith("set_") ? m.DeclaringType.GetProperty(m.Name.Substring(4), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.GetProperty | BindingFlags.SetProperty) : null;
-
-                if (m.GetCustomAttribute<ObsoleteAttribute>() != null)
-                    return;
-
-                if (m.GetCustomAttribute<NotBurstCompatibleAttribute>() != null)
-                    return;
-
-                if (property != null)
+                // Burst IL post processing might create a new method that contains $ to ensure it doesn't
+                // conflict with any real names (as an example, it can append $BurstManaged to the original method name).
+                // However, trying to call that method directly in C# isn't possible because the $ is invalid for
+                // identifiers.
+                if (m.Name.Contains('$'))
                 {
-                    if (property.GetCustomAttribute<ObsoleteAttribute>() != null)
-                        return;
-                    if (property.GetCustomAttribute<NotBurstCompatibleAttribute>() != null)
-                        return;
+                    return;
                 }
-                else
-                {
-                    if (m.IsSpecialName)
-                        return;
-                }
+
+                if (attributeHolder.GetCustomAttribute<ObsoleteAttribute>() != null)
+                    return;
+                if (attributeHolder.GetCustomAttribute<NotBurstCompatibleAttribute>() != null)
+                    return;
+                // If this is not a property but still has a special name, ignore it.
+                if (attributeHolder is MethodInfo && m.IsSpecialName)
+                    return;
 
                 var methodGenericArgumentLookup = new Dictionary<string, Type>();
 
@@ -501,7 +633,7 @@ namespace Unity.Collections.Tests
 
                     try
                     {
-                        m = m.MakeGenericMethod(methodGenericTypeArguments);
+                        m = (m as MethodInfo).MakeGenericMethod(methodGenericTypeArguments);
                     }
                     catch (Exception e)
                     {
@@ -536,15 +668,15 @@ namespace Unity.Collections.Tests
                 {
                     var instanceGenericArguments = instanceType.GetGenericArguments();
 
-                    if (instanceGenericArguments.Length != declaredTypeGenericTypeArguments.Length)
-                    {
-                        Debug.LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but BurstCompatible attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
-                        return;
-                    }
-
                     if (declaredTypeGenericTypeArguments == null)
                     {
                         Debug.LogError($"Type `{m.DeclaringType}` is generic but doesn't have a type array in its BurstCompatible attribute");
+                        return;
+                    }
+
+                    if (instanceGenericArguments.Length != declaredTypeGenericTypeArguments.Length)
+                    {
+                        Debug.LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but BurstCompatible attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
                         return;
                     }
 
@@ -591,9 +723,10 @@ namespace Unity.Collections.Tests
                 seenMethods.Add(m);
                 result.Add(new MethodData
                 {
-                    Info = m, InstanceType = instanceType, MethodGenericTypeArguments = methodGenericTypeArguments,
+                    methodBase = m, InstanceType = instanceType, MethodGenericTypeArguments = methodGenericTypeArguments,
                     InstanceTypeGenericTypeArguments = declaredTypeGenericTypeArguments, RequiredDefine = requiredDefine,
-                    MethodGenericArgumentLookup = methodGenericArgumentLookup, InstanceTypeGenericArgumentLookup = instanceTypeGenericLookup
+                    MethodGenericArgumentLookup = methodGenericArgumentLookup, InstanceTypeGenericArgumentLookup = instanceTypeGenericLookup,
+                    CompileTarget = compileTarget
                 });
             }
 
@@ -607,7 +740,7 @@ namespace Unity.Collections.Tests
             // already but we haven't grabbed the declared type generic arguments yet.
             foreach (var t in TypeCache.GetTypesWithAttribute<BurstCompatibleAttribute>())
             {
-                if (t.Assembly.GetName().Name != m_AssemblyName)
+                if (!m_AssembliesToVerify.Contains(t.Assembly.GetName().Name))
                     continue;
 
                 foreach (var typeAttr in t.GetCustomAttributes<BurstCompatibleAttribute>())
@@ -618,22 +751,49 @@ namespace Unity.Collections.Tests
                     // type so just remember this now to make life easier.
                     declaredTypeGenericArguments[t] = typeAttr.GenericTypeArguments;
 
-                    foreach (var m in t.GetMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                    const BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public |
+                                               BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+                    foreach (var c in t.GetConstructors(flags))
                     {
-                        var methodAttrs = m.GetCustomAttributes<BurstCompatibleAttribute>().ToArray();
+                        var attributes = c.GetCustomAttributes<BurstCompatibleAttribute>().ToArray();
 
-                        if (methodAttrs.Length == 0)
+                        if (attributes.Length == 0)
                         {
-                            MaybeAddMethod(m, EmptyGenericTypeArguments, typeAttr.GenericTypeArguments, typeAttr.RequiredUnityDefine);
+                            MaybeAddMethod(c, EmptyGenericTypeArguments, typeAttr.GenericTypeArguments, typeAttr.RequiredUnityDefine, c, typeAttr.CompileTarget);
                         }
                         else
                         {
-                            foreach (var methodAttr in methodAttrs)
+                            foreach (var methodAttr in attributes)
                             {
-                                MaybeAddMethod(m, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine);
+                                MaybeAddMethod(c, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, c, methodAttr.CompileTarget);
                             }
                         }
+                    }
 
+                    foreach (var m in t.GetMethods(flags))
+                    {
+                        // If this is a property getter/setter, the attributes will be stored on the property itself, not
+                        // the method.
+                        MemberInfo attributeHolder = m;
+                        if (m.IsSpecialName && (m.Name.StartsWith("get_") || m.Name.StartsWith("set_")))
+                        {
+                            attributeHolder = m.DeclaringType.GetProperty(m.Name.Substring("get_".Length), flags);
+                            Debug.Assert(attributeHolder != null, $"Failed to find property for {m.Name} in {m.DeclaringType.Name}");
+                        }
+
+                        var attributes = attributeHolder.GetCustomAttributes<BurstCompatibleAttribute>().ToArray();
+
+                        if (attributes.Length == 0)
+                        {
+                            MaybeAddMethod(m, EmptyGenericTypeArguments, typeAttr.GenericTypeArguments, typeAttr.RequiredUnityDefine, attributeHolder, typeAttr.CompileTarget);
+                        }
+                        else
+                        {
+                            foreach (var methodAttr in attributes)
+                            {
+                                MaybeAddMethod(m, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, attributeHolder, methodAttr.CompileTarget);
+                            }
+                        }
                     }
                 }
             }
@@ -641,7 +801,7 @@ namespace Unity.Collections.Tests
             // Direct method search.
             foreach (var m in TypeCache.GetMethodsWithAttribute<BurstCompatibleAttribute>())
             {
-                if (m.DeclaringType.Assembly.GetName().Name != m_AssemblyName)
+                if (!m_AssembliesToVerify.Contains(m.DeclaringType.Assembly.GetName().Name))
                     continue;
 
                 // Look up the GenericTypeArguments on the declaring type that we probably got earlier. If the key
@@ -652,7 +812,7 @@ namespace Unity.Collections.Tests
 
                 foreach (var attr in m.GetCustomAttributes<BurstCompatibleAttribute>())
                 {
-                    MaybeAddMethod(m, attr.GenericTypeArguments, typeGenericArguments, attr.RequiredUnityDefine);
+                    MaybeAddMethod(m, attr.GenericTypeArguments, typeGenericArguments, attr.RequiredUnityDefine, m, attr.CompileTarget);
                 }
             }
 
@@ -663,7 +823,7 @@ namespace Unity.Collections.Tests
 
         private static string GetSafeName(in MethodData methodData)
         {
-            var method = methodData.Info;
+            var method = methodData.methodBase;
             return GetSafeName(method.DeclaringType, methodData) + "_" + r.Replace(method.Name, "__");
         }
 
@@ -676,24 +836,44 @@ namespace Unity.Collections.Tests
             return r.Replace(b.ToString(), "__");
         }
 
+        Assembly GetAssemblyByName(string name)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            return assemblies.SingleOrDefault(assembly => assembly.GetName().Name == name);
+        }
+
         [UnityTest]
         public IEnumerator CompatibilityTests()
         {
             int runCount = 0;
             int successCount = 0;
+            bool playerBuildSucceeded = false;
+            var playerBuildTime = new TimeSpan();
+            var compileFunctionPointerTime = new TimeSpan();
 
             try
             {
-                UpdateGeneratedFile(m_AssetPath);
+                var generatedCount = UpdateGeneratedFile(m_GeneratedCodePath);
+
+                // Make another copy of the generated code and put it in Temp so it's easier to inspect.
+                var debugCodeGenTempDirectory = Path.Combine("Temp/BurstCompatibility/", GetType().Name);
+                var debugCodeGenTempDest = Path.Combine(debugCodeGenTempDirectory, "generated.cs");
+                Directory.CreateDirectory(debugCodeGenTempDirectory);
+                File.Copy(m_GeneratedCodePath, debugCodeGenTempDest, true);
+                Debug.Log($"Generated {generatedCount} Burst compatibility tests.");
+                Debug.Log($"You can inspect a copy of the generated code at: {Path.GetFullPath(debugCodeGenTempDest)}");
 
                 yield return new RecompileScripts();
 
-                var t = GetType().Assembly.GetType(s_GeneratedClassName);
+                var t = GetAssemblyByName(m_GeneratedCodeAssemblyName).GetType(s_GeneratedClassName);
                 if (t == null)
                 {
-                    throw new ApplicationException($"could not find generated type {s_GeneratedClassName} in assembly {GetType().Assembly.FullName}");
+                    throw new ApplicationException($"could not find generated type {s_GeneratedClassName} in assembly {m_GeneratedCodeAssemblyName}");
                 }
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 {
                     if (m.Name.StartsWith("BurstCompile_"))
@@ -710,19 +890,43 @@ namespace Unity.Collections.Tests
                         }
                     }
                 }
+
+                stopwatch.Stop();
+                compileFunctionPointerTime = stopwatch.Elapsed;
+
+                var buildOptions = new BuildPlayerOptions();
+                buildOptions.target = EditorUserBuildSettings.activeBuildTarget;
+                buildOptions.locationPathName = FileUtil.GetUniqueTempPathInProject();
+                buildOptions.options = BuildOptions.IncludeTestAssemblies;
+                var buildReport = BuildPipeline.BuildPlayer(buildOptions);
+                playerBuildSucceeded = buildReport.summary.result == BuildResult.Succeeded;
+                playerBuildTime = buildReport.summary.totalTime;
             }
             finally
             {
-                if (runCount != successCount)
+                Debug.Log($"Player build duration: {playerBuildTime.TotalSeconds} s.");
+
+                if (playerBuildSucceeded)
                 {
-                    Debug.LogError($"Burst compatibility tests failed; ran {runCount} tests, {successCount} OK, {runCount - successCount} FAILED.");
+                    Debug.Log("Burst AOT compile via player build succeeded.");
                 }
                 else
                 {
-                    Debug.Log($"Ran {runCount} tests, all OK");
+                    Debug.LogError("Player build FAILED.");
                 }
 
-                AssetDatabase.DeleteAsset(m_AssetPath);
+                Debug.Log($"Compile function pointer duration: {compileFunctionPointerTime.TotalSeconds} s.");
+
+                if (runCount != successCount)
+                {
+                    Debug.LogError($"Burst compatibility tests failed; ran {runCount} editor tests, {successCount} OK, {runCount - successCount} FAILED.");
+                }
+                else
+                {
+                    Debug.Log($"Ran {runCount} editor Burst compatible tests, all OK.");
+                }
+
+                AssetDatabase.DeleteAsset(m_GeneratedCodePath);
             }
 
             yield return new RecompileScripts();

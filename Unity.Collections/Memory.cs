@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -50,7 +50,7 @@ namespace Unity.Collections
                 static void* CustomResize(void* oldPointer, long oldCount, long newCount, Allocator allocator, long size, int align)
                 {
                     AllocatorManager.Block block = default;
-                    block.Range.Allocator = new AllocatorManager.AllocatorHandle{Value=(int)allocator};
+                    block.Range.Allocator = allocator;
                     block.Range.Items = (int)newCount;
                     block.Range.Pointer = (IntPtr)oldPointer;
                     block.BytesPerItem = (int)size;
@@ -138,7 +138,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTION_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal static void CheckByteCountIsReasonable(long size)
         {
             if (size < 0)

@@ -100,7 +100,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -375,6 +375,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="container"></param>
         /// <returns>Container's atomic safety handle.</returns>
+        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
         public static AtomicSafetyHandle GetAtomicSafetyHandle(in NativeBitArray container)
         {
             return container.m_Safety;
@@ -385,6 +386,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="container">Containter to set atomic safety handle on.</param>
         /// <param name="safety">Atomic safety handle.</param>
+        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
         public static void SetAtomicSafetyHandle(ref NativeBitArray container, AtomicSafetyHandle safety)
         {
             container.m_Safety = safety;

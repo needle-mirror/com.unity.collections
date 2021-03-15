@@ -370,7 +370,7 @@ namespace Unity.Collections
             return endBit;
         }
 
-        internal static int FindWithBeginEnd(ulong* ptr, int beginBit, int endBit, int numBits)
+        internal static int FindWithBE(ulong* ptr, int beginBit, int endBit, int numBits)
         {
             int idx;
 
@@ -445,7 +445,7 @@ namespace Unity.Collections
             return int.MaxValue;
         }
 
-        internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBeginEnd(ptr, pos, pos + count, numBits);
+        internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBE(ptr, pos, pos + count, numBits);
     }
 
     /// <summary>

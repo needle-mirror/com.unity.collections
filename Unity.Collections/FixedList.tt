@@ -32,6 +32,352 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
+    [Serializable]
+    internal struct FixedList<T,U> 
+    : INativeList<T> 
+    where T : unmanaged 
+    where U : unmanaged
+    {
+        [SerializeField] internal ushort length;
+        [SerializeField] internal U buffer;
+        
+        /// <summary>
+        /// The current number of items in the list.
+        /// </summary>
+        /// <value>The item length.</value>
+        [CreateProperty]
+        public int Length
+        {
+            get => length;
+            set
+            {
+                FixedList.CheckResize<U,T>(value);
+                length = (ushort)value;
+            }
+        }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
+
+        internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
+
+        unsafe internal byte* Buffer
+        {
+            get
+            {
+                fixed(U* u = &buffer)
+                    return (byte*)u + FixedList.PaddingBytes<T>();
+            }
+        }
+
+        /// <summary>
+        /// The number of items that can fit in the list.
+        /// </summary>
+        /// <value>The number of items that the list can hold.</value>
+        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
+        /// to fit more or fewer items.</remarks>
+        public int Capacity
+        {
+          get
+          {
+              return FixedList.Capacity<U,T>();
+          }
+          set
+          {
+              CheckCapacityInRange(value);
+          }
+        }
+
+        /// <summary>
+        /// Retrieve a member of the list by index.
+        /// </summary>
+        /// <param name="index">The zero-based index into the list.</param>
+        /// <value>The list item at the specified index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
+        public T this[int index]
+        {
+            get
+            {
+                FixedList.CheckElementAccess(index, length);
+                unsafe
+                {
+                    return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
+                }
+            }
+            set
+            {
+                unsafe
+                {
+                    UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
+                }
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public ref T ElementAt(int index)
+        {
+            FixedList.CheckElementAccess(index, length);
+            unsafe
+            {
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
+            }
+        }
+
+        /// <summary>
+        /// Computes a hash code summary of the FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            unsafe
+            {
+                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
+            }
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <param name="item">The T to be added at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        public void Add(in T item)
+        {
+            this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <param name="item">The T to be added at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+
+        /// <summary>
+        /// Clears the list.
+        /// </summary>
+        public void Clear()
+        {
+            Length = 0;
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
+        {
+            int items = end - begin;
+            if(items < 1)
+                return;
+            int itemsToCopy = length - begin;
+            Length += items;
+            if(itemsToCopy < 1)
+                return;
+            int bytesToCopy = itemsToCopy * UnsafeUtility.SizeOf<T>();
+            unsafe
+            {
+                byte *b = Buffer;
+                byte *dest = b + end * UnsafeUtility.SizeOf<T>();
+                byte *src = b + begin * UnsafeUtility.SizeOf<T>();
+                UnsafeUtility.MemMove(dest, src, bytesToCopy);
+            }
+        }
+
+        /// <summary>
+        /// Inserts a single element into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
+        /// <param name="item">The element to insert</param>
+        public void Insert(int index, in T item)
+        {
+            InsertRangeWithBeginEnd(index, index+1);
+            this[index] = item;
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
+        public void RemoveAtSwapBack(int index)
+        {
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
+        {
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
+
+        /// <summary>
+        /// Creates a managed Array of T that is a copy of this FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <returns></returns>
+        [NotBurstCompatible]
+        public T[] ToArray()
+        {
+            var result = new T[Length];
+            unsafe
+            {
+                byte* s = Buffer;
+                fixed(T* d = result)
+                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Creates an unmanaged NativeArray&lt;T&gt; that is a copy of this FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
+        public NativeArray<T> ToNativeArray(Allocator allocator)
+        {
+            unsafe
+            {
+                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
+                return copy;
+            }
+        }
+        
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }        
+    }
+
     [BurstCompatible]
     struct FixedList
     {
@@ -297,7 +643,33 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -308,24 +680,8 @@ for(var size = 0; size < 5; ++size)
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -338,7 +694,37 @@ for(var size = 0; size < 5; ++size)
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -353,22 +739,8 @@ for(var size = 0; size < 5; ++size)
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this <#=TYPENAME#>&lt;T&gt;.
@@ -618,6 +990,10 @@ for(var size = 0; size < 5; ++size)
         }
     }
 
+    /// <summary>
+    /// <#=TYPENAME#> extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class <#=TYPENAME#>Extensions
     {
         /// <summary>
@@ -652,7 +1028,10 @@ for(var size = 0; size < 5; ++size)
         /// Searches for the specified item from the begining of the <#=TYPENAME#> forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the <#=TYPENAME#></param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
@@ -672,7 +1051,10 @@ for(var size = 0; size < 5; ++size)
         /// Removes the first occurrence of an item from the <#=TYPENAME#>&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the <#=TYPENAME#>&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
@@ -892,37 +1274,6 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Searches for the specified <#=TYPE#> and returns the zero-based index of the first occurrence within the
-        /// range of elements in the <#=TYPENAME#> that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#>.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(<#=TYPE#> item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified <#=TYPE#> and returns the zero-based index of the first occurrence within the
-        /// range of elements in the <#=TYPENAME#> that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#>.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(<#=TYPE#> item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the <#=TYPENAME#>.
         /// </summary>
         /// <param name="item">The object to locate in the <#=TYPENAME#>.</param>
@@ -994,7 +1345,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -1019,28 +1370,38 @@ for(var size = 0; size < 5; ++size)
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(<#=TYPE#>);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the <#=TYPE#> at the specified index, and copies all subsequent elements backward to fill the
@@ -1049,7 +1410,7 @@ for(var size = 0; size < 5; ++size)
         /// <param name="index">The zero-based index at which to remove the <#=TYPE#></param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -1075,6 +1436,36 @@ for(var size = 0; size < 5; ++size)
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(<#=TYPE#>);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -1083,22 +1474,8 @@ for(var size = 0; size < 5; ++size)
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(<#=TYPE#>);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of <#=TYPE#> that is a copy of this <#=TYPENAME#>.

@@ -112,11 +112,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     {
         var hashMap = new NativeHashMap<int, int>(16, Allocator.TempJob);
         hashMap.Dispose();
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
         () => { hashMap.Dispose(); });
     }
 
@@ -535,11 +531,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { container[0] = 2; });
 
         kv.Dispose(disposeJob);
@@ -559,11 +551,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
         container[0] = 123;
         container.Dispose();
         Assert.That(() => container[0],
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
 
@@ -727,11 +715,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
             container.Add(8, 890);
             container.Add(9, 901);
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var kv in container)
                 {
@@ -739,11 +723,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
                 }
             });
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var kv in container)
                 {
@@ -807,11 +787,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             }.Schedule(1, 2);
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 while (iter.MoveNext())
                 {

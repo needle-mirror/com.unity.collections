@@ -148,7 +148,7 @@ namespace Unity.Collections
         /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs using it have run.</remarks>
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             CheckNotDisposed();
@@ -306,6 +306,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle m_Safety;
 
+            [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
             internal ReadOnly(void* data, ref AtomicSafetyHandle safety)
             {
                 m_Data = data;

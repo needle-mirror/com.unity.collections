@@ -125,6 +125,8 @@ namespace Unity.Collections
         /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
         /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) m_Data.GetUnsafePtr();
@@ -322,6 +324,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="source">The System.String object to construct this HeapString with</param>
         /// <param name="allocator">the Allocator to use for the underlying memory</param>
+        [NotBurstCompatible]
         public HeapString(String source, Allocator allocator)
         {
             m_Data = new NativeList<byte>(source.Length * 2 + 1, allocator);

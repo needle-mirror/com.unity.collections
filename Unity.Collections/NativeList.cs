@@ -11,18 +11,32 @@ using Unity.Jobs;
 namespace Unity.Collections
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface INativeList<T> where T : struct
+    /// <typeparam name="T">The type of the elements in the container.</typeparam>
+    public interface IIndexable<T> where T : struct
     {
         /// <summary>
-        ///
+        /// The current length of the container.
         /// </summary>
         int Length { get; set; }
 
         /// <summary>
-        ///
+        /// Return a ref to the T at the given T index. The index must be in the range of [0..Length).
+        /// </summary>
+        /// <param name="index">The T index to access.</param>
+        /// <returns>A ref T for the requested index.</returns>
+        ref T ElementAt(int index);
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the container.</typeparam>
+    public interface INativeList<T> : IIndexable<T> where T : struct
+    {
+        /// <summary>
+        /// The number of items that the list can hold before it resizes its internal storage.
         /// </summary>
         int Capacity { get; set; }
 
@@ -33,18 +47,11 @@ namespace Unity.Collections
         bool IsEmpty { get; }
 
         /// <summary>
-        ///
+        /// Return the T at the given index. The index must be in the range of [0..Length).
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The T index to access.</param>
+        /// <returns>A value T for the requested index.</returns>
         T this[int index] { get; set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        ref T ElementAt(int index);
 
         /// <summary>
         /// Clears the list.
@@ -70,16 +77,18 @@ namespace Unity.Collections
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeList<T>>();
+        internal int m_SafetyIndexHint;
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeList<T>>();
 
         [BurstDiscard]
-        static void CreateStaticSafetyId()
+        [NotBurstCompatible]        
+        internal static void CreateStaticSafetyId()
         {
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeList<T>>();
         }
 
         [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
+        internal DisposeSentinel m_DisposeSentinel;
 #endif
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeList* m_ListData;
@@ -111,29 +120,55 @@ namespace Unity.Collections
             : this(initialCapacity, allocator, 2)
         {
         }
-
-        NativeList(int initialCapacity, Allocator allocator, int disposeSentinelStackDepth)
+    
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        void Initialize<U>(int initialCapacity, ref U allocator, int disposeSentinelStackDepth) where U : unmanaged, AllocatorManager.IAllocator
         {
             var totalSize = UnsafeUtility.SizeOf<T>() * (long)initialCapacity;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CheckAllocator(allocator);
+            CheckAllocator((Allocator)allocator.Handle.Value);
             CheckInitialCapacity(initialCapacity);
             CollectionHelper.CheckIsUnmanaged<T>();
             CheckTotalSize(initialCapacity, totalSize);
 
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, (Allocator)allocator.Handle.Value);
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
             }
             AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+
+            m_SafetyIndexHint = (allocator.Handle).AddSafetyHandle(m_Safety);
+            if(m_SafetyIndexHint != AllocatorManager.AllocatorHandle.InvalidChildSafetyHandleIndex)
+                DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-            m_ListData = UnsafeList.Create(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), initialCapacity, allocator);
-            m_DeprecatedAllocator = allocator;
+            m_ListData = UnsafeList.Create(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), initialCapacity, ref allocator);
+            m_DeprecatedAllocator = (Allocator)allocator.Handle.Value;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
+        }
+    
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        static NativeList<T> New<U>(int initialCapacity, ref U allocator, int disposeSentinelStackDepth) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var nativelist = new NativeList<T>();
+            nativelist.Initialize(initialCapacity, ref allocator, disposeSentinelStackDepth);
+            return nativelist;
+        }
+
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static NativeList<T> New<U>(int initialCapacity, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            return New(initialCapacity, ref allocator, 2);
+        }
+
+        NativeList(int initialCapacity, Allocator allocator, int disposeSentinelStackDepth)
+        {
+            this = default;
+            AllocatorManager.AllocatorHandle temp = allocator;
+            Initialize(initialCapacity, ref temp, disposeSentinelStackDepth);
         }
 
         /// <summary>
@@ -428,9 +463,27 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            ((AllocatorManager.AllocatorHandle)m_DeprecatedAllocator).TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
 #endif
             UnsafeList.Destroy(m_ListData);
+            m_ListData = null;
+        }
+
+        /// <summary>
+        /// Disposes of this container and deallocates its memory immediately.
+        /// <typeparam name="U">The allocator type.</typeparam>
+        /// <param name="allocator">The allocator to use.</param>
+        /// </summary>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal void Dispose<U>(ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CheckHandleMatches(allocator.Handle);
+            ((AllocatorManager.AllocatorHandle)m_DeprecatedAllocator).TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
+            UnsafeList.Destroy(m_ListData, ref allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>());
             m_ListData = null;
         }
 
@@ -445,7 +498,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -758,6 +811,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 
+            [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
             internal unsafe ParallelWriter(void* ptr, UnsafeList* listData, ref AtomicSafetyHandle safety)
             {
                 Ptr = ptr;
@@ -902,6 +956,17 @@ namespace Unity.Collections
             if (value < 0)
                 throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
         }
+        
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckHandleMatches(AllocatorManager.AllocatorHandle handle)
+        {
+            if(m_ListData == null)
+                throw new ArgumentOutOfRangeException("$Allocator handle {handle} can't match because container is not initialized.");
+            if(m_ListData->Allocator.Index != handle.Index)
+                throw new ArgumentOutOfRangeException("$Allocator handle {handle} can't match because container handle index doesn't match.");
+            if(m_ListData->Allocator.Version != handle.Version)
+                throw new ArgumentOutOfRangeException("$Allocator handle {handle} matches container handle index, but has different version.");
+        }
     }
 
     [NativeContainer]
@@ -994,7 +1059,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of list element.</typeparam>
         /// <returns>The atomic safety handle for the list.</returns>
         /// <remarks>The symbol, `ENABLE_UNITY_COLLECTIONS_CHECKS` must be defined for this function to be available.</remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) }, RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
         public static AtomicSafetyHandle GetAtomicSafetyHandle<T>(ref NativeList<T> list) where T : struct
         {
             return list.m_Safety;

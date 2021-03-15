@@ -33,27 +33,94 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
     [BurstCompatible]
     public struct FixedBytes16
     {
-      [FieldOffset(0)] public byte byte0000;
-      [FieldOffset(1)] public byte byte0001;
-      [FieldOffset(2)] public byte byte0002;
-      [FieldOffset(3)] public byte byte0003;
-      [FieldOffset(4)] public byte byte0004;
-      [FieldOffset(5)] public byte byte0005;
-      [FieldOffset(6)] public byte byte0006;
-      [FieldOffset(7)] public byte byte0007;
-      [FieldOffset(8)] public byte byte0008;
-      [FieldOffset(9)] public byte byte0009;
-      [FieldOffset(10)] public byte byte0010;
-      [FieldOffset(11)] public byte byte0011;
-      [FieldOffset(12)] public byte byte0012;
-      [FieldOffset(13)] public byte byte0013;
-      [FieldOffset(14)] public byte byte0014;
-      [FieldOffset(15)] public byte byte0015;
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(0)] public byte byte0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(1)] public byte byte0001;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(2)] public byte byte0002;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(3)] public byte byte0003;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(4)] public byte byte0004;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(5)] public byte byte0005;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(6)] public byte byte0006;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(7)] public byte byte0007;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(8)] public byte byte0008;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(9)] public byte byte0009;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(10)] public byte byte0010;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(11)] public byte byte0011;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(12)] public byte byte0012;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(13)] public byte byte0013;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(14)] public byte byte0014;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(15)] public byte byte0015;
+
     }
 
 
@@ -62,26 +129,89 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=30)]
     [BurstCompatible]
     public struct FixedBytes30
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(16)] public byte byte0016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(17)] public byte byte0017;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(18)] public byte byte0018;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(19)] public byte byte0019;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(20)] public byte byte0020;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(21)] public byte byte0021;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(22)] public byte byte0022;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(23)] public byte byte0023;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(24)] public byte byte0024;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(25)] public byte byte0025;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(26)] public byte byte0026;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(27)] public byte byte0027;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(28)] public byte byte0028;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(29)] public byte byte0029;
+
     }
 
     /// <summary>
@@ -137,9 +267,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -397,6 +529,7 @@ namespace Unity.Collections
         /// Construct a FixedString32 from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString32 with</param>
+        [NotBurstCompatible]
         public FixedString32(String source)
         {
             bytes = default;
@@ -908,28 +1041,99 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=62)]
     [BurstCompatible]
     public struct FixedBytes62
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(48)] public byte byte0048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(49)] public byte byte0049;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(50)] public byte byte0050;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(51)] public byte byte0051;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(52)] public byte byte0052;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(53)] public byte byte0053;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(54)] public byte byte0054;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(55)] public byte byte0055;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(56)] public byte byte0056;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(57)] public byte byte0057;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(58)] public byte byte0058;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(59)] public byte byte0059;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(60)] public byte byte0060;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(61)] public byte byte0061;
+
     }
 
     /// <summary>
@@ -985,9 +1189,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -1245,6 +1451,7 @@ namespace Unity.Collections
         /// Construct a FixedString64 from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString64 with</param>
+        [NotBurstCompatible]
         public FixedString64(String source)
         {
             bytes = default;
@@ -1733,7 +1940,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -1749,32 +1956,119 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=126)]
     [BurstCompatible]
     public struct FixedBytes126
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(112)] public byte byte0112;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(113)] public byte byte0113;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(114)] public byte byte0114;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(115)] public byte byte0115;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(116)] public byte byte0116;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(117)] public byte byte0117;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(118)] public byte byte0118;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(119)] public byte byte0119;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(120)] public byte byte0120;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(121)] public byte byte0121;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(122)] public byte byte0122;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(123)] public byte byte0123;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(124)] public byte byte0124;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(125)] public byte byte0125;
+
     }
 
     /// <summary>
@@ -1830,9 +2124,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -2090,6 +2386,7 @@ namespace Unity.Collections
         /// Construct a FixedString128 from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString128 with</param>
+        [NotBurstCompatible]
         public FixedString128(String source)
         {
             bytes = default;
@@ -2571,7 +2868,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -2587,56 +2884,239 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=510)]
     [BurstCompatible]
     public struct FixedBytes510
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(112)] public FixedBytes16 offset0112;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(128)] public FixedBytes16 offset0128;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(144)] public FixedBytes16 offset0144;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(160)] public FixedBytes16 offset0160;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(176)] public FixedBytes16 offset0176;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(192)] public FixedBytes16 offset0192;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(208)] public FixedBytes16 offset0208;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(224)] public FixedBytes16 offset0224;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(240)] public FixedBytes16 offset0240;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(256)] public FixedBytes16 offset0256;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(272)] public FixedBytes16 offset0272;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(288)] public FixedBytes16 offset0288;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(304)] public FixedBytes16 offset0304;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(320)] public FixedBytes16 offset0320;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(336)] public FixedBytes16 offset0336;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(352)] public FixedBytes16 offset0352;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(368)] public FixedBytes16 offset0368;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(384)] public FixedBytes16 offset0384;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(400)] public FixedBytes16 offset0400;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(416)] public FixedBytes16 offset0416;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(432)] public FixedBytes16 offset0432;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(448)] public FixedBytes16 offset0448;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(464)] public FixedBytes16 offset0464;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(480)] public FixedBytes16 offset0480;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(496)] public byte byte0496;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(497)] public byte byte0497;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(498)] public byte byte0498;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(499)] public byte byte0499;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(500)] public byte byte0500;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(501)] public byte byte0501;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(502)] public byte byte0502;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(503)] public byte byte0503;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(504)] public byte byte0504;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(505)] public byte byte0505;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(506)] public byte byte0506;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(507)] public byte byte0507;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(508)] public byte byte0508;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(509)] public byte byte0509;
+
     }
 
     /// <summary>
@@ -2692,9 +3172,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -2952,6 +3434,7 @@ namespace Unity.Collections
         /// Construct a FixedString512 from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString512 with</param>
+        [NotBurstCompatible]
         public FixedString512(String source)
         {
             bytes = default;
@@ -3426,7 +3909,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -3442,280 +3925,1359 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4094)]
     [BurstCompatible]
     public struct FixedBytes4094
     {
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(112)] public FixedBytes16 offset0112;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(128)] public FixedBytes16 offset0128;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(144)] public FixedBytes16 offset0144;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(160)] public FixedBytes16 offset0160;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(176)] public FixedBytes16 offset0176;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(192)] public FixedBytes16 offset0192;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(208)] public FixedBytes16 offset0208;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(224)] public FixedBytes16 offset0224;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(240)] public FixedBytes16 offset0240;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(256)] public FixedBytes16 offset0256;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(272)] public FixedBytes16 offset0272;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(288)] public FixedBytes16 offset0288;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(304)] public FixedBytes16 offset0304;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(320)] public FixedBytes16 offset0320;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(336)] public FixedBytes16 offset0336;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(352)] public FixedBytes16 offset0352;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(368)] public FixedBytes16 offset0368;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(384)] public FixedBytes16 offset0384;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(400)] public FixedBytes16 offset0400;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(416)] public FixedBytes16 offset0416;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(432)] public FixedBytes16 offset0432;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(448)] public FixedBytes16 offset0448;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(464)] public FixedBytes16 offset0464;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(480)] public FixedBytes16 offset0480;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(496)] public FixedBytes16 offset0496;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(512)] public FixedBytes16 offset0512;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(528)] public FixedBytes16 offset0528;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(544)] public FixedBytes16 offset0544;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(560)] public FixedBytes16 offset0560;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(576)] public FixedBytes16 offset0576;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(592)] public FixedBytes16 offset0592;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(608)] public FixedBytes16 offset0608;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(624)] public FixedBytes16 offset0624;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(640)] public FixedBytes16 offset0640;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(656)] public FixedBytes16 offset0656;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(672)] public FixedBytes16 offset0672;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(688)] public FixedBytes16 offset0688;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(704)] public FixedBytes16 offset0704;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(720)] public FixedBytes16 offset0720;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(736)] public FixedBytes16 offset0736;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(752)] public FixedBytes16 offset0752;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(768)] public FixedBytes16 offset0768;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(784)] public FixedBytes16 offset0784;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(800)] public FixedBytes16 offset0800;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(816)] public FixedBytes16 offset0816;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(832)] public FixedBytes16 offset0832;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(848)] public FixedBytes16 offset0848;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(864)] public FixedBytes16 offset0864;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(880)] public FixedBytes16 offset0880;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(896)] public FixedBytes16 offset0896;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(912)] public FixedBytes16 offset0912;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(928)] public FixedBytes16 offset0928;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(944)] public FixedBytes16 offset0944;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(960)] public FixedBytes16 offset0960;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(976)] public FixedBytes16 offset0976;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(992)] public FixedBytes16 offset0992;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1008)] public FixedBytes16 offset1008;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1024)] public FixedBytes16 offset1024;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1040)] public FixedBytes16 offset1040;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1056)] public FixedBytes16 offset1056;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1072)] public FixedBytes16 offset1072;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1088)] public FixedBytes16 offset1088;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1104)] public FixedBytes16 offset1104;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1120)] public FixedBytes16 offset1120;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1136)] public FixedBytes16 offset1136;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1152)] public FixedBytes16 offset1152;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1168)] public FixedBytes16 offset1168;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1184)] public FixedBytes16 offset1184;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1200)] public FixedBytes16 offset1200;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1216)] public FixedBytes16 offset1216;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1232)] public FixedBytes16 offset1232;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1248)] public FixedBytes16 offset1248;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1264)] public FixedBytes16 offset1264;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1280)] public FixedBytes16 offset1280;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1296)] public FixedBytes16 offset1296;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1312)] public FixedBytes16 offset1312;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1328)] public FixedBytes16 offset1328;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1344)] public FixedBytes16 offset1344;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1360)] public FixedBytes16 offset1360;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1376)] public FixedBytes16 offset1376;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1392)] public FixedBytes16 offset1392;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1408)] public FixedBytes16 offset1408;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1424)] public FixedBytes16 offset1424;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1440)] public FixedBytes16 offset1440;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1456)] public FixedBytes16 offset1456;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1472)] public FixedBytes16 offset1472;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1488)] public FixedBytes16 offset1488;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1504)] public FixedBytes16 offset1504;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1520)] public FixedBytes16 offset1520;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1536)] public FixedBytes16 offset1536;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1552)] public FixedBytes16 offset1552;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1568)] public FixedBytes16 offset1568;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1584)] public FixedBytes16 offset1584;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1600)] public FixedBytes16 offset1600;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1616)] public FixedBytes16 offset1616;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1632)] public FixedBytes16 offset1632;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1648)] public FixedBytes16 offset1648;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1664)] public FixedBytes16 offset1664;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1680)] public FixedBytes16 offset1680;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1696)] public FixedBytes16 offset1696;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1712)] public FixedBytes16 offset1712;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1728)] public FixedBytes16 offset1728;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1744)] public FixedBytes16 offset1744;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1760)] public FixedBytes16 offset1760;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1776)] public FixedBytes16 offset1776;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1792)] public FixedBytes16 offset1792;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1808)] public FixedBytes16 offset1808;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1824)] public FixedBytes16 offset1824;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1840)] public FixedBytes16 offset1840;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1856)] public FixedBytes16 offset1856;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1872)] public FixedBytes16 offset1872;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1888)] public FixedBytes16 offset1888;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1904)] public FixedBytes16 offset1904;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1920)] public FixedBytes16 offset1920;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1936)] public FixedBytes16 offset1936;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1952)] public FixedBytes16 offset1952;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1968)] public FixedBytes16 offset1968;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(1984)] public FixedBytes16 offset1984;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2000)] public FixedBytes16 offset2000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2016)] public FixedBytes16 offset2016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2032)] public FixedBytes16 offset2032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2048)] public FixedBytes16 offset2048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2064)] public FixedBytes16 offset2064;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2080)] public FixedBytes16 offset2080;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2096)] public FixedBytes16 offset2096;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2112)] public FixedBytes16 offset2112;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2128)] public FixedBytes16 offset2128;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2144)] public FixedBytes16 offset2144;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2160)] public FixedBytes16 offset2160;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2176)] public FixedBytes16 offset2176;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2192)] public FixedBytes16 offset2192;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2208)] public FixedBytes16 offset2208;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2224)] public FixedBytes16 offset2224;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2240)] public FixedBytes16 offset2240;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2256)] public FixedBytes16 offset2256;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2272)] public FixedBytes16 offset2272;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2288)] public FixedBytes16 offset2288;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2304)] public FixedBytes16 offset2304;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2320)] public FixedBytes16 offset2320;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2336)] public FixedBytes16 offset2336;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2352)] public FixedBytes16 offset2352;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2368)] public FixedBytes16 offset2368;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2384)] public FixedBytes16 offset2384;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2400)] public FixedBytes16 offset2400;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2416)] public FixedBytes16 offset2416;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2432)] public FixedBytes16 offset2432;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2448)] public FixedBytes16 offset2448;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2464)] public FixedBytes16 offset2464;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2480)] public FixedBytes16 offset2480;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2496)] public FixedBytes16 offset2496;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2512)] public FixedBytes16 offset2512;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2528)] public FixedBytes16 offset2528;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2544)] public FixedBytes16 offset2544;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2560)] public FixedBytes16 offset2560;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2576)] public FixedBytes16 offset2576;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2592)] public FixedBytes16 offset2592;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2608)] public FixedBytes16 offset2608;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2624)] public FixedBytes16 offset2624;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2640)] public FixedBytes16 offset2640;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2656)] public FixedBytes16 offset2656;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2672)] public FixedBytes16 offset2672;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2688)] public FixedBytes16 offset2688;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2704)] public FixedBytes16 offset2704;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2720)] public FixedBytes16 offset2720;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2736)] public FixedBytes16 offset2736;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2752)] public FixedBytes16 offset2752;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2768)] public FixedBytes16 offset2768;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2784)] public FixedBytes16 offset2784;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2800)] public FixedBytes16 offset2800;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2816)] public FixedBytes16 offset2816;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2832)] public FixedBytes16 offset2832;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2848)] public FixedBytes16 offset2848;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2864)] public FixedBytes16 offset2864;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2880)] public FixedBytes16 offset2880;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2896)] public FixedBytes16 offset2896;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2912)] public FixedBytes16 offset2912;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2928)] public FixedBytes16 offset2928;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2944)] public FixedBytes16 offset2944;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2960)] public FixedBytes16 offset2960;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2976)] public FixedBytes16 offset2976;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(2992)] public FixedBytes16 offset2992;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3008)] public FixedBytes16 offset3008;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3024)] public FixedBytes16 offset3024;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3040)] public FixedBytes16 offset3040;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3056)] public FixedBytes16 offset3056;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3072)] public FixedBytes16 offset3072;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3088)] public FixedBytes16 offset3088;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3104)] public FixedBytes16 offset3104;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3120)] public FixedBytes16 offset3120;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3136)] public FixedBytes16 offset3136;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3152)] public FixedBytes16 offset3152;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3168)] public FixedBytes16 offset3168;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3184)] public FixedBytes16 offset3184;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3200)] public FixedBytes16 offset3200;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3216)] public FixedBytes16 offset3216;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3232)] public FixedBytes16 offset3232;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3248)] public FixedBytes16 offset3248;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3264)] public FixedBytes16 offset3264;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3280)] public FixedBytes16 offset3280;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3296)] public FixedBytes16 offset3296;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3312)] public FixedBytes16 offset3312;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3328)] public FixedBytes16 offset3328;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3344)] public FixedBytes16 offset3344;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3360)] public FixedBytes16 offset3360;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3376)] public FixedBytes16 offset3376;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3392)] public FixedBytes16 offset3392;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3408)] public FixedBytes16 offset3408;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3424)] public FixedBytes16 offset3424;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3440)] public FixedBytes16 offset3440;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3456)] public FixedBytes16 offset3456;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3472)] public FixedBytes16 offset3472;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3488)] public FixedBytes16 offset3488;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3504)] public FixedBytes16 offset3504;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3520)] public FixedBytes16 offset3520;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3536)] public FixedBytes16 offset3536;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3552)] public FixedBytes16 offset3552;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3568)] public FixedBytes16 offset3568;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3584)] public FixedBytes16 offset3584;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3600)] public FixedBytes16 offset3600;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3616)] public FixedBytes16 offset3616;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3632)] public FixedBytes16 offset3632;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3648)] public FixedBytes16 offset3648;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3664)] public FixedBytes16 offset3664;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3680)] public FixedBytes16 offset3680;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3696)] public FixedBytes16 offset3696;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3712)] public FixedBytes16 offset3712;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3728)] public FixedBytes16 offset3728;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3744)] public FixedBytes16 offset3744;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3760)] public FixedBytes16 offset3760;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3776)] public FixedBytes16 offset3776;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3792)] public FixedBytes16 offset3792;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3808)] public FixedBytes16 offset3808;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3824)] public FixedBytes16 offset3824;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3840)] public FixedBytes16 offset3840;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3856)] public FixedBytes16 offset3856;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3872)] public FixedBytes16 offset3872;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3888)] public FixedBytes16 offset3888;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3904)] public FixedBytes16 offset3904;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3920)] public FixedBytes16 offset3920;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3936)] public FixedBytes16 offset3936;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3952)] public FixedBytes16 offset3952;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3968)] public FixedBytes16 offset3968;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(3984)] public FixedBytes16 offset3984;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4000)] public FixedBytes16 offset4000;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4016)] public FixedBytes16 offset4016;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4032)] public FixedBytes16 offset4032;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4048)] public FixedBytes16 offset4048;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4064)] public FixedBytes16 offset4064;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4080)] public byte byte4080;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4081)] public byte byte4081;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4082)] public byte byte4082;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4083)] public byte byte4083;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4084)] public byte byte4084;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4085)] public byte byte4085;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4086)] public byte byte4086;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4087)] public byte byte4087;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4088)] public byte byte4088;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4089)] public byte byte4089;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4090)] public byte byte4090;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4091)] public byte byte4091;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4092)] public byte byte4092;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(4093)] public byte byte4093;
+
     }
 
     /// <summary>
@@ -3771,9 +5333,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -4031,6 +5595,7 @@ namespace Unity.Collections
         /// Construct a FixedString4096 from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString4096 with</param>
+        [NotBurstCompatible]
         public FixedString4096(String source)
         {
             bytes = default;
@@ -4498,7 +6063,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

@@ -38,7 +38,10 @@ internal class WordsTests
     {
         backupCulture = Thread.CurrentThread.CurrentCulture;
         Thread.CurrentThread.CurrentCulture = testCulture;
+//disable obsolete word/numberedwords collections
+#pragma warning disable 0618
         WordStorage.Setup();
+#pragma warning restore 0618
     }
 
     [TearDown]
@@ -174,6 +177,8 @@ internal class WordsTests
         Utf16ToUtf8(source);
     }
 
+//disable obsolete word/numberedwords collections
+#pragma warning disable 0618
     [TestCase("red")]
     [TestCase("orange")]
     [TestCase("yellow")]
@@ -233,6 +238,7 @@ internal class WordsTests
         Assert.AreEqual(s.ToString(), value);
     }
 
+
     [TestCase("red")]
     [TestCase("orange")]
     [TestCase("yellow")]
@@ -288,6 +294,7 @@ internal class WordsTests
     public void AddWorks(String value)
     {
         Words w = new Words();
+
         Assert.IsFalse(WordStorage.Instance.Contains(value));
         Assert.IsTrue(WordStorage.Instance.Entries == 1);
         w.SetString(value);
@@ -378,4 +385,5 @@ internal class WordsTests
 }
 
 }
+#pragma warning restore 0618
 #endif

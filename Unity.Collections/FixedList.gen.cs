@@ -26,6 +26,352 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
+    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
+    [Serializable]
+    internal struct FixedList<T,U> 
+    : INativeList<T> 
+    where T : unmanaged 
+    where U : unmanaged
+    {
+        [SerializeField] internal ushort length;
+        [SerializeField] internal U buffer;
+        
+        /// <summary>
+        /// The current number of items in the list.
+        /// </summary>
+        /// <value>The item length.</value>
+        [CreateProperty]
+        public int Length
+        {
+            get => length;
+            set
+            {
+                FixedList.CheckResize<U,T>(value);
+                length = (ushort)value;
+            }
+        }
+
+        /// <summary>
+        /// A property in order to display items in the Entity Inspector.
+        /// </summary>
+        [CreateProperty] IEnumerable<T> Elements => this.ToArray();
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => Length == 0;
+
+        internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
+
+        unsafe internal byte* Buffer
+        {
+            get
+            {
+                fixed(U* u = &buffer)
+                    return (byte*)u + FixedList.PaddingBytes<T>();
+            }
+        }
+
+        /// <summary>
+        /// The number of items that can fit in the list.
+        /// </summary>
+        /// <value>The number of items that the list can hold.</value>
+        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
+        /// to fit more or fewer items.</remarks>
+        public int Capacity
+        {
+          get
+          {
+              return FixedList.Capacity<U,T>();
+          }
+          set
+          {
+              CheckCapacityInRange(value);
+          }
+        }
+
+        /// <summary>
+        /// Retrieve a member of the list by index.
+        /// </summary>
+        /// <param name="index">The zero-based index into the list.</param>
+        /// <value>The list item at the specified index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
+        public T this[int index]
+        {
+            get
+            {
+                FixedList.CheckElementAccess(index, length);
+                unsafe
+                {
+                    return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
+                }
+            }
+            set
+            {
+                unsafe
+                {
+                    UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
+                }
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public ref T ElementAt(int index)
+        {
+            FixedList.CheckElementAccess(index, length);
+            unsafe
+            {
+                return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
+            }
+        }
+
+        /// <summary>
+        /// Computes a hash code summary of the FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            unsafe
+            {
+                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
+            }
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <param name="item">The T to be added at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        public void Add(in T item)
+        {
+            this[Length++] = item;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRange(void* ptr, int length)
+        {
+            T* data = (T*)ptr;
+            for (var i = 0; i < length; ++i)
+            {
+                this[Length++] = data[i];
+            }
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <param name="item">The T to be added at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        public void AddNoResize(in T item) => Add(item);
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+
+        /// <summary>
+        /// Clears the list.
+        /// </summary>
+        public void Clear()
+        {
+            Length = 0;
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
+        {
+            int items = end - begin;
+            if(items < 1)
+                return;
+            int itemsToCopy = length - begin;
+            Length += items;
+            if(itemsToCopy < 1)
+                return;
+            int bytesToCopy = itemsToCopy * UnsafeUtility.SizeOf<T>();
+            unsafe
+            {
+                byte *b = Buffer;
+                byte *dest = b + end * UnsafeUtility.SizeOf<T>();
+                byte *src = b + begin * UnsafeUtility.SizeOf<T>();
+                UnsafeUtility.MemMove(dest, src, bytesToCopy);
+            }
+        }
+
+        /// <summary>
+        /// Inserts a single element into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// </summary>
+        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
+        /// <param name="item">The element to insert</param>
+        public void Insert(int index, in T item)
+        {
+            InsertRangeWithBeginEnd(index, index+1);
+            this[index] = item;
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
+        public void RemoveAtSwapBack(int index)
+        {
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt(int index)
+        {
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
+
+        /// <summary>
+        /// Creates a managed Array of T that is a copy of this FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <returns></returns>
+        [NotBurstCompatible]
+        public T[] ToArray()
+        {
+            var result = new T[Length];
+            unsafe
+            {
+                byte* s = Buffer;
+                fixed(T* d = result)
+                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Creates an unmanaged NativeArray&lt;T&gt; that is a copy of this FixedList32&lt;T&gt;.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <returns></returns>
+        public NativeArray<T> ToNativeArray(Allocator allocator)
+        {
+            unsafe
+            {
+                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
+                return copy;
+            }
+        }
+        
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckCapacityInRange(int capacity)
+        {
+            if(capacity != Capacity)
+                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
+        }        
+    }
+
     [BurstCompatible]
     struct FixedList
     {
@@ -286,7 +632,33 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -297,24 +669,8 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -327,7 +683,37 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -342,22 +728,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this FixedList32&lt;T&gt;.
@@ -930,6 +1302,10 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// FixedList32 extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class FixedList32Extensions
     {
         /// <summary>
@@ -964,7 +1340,10 @@ namespace Unity.Collections
         /// Searches for the specified item from the begining of the FixedList32 forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the FixedList32</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -984,7 +1363,10 @@ namespace Unity.Collections
         /// Removes the first occurrence of an item from the FixedList32&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the FixedList32&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -1232,7 +1614,33 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -1243,24 +1651,8 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -1273,7 +1665,37 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -1288,22 +1710,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this FixedList64&lt;T&gt;.
@@ -1876,6 +2284,10 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// FixedList64 extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class FixedList64Extensions
     {
         /// <summary>
@@ -1910,7 +2322,10 @@ namespace Unity.Collections
         /// Searches for the specified item from the begining of the FixedList64 forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the FixedList64</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -1930,7 +2345,10 @@ namespace Unity.Collections
         /// Removes the first occurrence of an item from the FixedList64&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the FixedList64&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -2178,7 +2596,33 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -2189,24 +2633,8 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -2219,7 +2647,37 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -2234,22 +2692,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this FixedList128&lt;T&gt;.
@@ -2822,6 +3266,10 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// FixedList128 extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class FixedList128Extensions
     {
         /// <summary>
@@ -2856,7 +3304,10 @@ namespace Unity.Collections
         /// Searches for the specified item from the begining of the FixedList128 forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the FixedList128</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -2876,7 +3327,10 @@ namespace Unity.Collections
         /// Removes the first occurrence of an item from the FixedList128&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the FixedList128&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -3124,7 +3578,33 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -3135,24 +3615,8 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -3165,7 +3629,37 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -3180,22 +3674,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this FixedList512&lt;T&gt;.
@@ -3768,6 +4248,10 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// FixedList512 extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class FixedList512Extensions
     {
         /// <summary>
@@ -3802,7 +4286,10 @@ namespace Unity.Collections
         /// Searches for the specified item from the begining of the FixedList512 forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the FixedList512</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -3822,7 +4309,10 @@ namespace Unity.Collections
         /// Removes the first occurrence of an item from the FixedList512&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the FixedList512&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -4070,7 +4560,33 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -4081,24 +4597,8 @@ namespace Unity.Collections
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(Length - itemsToRemove, end);
-
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= itemsToRemove;
-            }
-        }
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
@@ -4111,7 +4611,37 @@ namespace Unity.Collections
         /// </remarks>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index + 1);
+            RemoveRange(index, 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = UnsafeUtility.SizeOf<T>();
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
         }
 
         /// <summary>
@@ -4126,22 +4656,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = UnsafeUtility.SizeOf<T>();
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of T that is a copy of this FixedList4096&lt;T&gt;.
@@ -4714,6 +5230,10 @@ namespace Unity.Collections
         }
     }
 
+    /// <summary>
+    /// FixedList4096 extension methods.
+    /// </summary>
+    [BurstCompatible]
     public unsafe static class FixedList4096Extensions
     {
         /// <summary>
@@ -4748,7 +5268,10 @@ namespace Unity.Collections
         /// Searches for the specified item from the begining of the FixedList4096 forward, removes it if possible,
         /// and returns true if the item was successfully removed.
         /// </summary>
-        /// <param name="item">The item to locate in the FixedList4096</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>True, if element is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -4768,7 +5291,10 @@ namespace Unity.Collections
         /// Removes the first occurrence of an item from the FixedList4096&lt;T&gt; and replaces it with the last element,
         /// which can be much faster than copying down all subsequent elements.
         /// </summary>
-        /// <param name="item">The elements to remove from the FixedList4096&lt;T&gt;.</param>
+        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">List to perform search.</param>
+        /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
@@ -4975,37 +5501,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte32 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte32 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListByte32.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListByte32.</param>
@@ -5077,7 +5572,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -5102,28 +5597,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(byte);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
@@ -5132,7 +5637,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -5158,6 +5663,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(byte);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -5166,22 +5701,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of byte that is a copy of this FixedListByte32.
@@ -5947,37 +6468,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte64 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte64 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListByte64.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListByte64.</param>
@@ -6049,7 +6539,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -6074,28 +6564,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(byte);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
@@ -6104,7 +6604,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -6130,6 +6630,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(byte);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -6138,22 +6668,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of byte that is a copy of this FixedListByte64.
@@ -6919,37 +7435,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte128 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte128 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListByte128.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListByte128.</param>
@@ -7021,7 +7506,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -7046,28 +7531,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(byte);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
@@ -7076,7 +7571,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -7102,6 +7597,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(byte);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -7110,22 +7635,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of byte that is a copy of this FixedListByte128.
@@ -7891,37 +8402,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte512 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte512 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListByte512.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListByte512.</param>
@@ -7993,7 +8473,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -8018,28 +8498,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(byte);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
@@ -8048,7 +8538,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -8074,6 +8564,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(byte);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -8082,22 +8602,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of byte that is a copy of this FixedListByte512.
@@ -8863,37 +9369,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte4096 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified byte and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListByte4096 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(byte item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListByte4096.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListByte4096.</param>
@@ -8965,7 +9440,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -8990,28 +9465,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(byte);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
@@ -9020,7 +9505,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the byte</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -9046,6 +9531,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(byte);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -9054,22 +9569,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of byte that is a copy of this FixedListByte4096.
@@ -9835,37 +10336,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt32 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt32 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListInt32.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListInt32.</param>
@@ -9937,7 +10407,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -9962,28 +10432,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(int);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
@@ -9992,7 +10472,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -10018,6 +10498,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(int);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -10026,22 +10536,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of int that is a copy of this FixedListInt32.
@@ -10807,37 +11303,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt64 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt64 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListInt64.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListInt64.</param>
@@ -10909,7 +11374,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -10934,28 +11399,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(int);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
@@ -10964,7 +11439,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -10990,6 +11465,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(int);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -10998,22 +11503,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of int that is a copy of this FixedListInt64.
@@ -11779,37 +12270,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt128 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt128 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListInt128.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListInt128.</param>
@@ -11881,7 +12341,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -11906,28 +12366,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(int);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
@@ -11936,7 +12406,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -11962,6 +12432,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(int);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -11970,22 +12470,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of int that is a copy of this FixedListInt128.
@@ -12751,37 +13237,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt512 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt512 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListInt512.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListInt512.</param>
@@ -12853,7 +13308,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -12878,28 +13333,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(int);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
@@ -12908,7 +13373,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -12934,6 +13399,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(int);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -12942,22 +13437,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of int that is a copy of this FixedListInt512.
@@ -13723,37 +14204,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt4096 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified int and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListInt4096 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(int item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListInt4096.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListInt4096.</param>
@@ -13825,7 +14275,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -13850,28 +14300,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(int);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
@@ -13880,7 +14340,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the int</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -13906,6 +14366,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(int);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -13914,22 +14404,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of int that is a copy of this FixedListInt4096.
@@ -14695,37 +15171,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat32 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat32 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat32.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListFloat32.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListFloat32.</param>
@@ -14797,7 +15242,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -14822,28 +15267,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(float);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
@@ -14852,7 +15307,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -14878,6 +15333,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(float);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -14886,22 +15371,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of float that is a copy of this FixedListFloat32.
@@ -15667,37 +16138,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat64 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat64 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat64.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListFloat64.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListFloat64.</param>
@@ -15769,7 +16209,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -15794,28 +16234,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(float);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
@@ -15824,7 +16274,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -15850,6 +16300,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(float);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -15858,22 +16338,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of float that is a copy of this FixedListFloat64.
@@ -16639,37 +17105,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat128 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat128 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat128.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListFloat128.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListFloat128.</param>
@@ -16741,7 +17176,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -16766,28 +17201,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(float);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
@@ -16796,7 +17241,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -16822,6 +17267,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(float);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -16830,22 +17305,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of float that is a copy of this FixedListFloat128.
@@ -17611,37 +18072,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat512 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat512 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat512.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListFloat512.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListFloat512.</param>
@@ -17713,7 +18143,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -17738,28 +18168,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(float);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
@@ -17768,7 +18208,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -17794,6 +18234,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(float);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -17802,22 +18272,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of float that is a copy of this FixedListFloat512.
@@ -18583,37 +19039,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat4096 that starts at the specified index and contains the specified
-        /// number of elements.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <param name="count">The number of elements in the section to search.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index, int count)
-        {
-            for(var i = index; i < index + count; ++i)
-                if(this[i].Equals(item))
-                  return i;
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified float and returns the zero-based index of the first occurrence within the
-        /// range of elements in the FixedListFloat4096 that starts at the specified index.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat4096.</param>
-        /// <param name="index">The zero-based starting index of the search. 0 (zero) is valid in an empty list.</param>
-        /// <returns></returns>
-        [Obsolete("IndexOf is obsolete. Replace it with your own implementation. (RemovedAfter 2020-10-22).", false)]
-        public int IndexOf(float item, int index)
-        {
-            return IndexOf(item, index, Length - index);
-        }
-
-        /// <summary>
         /// Determines whether an element is in the FixedListFloat4096.
         /// </summary>
         /// <param name="item">The object to locate in the FixedListFloat4096.</param>
@@ -18685,7 +19110,7 @@ namespace Unity.Collections
         /// <param name="index">The index of the item to delete.</param>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd(index, index + 1);
+            RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
@@ -18710,28 +19135,38 @@ namespace Unity.Collections
         /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
         /// is shortened by number of elements in range.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
+        public void RemoveRangeSwapBack(int index, int count)
         {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+            if (count > 0)
             {
-                int copyFrom = math.max(Length - itemsToRemove, end);
+                int copyFrom = math.max(Length - count, index + count);
 
                 unsafe
                 {
                     var sizeOf = sizeof(float);
-                    void* dst = Buffer + begin * sizeOf;
+                    void* dst = Buffer + index * sizeOf;
                     void* src = Buffer + copyFrom * sizeOf;
                     UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
                 }
 
-                Length -= itemsToRemove;
+                Length -= count;
             }
         }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
         /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
@@ -18740,7 +19175,7 @@ namespace Unity.Collections
         /// <param name="index">The zero-based index at which to remove the float</param>
         public void RemoveAt(int index)
         {
-            RemoveRangeWithBeginEnd(index, index+1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
@@ -18766,6 +19201,36 @@ namespace Unity.Collections
         /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
         /// is shortened by number of elements in range.
         /// </summary>
+        /// <param name="index">The first index of the item to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+
+                unsafe
+                {
+                    var sizeOf = sizeof(float);
+                    void* dst = Buffer + index * sizeOf;
+                    void* src = Buffer + copyFrom * sizeOf;
+                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                }
+
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
         /// <remarks>
@@ -18774,22 +19239,8 @@ namespace Unity.Collections
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    int copyFrom = math.min(begin + itemsToRemove, Length);
-                    void* dst = Buffer + begin * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                    Length -= itemsToRemove;
-                }
-            }
-        }
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
         /// Creates a managed Array of float that is a copy of this FixedListFloat4096.

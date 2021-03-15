@@ -462,6 +462,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
     public void UnsafeListT_GenericSort()
     {
         using (var container = new UnsafeList<int>(5, Allocator.Persistent))
@@ -495,12 +496,47 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         }
     }
 
+    [Test]
+    public void UnsafeListT_GenericSortJob()
+    {
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(4 - i);
+            }
+
+            container.Sort();
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(i, container[i]);
+            }
+        }
+
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(4 - i);
+            }
+
+            container.SortJob().Schedule().Complete();
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(i, container[i]);
+            }
+        }
+    }
+
     struct DescendingComparer<T> : IComparer<T> where T : IComparable<T>
     {
         public int Compare(T x, T y) => y.CompareTo(x);
     }
 
     [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
     public void UnsafeListT_GenericSortCustomComparer()
     {
         using (var container = new UnsafeList<int>(5, Allocator.Persistent))
@@ -526,6 +562,40 @@ internal class UnsafeListTests : CollectionsTestCommonBase
             }
 
             container.Sort(new DescendingComparer<int>(), default).Complete();
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(4 - i, container[i]);
+            }
+        }
+    }
+
+    [Test]
+    public void UnsafeListT_GenericSortJobCustomComparer()
+    {
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(i);
+            }
+
+            container.Sort(new DescendingComparer<int>());
+
+            for (var i = 0; i < 5; ++i)
+            {
+                Assert.AreEqual(4 - i, container[i]);
+            }
+        }
+
+        using (var container = new UnsafeList<int>(5, Allocator.Persistent))
+        {
+            for (var i = 0; i < 5; ++i)
+            {
+                container.Add(i);
+            }
+
+            container.SortJob(new DescendingComparer<int>()).Schedule().Complete();
 
             for (var i = 0; i < 5; ++i)
             {

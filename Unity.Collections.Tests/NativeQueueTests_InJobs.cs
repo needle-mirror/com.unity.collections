@@ -11,10 +11,15 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
     struct ConcurrentEnqueue : IJobParallelFor
     {
         public NativeQueue<int>.ParallelWriter queue;
+
+        [NativeDisableParallelForRestriction]
         public NativeArray<int> result;
+
+        public int StartIndex;
 
         public void Execute(int index)
         {
+            index += StartIndex;
             result[index] = 1;
             queue.Enqueue(index);
         }
@@ -27,9 +32,12 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
         var queue = new NativeQueue<int>(Allocator.TempJob);
         var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
 
-        var enqueueJob = new ConcurrentEnqueue();
-        enqueueJob.queue = queue.AsParallelWriter();
-        enqueueJob.result = writeStatus;
+        var enqueueJob = new ConcurrentEnqueue()
+        {
+            queue = queue.AsParallelWriter(),
+            result = writeStatus,
+            StartIndex = 0,
+        };
 
         var enqueue = enqueueJob.Schedule(queueSize, 1);
         enqueue.Complete();
@@ -127,5 +135,47 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
                     Assert.AreEqual(i, arr[i]);
             }
         }
+    }
+
+    [Test]
+    public void NativeQueue_ParallelWriter()
+    {
+        const int queueSize = 100 * 1024;
+        var queue = new NativeQueue<int>(Allocator.TempJob);
+        var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
+
+        var jobHandle = new ConcurrentEnqueue()
+        {
+            queue = queue.AsParallelWriter(),
+            result = writeStatus,
+            StartIndex = 0,
+
+        }.Schedule(queueSize / 2, 1);
+
+        jobHandle = new ConcurrentEnqueue()
+        {
+            queue = queue.AsParallelWriter(),
+            result = writeStatus,
+            StartIndex = queueSize / 2,
+
+        }.Schedule(queueSize / 2, 1, jobHandle);
+
+        jobHandle.Complete();
+
+        Assert.AreEqual(queueSize, queue.Count, "Job enqueued the wrong number of values");
+        var allValues = new NativeHashSet<int>(queueSize, Allocator.Persistent);
+        for (int i = 0; i < queueSize; ++i)
+        {
+            Assert.AreEqual(1, writeStatus[i], "Job failed to enqueue value");
+            int enqueued = queue.Dequeue();
+            Assert.IsTrue(enqueued >= 0 && enqueued < queueSize, "Job enqueued invalid value");
+            Assert.IsTrue(allValues.Add(enqueued), "Job enqueued same value multiple times");
+        }
+
+        var disposeJob = queue.Dispose(jobHandle);
+        disposeJob.Complete();
+
+        writeStatus.Dispose();
+        allValues.Dispose();
     }
 }

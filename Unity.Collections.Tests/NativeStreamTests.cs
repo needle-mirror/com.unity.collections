@@ -155,7 +155,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         NativeStream stream;
         var jobHandle = NativeStream.ScheduleConstruct(out stream, list, default, Allocator.TempJob);
 
-        Assert.Throws<InvalidOperationException>(() => Debug.Log(stream.ForEachCount));
+        Assert.Throws<InvalidOperationException>(() => { int val = stream.ForEachCount; });
 
         jobHandle.Complete();
 

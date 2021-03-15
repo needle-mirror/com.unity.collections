@@ -7,7 +7,7 @@ using Unity.Mathematics;
 internal class UnsafeBitArrayTests
 {
     [Test]
-    public void UnsafeBitArray_Get_Set()
+    public void UnsafeBitArray_Get_Set_Long()
     {
         var numBits = 256;
 
@@ -67,6 +67,109 @@ internal class UnsafeBitArrayTests
         Assert.AreEqual(false, test.IsSet(130));
         Assert.AreEqual(64, test.CountBits(66, 64));
         Assert.AreEqual(64, test.CountBits(0, numBits));
+
+        test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_Get_Set_Short()
+    {
+        var numBits = 31;
+
+        var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        Assert.False(test.IsSet(13));
+        test.Set(13, true);
+        Assert.True(test.IsSet(13));
+
+        Assert.False(test.TestAll(0, numBits));
+        Assert.False(test.TestNone(0, numBits));
+        Assert.True(test.TestAny(0, numBits));
+        Assert.AreEqual(1, test.CountBits(0, numBits));
+
+        Assert.False(test.TestAll(0, 12));
+        Assert.True(test.TestNone(0, 12));
+        Assert.False(test.TestAny(0, 12));
+
+        test.Clear();
+        Assert.False(test.IsSet(13));
+        Assert.AreEqual(0, test.CountBits(0, numBits));
+
+        test.SetBits(4, true, 4);
+        Assert.AreEqual(4, test.CountBits(0, numBits));
+
+        test.SetBits(0, true, numBits);
+        Assert.False(test.TestNone(0, numBits));
+        Assert.True(test.TestAll(0, numBits));
+
+        test.SetBits(0, false, numBits);
+        Assert.True(test.TestNone(0, numBits));
+        Assert.False(test.TestAll(0, numBits));
+
+        test.SetBits(13, true, 7);
+        Assert.True(test.TestAll(13, 7));
+
+        test.Clear();
+        test.SetBits(4, true, 4);
+        Assert.AreEqual(false, test.IsSet(3));
+        Assert.AreEqual(true, test.TestAll(4, 4));
+        Assert.AreEqual(false, test.IsSet(18));
+        Assert.AreEqual(4, test.CountBits(4, 4));
+        Assert.AreEqual(4, test.CountBits(0, numBits));
+
+        test.Clear();
+        test.SetBits(5, true, 2);
+        Assert.AreEqual(false, test.IsSet(4));
+        Assert.AreEqual(true, test.TestAll(5, 2));
+        Assert.AreEqual(false, test.IsSet(17));
+        Assert.AreEqual(2, test.CountBits(4, 4));
+        Assert.AreEqual(2, test.CountBits(0, numBits));
+
+        test.Clear();
+        test.SetBits(6, true, 4);
+        Assert.AreEqual(false, test.IsSet(5));
+        Assert.AreEqual(true, test.TestAll(6, 4));
+        Assert.AreEqual(false, test.IsSet(10));
+        Assert.AreEqual(4, test.CountBits(6, 4));
+        Assert.AreEqual(4, test.CountBits(0, numBits));
+
+        test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_Get_Set_Tiny()
+    {
+        var numBits = 7;
+
+        var test = new UnsafeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+
+        Assert.False(test.IsSet(3));
+        test.Set(3, true);
+        Assert.True(test.IsSet(3));
+
+        Assert.False(test.TestAll(0, numBits));
+        Assert.False(test.TestNone(0, numBits));
+        Assert.True(test.TestAny(0, numBits));
+        Assert.AreEqual(1, test.CountBits(0, numBits));
+
+        Assert.False(test.TestAll(0, 2));
+        Assert.True(test.TestNone(0, 2));
+        Assert.False(test.TestAny(0, 2));
+
+        test.Clear();
+        Assert.False(test.IsSet(3));
+        Assert.AreEqual(0, test.CountBits(0, numBits));
+
+        test.SetBits(3, true, 4);
+        Assert.AreEqual(4, test.CountBits(0, numBits));
+
+        test.SetBits(0, true, numBits);
+        Assert.False(test.TestNone(0, numBits));
+        Assert.True(test.TestAll(0, numBits));
+
+        test.SetBits(0, false, numBits);
+        Assert.True(test.TestNone(0, numBits));
+        Assert.False(test.TestAll(0, numBits));
 
         test.Dispose();
     }

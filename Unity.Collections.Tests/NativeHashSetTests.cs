@@ -92,11 +92,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     {
         var hashMap = new NativeHashSet<int>(16, Allocator.TempJob);
         hashMap.Dispose();
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { hashMap.Dispose(); });
     }
 
@@ -271,11 +267,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
             container.Add(8);
             container.Add(9);
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var item in container)
                 {
@@ -283,11 +275,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 }
             });
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 foreach (var item in container)
                 {
@@ -310,11 +298,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             }.Schedule(1, 2);
 
-#if UNITY_2020_2_OR_NEWER
             Assert.Throws<ObjectDisposedException>(() =>
-#else
-            Assert.Throws<InvalidOperationException>(() =>
-#endif
             {
                 while (iter.MoveNext())
                 {

@@ -24,16 +24,8 @@ internal class NativeListTests : CollectionsTestFixture
     public void NullListThrow()
     {
         var list = new NativeList<int>();
-#if UNITY_DOTSRUNTIME
-        Assert.Throws<InvalidOperationException>(() => list[0] = 5);
-#else
         Assert.Throws<NullReferenceException>(() => list[0] = 5);
-#endif
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => list.Add(1));
     }
 
@@ -83,11 +75,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(1000);
 
         ExpectedLength(ref list, 2);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { array[0] = 1; });
 
         list.Dispose();
@@ -105,11 +93,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Capacity = 10;
 
         Assert.AreEqual(1, array.Length);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { array[0] = 1; });
 
         list.Dispose();
@@ -123,22 +107,13 @@ internal class NativeListTests : CollectionsTestFixture
         NativeArray<int> array = list;
         list.Dispose();
 
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { array[0] = 1; });
 
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { list[0] = 1; });
     }
 
-#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void NativeArrayFromNativeListMayDeallocate()
     {
@@ -149,20 +124,6 @@ internal class NativeListTests : CollectionsTestFixture
         Assert.DoesNotThrow(() => { array.Dispose(); });
         list.Dispose();
     }
-
-#else
-    [Test]
-    public void NativeArrayFromNativeListMayNotDeallocate()
-    {
-        var list = new NativeList<int>(Allocator.Persistent);
-        list.Add(42);
-
-        NativeArray<int> array = list;
-        Assert.Throws<System.InvalidOperationException>(() => { array.Dispose(); });
-        list.Dispose();
-    }
-
-#endif
 
     [Test]
     public void CopiedNativeListIsKeptInSync()
@@ -249,7 +210,6 @@ internal class NativeListTests : CollectionsTestFixture
         list.Dispose();
     }
 
-#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void DisposingNativeListDerivedArrayDoesNotThrow()
     {
@@ -261,19 +221,6 @@ internal class NativeListTests : CollectionsTestFixture
 
         list.Dispose();
     }
-#else
-    [Test]
-    public void DisposingNativeListDerivedArrayThrows()
-    {
-        var list = new NativeList<int>(Allocator.Persistent);
-        list.Add(1);
-
-        NativeArray<int> array = list;
-        Assert.Throws<InvalidOperationException>(() => { array.Dispose(); });
-
-        list.Dispose();
-    }
-#endif
 
 #endif
 
@@ -287,11 +234,7 @@ internal class NativeListTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { container.Contains(0); });
 
         disposeJob.Complete();
@@ -365,11 +308,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(17);
         list.Dispose();
         Assert.That(() => list[0],
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {list.GetType()} has been deallocated"));
     }
 
@@ -384,20 +323,12 @@ internal class NativeListTests : CollectionsTestFixture
         listInt.Add(17);
         listInt.Dispose();
         Assert.That(() => listInt[0],
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {listInt.GetType()} has been deallocated"));
         listFloat.Add(1.0f);
         listFloat.Dispose();
         Assert.That(() => listFloat[0],
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {listFloat.GetType()} has been deallocated"));
     }
 

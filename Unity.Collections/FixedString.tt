@@ -37,6 +37,9 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
     [BurstCompatible]
@@ -47,7 +50,11 @@ namespace Unity.Collections
     {
        var offset = i.ToString("D4");
 #>
-      [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
+
 <#
     }
 #>
@@ -66,6 +73,9 @@ namespace Unity.Collections
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
+    /// <summary>
+    /// <undoc />
+    /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=MAXLENGTH#>)]
     [BurstCompatible]
@@ -76,14 +86,22 @@ namespace Unity.Collections
       {
         var offset = i.ToString("D4");
 #>
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(<#=i#>)] public FixedBytes16 offset<#=offset#>;
+
 <#
       }
       for(var i = (MAXLENGTH/16)*16; i < MAXLENGTH; ++i)
       {
         var offset = i.ToString("D4");
 #>
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
+
 <#
       }
 #>
@@ -141,9 +159,11 @@ namespace Unity.Collections
         public string Value => ToString();
 
         /// <summary>
-        ///
+        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
+        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A pointer to the first element in the array.</returns>
+        /// <remarks>You can only call this function in an [unsafe context].</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
@@ -401,6 +421,7 @@ namespace Unity.Collections
         /// Construct a FixedString<#=BYTES#> from a System.String object.
         /// </summary>
         /// <param name="source">The System.String object to construct this FixedString<#=BYTES#> with</param>
+        [NotBurstCompatible]
         public FixedString<#=BYTES#>(String source)
         {
             bytes = default;
@@ -601,7 +622,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString<#=BYTES#>: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

@@ -16,7 +16,7 @@ Data structure          | Description | Documentation
 `BitField64`            | Fixed size 64-bit array of bits. | @Unity.Collections.BitField64
 `NativeBitArray`        | Arbitrary sized array of bits.   | @Unity.Collections.NativeBitArray
 `UnsafeBitArray`        | Arbitrary sized array of bits, without any thread safety check features. | @Unity.Collections.LowLevel.Unsafe.UnsafeBitArray
-`NativeHashMap`         | Unordered associative array, a collection of keys and values. | @Unity.Collections.NativeHashMap-2
+`NativeHashMap`         | Unordered associative array, a collection of keys and values. | @Unity.Collections.NativeHashMap`2
 `UnsafeHashMap`         | Unordered associative array, a collection of keys and values, without any thread safety check features. | @Unity.Collections.LowLevel.Unsafe.UnsafeHashMap`2
 `NativeHashSet`         | Set of values. | @Unity.Collections.NativeHashSet`1
 `UnsafeHashSet`         | Set of values, without any thread safety check features. | @Unity.Collections.LowLevel.Unsafe.UnsafeHashSet`1
@@ -31,7 +31,6 @@ Data structure          | Description | Documentation
 `UnsafeRingQueue`       | Fixed-size circular buffer, without any thread safety check features. | @Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue`1
 `UnsafeAtomicCounter32` | 32-bit atomic counter. | @Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter32
 `UnsafeAtomicCounter64` | 64-bit atomic counter. | @Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter64
-[...](https://docs.unity3d.com/Packages/com.unity.collections@0.12/manual/index
 
 The items in this package build upon the [NativeArray<T0>](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1),
 [NativeSlice<T0>](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeSlice_1),

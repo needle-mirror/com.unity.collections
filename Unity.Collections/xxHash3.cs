@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Unity.Burst;
 #if !NET_DOTS
 using Unity.Burst.Intrinsics;
@@ -44,9 +44,11 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
         /// Compute a 64bits hash from the contents of the input struct
         /// </summary>
+        /// <typeparam name="T">The input type.</typeparam>
         /// <param name="input">The input struct that will be hashed</param>
         /// <returns>The hash result</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
@@ -88,6 +90,7 @@ namespace Unity.Collections
         /// <summary>
         /// Compute a 128bits hash from the contents of the input struct
         /// </summary>
+        /// <typeparam name="T">The input type.</typeparam>
         /// <param name="input">The input struct that will be hashed</param>
         /// <returns>The hash result</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]

@@ -93,11 +93,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     {
         var queue = new NativeQueue<int>(Allocator.TempJob);
         queue.Dispose();
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { queue.Dispose(); });
     }
 
@@ -192,11 +188,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { container.Enqueue(0); });
 
         disposeJob.Complete();
@@ -279,11 +271,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         container.Enqueue(123);
         container.Dispose();
         Assert.That(() => container.Dequeue(),
-#if UNITY_2020_2_OR_NEWER
             Throws.Exception.TypeOf<ObjectDisposedException>()
-#else
-            Throws.InvalidOperationException
-#endif
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
 #endif

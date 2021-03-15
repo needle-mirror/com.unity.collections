@@ -5,9 +5,30 @@ namespace Unity.Collections
     /// <summary>
     /// Documents and enforces (via generated tests) that the tagged method or property has to stay burst compatible.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Constructor, AllowMultiple = true)]
     public class BurstCompatibleAttribute : Attribute
     {
+        /// <summary>
+        /// Burst compatible compile target.
+        /// </summary>
+        public enum BurstCompatibleCompileTarget
+        {
+            /// <summary>
+            /// Player.
+            /// </summary>
+            Player,
+
+            /// <summary>
+            /// Editor.
+            /// </summary>
+            Editor,
+
+            /// <summary>
+            /// Player and editor.
+            /// </summary>
+            PlayerAndEditor
+        }
+
         /// <summary>
         /// Types to be used for the declared generic type or method.
         /// </summary>
@@ -22,12 +43,40 @@ namespace Unity.Collections
         /// </remarks>
         public Type[] GenericTypeArguments { get; set; }
 
+        /// <summary>
+        /// Specifies the symbol that must be defined in order for the method to be tested for Burst compatibility.
+        /// </summary>
         public string RequiredUnityDefine = null;
+
+        /// <summary>
+        /// Specifies whether code should be Burst compiled for the player, editor, or both.
+        /// </summary>
+        /// <remarks>
+        /// When set to BurstCompatibleCompileTarget.Editor, the generated Burst compatibility code will be
+        /// surrounded by #if UNITY_EDITOR to ensure that the Burst compatibility test will only be executed in the
+        /// editor. The code will be compiled with Burst function pointers. If you have a non-null RequiredUnityDefine,
+        /// an #if with the RequiredUnityDefine will also be emitted.<para/> <para/>
+        ///
+        /// When set to BurstCompatibilityCompileTarget.Player, the generated Burst compatibility code will
+        /// only be surrounded by an #if containing the RequiredUnityDefine (or nothing if RequiredUnityDefine is null).
+        /// Instead of compiling with Burst function pointers, a player build is started where the Burst AOT compiler
+        /// will verify the Burst compatibility. This is done to speed up Burst compilation for the compatibility tests
+        /// since Burst function pointer compilation is not done in parallel.<para/> <para/>
+        ///
+        /// When set to BurstCompatibilityCompileTarget.PlayerAndEditor, the generated Burst compatibility code will
+        /// only be surrounded by an #if containing the RequiredUnityDefine (or nothing if RequiredUnityDefine is null).
+        /// The code will be compiled both by the editor (using Burst function pointers) and with a player build (using
+        /// Burst AOT).<para/> <para/>
+        ///
+        /// For best performance of the Burst compatibility tests, prefer to use BurstCompatibilityCompileTarget.Player
+        /// as much as possible.
+        /// </remarks>
+        public BurstCompatibleCompileTarget CompileTarget = BurstCompatibleCompileTarget.Player;
     }
     /// <summary>
     /// Internal attribute to state that a method is not burst compatible even though the containing type is.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Constructor)]
     public class NotBurstCompatibleAttribute : Attribute
     {
     }

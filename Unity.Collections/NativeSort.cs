@@ -15,9 +15,19 @@ namespace Unity.Collections
     [BurstCompatible]
     public static class NativeSortExtension
     {
+        /// <summary>
+        /// A comparer that uses IComparable.CompareTo(). For primitive types, this is an ascending sort.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal struct DefaultComparer<T> : IComparer<T> where T : IComparable<T>
+        public struct DefaultComparer<T> : IComparer<T> where T : IComparable<T>
         {
+            /// <summary>
+            /// Compares two values.
+            /// </summary>
+            /// <param name="x">First value to compare.</param>
+            /// <param name="y">Second value to compare.</param>
+            /// <returns>A signed integer that indicates the relative values of x and y (=0: x == y, &lt;0: x &lt; y, &gt;0: x &gt; y).</returns>
             public int Compare(T x, T y) => x.CompareTo(y);
         }
 
@@ -56,41 +66,26 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18).", false)]
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle SortJob<T>(T* array, int length) where T : unmanaged, IComparable<T> => Sort<T>(array, length, new JobHandle());
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="length">Number of elements to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
-#else
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). (UnityUpgradable) -> Sort(*)", false)]
-#endif
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle SortJob<T>(T* array, int length, JobHandle inputDeps) where T : unmanaged, IComparable<T> => Sort<T>(array, length, inputDeps);
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="length">Number of elements to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(T*, int).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T>(T* array, int length, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
             return Sort(array, length, new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(T* array, int length)
+            where T : unmanaged, IComparable<T>
+        {
+            return new SortJob<T, DefaultComparer<T>> {Data = array, Length = length, Comp = new DefaultComparer<T>()};
         }
 
         /// <summary>
@@ -104,7 +99,8 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(T*, int, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T, U>(T* array, int length, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
@@ -123,6 +119,23 @@ namespace Unity.Collections
             var segmentSortMergeJob = new SegmentSortMerge<T, U> { Data = array, Comp = comp, Length = length, SegmentWidth = 1024 };
             var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
             return segmentSortMergeJobHandle;
+        }
+
+        /// <summary>
+        /// Creates a job that will sort an array using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="array">Array to perform sort.</param>
+        /// <param name="length">Number of elements to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(T* array, int length, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return new SortJob<T, U>() {Data = array, Length = length, Comp = comp};
         }
 
         /// <summary>
@@ -183,11 +196,11 @@ namespace Unity.Collections
         /// Sorts an array in ascending order.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
+        /// <param name="container">Array to perform sort.</param>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public unsafe static void Sort<T>(this NativeArray<T> array) where T : struct, IComparable<T>
+        public unsafe static void Sort<T>(this NativeArray<T> container) where T : struct, IComparable<T>
         {
-            IntroSort<T, DefaultComparer<T>>(array.GetUnsafePtr(), array.Length, new DefaultComparer<T>());
+            IntroSort<T, DefaultComparer<T>>(container.GetUnsafePtr(), container.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -195,55 +208,41 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="array">Array to perform sort.</param>
+        /// <param name="container">Array to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
-        public unsafe static void Sort<T, U>(this NativeArray<T> array, U comp) where T : struct where U : IComparer<T>
+        public unsafe static void Sort<T, U>(this NativeArray<T> container, U comp) where T : struct where U : IComparer<T>
         {
-            IntroSort<T, U>(array.GetUnsafePtr(), array.Length, comp);
+            IntroSort<T, U>(container.GetUnsafePtr(), container.Length, comp);
         }
 
         /// <summary>
         /// Sorts an array in ascending order.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
+        /// <param name="container">Array to perform sort.</param>
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18).", false)]
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array) where T : unmanaged, IComparable<T> => Sort<T>(array, new JobHandle());
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-#if UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). -- please remove the UNITY_SKIP_UPDATES_WITH_VALIDATION_SUITE define in the Unity.Collections assembly definition file if this message is unexpected and you want to attempt an automatic upgrade.", false)]
-#else
-        [Obsolete("Use Sort with explicit input dependencies instead. (RemovedAfter 2020-11-18). (UnityUpgradable) -> Sort(*)", false)]
-#endif
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle SortJob<T>(this NativeArray<T> array, JobHandle inputDeps) where T : unmanaged, IComparable<T> => Sort<T>(array, inputDeps);
-
-        /// <summary>
-        /// Sorts an array in ascending order.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="array">Array to perform sort.</param>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
-        /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle Sort<T>(this NativeArray<T> array, JobHandle inputDeps)
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeArray<T>).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
+        public unsafe static JobHandle Sort<T>(this NativeArray<T> container, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
-            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, new DefaultComparer<T>(), inputDeps);
+            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(container), container.Length, new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">Array to sort.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this NativeArray<T> container)
+            where T : unmanaged, IComparable<T>
+        {
+            return SortJob((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(container), container.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -256,12 +255,34 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle Sort<T, U>(this NativeArray<T> array, U comp, JobHandle inputDeps)
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeArray<T>, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
+        public unsafe static JobHandle Sort<T, U>(this NativeArray<T> container, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
         {
-            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, comp, inputDeps);
+            return Sort((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(container), container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort an array using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">Array to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(this NativeArray<T> container, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return new SortJob<T, U>
+            {
+                Data = (T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(container),
+                Length = container.Length,
+                Comp = comp
+            };
         }
 
         /// <summary>
@@ -286,6 +307,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="container">The container to perform search.</param>
         /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
         /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
@@ -328,7 +350,8 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeList<T>).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T>(this NativeList<T> container, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
@@ -336,21 +359,51 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Creates a job that will sort an array in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this NativeList<T> list)
+            where T : unmanaged, IComparable<T>
+        {
+            return SortJob((T*)list.GetUnsafePtr(), list.Length,new DefaultComparer<T>());
+        }
+
+        /// <summary>
         /// Sorts the container using a custom comparison function.
         /// </summary>
         /// <typeparam name="T">Source type of elements</typeparam>
         /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="container">The container to perform sort.</param>
+        /// <param name="list">The container to perform sort.</param>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
-        public unsafe static JobHandle Sort<T, U>(this NativeList<T> container, U comp, JobHandle inputDeps)
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeList<T>, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
+        public unsafe static JobHandle Sort<T, U>(this NativeList<T> list, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
         {
-            return Sort((T*)container.GetUnsafePtr(), container.Length, comp, inputDeps);
+            return Sort((T*)list.GetUnsafePtr(), list.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">List to sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the container. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(this NativeList<T> container, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return SortJob((T*)container.GetUnsafePtr(), container.Length, comp);
         }
 
         /// <summary>
@@ -375,6 +428,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="container">The container to perform search.</param>
         /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
         /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
@@ -417,11 +471,25 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T>(this UnsafeList container, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
             return container.Sort<T, DefaultComparer<T>>(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this UnsafeList list)
+            where T : unmanaged, IComparable<T>
+        {
+            return SortJob((T*)list.Ptr, list.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -434,12 +502,29 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T, U>(this UnsafeList container, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
         {
             return Sort((T*)container.Ptr, container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(this UnsafeList list, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return SortJob((T*)list.Ptr, list.Length, comp);
         }
 
         /// <summary>
@@ -464,6 +549,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="container">The container to perform search.</param>
         /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
         /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
@@ -506,11 +592,25 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList<T>).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T>(this UnsafeList<T> container, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
             return container.Sort(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this UnsafeList<T> list)
+            where T : unmanaged, IComparable<T>
+        {
+            return SortJob((T*)list.Ptr, list.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -523,12 +623,29 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList<T>, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T, U>(this UnsafeList<T> container, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
         {
             return Sort(container.Ptr, container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(this UnsafeList<T> list, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return SortJob(list.Ptr, list.Length, comp);
         }
 
         /// <summary>
@@ -553,6 +670,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="container">The container to perform search.</param>
         /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
         /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
@@ -596,11 +714,26 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeSlice<T>).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T>(this NativeSlice<T> container, JobHandle inputDeps)
             where T : unmanaged, IComparable<T>
         {
             return container.Sort(new DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a slice in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="slice">Slice to sort.</param>
+        /// <returns>The job that will sort the slice. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this NativeSlice<T> slice)
+            where T : unmanaged, IComparable<T>
+        {
+            CheckStrideMatchesSize<T>(slice.Stride);  // TODO would we want this check to be done in the job itself? Is this necessary at all?
+            return SortJob((T*)slice.GetUnsafePtr(), slice.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -613,12 +746,30 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
         /// the container.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this NativeSlice<T>, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
         public unsafe static JobHandle Sort<T, U>(this NativeSlice<T> container, U comp, JobHandle inputDeps)
             where T : unmanaged
             where U : IComparer<T>
         {
             return Sort((T*)container.GetUnsafePtr(), container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a slice using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="slice">Slice to sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the slice. Scheduling the job is left to the user.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static SortJob<T, U> SortJob<T, U>(this NativeSlice<T> slice, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            CheckStrideMatchesSize<T>(slice.Stride);  // TODO would we want this check to be done in the job itself?
+            return SortJob((T*)slice.GetUnsafePtr(), slice.Length, comp);
         }
 
         /// <summary>
@@ -643,6 +794,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="container">The container to perform search.</param>
         /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
         /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
         /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
@@ -878,6 +1030,118 @@ namespace Unity.Collections
             {
                 throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
             }
+        }
+    }
+
+    /// <summary>
+    /// Returned by the NativeSortExtension.SortJob methods. Call Schedule() to schedule the sorting.
+    /// </summary>
+    /// <typeparam name="T">Source type of elements</typeparam>
+    /// <typeparam name="U">The comparer type.</typeparam>
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+    public unsafe struct SortJob<T, U> where T : unmanaged where U : IComparer<T>
+    {
+        /// <summary>
+        /// Data.
+        /// </summary>
+        public T* Data;
+
+        /// <summary>
+        /// Comparer.
+        /// </summary>
+        public U Comp;
+
+        /// <summary>
+        /// Length.
+        /// </summary>
+        public int Length;
+
+        [BurstCompile]
+        struct SegmentSort : IJobParallelFor
+        {
+            [NativeDisableUnsafePtrRestriction]
+            public T* Data;
+            public U Comp;
+
+            public int Length;
+            public int SegmentWidth;
+
+            public void Execute(int index)
+            {
+                var startIndex = index * SegmentWidth;
+                var segmentLength = ((Length - startIndex) < SegmentWidth) ? (Length - startIndex) : SegmentWidth;
+                NativeSortExtension.Sort(Data + startIndex, segmentLength, Comp);
+            }
+        }
+
+        [BurstCompile]
+        struct SegmentSortMerge : IJob
+        {
+            [NativeDisableUnsafePtrRestriction]
+            public T* Data;
+            public U Comp;
+
+            public int Length;
+            public int SegmentWidth;
+
+            public void Execute()
+            {
+                var segmentCount = (Length + (SegmentWidth - 1)) / SegmentWidth;
+                var segmentIndex = stackalloc int[segmentCount];
+
+                var resultCopy = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * Length, 16, Allocator.Temp);
+
+                for (int sortIndex = 0; sortIndex < Length; sortIndex++)
+                {
+                    // find next best
+                    int bestSegmentIndex = -1;
+                    T bestValue = default(T);
+
+                    for (int i = 0; i < segmentCount; i++)
+                    {
+                        var startIndex = i * SegmentWidth;
+                        var offset = segmentIndex[i];
+                        var segmentLength = ((Length - startIndex) < SegmentWidth) ? (Length - startIndex) : SegmentWidth;
+                        if (offset == segmentLength)
+                            continue;
+
+                        var nextValue = Data[startIndex + offset];
+                        if (bestSegmentIndex != -1)
+                        {
+                            if (Comp.Compare(nextValue, bestValue) > 0)
+                                continue;
+                        }
+
+                        bestValue = nextValue;
+                        bestSegmentIndex = i;
+                    }
+
+                    segmentIndex[bestSegmentIndex]++;
+                    resultCopy[sortIndex] = bestValue;
+                }
+
+                UnsafeUtility.MemCpy(Data, resultCopy, UnsafeUtility.SizeOf<T>() * Length);
+            }
+        }
+
+        /// <summary>
+        /// Schedule jobs to sort values.
+        /// </summary>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns></returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Schedule(JobHandle inputDeps = new JobHandle())
+        {
+            if (Length == 0)
+                return inputDeps;
+            var segmentCount = (Length + 1023) / 1024;
+            var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
+            var workerSegmentCount = segmentCount / workerCount;
+            var segmentSortJob = new SegmentSort { Data = Data, Comp = Comp, Length = Length, SegmentWidth = 1024 };
+            var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
+            var segmentSortMergeJob = new SegmentSortMerge { Data = Data, Comp = Comp, Length = Length, SegmentWidth = 1024 };
+            var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
+            return segmentSortMergeJobHandle;
         }
     }
 }

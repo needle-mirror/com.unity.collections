@@ -46,7 +46,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
             where T : struct
         {
@@ -64,7 +64,7 @@ namespace Unity.Collections
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <returns></returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
@@ -175,7 +175,7 @@ namespace Unity.Collections
         /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle dependency)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -536,14 +536,20 @@ namespace Unity.Collections
 
                 if (m_Reader.m_CurrentPtr > m_Reader.m_CurrentBlockEnd)
                 {
-                    m_Reader.m_CurrentBlock = m_Reader.m_CurrentBlock->Next;
-                    m_Reader.m_CurrentPtr = m_Reader.m_CurrentBlock->Data;
-
+                    /*
+                     * On netfw/mono/il2cpp, doing m_CurrentBlock->Data does not throw, because it knows that it can
+                     * just do pointer + 8. On netcore, doing that throws a NullReferenceException. So, first check for
+                     * out of bounds accesses, and only then update m_CurrentBlock and m_CurrentPtr.
+                     */
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_RemainingBlocks--;
 
                     CheckNotReadingOutOfBounds(size);
+#endif
+                    m_Reader.m_CurrentBlock = m_Reader.m_CurrentBlock->Next;
+                    m_Reader.m_CurrentPtr = m_Reader.m_CurrentBlock->Data;
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                     if (m_RemainingBlocks <= 0)
                     {
                         m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + m_Reader.m_LastBlockSize;

@@ -10,7 +10,7 @@ namespace Unity.Collections.Tests
         public virtual void Setup()
         {
 #if UNITY_DOTSRUNTIME
-            Unity.Core.TempMemoryScope.EnterScope();
+            Unity.Runtime.TempMemoryScope.EnterScope();
 #endif
         }
 
@@ -18,7 +18,7 @@ namespace Unity.Collections.Tests
         public virtual void TearDown()
         {
 #if UNITY_DOTSRUNTIME
-            Unity.Core.TempMemoryScope.ExitScope();
+            Unity.Runtime.TempMemoryScope.ExitScope();
 #endif
         }
     }

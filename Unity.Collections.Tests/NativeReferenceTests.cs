@@ -52,11 +52,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     public void NativeReference_NullThrows()
     {
         var reference = new NativeReference<int>();
-#if UNITY_DOTSRUNTIME    // The runtime safety system isn't quite the same, and will return InvalidOperationException in this case.
-        Assert.Throws<InvalidOperationException>(() => reference.Value = 5);
-#else
         Assert.Throws<NullReferenceException>(() => reference.Value = 5);
-#endif
     }
 
     [Test]
@@ -112,11 +108,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
         var disposeJob = reference.Dispose(default);
         Assert.That(reference.IsCreated, Is.False);
 
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => reference.Value = 3);
 
 

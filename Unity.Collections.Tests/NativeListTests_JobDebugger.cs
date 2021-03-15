@@ -48,26 +48,22 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         var jobData = new NativeListAddJob(list);
         var job = jobData.Schedule();
 
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
-            () => { Debug.Log(arrayBeforeSchedule[0]); });
+            () => {
+                int readVal = arrayBeforeSchedule[0];
+            });
         Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list; Debug.Log(array.Length); });
-        Assert.Throws<InvalidOperationException>(() => { Debug.Log(list.Capacity); });
+        Assert.Throws<InvalidOperationException>(() => { int readVal = list.Capacity; });
         Assert.Throws<InvalidOperationException>(() => { list.Dispose(); });
-        Assert.Throws<InvalidOperationException>(() => { Debug.Log(list[0]); });
+        Assert.Throws<InvalidOperationException>(() => { int readVal = list[0]; });
 
         job.Complete();
-
+        
         Assert.AreEqual(1, arrayBeforeSchedule.Length);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
-            () => { Debug.Log(arrayBeforeSchedule[0]); });
+            () => {
+                int readVal = arrayBeforeSchedule[0];
+            });
 
         Assert.AreEqual(2, list.Length);
         Assert.AreEqual(0, list[0]);
@@ -253,7 +249,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             writeJob.output = list;
             var writeJobHandle = writeJob.Schedule(list.Length, 1);
 
-            Assert.Throws<InvalidOperationException>(() => { Debug.Log(writeJob.output[0]); });
+            Assert.Throws<InvalidOperationException>(() => { float val = writeJob.output[0]; });
 
             writeJobHandle.Complete();
         }
@@ -312,7 +308,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         job.list.Dispose();
     }
 
-#if UNITY_2020_2_OR_NEWER || UNITY_DOTSRUNTIME
     [Test]
     public void DisposeAliasedArrayDoesNotThrow()
     {
@@ -322,21 +317,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
 
         list.Dispose();
     }
-
-#else
-    [Test]
-    public void DisposingNativeListDerivedArrayThrows()
-    {
-        var list = new NativeList<int>(Allocator.Persistent);
-        list.Add(1);
-
-        NativeArray<int> array = list;
-        Assert.Throws<InvalidOperationException>(() => { array.Dispose(); });
-
-        list.Dispose();
-    }
-
-#endif
 
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
@@ -485,5 +465,23 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         Assert.AreEqual(7, list[0]);
 
         list.Dispose();
+    }
+
+    [Test]
+    public void NativeList_ParallelReaderWriter()
+    {
+        NativeList<int> list;
+        JobHandle jobHandle;
+
+        list = new NativeList<int>(Allocator.Persistent);
+        list.Add(7);
+
+        jobHandle = new NativeListTestParallelReader { reader = list.AsParallelReader() }.Schedule();
+        jobHandle = new NativeListTestParallelWriter { writer = list.AsParallelWriter() }.Schedule(jobHandle);
+        jobHandle = new NativeListTestParallelReader { reader = list.AsParallelReader() }.Schedule(jobHandle);
+        jobHandle = new NativeListTestParallelWriter { writer = list.AsParallelWriter() }.Schedule(jobHandle);
+
+        list.Dispose(jobHandle);
+        jobHandle.Complete();
     }
 }

@@ -273,6 +273,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        [NotBurstCompatible]
         public NativeQueue(Allocator allocator)
         {
             CollectionHelper.CheckIsUnmanaged<T>();
@@ -547,7 +548,7 @@ namespace Unity.Collections
         /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
         /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
         /// the container.</returns>
-        [BurstCompatible(RequiredUnityDefine = "UNITY_2020_2_OR_NEWER") /* Due to job scheduling on 2020.1 using statics */]
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -577,9 +578,7 @@ namespace Unity.Collections
             ParallelWriter writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
             writer.m_Safety = m_Safety;
-            AtomicSafetyHandle.UseSecondaryVersion(ref writer.m_Safety);
 #endif
             writer.m_Buffer = m_Buffer;
             writer.m_QueuePool = m_QueuePool;

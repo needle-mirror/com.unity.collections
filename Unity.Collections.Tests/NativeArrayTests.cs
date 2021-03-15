@@ -16,11 +16,7 @@ internal class NativeArrayTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
-#if UNITY_2020_2_OR_NEWER
         Assert.Throws<ObjectDisposedException>(
-#else
-        Assert.Throws<InvalidOperationException>(
-#endif
             () => { container[0] = 2; });
 
         disposeJob.Complete();

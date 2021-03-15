@@ -350,7 +350,8 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJobNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
         NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
@@ -374,7 +375,32 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJbativeArray_SortedInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    public void SortJobNativeArray_RandomInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = random.NextInt(int.MinValue, int.MaxValue);
+        }
+
+        array.SortJob().Schedule().Complete();
+
+        int min = int.MinValue;
+        foreach (var i in array)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_SortedInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
         Assert.IsTrue(array.IsCreated);
@@ -382,6 +408,52 @@ internal class NativeSliceTests : CollectionsTestCommonBase
         for (int i = 0; i < array.Length; i++)
         {
             array[i] = i;
+        }
+
+        array.Sort(default).Complete();
+
+        int min = int.MinValue;
+        foreach (var i in array)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    public void SortJobNativeArray_SortedInts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        NativeArray<int> array = new NativeArray<int>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = i;
+        }
+
+        array.SortJob().Schedule().Complete();
+
+        int min = int.MinValue;
+        foreach (var i in array)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomBytes_ReturnSorted([Values(0, 1, 10, 1000, 10000, 100000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<byte> array = new NativeArray<byte>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (byte)random.NextInt(byte.MinValue, byte.MinValue);
         }
 
         array.Sort(default).Complete();
@@ -407,7 +479,7 @@ internal class NativeSliceTests : CollectionsTestCommonBase
             array[i] = (byte)random.NextInt(byte.MinValue, byte.MinValue);
         }
 
-        array.Sort(default).Complete();
+        array.SortJob().Schedule().Complete();
 
         int min = int.MinValue;
         foreach (var i in array)
@@ -424,7 +496,8 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJobNativeArray_RandomBytes_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000, 100000)] int size)
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomBytes_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000, 100000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
         NativeArray<byte> array = new NativeArray<byte>(size, Allocator.Persistent);
@@ -447,7 +520,31 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJobNativeArray_RandomShorts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    public void SortJobNativeArray_RandomBytes_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000, 100000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<byte> array = new NativeArray<byte>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (byte)random.NextInt(byte.MinValue, byte.MinValue);
+        }
+
+        array.SortJob(new DescendingComparer<byte>()).Schedule().Complete();
+
+        int max = int.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomShorts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
         NativeArray<short> array = new NativeArray<short>(size, Allocator.Persistent);
@@ -470,6 +567,30 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
+    public void SortJobNativeArray_RandomShorts_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<short> array = new NativeArray<short>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (short)random.NextInt(short.MinValue, short.MaxValue);
+        }
+
+        array.SortJob().Schedule().Complete();
+
+        int min = int.MinValue;
+        foreach (var i in array)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
     public void SortJobNativeArray_RandomShorts_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
@@ -493,7 +614,31 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJobNativeArray_RandomFloats_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    public void SortNativeArrayByJob_RandomShorts_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<short> array = new NativeArray<short>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (short)random.NextInt(short.MinValue, short.MaxValue);
+        }
+
+        array.SortJob(new DescendingComparer<short>()).Schedule().Complete();
+
+        int max = int.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomFloats_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
         NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
@@ -516,7 +661,31 @@ internal class NativeSliceTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void SortJobNativeArray_RandomFloats_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
+    public void SortJobNativeArray_RandomFloats_ReturnSorted([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (float)random.NextDouble();
+        }
+
+        array.SortJob().Schedule().Complete();
+
+        float min = float.MinValue;
+        foreach (var i in array)
+        {
+            Assert.LessOrEqual(min, i);
+            min = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    [Obsolete("Sort is being replaced by SortJob. (RemovedAfter 2021-06-20)", false)]
+    public void SortNativeArrayByJob_RandomFloats_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
     {
         var random = new Unity.Mathematics.Random(1);
         NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
@@ -528,6 +697,29 @@ internal class NativeSliceTests : CollectionsTestCommonBase
         }
 
         array.Sort(new DescendingComparer<float>(), default).Complete();
+
+        float max = float.MaxValue;
+        foreach (var i in array)
+        {
+            Assert.GreaterOrEqual(max, i);
+            max = i;
+        }
+        array.Dispose();
+    }
+
+    [Test]
+    public void SortJobNativeArray_RandomFloats_ReturnSorted_Descending([Values(0, 1, 10, 1000, 10000)] int size)
+    {
+        var random = new Unity.Mathematics.Random(1);
+        NativeArray<float> array = new NativeArray<float>(size, Allocator.Persistent);
+        Assert.IsTrue(array.IsCreated);
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            array[i] = (float)random.NextDouble();
+        }
+
+        array.SortJob(new DescendingComparer<float>()).Schedule().Complete();
 
         float max = float.MaxValue;
         foreach (var i in array)
