@@ -14,33 +14,28 @@ using System.Reflection;
 namespace Unity.Collections
 {
     /// <summary>
-    /// INativeDisposable provides a mechanism for scheduling release of unmanaged resources.
+    /// For scheduling release of unmanaged resources.
     /// </summary>
     public interface INativeDisposable : IDisposable
     {
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will release all resources (memory and safety handles) of this collection.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle which the newly scheduled job will depend upon.</param>
+        /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this collection.</returns>
         JobHandle Dispose(JobHandle inputDeps);
     }
 
     /// <summary>
-    ///
+    /// Provides helper methods for collections.
     /// </summary>
     [BurstCompatible]
     public static class CollectionHelper
     {
         /// <summary>
-        ///
+        /// The size in bytes of the current platform's L1 cache lines.
         /// </summary>
+        /// <value>The size in bytes of the current platform's L1 cache lines.</value>
         public const int CacheLineSize = JobsUtility.CacheLineSize;
 
         [StructLayout(LayoutKind.Explicit)]
@@ -54,31 +49,36 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns the binary logarithm of the `value`, but the result is rounded down to the nearest integer.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">The value.</param>
+        /// <returns>The binary logarithm of the `value`, but the result is rounded down to the nearest integer.</returns>
         public static int Log2Floor(int value)
         {
             return 31 - math.lzcnt((uint)value);
         }
 
         /// <summary>
-        ///
+        /// Returns the binary logarithm of the `value`, but the result is rounded up to the nearest integer.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="value">The value.</param>
+        /// <returns>The binary logarithm of the `value`, but the result is rounded up to the nearest integer.</returns>
         public static int Log2Ceil(int value)
         {
             return 32 - math.lzcnt((uint)value - 1);
         }
 
         /// <summary>
-        ///
+        /// Returns an allocation size in bytes that factors in alignment.
         /// </summary>
-        /// <param name="size"></param>
-        /// <param name="alignmentPowerOfTwo"></param>
-        /// <returns></returns>
+        /// <example><code>
+        /// // 55 aligned to 16 is 64.
+        /// int size = CollectionHelper.Align(55, 16);
+        /// </code></example>
+        /// <param name="size">The size to align.</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>The smallest integer that is greater than or equal to `size` and is a multiple of `alignmentPowerOfTwo`.</returns>
+        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
         public static int Align(int size, int alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
@@ -90,11 +90,16 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns an allocation size in bytes that factors in alignment.
         /// </summary>
-        /// <param name="size"></param>
-        /// <param name="alignmentPowerOfTwo"></param>
-        /// <returns></returns>
+        /// <example><code>
+        /// // 55 aligned to 16 is 64.
+        /// ulong size = CollectionHelper.Align(55, 16);
+        /// </code></example>
+        /// <param name="size">The size to align.</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>The smallest integer that is greater than or equal to `size` and is a multiple of `alignmentPowerOfTwo`.</returns>
+        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
         public static ulong Align(ulong size, ulong alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
@@ -106,11 +111,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if the address represented by the pointer has a given alignment.
         /// </summary>
-        /// <param name="p"></param>
-        /// <param name="alignmentPowerOfTwo"></param>
-        /// <returns></returns>
+        /// <param name="p">The pointer.</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>True if the address is a multiple of `alignmentPowerOfTwo`.</returns>
+        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
         public static unsafe bool IsAligned(void* p, int alignmentPowerOfTwo)
         {
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
@@ -118,11 +124,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if an offset has a given alignment.
         /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="alignmentPowerOfTwo"></param>
-        /// <returns></returns>
+        /// <param name="offset">An offset</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>True if the offset is a multiple of `alignmentPowerOfTwo`.</returns>
+        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
         public static bool IsAligned(ulong offset, int alignmentPowerOfTwo)
         {
             CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
@@ -130,21 +137,23 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a positive value is a non-zero power of two.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <remarks>Result is invalid if `value &lt; 0`.</remarks>
+        /// <param name="value">A positive value.</param>
+        /// <returns>True if the value is a non-zero, positive power of two.</returns>
         public static bool IsPowerOfTwo(int value)
         {
             return (value & (value - 1)) == 0;
         }
 
         /// <summary>
-        /// Returns hash value of memory block. Function is using djb2 (non-cryptographic hash).
+        /// Returns a (non-cryptographic) hash of a memory block.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="bytes">Number of bytes to hash.</param>
-        /// <returns></returns>
+        /// <remarks>The hash function used is [djb2](http://web.archive.org/web/20190508211657/http://www.cse.yorku.ca/~oz/hash.html).</remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="bytes">The number of bytes to hash.</param>
+        /// <returns>A hash of the bytes.</returns>
         public static unsafe uint Hash(void* ptr, int bytes)
         {
             // djb2 - Dan Bernstein hash function
@@ -159,11 +168,11 @@ namespace Unity.Collections
             return (uint)hash;
         }
 
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Used only for debugging. */]
         internal static void WriteLayout(Type type)
         {
 #if !NET_DOTS
-            Console.WriteLine("   Offset | Bytes  | Name     Layout: {0}", type.Name);
+            Console.WriteLine($"   Offset | Bytes  | Name     Layout: {0}", type.Name);
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var field in fields)
             {
@@ -205,7 +214,7 @@ namespace Unity.Collections
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
-        [NotBurstCompatible]
+        [NotBurstCompatible  /* Used only for debugging. */]
         internal static void CheckIsUnmanaged<T>()
         {
             if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
@@ -220,7 +229,7 @@ namespace Unity.Collections
             var valid = (value > 0) && ((value & (value - 1)) == 0);
             if (!valid)
             {
-                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+                throw new ArgumentException($"Alignment requested: {value} is not a non-zero, positive power of two.");
             }
         }
 
@@ -230,8 +239,63 @@ namespace Unity.Collections
             var valid = (value > 0) && ((value & (value - 1)) == 0);
             if (!valid)
             {
-                throw new ArgumentException("Alignment requested: {value} is not a non-zero, positive power of two.");
+                throw new ArgumentException($"Alignment requested: {value} is not a non-zero, positive power of two.");
             }
+        }
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        public static NativeArray<T> CreateNativeArray<T, U>(int length, ref U allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+            where T : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var nativeArray = new NativeArray<T>();
+            nativeArray.Initialize(length, ref allocator, options);
+            return nativeArray;
+        }
+
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public static NativeArray<T> CreateNativeArray<T>(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+            where T : struct
+        {
+            var nativeArray = new NativeArray<T>();
+            nativeArray.Initialize(length, allocator, options);
+            return nativeArray;
+        }
+
+
+        [NotBurstCompatible]
+        public static NativeArray<T> CreateNativeArray<T>(T[] array, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+            where T : struct
+        {
+            var nativeArray = new NativeArray<T>();
+            nativeArray.Initialize(array.Length, allocator, options);
+            nativeArray.CopyFrom(array);
+            return nativeArray;
+        }
+
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        public static NativeMultiHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var nativeMultiHashMap = new NativeMultiHashMap<TKey, TValue>();
+            nativeMultiHashMap.Initialize(length, ref allocator);
+            return nativeMultiHashMap;
+        }
+
+
+        [NotBurstCompatible]
+        public static NativeArray<T> CreateNativeArray<T, U>(T[] array, ref U allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+            where T : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var nativeArray = new NativeArray<T>();
+            nativeArray.Initialize(array.Length, ref allocator, options);
+            nativeArray.CopyFrom(array);
+            return nativeArray;
         }
     }
 }

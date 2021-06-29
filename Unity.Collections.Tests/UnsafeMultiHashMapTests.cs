@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.NotBurstCompatible;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
@@ -136,7 +137,7 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
         }
         var keys = container.GetKeyArray(Allocator.Temp);
 #if !NET_DOTS // Tuple is not supported by TinyBCL
-        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
+        var (unique, uniqueLength) = container.GetUniqueKeyArrayNBC(Allocator.Temp);
         Assert.AreEqual(30, uniqueLength);
 #endif
 

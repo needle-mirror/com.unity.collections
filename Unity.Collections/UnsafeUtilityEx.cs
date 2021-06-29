@@ -6,22 +6,22 @@ using Unity.Mathematics;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// Unsafe utility extensions.
+    /// Provides utility methods for unsafe, untyped buffers.
     /// </summary>
     [BurstCompatible]
     public unsafe static class UnsafeUtilityExtensions
     {
         /// <summary>
-        /// Swaps content of two buffers.
+        /// Swaps bytes between two buffers.
         /// </summary>
-        /// <param name="destination">Destination memory pointer.</param>
-        /// <param name="source">Source memory pointer.</param>
-        /// <param name="size">Size.</param>
-        /// <exception cref="System.InvalidOperationException">Thrown if source and destination memory regions overlap.</exception>
-        internal static void MemSwap(void* destination, void* source, long size)
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="otherPtr">Another buffer.</param>
+        /// <param name="size">The number of bytes to swap.</param>
+        /// <exception cref="System.InvalidOperationException">Thrown if the two ranges of bytes to swap overlap in memory.</exception>
+        internal static void MemSwap(void* ptr, void* otherPtr, long size)
         {
-            byte* dst = (byte*) destination;
-            byte* src = (byte*) source;
+            byte* dst = (byte*) ptr;
+            byte* src = (byte*) otherPtr;
 
             CheckMemSwapOverlap(dst, src, size);
 
@@ -41,17 +41,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reads an element to an unsafe buffer after bounds checking.
+        /// Reads an element from a buffer after bounds checking.
         /// </summary>
-        /// <typeparam name="T">Type of data in the array.</typeparam>
-        /// <param name="source">Source memory pointer.</param>
-        /// <param name="index">Index into array.</param>
-        /// <param name="capacity">Array capacity, used for bounds checking.</param>
-        /// <returns>Element read from the array.</returns>
-        /// <exception cref="System.IndexOutOfRangeException">Thrown if reading outside of the array's range.</exception>
-        /// <remarks>Reading data out of bounds from an unsafe buffer can lead to crashes and data corruption.
-        /// <seealso cref="UnsafeUtility.ReadArrayElement{T}(void*, int)"/> does not do any bounds checking, so it's fast, but provides no debugging or safety capabilities.
-        /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.ReadArrayElement{T}(void*, int)"/> and should be used when debuggability is required over performance.</remarks>
+        /// <typeparam name="T">The type of element.</typeparam>
+        /// <param name="source">The buffer to read from.</param>
+        /// <param name="index">The index of the element.</param>
+        /// <param name="capacity">The buffer capacity (in number of elements). Used for the bounds checking.</param>
+        /// <returns>The element read from the buffer.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static T ReadArrayElementBoundsChecked<T>(void* source, int index, int capacity)
         {
@@ -61,17 +58,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Writes an element to an unsafe buffer after bounds checking.
+        /// Writes an element to a buffer after bounds checking.
         /// </summary>
-        /// <typeparam name="T">Type of data in the array.</typeparam>
-        /// <param name="destination">Destination memory pointer.</param>
-        /// <param name="index">Index into array.</param>
-        /// <param name="value">Value to write into array.</param>
-        /// <param name="capacity">Array capacity, used for bounds checking.</param>
-        /// <exception cref="System.IndexOutOfRangeException">Thrown if element would be written outside of the array's range.</exception>
-        /// <remarks>Writing data out of bounds to an unsafe buffer can lead to crashes and data corruption.
-        /// <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> does not do any bounds checking, so it's fast, but provides no debugging or safety capabilities.
-        /// This function provides basic bounds checking for <seealso cref="UnsafeUtility.WriteArrayElement{T}(void*, int, T)"/> and should be used when debuggability is required over performance.</remarks>
+        /// <typeparam name="T">The type of element.</typeparam>
+        /// <param name="destination">The buffer to write to.</param>
+        /// <param name="value">The value to write.</param>
+        /// <param name="index">The index at which to store the element.</param>
+        /// <param name="capacity">The buffer capacity (in number of elements). Used for the bounds checking.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static void WriteArrayElementBoundsChecked<T>(void* destination, int index, T value, int capacity)
         {
@@ -81,33 +75,33 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Return the address of the read-only "in" reference parameter.
+        /// Returns the address of a read-only reference.
         /// </summary>
-        /// <typeparam name="T">Type of the parameter.</typeparam>
-        /// <param name="item">The read-only reference to a valuetype of type T.</param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of referenced value.</typeparam>
+        /// <param name="value">A read-only reference.</param>
+        /// <returns>A pointer to the referenced value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void* AddressOf<T>(in T item)
+        public static void* AddressOf<T>(in T value)
             where T : struct
         {
-            return ILSupport.AddressOf(in item);
+            return ILSupport.AddressOf(in value);
         }
 
         /// <summary>
-        /// Erases the "read-only" "in" part of the given reference argument, and returns a regular ref to it.
-        /// Useful to avoid a defensive copy when calling methods on "in" args.  Be careful not to mutate the reference
-        /// target, as doing so may break assumptions the runtime makes.
+        /// Returns a read-write reference from a read-only reference.
+        /// <remarks>Useful when you want to pass an `in` arg (read-only reference) where a `ref` arg (read-write reference) is expected.
+        /// Do not mutate the referenced value, as doing so may break the runtime's assumptions.</remarks>
         /// </summary>
-        /// <typeparam name="T">Type of the parameter.</typeparam>
-        /// <param name="item">The read-only reference to a valuetype of type T.</param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of referenced value.</typeparam>
+        /// <param name="value">A read-only reference.</param>
+        /// <returns>A read-write reference to the value referenced by `item`.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static ref T AsRef<T>(in T item)
+        public static ref T AsRef<T>(in T value)
             where T : struct
         {
-            return ref ILSupport.AsRef(in item);
+            return ref ILSupport.AsRef(in value);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

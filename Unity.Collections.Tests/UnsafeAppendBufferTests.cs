@@ -16,6 +16,17 @@ internal class UnsafeAppendBufferTests : CollectionsTestCommonBase
     public void UnsafeAppendBuffer_DisposeEmpty()
     {
         var buffer = new UnsafeAppendBuffer(0, 8, Allocator.Temp);
+        Assert.False(buffer.IsCreated);
+        Assert.True(buffer.IsEmpty);
+        buffer.Dispose();
+    }
+
+    [Test]
+    public void UnsafeAppendBuffer_DisposeAllocated()
+    {
+        var buffer = new UnsafeAppendBuffer(1, 8, Allocator.Temp);
+        Assert.True(buffer.IsCreated);
+        Assert.True(buffer.IsEmpty);
         buffer.Dispose();
     }
 

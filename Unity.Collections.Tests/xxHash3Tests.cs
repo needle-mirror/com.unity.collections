@@ -9,7 +9,7 @@ using Random = Unity.Mathematics.Random;
 
 [TestFixture]
 [BurstCompile]
-public class xxHash3Tests : CollectionsTestCommonBase
+internal class xxHash3Tests : CollectionsTestCommonBase
 {
     private unsafe void* SanityBuffer;
     private unsafe void* DestinationBuffer;

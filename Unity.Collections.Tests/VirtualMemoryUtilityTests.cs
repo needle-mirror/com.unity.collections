@@ -10,6 +10,9 @@ using UnityEngine.TestTools;
 #if !UNITY_PORTABLE_TEST_RUNNER
 using System.Text.RegularExpressions;
 #endif
+using Assert = FastAssert;
+
+#pragma warning disable 618 // disable obsolete warnings
 
 class VirtualMemoryUtilityTests : CollectionsTestCommonBase
 {
@@ -20,7 +23,7 @@ class VirtualMemoryUtilityTests : CollectionsTestCommonBase
         // Reserve 1 page
         BaselibErrorState errorState = default;
         var addressSpace = VirtualMemoryUtility.ReserveAddressSpace(1, VirtualMemoryUtility.DefaultPageSizeInBytes, out errorState);
-        Assert.AreEqual(addressSpace.pageCount, 1);
+        Assert.AreEqual(addressSpace.pageCount, 1u);
         VirtualMemoryUtility.FreeAddressSpace(addressSpace, out errorState);
     }
 

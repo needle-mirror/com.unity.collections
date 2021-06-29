@@ -8,9 +8,9 @@ using Unity.Jobs;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// Set of values, without any thread safety check features.
+    /// An unordered, expandable set of unique values.
     /// </summary>
-    /// <typeparam name="T">The type of the values in the container.</typeparam>
+    /// <typeparam name="T">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerTypeProxy(typeof(UnsafeHashSetDebuggerTypeProxy<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
@@ -22,119 +22,103 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal UnsafeHashMap<T, bool> m_Data;
 
         /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// Initializes and returns an instance of UnsafeHashSet.
         /// </summary>
-        /// <param name="capacity">The initial capacity of the container. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
         public UnsafeHashSet(int capacity, Allocator allocator)
         {
             m_Data = new UnsafeHashMap<T, bool>(capacity, allocator);
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether this set is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this set is empty.</value>
         public bool IsEmpty => m_Data.IsEmpty;
 
         /// <summary>
-        /// The current number of items in the container.
+        /// Returns the current number of values in this set.
         /// </summary>
-        /// <returns>The item count.</returns>
+        /// <returns>The current number of values in this set.</returns>
         public int Count() => m_Data.Count();
 
         /// <summary>
-        /// The number of items that can fit in the container.
+        /// The number of values that fit in the current allocation.
         /// </summary>
-        /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-        /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-        /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-        /// old array to the new one, and then deallocates the original array memory.</remarks>
+        /// <value>The number of values that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity { get => m_Data.Capacity; set => m_Data.Capacity = value; }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this set has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this set has been allocated (and not yet deallocated).</value>
         public bool IsCreated => m_Data.IsCreated;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory).
         /// </summary>
         public void Dispose() => m_Data.Dispose();
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this set.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this set.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps) => m_Data.Dispose(inputDeps);
 
         /// <summary>
-        /// Clears the container.
+        /// Removes all values.
         /// </summary>
-        /// <remarks>Containers capacity remains unchanged.</remarks>
+        /// <remarks>Does not change the capacity.</remarks>
         public void Clear() => m_Data.Clear();
 
         /// <summary>
-        /// Add the specified element into the container. If the specified element already exists in the container it returns false.
+        /// Adds a new value (unless it is already present).
         /// </summary>
-        /// <param name="item">The element to add to the container.</param>
-        /// <returns>Returns true if the specified element is added into the container, otherwise returns false.</returns>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the value was not already present.</returns>
         public bool Add(T item) => m_Data.TryAdd(item, false);
 
         /// <summary>
-        /// Removes the specified element from the container.
+        /// Removes a particular value.
         /// </summary>
-        /// <param name="item">The element to remove from the container.</param>
-        /// <returns>Returns true if the specified element was removed from the container, otherwise returns false indicating the specified element wasn't in the container.</returns>
+        /// <param name="item">The value to remove.</param>
+        /// <returns>True if the value was present.</returns>
         public bool Remove(T item) => m_Data.Remove(item);
 
         /// <summary>
-        /// Determines whether an element is in the container.
+        /// Returns true if a particular value is present.
         /// </summary>
-        /// <param name="item">The element to locate in the container.</param>
-        /// <returns>Returns true if the specified element is inside the container, otherwise returns false indicating the specified element wasn't in the container.</returns>
+        /// <param name="item">The value to check for.</param>
+        /// <returns>True if the value was present.</returns>
         public bool Contains(T item) => m_Data.ContainsKey(item);
 
         /// <summary>
-        /// Returns array populated with elements from the container.
+        /// Returns an array with a copy of this set's values (in no particular order).
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Array of elements of the container.</returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of the set's values.</returns>
         public NativeArray<T> ToNativeArray(Allocator allocator) => m_Data.GetKeyArray(allocator);
 
         /// <summary>
-        /// Returns parallel writer instance.
+        /// Returns a parallel writer.
         /// </summary>
-        /// <returns>Parallel writer instance.</returns>
+        /// <returns>A parallel writer.</returns>
         public ParallelWriter AsParallelWriter()
         {
             return new ParallelWriter { m_Data = m_Data.AsParallelWriter() };
         }
 
         /// <summary>
-        /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
+        /// A parallel writer for an UnsafeHashSet.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a set.
+        /// </remarks>
         [NativeContainerIsAtomicWriteOnly]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public struct ParallelWriter
@@ -142,35 +126,31 @@ namespace Unity.Collections.LowLevel.Unsafe
             internal UnsafeHashMap<T, bool>.ParallelWriter m_Data;
 
             /// <summary>
-            /// The number of items that can fit in the container.
+            /// The number of values that fit in the current allocation.
             /// </summary>
-            /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-            /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-            /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-            /// old array to the new one, and then deallocates the original array memory.</remarks>
+            /// <value>The number of values that fit in the current allocation.</value>
             public int Capacity => m_Data.Capacity;
 
             /// <summary>
-            /// Add the specified element into the container. If the specified element already exists in the container it returns false.
+            /// Adds a new value (unless it is already present).
             /// </summary>
-            /// <param name="item">The element to add to the container.</param>
-            /// <returns>Returns true if the specified element is added into the container, otherwise returns false.</returns>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the value is not already present.</returns>
             public bool Add(T item) => m_Data.TryAdd(item, false);
         }
 
         /// <summary>
-        /// Returns an IEnumerator interface for the container.
+        /// Returns an enumerator over the values of this set.
         /// </summary>
-        /// <returns>An IEnumerator interface for the container.</returns>
+        /// <returns>An enumerator over the values of this set.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Data.m_Buffer) };
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -179,9 +159,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator IEnumerable.GetEnumerator()
@@ -190,31 +169,36 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Implements iterator over the container.
+        /// An enumerator over the values of a set.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is invalid.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first value.
+        /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
             internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
-            /// Disposes enumerator.
+            /// Does nothing.
             /// </summary>
             public void Dispose() { }
 
             /// <summary>
-            /// Advances the enumerator to the next element of the container.
+            /// Advances the enumerator to the next value.
             /// </summary>
-            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
+            /// <returns>True if `Current` is valid to read after the call.</returns>
             public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
-            /// Resets the enumerator to the first element of the container.
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
-            /// Gets the element at the current position of the enumerator in the container.
+            /// The current value.
             /// </summary>
+            /// <value>The current value.</value>
             public T Current => m_Enumerator.GetCurrentKey<T>();
 
             object IEnumerator.Current => Current;

@@ -84,12 +84,13 @@ internal class FixedListTests : CollectionsTestFixture
                 var TYPESIZE = TYPESIZES[type];
                 var MAXLENGTH = BYTES - 2;
                 var TYPENAME = String.Format("FixedList{0}", BYTES);
+                var TYPENAME_IDENTIFIER = String.Format("FixedList{0}{1}_", BYTES, new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE));
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
                 var BUFFERTYPE = String.Format("FixedBytes{0}", MAXLENGTH);
 #>
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#><#=BUFFERTYPE#>ToNativeArrayWorksGeneric()
+    public void <#=TYPENAME_IDENTIFIER #><#=BUFFERTYPE#>ToNativeArrayWorksGeneric()
     {
         var list = new FixedList<<#=TYPE#>,<#=BUFFERTYPE#>>();
 
@@ -104,7 +105,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>ToNativeArrayWorks()
+    public void <#=TYPENAME_IDENTIFIER #>ToNativeArrayWorks()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
 
@@ -119,7 +120,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericHasExpectedLayout()
+    public void <#=TYPENAME_IDENTIFIER #>GenericHasExpectedLayout()
     {
         var actual = new <#=TYPENAME #><<#=TYPE#>>();
         for(var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
@@ -139,7 +140,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericHasExpectedCapacity()
+    public void <#=TYPENAME_IDENTIFIER #>GenericHasExpectedCapacity()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
         var expectedCapacity = list.Capacity;
@@ -152,7 +153,7 @@ internal class FixedListTests : CollectionsTestFixture
                 {
 #>
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericInsertRangeWithBeginEnd()
+    public void <#=TYPENAME_IDENTIFIER #>GenericInsertRangeWithBeginEnd()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
@@ -163,7 +164,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericRemoveRange()
+    public void <#=TYPENAME_IDENTIFIER #>GenericRemoveRange()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
@@ -172,7 +173,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericInsert()
+    public void <#=TYPENAME_IDENTIFIER #>GenericInsert()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 4 };
         list.Insert(1,1);
@@ -182,7 +183,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericRemoveAt()
+    public void <#=TYPENAME_IDENTIFIER #>GenericRemoveAt()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
@@ -192,7 +193,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericRemove()
+    public void <#=TYPENAME_IDENTIFIER #>GenericRemove()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((<#=TYPE#>)3));
@@ -202,7 +203,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericRemoveSwapBack()
+    public void <#=TYPENAME_IDENTIFIER #>GenericRemoveSwapBack()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((<#=TYPE#>)3));
@@ -212,7 +213,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericSort()
+    public void <#=TYPENAME_IDENTIFIER #>GenericSort()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
         for(var i = 0; i < 5; ++i)
@@ -223,7 +224,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #><#=TYPE#>GenericSortCustomComparer()
+    public void <#=TYPENAME_IDENTIFIER #>GenericSortCustomComparer()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
         for(var i = 0; i < 5; ++i)
@@ -234,7 +235,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public unsafe void <#=TYPENAME #><#=TYPE#>IndexOf()
+    public unsafe void <#=TYPENAME_IDENTIFIER #>IndexOf()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
@@ -260,13 +261,13 @@ internal class FixedListTests : CollectionsTestFixture
                 var TYPE = TYPES[type];
                 var TYPESIZE = TYPESIZES[type];
                 var MAXLENGTH = BYTES - 2;
-                var TYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE),
-                    BYTES);
+                var TYPENAME = String.Format("FixedList{0}<{1}>", BYTES, TYPE);
+                var TYPENAME_IDENTIFIER = String.Format("FixedList{0}{1}_", BYTES, new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE));
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
 #>
 
     [Test]
-    public void <#=TYPENAME #>HasExpectedLayout()
+    public void <#=TYPENAME_IDENTIFIER #>HasExpectedLayout()
     {
         var actual = new <#=TYPENAME #>();
         for(var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
@@ -286,7 +287,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>HasExpectedCapacity()
+    public void <#=TYPENAME_IDENTIFIER #>HasExpectedCapacity()
     {
         var list = new <#=TYPENAME #>();
         var expectedCapacity = list.Capacity;
@@ -296,15 +297,15 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
-    class ScriptableObject<#=TYPENAME#> : UnityEngine.ScriptableObject
+    class ScriptableObject<#=TYPENAME_IDENTIFIER#> : UnityEngine.ScriptableObject
     {
         public <#=TYPENAME#> List;
     }
 
     [Test]
-    public void <#=TYPENAME#>Serializes()
+    public void <#=TYPENAME_IDENTIFIER #>Serializes()
     {
-        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObject<#=TYPENAME#> >();
+        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObject<#=TYPENAME_IDENTIFIER#> >();
         for(int i = 0; i < a.List.Capacity; ++i)
             a.List.Add((<#=TYPE #>)i);
         var b = UnityEngine.Object.Instantiate(a);
@@ -317,7 +318,7 @@ internal class FixedListTests : CollectionsTestFixture
                 {
 #>
     [Test]
-    public void <#=TYPENAME #>InsertRangeWithBeginEnd()
+    public void <#=TYPENAME_IDENTIFIER #>InsertRangeWithBeginEnd()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
@@ -338,7 +339,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>RemoveAt()
+    public void <#=TYPENAME_IDENTIFIER #>RemoveAt()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
@@ -347,25 +348,25 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>Remove()
+    public void <#=TYPENAME_IDENTIFIER #>Remove()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
-        Assert.True(list.Remove(3));
-        Assert.True(list.Remove(3));
+        Assert.True(list.Remove((<#=TYPE#>)3));
+        Assert.True(list.Remove((<#=TYPE#>)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void <#=TYPENAME #>RemoveSwapBack()
+    public void <#=TYPENAME_IDENTIFIER #>RemoveSwapBack()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 2, 1 };
-        Assert.True(list.RemoveSwapBack(3));
-        Assert.True(list.RemoveSwapBack(3));
+        Assert.True(list.RemoveSwapBack((<#=TYPE#>)3));
+        Assert.True(list.RemoveSwapBack((<#=TYPE#>)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
 
     [Test]
-    public void <#=TYPENAME #>RemoveRange()
+    public void <#=TYPENAME_IDENTIFIER #>RemoveRange()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
@@ -373,7 +374,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>RemoveAtSwapBack()
+    public void <#=TYPENAME_IDENTIFIER #>RemoveAtSwapBack()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
@@ -382,7 +383,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>RemoveRangeSwapBack()
+    public void <#=TYPENAME_IDENTIFIER #>RemoveRangeSwapBack()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
@@ -390,7 +391,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>Insert()
+    public void <#=TYPENAME_IDENTIFIER #>Insert()
     {
         var list = new <#=TYPENAME #>() { 0, 3, 4 };
         list.Insert(1,1);
@@ -400,7 +401,7 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void <#=TYPENAME #>Sort()
+    public void <#=TYPENAME_IDENTIFIER #>Sort()
     {
         var list = new <#=TYPENAME #>();
         for(var i = 0; i < 5; ++i)
@@ -418,11 +419,11 @@ internal class FixedListTests : CollectionsTestFixture
                     if (OTHERBYTES != BYTES)
                     {
                         var OTHERCAPACITY = (OTHERBYTES - 2) / TYPESIZE;
-                        var OTHERTYPENAME = String.Format("FixedList{0}{1}",
-                            new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), OTHERBYTES);
+                        var OTHERTYPENAME = String.Format("FixedList{0}<{1}>", OTHERBYTES, TYPE);
+                        var OTHERTYPENAME_IDENTIFIER = String.Format("_FixedList{0}{1}", OTHERBYTES, new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE));
 #>
     [Test]
-    public void <#=TYPENAME #>To<#=OTHERTYPENAME #>()
+    public void <#=TYPENAME_IDENTIFIER #>To<#=OTHERTYPENAME_IDENTIFIER #>()
     {
         var a = new <#=TYPENAME #>();
         for(var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)

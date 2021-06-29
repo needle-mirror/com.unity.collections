@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 namespace Unity.Collections
 {
     /// <summary>
-    /// <undoc />
+    /// Provides methods for parsing numbers from FixedString*N*.
     /// </summary>
     [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
-        private static bool ParseLongInternal<T>(ref T fs, ref int offset, out long value)
+        internal static bool ParseLongInternal<T>(ref T fs, ref int offset, out long value)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
             int resetOffset = offset;
@@ -48,14 +48,18 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Parse an int from this string, at the given byte offset. The resulting value
-        /// is intended to be bitwise-identical to the output of int.Parse().
+        /// Parses an int from this string starting at a byte offset.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fs"></param>
-        /// <param name="offset">The zero-based byte offset from the beginning of the string, updated if a value is parsed.</param>
-        /// <param name="output">The int parsed, if any.</param>
-        /// <returns>An error code, if any, in the case that the parse fails.</returns>
+        /// <remarks>
+        /// Stops parsing after the last number character. (Unlike parsing methods in other API's, this method does not expect to necessarily parse the entire string.)
+        ///
+        /// The parsed value is bitwise-identical to the result of System.Int32.Parse.
+        /// </remarks>
+        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <param name="fs">The string from which to parse.</param>
+        /// <param name="offset">A reference to an index of the byte at which to parse an int.</param>
+        /// <param name="output">Outputs the parsed int. Ignore if parsing fails.</param>
+        /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow or ParseError.Syntax.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref int output)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -71,14 +75,18 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Parse a uint from this string, at the given byte offset. The resulting value
-        /// is intended to be bitwise-identical to the output of uint.Parse().
+        /// Parses an uint from this string starting at a byte offset.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fs"></param>
-        /// <param name="offset">The zero-based byte offset from the beginning of the string, updated if a value is parsed.</param>
-        /// <param name="output">The uint parsed, if any.</param>
-        /// <returns>An error code, if any, in the case that the parse fails.</returns>
+        /// <remarks>
+        /// Stops parsing after the last number character. (Unlike parsing methods in other API's, this method does not expect to necessarily parse the entire string.)
+        ///
+        /// The parsed value is bitwise-identical to the result of System.UInt32.Parse.
+        /// </remarks>
+        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <param name="fs">The string from which to parse.</param>
+        /// <param name="offset">A reference to an index of the byte at which to parse a uint.</param>
+        /// <param name="output">Outputs the parsed uint. Ignore if parsing fails.</param>
+        /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow or ParseError.Syntax.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref uint output)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -94,35 +102,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Parse a float from this string, at the byte offset indicated. The resulting float
-        /// is intended to be bitwise-identical to the output of System.Single.Parse(), with the following exceptions:
-        /// <list type="bullet">
-        /// <item>
-        /// <description>
-        /// Values which overflow return ParseError.Overflow rather than assigning "Infinity"
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// Values which underflow return ParseError.Underflow rather than assigning "0"
-        /// </description>
-        /// </item>
-        /// <item>
-        /// <description>
-        /// Values in exponent form 1e-39 to 1e-45 will be considered underflowed values rather than parsing as
-        /// greater than 0 in order to avoid creating floating point numbers that may generate unexpected
-        /// denormal problems in user code.
-        /// </description>
-        /// </item>
-        /// </list>
+        /// Parses a float from this string starting at a byte offset.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="fs"></param>
-        /// <param name="offset">The zero-based byte offset from the beginning of the string.</param>
-        /// <param name="output">The float parsed, if any.</param>
-        /// <param name="decimalSeparator">The character used to separate the integral part from the fractional part.
-        /// Defaults to a period.</param>
-        /// <returns>An error code, if any, in the case that the parse fails.</returns>
+        /// Stops parsing after the last number character. (Unlike parsing methods in other API's, this method does not expect to necessarily parse the entire string.)
+        ///
+        /// <remarks>The parsed value is bitwise-identical to the result of System.Single.Parse.</remarks>
+        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <param name="fs">The string from which to parse.</param>
+        /// <param name="offset">Index of the byte at which to parse a float.</param>
+        /// <param name="output">Outputs the parsed float. Ignore if parsing fails.</param>
+        /// <param name="decimalSeparator">The character used to separate the integer part of the number from the fractional part. Defaults to '.' (period).</param>
+        /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow, ParseError.Underflow, or ParseError.Syntax.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref float output, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes

@@ -4,6 +4,7 @@ using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
+using Assert = FastAssert;
 
 internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 {

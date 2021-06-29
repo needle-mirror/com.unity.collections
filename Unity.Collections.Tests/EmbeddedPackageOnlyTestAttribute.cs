@@ -7,14 +7,14 @@ namespace Unity.Collections.Tests
 {
 #if UNITY_DOTSRUNTIME
     // Always ignore these tests
-    public class EmbeddedPackageOnlyTestAttribute : IgnoreAttribute {
+    internal class EmbeddedPackageOnlyTestAttribute : IgnoreAttribute {
         public EmbeddedPackageOnlyTestAttribute() : base("Only runs in the editor when this package is embedded or referenced locally.")
         {
         }
     }
 #else
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class EmbeddedPackageOnlyTestAttribute : NUnitAttribute, IApplyToTest
+    internal class EmbeddedPackageOnlyTestAttribute : NUnitAttribute, IApplyToTest
     {
         public void ApplyToTest(Test test)
         {

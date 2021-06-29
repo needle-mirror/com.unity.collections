@@ -370,7 +370,7 @@ namespace Unity.Collections
             return endBit;
         }
 
-        internal static int FindWithBE(ulong* ptr, int beginBit, int endBit, int numBits)
+        internal static int FindWithBeginEnd(ulong* ptr, int beginBit, int endBit, int numBits)
         {
             int idx;
 
@@ -445,32 +445,36 @@ namespace Unity.Collections
             return int.MaxValue;
         }
 
-        internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBE(ptr, pos, pos + count, numBits);
+        internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBeginEnd(ptr, pos, pos + count, numBits);
     }
 
     /// <summary>
-    /// Fixed size 32-bit array of bits.
+    /// A 32-bit array of bits.
     /// </summary>
+    /// <remarks>
+    /// Stack allocated, so it does not require thread safety checks or disposal.
+    /// </remarks>
     [DebuggerTypeProxy(typeof(BitField32DebugView))]
     [BurstCompatible]
     public struct BitField32
     {
         /// <summary>
-        /// 32-bit data storage.
+        /// The 32 bits, stored as a uint.
         /// </summary>
+        /// <value>The 32 bits, stored as a uint.</value>
         public uint Value;
 
         /// <summary>
-        /// Constructor.
+        /// Initializes and returns an instance of BitField32.
         /// </summary>
-        /// <param name="initialValue">Initial value of bit field. Default is 0.</param>
+        /// <param name="initialValue">Initial value of the bit field. Default is 0.</param>
         public BitField32(uint initialValue = 0u)
         {
             Value = initialValue;
         }
 
         /// <summary>
-        /// Clear all bits to 0.
+        /// Clears all the bits to 0.
         /// </summary>
         public void Clear()
         {
@@ -478,10 +482,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Set single bit to desired boolean value.
+        /// Sets a single bit to 1 or 0.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="value">Value of bits to set.</param>
+        /// <param name="pos">Position in this bit field to set (must be 0-31).</param>
+        /// <param name="value">If true, sets the bit to 1. If false, sets the bit to 0.</param>
+        /// <exception cref="ArgumentException">Thrown if `pos`is out of range.</exception>
         public void SetBits(int pos, bool value)
         {
             CheckArgs(pos, 1);
@@ -489,11 +494,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Set bits to desired boolean value.
+        /// Sets one or more contiguous bits to 1 or 0.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <param name="value">Value of bits to set.</param>
+        /// <param name="pos">Position in the bit field of the first bit to set (must be 0-31).</param>
+        /// <param name="value">If true, sets the bits to 1. If false, sets the bits to 0.</param>
         /// <param name="numBits">Number of bits to set (must be 1-32).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 32.</exception>
         public void SetBits(int pos, bool value, int numBits)
         {
             CheckArgs(pos, numBits);
@@ -502,11 +508,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns all bits in range as uint.
+        /// Returns one or more contiguous bits from the bit field as the lower bits of a uint.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
+        /// <param name="pos">Position in the bit field of the first bit to get (must be 0-31).</param>
         /// <param name="numBits">Number of bits to get (must be 1-32).</param>
-        /// <returns>Returns requested range of bits.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 32.</exception>
+        /// <returns>The requested range of bits from the bit field stored in the least-significant bits of a uint. All other bits of the uint will be 0.</returns>
         public uint GetBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -515,43 +522,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true is bit at position is set.
+        /// Returns true if the bit at a position is 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <returns>Returns true if bit is set.</returns>
+        /// <param name="pos">Position in the bit field (must be 0-31).</param>
+        /// <returns>True if the bit at the position is 1.</returns>
         public bool IsSet(int pos)
         {
             return 0 != GetBits(pos);
         }
 
         /// <summary>
-        /// Returns true if none of bits in range are set.
+        /// Returns true if none of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
+        /// <param name="pos">Position in the bit field (must be 0-31).</param>
         /// <param name="numBits">Number of bits to test (must be 1-32).</param>
-        /// <returns>Returns true if none of bits are set.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 32.</exception>
+        /// <returns>True if none of the bits in the contiguous range are 1.</returns>
         public bool TestNone(int pos, int numBits = 1)
         {
             return 0u == GetBits(pos, numBits);
         }
 
         /// <summary>
-        /// Returns true if any of bits in range are set.
+        /// Returns true if any of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
+        /// <param name="pos">Position in the bit field (must be 0-31).</param>
         /// <param name="numBits">Number of bits to test (must be 1-32).</param>
-        /// <returns>Returns true if at least one bit is set.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 32.</exception>
+        /// <returns>True if at least one bit in the contiguous range is 1.</returns>
         public bool TestAny(int pos, int numBits = 1)
         {
             return 0u != GetBits(pos, numBits);
         }
 
         /// <summary>
-        /// Returns true if all of bits in range are set.
+        /// Returns true if all of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
+        /// <param name="pos">Position in the bit field (must be 0-31).</param>
         /// <param name="numBits">Number of bits to test (must be 1-32).</param>
-        /// <returns>Returns true if all bits are set.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 32.</exception>
+        /// <returns>True if all bits in the contiguous range are 1.</returns>
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -560,27 +570,27 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Calculate number of set bits.
+        /// Returns the number of bits that are 1.
         /// </summary>
-        /// <returns>Number of set bits.</returns>
+        /// <returns>The number of bits that are 1.</returns>
         public int CountBits()
         {
             return math.countbits(Value);
         }
 
         /// <summary>
-        /// Calculate number of leading zeros.
+        /// Returns the number of leading zeroes.
         /// </summary>
-        /// <returns>Number of leading zeros</returns>
+        /// <returns>The number of leading zeros.</returns>
         public int CountLeadingZeros()
         {
             return math.lzcnt(Value);
         }
 
         /// <summary>
-        /// Calculate number of trailing zeros.
+        /// Returns the number of trailing zeros.
         /// </summary>
-        /// <returns>Number of trailing zeros</returns>
+        /// <returns>The number of trailing zeros.</returns>
         public int CountTrailingZeros()
         {
             return math.tzcnt(Value);
@@ -623,40 +633,57 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Fixed size 64-bit array of bits.
+    /// A 64-bit array of bits.
     /// </summary>
+    /// <remarks>
+    /// Stack allocated, so it does not require thread safety checks or disposal.
+    /// </remarks>
     [DebuggerTypeProxy(typeof(BitField64DebugView))]
     [BurstCompatible]
     public struct BitField64
     {
         /// <summary>
-        /// 64-bit data storage.
+        /// The 64 bits, stored as a ulong.
         /// </summary>
+        /// <value>The 64 bits, stored as a uint.</value>
         public ulong Value;
 
         /// <summary>
-        /// Constructor.
+        /// Initializes and returns an instance of BitField64.
         /// </summary>
-        /// <param name="initialValue">Initial value of bit field. Default is 0.</param>
+        /// <param name="initialValue">Initial value of the bit field. Default is 0.</param>
         public BitField64(ulong initialValue = 0ul)
         {
             Value = initialValue;
         }
 
         /// <summary>
-        /// Clear all bits to 0.
+        /// Clears all bits to 0.
         /// </summary>
         public void Clear()
         {
             Value = 0ul;
         }
+        /// <summary>
+        /// Sets a single bit to 1 or 0.
+        /// </summary>
+        /// <param name="pos">Position in this bit field to set (must be 0-63).</param>
+        /// <param name="value">If true, sets the bit to 1. If false, sets the bit to 0.</param>
+        /// <exception cref="ArgumentException">Thrown if `pos`is out of range.</exception>
+        public void SetBits(int pos, bool value)
+        {
+            CheckArgs(pos, 1);
+            Value = Bitwise.SetBits(Value, pos, 1, value);
+        }
+
 
         /// <summary>
-        /// Set bits to desired boolean value.
+        /// Sets one or more contiguous bits to 1 or 0.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-63).</param>
-        /// <param name="value">Value of bits to set.</param>
+        /// <param name="pos">Position in the bit field of the first bit to set (must be 0-63).</param>
+        /// <param name="value">If true, sets the bits to 1. If false, sets the bits to 0.</param>
         /// <param name="numBits">Number of bits to set (must be 1-64).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 64.</exception>
         public void SetBits(int pos, bool value, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -665,11 +692,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns all bits in range as uint.
+        /// Returns one or more contiguous bits from the bit field as the lower bits of a ulong.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-63).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns>Returns requested range of bits.</returns>
+        /// <param name="pos">Position in the bit field of the first bit to get (must be 0-63).</param>
+        /// <param name="numBits">Number of bits to get (must be 1-64).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 64.</exception>
+        /// <returns>The requested range of bits from the bit field stored in the least-significant bits of a ulong. All other bits of the ulong will be 0.</returns>
         public ulong GetBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -678,43 +706,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true is bit at position is set.
+        /// Returns true if the bit at a position is 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-31).</param>
-        /// <returns>Returns true if bit is set.</returns>
+        /// <param name="pos">Position in the bit field (must be 0-63).</param>
+        /// <returns>True if the bit at the position is 1.</returns>
         public bool IsSet(int pos)
         {
             return 0ul != GetBits(pos);
         }
 
         /// <summary>
-        /// Returns true if none of bits in range are set.
+        /// Returns true if none of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-63).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns>Returns true if none of bits are set.</returns>
+        /// <param name="pos">Position in the bit field (must be 0-63).</param>
+        /// <param name="numBits">Number of bits to test (must be 1-64).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 64.</exception>
+        /// <returns>True if none of the bits in the contiguous range are 1.</returns>
         public bool TestNone(int pos, int numBits = 1)
         {
             return 0ul == GetBits(pos, numBits);
         }
 
         /// <summary>
-        /// Returns true if any of bits in range are set.
+        /// Returns true if any of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-63).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns>Returns true if at least one bit is set.</returns>
+        /// <param name="pos">Position in the bit field (must be 0-63).</param>
+        /// <param name="numBits">Number of bits to test (must be 1-64).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 64.</exception>
+        /// <returns>True if at least one bit in the contiguous range is 1.</returns>
         public bool TestAny(int pos, int numBits = 1)
         {
             return 0ul != GetBits(pos, numBits);
         }
 
         /// <summary>
-        /// Returns true if all of bits in range are set.
+        /// Returns true if all of the bits in a contiguous range are 1.
         /// </summary>
-        /// <param name="pos">Position in bitfield (must be 0-63).</param>
-        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
-        /// <returns>Returns true if all bits are set.</returns>
+        /// <param name="pos">Position in the bit field (must be 0-63).</param>
+        /// <param name="numBits">Number of bits to test (must be 1-64).</param>
+        /// <exception cref="ArgumentException">Thrown if `pos` or `numBits` are out of bounds or if `pos + numBits` exceeds 64.</exception>
+        /// <returns>True if all bits in the contiguous range are 1.</returns>
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -723,27 +754,27 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Calculate number of set bits.
+        /// Returns the number of bits that are 1.
         /// </summary>
-        /// <returns>Number of set bits.</returns>
+        /// <returns>The number of bits that are 1.</returns>
         public int CountBits()
         {
             return math.countbits(Value);
         }
 
         /// <summary>
-        /// Calculate number of leading zeros.
+        /// Returns the number of leading zeroes.
         /// </summary>
-        /// <returns>Number of leading zeros</returns>
+        /// <returns>The number of leading zeros.</returns>
         public int CountLeadingZeros()
         {
             return math.lzcnt(Value);
         }
 
         /// <summary>
-        /// Calculate number of trailing zeros.
+        /// Returns the number of trailing zeros.
         /// </summary>
-        /// <returns>Number of trailing zeros</returns>
+        /// <returns>The number of trailing zeros.</returns>
         public int CountTrailingZeros()
         {
             return math.tzcnt(Value);

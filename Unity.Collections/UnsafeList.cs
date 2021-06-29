@@ -10,209 +10,241 @@ using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
-    /// <summary>
-    /// An unmanaged, untyped, resizable list, without any thread safety check features.
-    /// </summary>
-    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
-    [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-    public unsafe struct UnsafeList
-        : INativeDisposable
+
+    [BurstCompile]
+    internal unsafe struct UnsafeDisposeJob : IJob
     {
-        /// <summary>
-        /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public void* Ptr;
+        public Allocator Allocator;
 
-        /// <summary>
-        /// </summary>
+        public void Execute()
+        {
+            var handle = (AllocatorManager.AllocatorHandle)Allocator;
+            AllocatorManager.Free(handle, Ptr);
+        }
+    }
+
+    internal unsafe struct UntypedUnsafeList
+    {
+#pragma warning disable 169
+        [NativeDisableUnsafePtrRestriction]
+        public void* Ptr;
         public int Length;
-
-        /// <summary>
-        /// </summary>
         public int Capacity;
+        public AllocatorManager.AllocatorHandle Allocator;
+#pragma warning restore 169
+    }
+
+    /// <summary>
+    /// An unmanaged, resizable list.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements.</typeparam>
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
+    [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
+    [StructLayout(LayoutKind.Sequential)]
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    public unsafe struct UnsafeList<T>
+        : INativeDisposable
+        , INativeList<T>
+        , IEnumerable<T> // Used by collection initializers.
+        where T : unmanaged
+    {
+        /// <summary>
+        /// The internal buffer of this list.
+        /// </summary>
+        [NativeDisableUnsafePtrRestriction]
+        public T* Ptr;
 
         /// <summary>
+        /// The number of elements.
+        /// </summary>
+        public int length;
+
+        /// <summary>
+        /// The number of elements that can fit in the internal buffer.
+        /// </summary>
+        public int capacity;
+
+        /// <summary>
+        /// The allocator used to create the internal buffer.
         /// </summary>
         public AllocatorManager.AllocatorHandle Allocator;
 
         /// <summary>
-        /// Constructs a new container with type of memory allocation.
+        /// The number of elements.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
-        /// sufficient capacity up front.</remarks>
-        public UnsafeList(Allocator allocator)
+        /// <value>The number of elements.</value>
+        public int Length
         {
-            Ptr = null;
-            Length = 0;
-            Capacity = 0;
-            Allocator = allocator;
+            get { return length; }
+            set { length = value; }
         }
 
         /// <summary>
-        /// Constructs container as view into memory.
+        /// The number of elements that can fit in the internal buffer.
         /// </summary>
-        /// <param name="ptr">Pointer to data.</param>
-        /// <param name="length">Lenght of data in bytes.</param>
-        public UnsafeList(void* ptr, int length)
+        /// <value>The number of elements that can fit in the internal buffer.</value>
+        public int Capacity
+        {
+            get { return capacity; }
+            set { capacity = value; }
+        }
+
+        /// <summary>
+        /// The element at an index.
+        /// </summary>
+        /// <param name="index">An index.</param>
+        /// <value>The element at the index.</value>
+        public T this[int index]
+        {
+            get { return Ptr[index]; }
+            set { Ptr[index] = value; }
+        }
+
+        /// <summary>
+        /// Returns a reference to the element at a given index.
+        /// </summary>
+        /// <param name="index">The index to access. Must be in the range of [0..Length).</param>
+        /// <returns>A reference to the element at the index.</returns>
+        public ref T ElementAt(int index)
+        {
+            return ref Ptr[index];
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of UnsafeList.
+        /// </summary>
+        /// <param name="ptr">An existing byte array to set as the internal buffer.</param>
+        /// <param name="length">The length.</param>
+        public UnsafeList(T* ptr, int length)
         {
             Ptr = ptr;
-            Length = length;
-            Capacity = length;
-            Allocator = Collections.Allocator.None;
+            this.length = length;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal void Initialize<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        /// <summary>
+        /// Initializes and returns an instance of UnsafeList.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
+        public UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            Allocator = allocator.Handle;
             Ptr = null;
-            Length = 0;  
-            Capacity = 0;
-
-            if (initialCapacity != 0)
-            {
-                SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
-            }
-
-            if (options == NativeArrayOptions.ClearMemory
-                && Ptr != null)
-            {
-                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
-            }
-        }
-
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal static UnsafeList New<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
-        {
-            var temp = new UnsafeList();
-            temp.Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
-            return temp;
-        }
-
-        /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
-        /// </summary>
-        /// <param name="sizeOf">Size of element.</param>
-        /// <param name="alignOf">Alignment of element.</param>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            this = default;
-            Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
-        }
-
-        /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
-        /// </summary>
-        /// <param name="sizeOf">Size of element.</param>
-        /// <param name="alignOf">Alignment of element.</param>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
+            length = 0;
+            capacity = 0;
             Allocator = allocator;
-            Ptr = null;
-            Length = 0;
-            Capacity = 0;
 
             if (initialCapacity != 0)
             {
-                SetCapacity(sizeOf, alignOf, initialCapacity);
+                SetCapacity(initialCapacity);
             }
 
-            if (options == NativeArrayOptions.ClearMemory
-                && Ptr != null)
+            if (options == NativeArrayOptions.ClearMemory && Ptr != null)
             {
+                var sizeOf = sizeof(T);
                 UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
             }
         }
 
         /// <summary>
-        /// Creates a new container with the specified initial capacity and type of memory allocation.
+        /// Initializes and returns an instance of UnsafeList.
         /// </summary>
-        /// <param name="sizeOf">Size of element.</param>
-        /// <param name="alignOf">Alignment of element.</param>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <returns>New initialized container.</returns>
-        public static UnsafeList* Create(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
+        public UnsafeList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            var handle = (AllocatorManager.AllocatorHandle)allocator;
-            UnsafeList* listData = AllocatorManager.Allocate<UnsafeList>(handle);
-            UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
-
-            listData->Allocator = allocator;
+            Ptr = null;
+            length = 0;
+            capacity = 0;
+            Allocator = allocator;
 
             if (initialCapacity != 0)
             {
-                listData->SetCapacity(sizeOf, alignOf, initialCapacity);
+                SetCapacity(initialCapacity);
             }
 
-            if (options == NativeArrayOptions.ClearMemory
-                && listData->Ptr != null)
+            if (options == NativeArrayOptions.ClearMemory && Ptr != null)
             {
-                UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
+                var sizeOf = sizeof(T);
+                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
             }
-
-            return listData;
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal static UnsafeList* Create<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        internal void Initialize<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
         {
-            UnsafeList* listData = allocator.Allocate(default(UnsafeList), 1);
-            UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
+            Ptr = null;
+            length = 0;
+            capacity = 0;
+            Allocator = AllocatorManager.None;
+            Initialize(initialCapacity, ref allocator, options);
+        }
+
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static UnsafeList<T> New<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            UnsafeList<T> instance = default;
+            instance.Initialize(initialCapacity, ref allocator, options);
+            return instance;
+        }
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal static UnsafeList<T>* Create<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            UnsafeList<T>* listData = allocator.Allocate(default(UnsafeList<T>), 1);
+            UnsafeUtility.MemClear(listData, sizeof(UnsafeList<T>));
 
             listData->Allocator = allocator.Handle;
 
             if (initialCapacity != 0)
             {
-                listData->SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
+                listData->SetCapacity(ref allocator, initialCapacity);
             }
 
             if (options == NativeArrayOptions.ClearMemory
                 && listData->Ptr != null)
             {
+                var sizeOf = sizeof(T);
                 UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
             }
 
             return listData;
         }
 
-        /// <summary>
-        /// Destroys container.
-        /// </summary>
-        /// <typeparam name="U">The allocator type.</typeparam>
-        /// <param name="listData">Container to destroy.</param>
-        /// <param name="allocator">Allocator to use</param>
-        /// <param name="sizeOf">Size in bytes of each item</param>
-        /// <param name="alignOf">Alignment in bytes of each item</param>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal static void Destroy<U>(UnsafeList* listData, ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
+        internal static void Destroy<U>(UnsafeList<T>* listData, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             CheckNull(listData);
-            listData->Dispose(ref allocator, sizeOf, alignOf);
-            allocator.Free(listData, UnsafeUtility.SizeOf<UnsafeList>(), UnsafeUtility.AlignOf<UnsafeList>(),1);
+            listData->Dispose(ref allocator);
+            allocator.Free(listData, sizeof(UnsafeList<T>), UnsafeUtility.AlignOf<UnsafeList<T>>(), 1);
         }
 
         /// <summary>
-        /// Destroys container.
+        /// Returns a new list.
         /// </summary>
-        /// <param name="listData">Container to destroy.</param>
-        public static void Destroy(UnsafeList* listData)
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
+        /// <returns>A pointer to the new list.</returns>
+        public static UnsafeList<T>* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            var handle = (AllocatorManager.AllocatorHandle)allocator;
+            UnsafeList<T>* listData = AllocatorManager.Allocate<UnsafeList<T>>(handle);
+            *listData = new UnsafeList<T>(initialCapacity, allocator, options);
+
+            return listData;
+        }
+
+        /// <summary>
+        /// Destroys the list.
+        /// </summary>
+        /// <param name="listData">The list to destroy.</param>
+        public static void Destroy(UnsafeList<T>* listData)
         {
             CheckNull(listData);
             var allocator = listData->Allocator;
@@ -221,28 +253,28 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether the list is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if the list is empty.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this list has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this list has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
 
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        internal void Dispose<U>(ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            allocator.Free(Ptr, Length);
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+        }
+
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory).
         /// </summary>
         public void Dispose()
         {
@@ -258,32 +290,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
-        /// <typeparam name="U">The allocator type.</typeparam>
-        /// <param name="allocator">allocator to use when disposing</param>
-        /// <param name="sizeOf">size, in bytes, of each item</param>
-        /// <param name="alignOf">alignment, in bytes, of each item</param>
+        /// Creates and schedules a job that frees the memory of this list.
         /// </summary>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]        
-        internal void Dispose<U>(ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
-        {
-            allocator.Free(Ptr, sizeOf, alignOf, Length); 
-            Ptr = null;
-            Length = 0;
-            Capacity = 0;
-        }
-
-        /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
-        /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">The dependency for the new job.</param>
+        /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -303,61 +313,50 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clears the container.
+        /// Sets the length to 0.
         /// </summary>
-        /// <remarks>The container capacity remains unchanged.</remarks>
+        /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
             Length = 0;
         }
 
         /// <summary>
-        /// Changes the list length, resizing if necessary.
+        /// Sets the length, expanding the capacity if necessary.
         /// </summary>
-        /// <param name="sizeOf">Size of element.</param>
-        /// <param name="alignOf">Alignment of element.</param>
-        /// <param name="length">The new length of the list.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public void Resize(int sizeOf, int alignOf, int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        /// <param name="length">The new length.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
+        public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             var oldLength = Length;
 
             if (length > Capacity)
             {
-                SetCapacity(sizeOf, alignOf, length);
+                SetCapacity(length);
             }
 
             Length = length;
 
-            if (options == NativeArrayOptions.ClearMemory
-                && oldLength < length)
+            if (options == NativeArrayOptions.ClearMemory && oldLength < length)
             {
                 var num = length - oldLength;
                 byte* ptr = (byte*)Ptr;
+                var sizeOf = sizeof(T);
                 UnsafeUtility.MemClear(ptr + oldLength * sizeOf, num * sizeOf);
             }
         }
 
-        /// <summary>
-        /// Changes the list length, resizing if necessary.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="length">The new length of the list.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Resize<T>(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where T : struct
+        void Realloc<U>(ref U allocator, int capacity) where U : unmanaged, AllocatorManager.IAllocator
         {
-            Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
-        }
+            CheckAllocator(Allocator);
+            T* newPointer = null;
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        void Realloc<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
-        {
-            void* newPointer = null;
+            var alignOf = UnsafeUtility.AlignOf<T>();
+            var sizeOf = sizeof(T);
 
             if (capacity > 0)
             {
-                newPointer = allocator.Allocate(sizeOf, alignOf, capacity);
+                newPointer = (T*)allocator.Allocate(sizeOf, alignOf, capacity);
 
                 if (Capacity > 0)
                 {
@@ -367,21 +366,21 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            allocator.Free(Ptr, sizeOf, alignOf, Capacity);
+            allocator.Free(Ptr, Capacity);
 
             Ptr = newPointer;
             Capacity = capacity;
             Length = math.min(Length, capacity);
         }
 
-        void Realloc(int sizeOf, int alignOf, int capacity) 
+        void Realloc(int capacity)
         {
-            Realloc(ref Allocator, sizeOf, alignOf, capacity);
+            Realloc(ref Allocator, capacity);
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        void SetCapacity<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
+        void SetCapacity<U>(ref U allocator, int capacity) where U : unmanaged, AllocatorManager.IAllocator
         {
+            var sizeOf = sizeof(T);
             var newCapacity = math.max(capacity, 64 / sizeOf);
             newCapacity = math.ceilpow2(newCapacity);
 
@@ -390,132 +389,99 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return;
             }
 
-            Realloc(ref allocator, sizeOf, alignOf, newCapacity);
-        }
-
-        void SetCapacity(int sizeOf, int alignOf, int capacity)
-        {
-            SetCapacity(ref Allocator, sizeOf, alignOf, capacity);
+            Realloc(ref allocator, newCapacity);
         }
 
         /// <summary>
-        /// Set the number of items that can fit in the container.
+        /// Sets the capacity.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="capacity">The number of items that the container can hold before it resizes its internal storage.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void SetCapacity<T>(int capacity) where T : struct
+        /// <param name="capacity">The new capacity.</param>
+        public void SetCapacity(int capacity)
         {
-            SetCapacity(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), capacity);
+            var sizeOf = sizeof(T);
+            var newCapacity = math.max(capacity, 64 / sizeOf);
+            newCapacity = math.ceilpow2(newCapacity);
+
+            if (newCapacity == Capacity)
+            {
+                return;
+            }
+
+            Realloc(newCapacity);
         }
 
         /// <summary>
-        /// Sets the capacity to the actual number of elements in the container.
+        /// Sets the capacity to match the length.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void TrimExcess<T>() where T : struct
+        public void TrimExcess()
         {
             if (Capacity != Length)
             {
-                Realloc(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), Length);
+                Realloc(Length);
             }
         }
 
         /// <summary>
-        /// Searches for the specified element in list.
+        /// Adds an element to the end of this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="value"></param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public int IndexOf<T>(T value) where T : struct, IEquatable<T>
-        {
-            return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
-        }
-
-        /// <summary>
-        /// Determines whether an element is in the list.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="value"></param>
-        /// <returns>True, if element is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public bool Contains<T>(T value) where T : struct, IEquatable<T>
-        {
-            return IndexOf(value) != -1;
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="value">The value to be added at the end of the list.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by 1. Never increases the capacity.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddNoResize<T>(T value) where T : struct
+        /// <param name="value">The value to add to the end of the list.</param>
+        /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+        public void AddNoResize(T value)
         {
             CheckNoResizeHasEnoughCapacity(1);
             UnsafeUtility.WriteArrayElement(Ptr, Length, value);
             Length += 1;
         }
 
-        void AddRangeNoResize(int sizeOf, void* ptr, int length)
+        /// <summary>
+        /// Copies elements from a buffer to the end of this list.
+        /// </summary>
+        /// <remarks>
+        /// Increments the length by `count`. Never increases the capacity.
+        /// </remarks>
+        /// <param name="ptr">The buffer to copy from.</param>
+        /// <param name="count">The number of elements to copy from the buffer.</param>
+        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        public void AddRangeNoResize(void* ptr, int count)
         {
-            CheckNoResizeHasEnoughCapacity(length);
+            CheckNoResizeHasEnoughCapacity(count);
+            var sizeOf = sizeof(T);
             void* dst = (byte*)Ptr + Length * sizeOf;
-            UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
-            Length += length;
+            UnsafeUtility.MemCpy(dst, ptr, count * sizeOf);
+            Length += count;
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Copies the elements of another list to the end of this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <param name="list">The other list to copy from.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
+        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public void AddRangeNoResize(UnsafeList<T> list)
         {
-            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), ptr, length);
+            AddRangeNoResize(list.Ptr, CollectionHelper.AssumePositive(list.Length));
         }
 
         /// <summary>
-        /// Adds elements from a list to this list.
+        /// Adds an element to the end of the list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">Other container to copy elements from.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by 1. Increases the capacity if necessary.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddRangeNoResize<T>(UnsafeList list) where T : struct
-        {
-            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), list.Ptr, CollectionHelper.AssumePositive(list.Length));
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="value">The value to be added at the end of the list.</param>
-        /// <remarks>
-        /// If the list has reached its current capacity, it copies the original, internal array to
-        /// a new, larger array, and then deallocates the original.
-        /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Add<T>(T value) where T : struct
+        public void Add(in T value)
         {
             var idx = Length;
 
             if (Length + 1 > Capacity)
             {
-                Resize<T>(idx + 1);
+                Resize(idx + 1);
             }
             else
             {
@@ -525,51 +491,64 @@ namespace Unity.Collections.LowLevel.Unsafe
             UnsafeUtility.WriteArrayElement(Ptr, idx, value);
         }
 
-        void AddRange(int sizeOf, int alignOf, void* ptr, int length)
+        /// <summary>
+        /// Copies the elements of a buffer to the end of this list.
+        /// </summary>
+        /// <param name="ptr">The buffer to copy from.</param>
+        /// <param name="count">The number of elements to copy from the buffer.</param>
+        /// <remarks>
+        /// Increments the length by `count`. Increases the capacity if necessary.
+        /// </remarks>
+        public void AddRange(void* ptr, int count)
         {
             var idx = Length;
 
-            if (Length + length > Capacity)
+            if (Length + count > Capacity)
             {
-                Resize(sizeOf, alignOf, Length + length);
+                Resize(Length + count);
             }
             else
             {
-                Length += length;
+                Length += count;
             }
 
+            var sizeOf = sizeof(T);
             void* dst = (byte*)Ptr + idx * sizeOf;
-            UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
+            UnsafeUtility.MemCpy(dst, ptr, count * sizeOf);
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Copies the elements of another list to the end of the list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddRange<T>(void* ptr, int length) where T : struct
+        /// <param name="list">The list to copy from.</param>
+        /// <remarks>
+        /// The length is increased by the length of the other list. Increases the capacity if necessary.
+        /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        public void AddRange(UnsafeList<T> list)
         {
-            AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+            AddRange(list.Ptr, list.Length);
         }
 
         /// <summary>
-        /// Adds elements from a list to this list.
+        /// Shifts elements toward the end of this list, increasing its length.
         /// </summary>
         /// <remarks>
-        /// If the list has reached its current capacity, it copies the original, internal array to
-        /// a new, larger array, and then deallocates the original.
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `end - begin`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `end` equals `begin`, the method does nothing.
+        ///
+        /// The element at index `begin` will be copied to index `end`, the element at index `begin + 1` will be copied to `end + 1`, and so forth.
+        ///
+        /// The indexes `begin` up to `end` are not cleared: they will contain whatever values they held prior.
         /// </remarks>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">Other container to copy elements from.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddRange<T>(UnsafeList list) where T : struct
-        {
-            AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
-        }
-
-        void InsertRangeWithBeginEnd(int sizeOf, int alignOf, int begin, int end)
+        /// <param name="begin">The index of the first element that will be shifted up.</param>
+        /// <param name="end">The index where the first shifted element will end up.</param>
+        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
+        public void InsertRangeWithBeginEnd(int begin, int end)
         {
             CheckBeginEnd(begin, end);
 
@@ -583,7 +562,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (Length + items > Capacity)
             {
-                Resize(sizeOf, alignOf, Length + items);
+                Resize(Length + items);
             }
             else
             {
@@ -597,31 +576,70 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return;
             }
 
+            var sizeOf = sizeof(T);
             var bytesToCopy = itemsToCopy * sizeOf;
             unsafe
             {
-                byte* ptr  = (byte*)Ptr;
+                byte* ptr = (byte*)Ptr;
                 byte* dest = ptr + end * sizeOf;
-                byte* src  = ptr + begin * sizeOf;
+                byte* src = ptr + begin * sizeOf;
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
 
         /// <summary>
-        /// Inserts a number of items into a container at a specified zero-based index.
+        /// Copies the last element of this list to the specified index. Decrements the length by 1.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void InsertRangeWithBeginEnd<T>(int begin, int end) where T : struct
+        /// <remarks>Useful as a cheap way to remove an element from this list when you don't care about preserving order.</remarks>
+        /// <param name="index">The index to overwrite with the last element.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void RemoveAtSwapBack(int index)
         {
-            InsertRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), begin, end);
+            RemoveRangeSwapBack(index, 1);
         }
 
-        void RemoveRangeSwapBackWithBeginEnd(int sizeOf, int begin, int end)
+        /// <summary>
+        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
+        /// </summary>
+        /// <remarks>
+        /// Copies the last `count` elements to the indexes `index` up to `index + count`.
+        ///
+        /// Useful as a cheap way to remove elements from a list when you don't care about preserving order.
+        /// </remarks>
+        /// <param name="index">The index of the first element to overwrite.</param>
+        /// <param name="count">The number of elements to copy and remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// or `index + count` exceeds the length.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            CheckIndexCount(index, count);
+
+            if (count > 0)
+            {
+                int copyFrom = math.max(Length - count, index + count);
+                var sizeOf = sizeof(T);
+                void* dst = (byte*)Ptr + index * sizeOf;
+                void* src = (byte*)Ptr + copyFrom * sizeOf;
+                UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                Length -= count;
+            }
+        }
+
+        /// <summary>
+        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
+        /// </summary>
+        /// <remarks>
+        /// Copies the last `end - begin` elements to the indexes `begin` up to `end`.
+        ///
+        /// Useful as a cheap way to remove elements from a list when you don't care about preserving order.
+        ///
+        /// Does nothing if `end - begin` is less than 1.
+        /// </remarks>
+        /// <param name="begin">The index of the first element to overwrite.</param>
+        /// <param name="end">The index one greater than the last element to overwrite.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             CheckBeginEnd(begin, end);
 
@@ -629,6 +647,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (itemsToRemove > 0)
             {
                 int copyFrom = math.max(Length - itemsToRemove, end);
+                var sizeOf = sizeof(T);
                 void* dst = (byte*)Ptr + begin * sizeOf;
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
                 UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
@@ -637,35 +656,56 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Removes the element at an index, shifting everything above it down by one. Decrements the length by 1.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="index">The index of the item to delete.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void RemoveAtSwapBack<T>(int index) where T : struct
+        /// <param name="index">The index of the element to remove.</param>
+        /// <remarks>
+        /// If you don't care about preserving the order of the elements, <see cref="RemoveAtSwapBack(int)"/> is a more efficient way to remove elements.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void RemoveAt(int index)
         {
-            RemoveRangeSwapBackWithBeginEnd<T>(index, index + 1);
+            RemoveRange(index, 1);
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
+        /// Removes *N* elements in a range, shifting everything above the range down by *N*. Decrements the length by *N*.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void RemoveRangeSwapBackWithBeginEnd<T>(int begin, int end) where T : struct
+        /// <param name="index">The index of the first element to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <remarks>
+        /// If you don't care about preserving the order of the elements, <see cref="RemoveRangeSwapBackWithBeginEnd"/>
+        /// is a more efficient way to remove elements.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// or `index + count` exceeds the length.</exception>
+        public void RemoveRange(int index, int count)
         {
-            RemoveRangeSwapBackWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
+            CheckIndexCount(index, count);
+
+            if (count > 0)
+            {
+                int copyFrom = math.min(index + count, Length);
+                var sizeOf = sizeof(T);
+                void* dst = (byte*)Ptr + index * sizeOf;
+                void* src = (byte*)Ptr + copyFrom * sizeOf;
+                UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                Length -= count;
+            }
         }
 
-        void RemoveRangeWithBeginEnd(int sizeOf, int begin, int end)
+        /// <summary>
+        /// Removes *N* elements in a range, shifting everything above it down by *N*. Decrements the length by *N*.
+        /// </summary>
+        /// <param name="begin">The index of the first element to remove.</param>
+        /// <param name="end">The index one greater than the last element to remove.</param>
+        /// <remarks>
+        /// If you don't care about preserving the order of the elements, <see cref="RemoveRangeSwapBackWithBeginEnd"/> is a more efficient way to remove elements.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
+        public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             CheckBeginEnd(begin, end);
 
@@ -673,6 +713,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (itemsToRemove > 0)
             {
                 int copyFrom = math.min(begin + itemsToRemove, Length);
+                var sizeOf = sizeof(T);
                 void* dst = (byte*)Ptr + begin * sizeOf;
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
                 UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
@@ -681,180 +722,194 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
-        /// is shortened by one.
+        /// Returns a parallel reader of this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="index">The index of the item to delete.</param>
-        /// <remarks>
-        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
-        /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void RemoveAt<T>(int index) where T : struct
-        {
-            RemoveRangeWithBeginEnd<T>(index, index + 1);
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void RemoveRangeWithBeginEnd<T>(int begin, int end) where T : struct
-        {
-            RemoveRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
-        }
-
-        /// <summary>
-        /// Returns parallel reader instance.
-        /// </summary>
-        /// <returns>Parallel reader instance.</returns>
+        /// <returns>A parallel reader of this list.</returns>
         public ParallelReader AsParallelReader()
         {
             return new ParallelReader(Ptr, Length);
         }
 
         /// <summary>
-        /// Implements parallel reader. Use AsParallelReader to obtain it from container.
+        /// A parallel reader for an UnsafeList&lt;T&gt;.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
+        /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelReader
         {
             /// <summary>
-            ///
+            /// The internal buffer of the list.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public readonly void* Ptr;
+            public readonly T* Ptr;
 
             /// <summary>
-            ///
+            /// The number of elements.
             /// </summary>
             public readonly int Length;
 
-            internal ParallelReader(void* ptr, int length)
+            internal ParallelReader(T* ptr, int length)
             {
                 Ptr = ptr;
                 Length = length;
             }
-
-            /// <summary>
-            ///
-            /// </summary>
-            /// <typeparam name="T"></typeparam>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public int IndexOf<T>(T value) where T : struct, IEquatable<T>
-            {
-                return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
-            }
-
-            /// <summary>
-            ///
-            /// </summary>
-            /// <typeparam name="T"></typeparam>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public bool Contains<T>(T value) where T : struct, IEquatable<T>
-            {
-                return IndexOf(value) != -1;
-            }
         }
 
         /// <summary>
-        /// Returns parallel writer instance.
+        /// Returns a parallel writer of this list.
         /// </summary>
-        /// <returns>Parallel writer instance.</returns>
+        /// <returns>A parallel writer of this list.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            return new ParallelWriter(Ptr, (UnsafeList*)UnsafeUtility.AddressOf(ref this));
+            return new ParallelWriter(Ptr, (UnsafeList<T>*)UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        ///
+        /// A parallel writer for an UnsafeList&lt;T&gt;.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a list.
+        /// </remarks>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
-            ///
+            /// The data of the list.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
             public readonly void* Ptr;
 
             /// <summary>
-            ///
+            /// The UnsafeList to write to.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeList* ListData;
+            public UnsafeList<T>* ListData;
 
-            internal unsafe ParallelWriter(void* ptr, UnsafeList* listData)
+            internal unsafe ParallelWriter(void* ptr, UnsafeList<T>* listData)
             {
                 Ptr = ptr;
                 ListData = listData;
             }
 
             /// <summary>
-            /// Adds an element to the list.
+            /// Adds an element to the end of the list.
             /// </summary>
-            /// <typeparam name="T">Source type of elements</typeparam>
-            /// <param name="value">The value to be added at the end of the list.</param>
+            /// <param name="value">The value to add to the end of the list.</param>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void AddNoResize<T>(T value) where T : struct
+            /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            public void AddNoResize(T value)
             {
-                var idx = Interlocked.Increment(ref ListData->Length) - 1;
+                var idx = Interlocked.Increment(ref ListData->length) - 1;
                 ListData->CheckNoResizeHasEnoughCapacity(idx, 1);
                 UnsafeUtility.WriteArrayElement(Ptr, idx, value);
             }
 
-            void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
+            /// <summary>
+            /// Copies elements from a buffer to the end of the list.
+            /// </summary>
+            /// <param name="ptr">The buffer to copy from.</param>
+            /// <param name="count">The number of elements to copy from the buffer.</param>
+            /// <remarks>
+            /// Increments the length by `count`. Never increases the capacity.
+            /// </remarks>
+            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            public void AddRangeNoResize(void* ptr, int count)
             {
-                var idx = Interlocked.Add(ref ListData->Length, length) - length;
-                ListData->CheckNoResizeHasEnoughCapacity(idx, length);
-                void* dst = (byte*)Ptr + idx * sizeOf;
-                UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
+                var idx = Interlocked.Add(ref ListData->length, count) - count;
+                ListData->CheckNoResizeHasEnoughCapacity(idx, count);
+                void* dst = (byte*)Ptr + idx * sizeof(T);
+                UnsafeUtility.MemCpy(dst, ptr, count * sizeof(T));
             }
 
             /// <summary>
-            /// Adds elements from a buffer to this list.
+            /// Copies the elements of another list to the end of this list.
             /// </summary>
-            /// <typeparam name="T">Source type of elements</typeparam>
-            /// <param name="ptr">A pointer to the buffer.</param>
-            /// <param name="length">The number of elements to add to the list.</param>
+            /// <param name="list">The other list to copy from.</param>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
+            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            public void AddRangeNoResize(UnsafeList<T> list)
             {
-                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+                AddRangeNoResize(list.Ptr, list.Length);
             }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the elements of the list.
+        /// </summary>
+        /// <returns>An enumerator over the elements of the list.</returns>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator { m_Ptr = Ptr, m_Length = Length, m_Index = -1 };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the elements of a list.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is invalid.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first element of the list.
+        /// </remarks>
+        public struct Enumerator : IEnumerator<T>
+        {
+            internal T* m_Ptr;
+            internal int m_Length;
+            internal int m_Index;
 
             /// <summary>
-            /// Adds elements from a list to this list.
+            /// Does nothing.
             /// </summary>
-            /// <typeparam name="T">Source type of elements</typeparam>
-            /// <param name="list">Other container to copy elements from.</param>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next element of the list.
+            /// </summary>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// The first `MoveNext` call advances the enumerator to the first element of the list. Before this call, `Current` is not valid to read.
             /// </remarks>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void AddRangeNoResize<T>(UnsafeList list) where T : struct
-            {
-                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
-            }
+            /// <returns>True if `Current` is valid to read after the call.</returns>
+            public bool MoveNext() => ++m_Index < m_Length;
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => m_Index = -1;
+
+            /// <summary>
+            /// The current element.
+            /// </summary>
+            /// <value>The current element.</value>
+            public T Current => m_Ptr[m_Index];
+
+            object IEnumerator.Current => Current;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -881,6 +936,30 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (!CollectionHelper.ShouldDeallocate(a))
             {
                 throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckIndexCount(int index, int count)
+        {
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Value for cound {count} must be positive.");
+            }
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Value for index {index} must be positive.");
+            }
+
+            if (index > Length)
+            {
+                throw new ArgumentOutOfRangeException($"Value for index {index} is out of bounds.");
+            }
+
+            if (index+count > Length)
+            {
+                throw new ArgumentOutOfRangeException($"Value for count {count} is out of bounds.");
             }
         }
 
@@ -924,577 +1003,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-    [BurstCompile]
-    internal unsafe struct UnsafeDisposeJob : IJob
-    {
-        [NativeDisableUnsafePtrRestriction]
-        public void* Ptr;
-        public Allocator Allocator;
-
-        public void Execute()
-        {
-            var handle = (AllocatorManager.AllocatorHandle)Allocator;
-            AllocatorManager.Free(handle, Ptr);
-        }
-    }
-
     /// <summary>
-    /// An managed, resizable list, without any thread safety check features.
-    /// </summary>
-    /// <typeparam name="T">Source type of elements</typeparam>
-    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
-    [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
-    [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-    public unsafe struct UnsafeList<T>
-        : INativeDisposable
-        , INativeList<T>
-        , IEnumerable<T> // Used by collection initializers.
-        where T : unmanaged
-    {
-        /// <summary>
-        ///
-        /// </summary>
-        [NativeDisableUnsafePtrRestriction]
-        public T* Ptr;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int length;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int capacity;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public AllocatorManager.AllocatorHandle Allocator;
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int Length
-        {
-            get { return length; }
-            set { length = value; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public int Capacity
-        {
-            get { return capacity; }
-            set { capacity = value; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public T this[int index]
-        {
-            get { return Ptr[index]; }
-            set { Ptr[index] = value; }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref T ElementAt(int index)
-        {
-            return ref Ptr[index];
-        }
-
-        /// <summary>
-        /// Constructs list as view into memory.
-        /// </summary>
-        /// <param name="ptr">Pointer to data.</param>
-        /// <param name="length">Lenght of data in bytes.</param>
-        public UnsafeList(T* ptr, int length)
-        {
-            Ptr = ptr;
-            this.length = length;
-            capacity = 0;
-            Allocator = AllocatorManager.None;
-        }
-
-        /// <summary>
-        /// Constructs a new list using the specified type of memory allocation.
-        /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
-        /// sufficient capacity up front.</remarks>
-        public UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            Ptr = null;
-            length = 0;
-            capacity = 0;
-            Allocator = AllocatorManager.None;
-            var sizeOf = UnsafeUtility.SizeOf<T>();
-            var alignOf = UnsafeUtility.AlignOf<T>();
-            this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
-        }
-
-        /// <summary>
-        /// Constructs a new list using the specified type of memory allocation.
-        /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
-        /// sufficient capacity up front.</remarks>
-        public UnsafeList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            Ptr = null;
-            length = 0;
-            capacity = 0;
-            Allocator = AllocatorManager.None;
-            var sizeOf = UnsafeUtility.SizeOf<T>();
-            var alignOf = UnsafeUtility.AlignOf<T>();
-            this.ListData() = new UnsafeList(sizeOf, alignOf, initialCapacity, allocator, options);
-        }
-
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal void Initialize<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
-        {
-            Ptr = null;
-            length = 0;
-            capacity = 0;
-            Allocator = AllocatorManager.None;
-            var sizeOf = UnsafeUtility.SizeOf<T>();
-            var alignOf = UnsafeUtility.AlignOf<T>();
-            this.ListData() = UnsafeList.New(sizeOf, alignOf, initialCapacity, ref allocator, options);
-        }
-         
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal static UnsafeList<T> New<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
-        {
-            UnsafeList<T> instance = default;
-            instance.Initialize(initialCapacity, ref allocator, options);
-            return instance;
-        }
-
-        /// <summary>
-        /// Creates a new container with the specified initial capacity and type of memory allocation.
-        /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <returns>New initialized container.</returns>
-        public static UnsafeList<T>* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            var handle = (AllocatorManager.AllocatorHandle)allocator;
-            UnsafeList<T>* listData = AllocatorManager.Allocate<UnsafeList<T>>(handle);
-            *listData = new UnsafeList<T>(initialCapacity, allocator, options);
-            return listData;
-        }
-
-        /// <summary>
-        /// Destroys container.
-        /// </summary>
-        /// <param name="listData">Container to destroy.</param>
-        public static void Destroy(UnsafeList<T>* listData)
-        {
-            CheckNull(listData);
-            var allocator = listData->Allocator;
-            listData->Dispose();
-            AllocatorManager.Free(allocator, listData);
-        }
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => !IsCreated || Length == 0;
-
-        /// <summary>
-        /// Reports whether memory for the container is allocated.
-        /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
-        public bool IsCreated => Ptr != null;
-
-        /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
-        /// </summary>
-        public void Dispose()
-        {
-            this.ListData().Dispose();
-        }
-
-        /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
-        /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public JobHandle Dispose(JobHandle inputDeps)
-        {
-            return this.ListData().Dispose(inputDeps);
-        }
-
-        /// <summary>
-        /// Clears the container.
-        /// </summary>
-        /// <remarks>List Capacity remains unchanged.</remarks>
-        public void Clear()
-        {
-            this.ListData().Clear();
-        }
-
-        /// <summary>
-        /// Changes the list length, resizing if necessary.
-        /// </summary>
-        /// <param name="length">The new length of the list.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            this.ListData().Resize<T>(length, options);
-        }
-
-        /// <summary>
-        /// Set the number of items that can fit in the list.
-        /// </summary>
-        /// <param name="capacity">The number of items that the list can hold before it resizes its internal storage.</param>
-        public void SetCapacity(int capacity)
-        {
-            this.ListData().SetCapacity<T>(capacity);
-        }
-
-        /// <summary>
-        /// Sets the capacity to the actual number of elements in the container.
-        /// </summary>
-        public void TrimExcess()
-        {
-            this.ListData().TrimExcess<T>();
-        }
-
-        /// <summary>
-        /// Adds an element to the container.
-        /// </summary>
-        /// <param name="value">The value to be added at the end of the container.</param>
-        /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
-        /// </remarks>
-        public void AddNoResize(T value)
-        {
-            this.ListData().AddNoResize(value);
-        }
-
-        /// <summary>
-        /// Adds the elements to this container.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the container.</param>
-        /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
-        /// </remarks>
-        public void AddRangeNoResize(void* ptr, int length)
-        {
-            this.ListData().AddRangeNoResize<T>(ptr, length);
-        }
-
-        /// <summary>
-        /// Adds elements from a list to this container.
-        /// </summary>
-        /// <param name="list">Other container to copy elements from.</param>
-        /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
-        /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public void AddRangeNoResize(UnsafeList<T> list)
-        {
-            this.ListData().AddRangeNoResize<T>(list.ListData());
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="value">The struct to be added at the end of the list.</param>
-        public void Add(in T value)
-        {
-            this.ListData().Add(value);
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public void AddRange(void* ptr, int length)
-        {
-            this.ListData().AddRange<T>(ptr, length);
-        }
-
-        /// <summary>
-        /// Adds the elements of a UnsafePtrList to this list.
-        /// </summary>
-        /// <param name="list">Other container to copy elements from.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public void AddRange(UnsafeList<T> list)
-        {
-            this.ListData().AddRange<T>(list.ListData());
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a container at a specified zero-based index.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            this.ListData().InsertRangeWithBeginEnd<T>(begin, end);
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            this.ListData().RemoveAtSwapBack<T>(index);
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            this.ListData().RemoveRangeSwapBackWithBeginEnd<T>(begin, end);
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        /// <remarks>
-        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
-        /// </remarks>
-        public void RemoveAt(int index)
-        {
-            this.ListData().RemoveAt<T>(index);
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first intex of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            this.ListData().RemoveRangeWithBeginEnd<T>(begin, end);
-        }
-
-        /// <summary>
-        /// Returns parallel reader instance.
-        /// </summary>
-        /// <returns>Parallel reader instance.</returns>
-        public ParallelReader AsParallelReader()
-        {
-            return new ParallelReader(Ptr, Length);
-        }
-
-        /// <summary>
-        /// Implements parallel reader. Use AsParallelReader to obtain it from container.
-        /// </summary>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public unsafe struct ParallelReader
-        {
-            /// <summary>
-            ///
-            /// </summary>
-            [NativeDisableUnsafePtrRestriction]
-            public readonly T* Ptr;
-
-            /// <summary>
-            ///
-            /// </summary>
-            public readonly int Length;
-
-            internal ParallelReader(T* ptr, int length)
-            {
-                Ptr = ptr;
-                Length = length;
-            }
-        }
-
-        /// <summary>
-        /// Returns parallel writer instance.
-        /// </summary>
-        /// <returns>Parallel writer instance.</returns>
-        public ParallelWriter AsParallelWriter()
-        {
-            return new ParallelWriter((UnsafeList*)UnsafeUtility.AddressOf(ref this));
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public unsafe struct ParallelWriter
-        {
-            /// <summary>
-            ///
-            /// </summary>
-            public UnsafeList.ParallelWriter Writer;
-
-            internal unsafe ParallelWriter(UnsafeList* listData)
-            {
-                Writer = listData->AsParallelWriter();
-            }
-
-            /// <summary>
-            /// Adds an element to the list.
-            /// </summary>
-            /// <param name="value">The value to be added at the end of the list.</param>
-            /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
-            /// </remarks>
-            public void AddNoResize(T value)
-            {
-                Writer.AddNoResize(value);
-            }
-
-            /// <summary>
-            /// </summary>
-            /// <param name="ptr"></param>
-            /// <param name="length"></param>
-            public void AddRangeNoResize(void* ptr, int length)
-            {
-                Writer.AddRangeNoResize<T>(ptr, length);
-            }
-
-            /// <summary>
-            /// </summary>
-            /// <param name="list">Other container to copy elements from.</param>
-            public void AddRangeNoResize(UnsafeList<T> list)
-            {
-                Writer.AddRangeNoResize<T>(list.ListData());
-            }
-        }
-
-        /// <summary>
-        /// Returns an IEnumerator interface for the container.
-        /// </summary>
-        /// <returns>An IEnumerator interface for the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator { m_Ptr = Ptr, m_Length = Length, m_Index = -1 };
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Implements iterator over the container.
-        /// </summary>
-        public struct Enumerator : IEnumerator<T>
-        {
-            internal T* m_Ptr;
-            internal int m_Length;
-            internal int m_Index;
-
-            /// <summary>
-            /// Disposes enumerator.
-            /// </summary>
-            public void Dispose() { }
-
-            /// <summary>
-            /// Advances the enumerator to the next element of the container.
-            /// </summary>
-            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
-            public bool MoveNext() => ++m_Index < m_Length;
-
-            /// <summary>
-            /// Resets the enumerator to the first element of the container.
-            /// </summary>
-            public void Reset() => m_Index = -1;
-
-            /// <summary>
-            /// Gets the element at the current position of the enumerator in the container.
-            /// </summary>
-            public T Current => m_Ptr[m_Index];
-
-            object IEnumerator.Current => Current;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static void CheckNull(void* listData)
-        {
-            if (listData == null)
-            {
-                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
-            }
-        }
-    }
-
-    /// <summary>
-    /// UnsafeList extension methods.
+    /// Provides extension methods for UnsafeList.
     /// </summary>
     [BurstCompatible]
     public unsafe static class UnsafeListExtensions
@@ -1502,15 +1012,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         internal static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafeList<T>, UnsafeList>(ref from);
 
-        /// Type parameter has the same name as the type parameter from outer type
         /// <summary>
-        /// Searches for the specified element in the container.
+        /// Finds the index of the first occurrence of a particular value in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the container.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The container to locate value.</param>
-        /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This list.</param>
+        /// <param name="value">A value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence of the value if it is found. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1518,28 +1027,27 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Determines whether an element is in the container.
+        /// Returns true if a particular value is present in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the container.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The container to locate value.</param>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This list.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
 
-        /// Type parameter has the same name as the type parameter from outer type
         /// <summary>
-        /// Searches for the specified element in the container.
+        /// Finds the index of the first occurrence of a particular value in the list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the container.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The container to locate value.</param>
-        /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This reader of the list.</param>
+        /// <param name="value">A value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence of the value if it is found. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1547,13 +1055,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Determines whether an element is in the container.
+        /// Returns true if a particular value is present in the list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the container.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The container to locate value.</param>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This reader of the list.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in the list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1588,8 +1096,9 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// An unmanaged, resizable list, without any thread safety check features.
+    /// An unmanaged, resizable list of pointers.
     /// </summary>
+    /// <typeparam name="T">The type of pointer element.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListTDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
@@ -1600,41 +1109,43 @@ namespace Unity.Collections.LowLevel.Unsafe
         where T : unmanaged
     {
         /// <summary>
-        ///
+        /// The internal buffer of this list.
         /// </summary>
         [NativeDisableUnsafePtrRestriction]
         public readonly T** Ptr;
 
         /// <summary>
-        ///
+        /// The number of elements.
         /// </summary>
         public readonly int length;
 
         /// <summary>
-        ///
+        /// The number of elements that can fit in the internal buffer.
         /// </summary>
         public readonly int capacity;
 
         /// <summary>
-        ///
+        /// The allocator used to create the internal buffer.
         /// </summary>
         public readonly AllocatorManager.AllocatorHandle Allocator;
 
         /// <summary>
-        ///
+        /// The number of elements.
         /// </summary>
+        /// <value>The number of elements.</value>
         public int Length { get { return length; } set { } }
 
         /// <summary>
-        ///
+        /// The number of elements that can fit in the internal buffer.
         /// </summary>
+        /// <value>The number of elements that can fit in the internal buffer.</value>
         public int Capacity { get { return capacity; } set { } }
 
         /// <summary>
-        ///
+        /// The element at an index.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">An index.</param>
+        /// <value>The element at the index.</value>
         public T* this[int index]
         {
             get { return Ptr[index]; }
@@ -1642,20 +1153,20 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// Returns a reference to the element at a given index.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The index to access. Must be in the range of [0..Length).</param>
+        /// <returns>A reference to the element at the index.</returns>
         public ref T* ElementAt(int index)
         {
             return ref Ptr[index];
         }
 
         /// <summary>
-        /// Constructs list as view into memory.
+        /// Initializes and returns an instance of UnsafePtrList.
         /// </summary>
-        /// <param name="ptr"></param>
-        /// <param name="length"></param>
+        /// <param name="ptr">An existing pointer array to set as the internal buffer.</param>
+        /// <param name="length">The length.</param>
         public unsafe UnsafePtrList(T** ptr, int length)
         {
             Ptr = ptr;
@@ -1665,15 +1176,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs a new list using the specified type of memory allocation.
+        /// Initializes and returns an instance of UnsafePtrList.
         /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
-        /// sufficient capacity up front.</remarks>
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
@@ -1685,15 +1192,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs a new list using the specified type of memory allocation.
+        /// Initializes and returns an instance of UnsafePtrList.
         /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
-        /// sufficient capacity up front.</remarks>
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public unsafe UnsafePtrList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             Ptr = null;
@@ -1705,11 +1208,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// Returns a new list of pointers.
         /// </summary>
-        /// <param name="ptr"></param>
-        /// <param name="length"></param>
-        /// <returns>New initialized container.</returns>
+        /// <param name="ptr">An existing pointer array to set as the internal buffer.</param>
+        /// <param name="length">The length.</param>
+        /// <returns>A pointer to the new list.</returns>
         public static UnsafePtrList<T>* Create(T** ptr, int length)
         {
             UnsafePtrList<T>* listData = AllocatorManager.Allocate<UnsafePtrList<T>>(AllocatorManager.Persistent);
@@ -1718,14 +1221,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Creates a new list with the specified initial capacity and type of memory allocation.
+        /// Returns a new list of pointers.
         /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <returns>New initialized container.</returns>
+        /// <param name="initialCapacity">The initial capacity of the list.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
+        /// <returns>A pointer to the new list.</returns>
         public static UnsafePtrList<T>* Create(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             UnsafePtrList<T>* listData = AllocatorManager.Allocate<UnsafePtrList<T>>(allocator);
@@ -1734,12 +1235,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Destroys list.
+        /// Destroys the list.
         /// </summary>
-        /// <param name="listData">Container to destroy.</param>
+        /// <param name="listData">The list to destroy.</param>
         public static void Destroy(UnsafePtrList<T>* listData)
         {
-            UnsafeList.CheckNull(listData);
+            UnsafeList<IntPtr>.CheckNull(listData);
             var allocator = listData->ListData().Allocator.Value == AllocatorManager.Invalid.Value
                 ? AllocatorManager.Persistent
                 : listData->ListData().Allocator
@@ -1749,28 +1250,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether the list is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if the list is empty.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this list has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this list has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory).
         /// </summary>
         public void Dispose()
         {
@@ -1778,16 +1270,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that frees the memory of this list.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">The dependency for the new job.</param>
+        /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -1795,35 +1281,35 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clears the list.
+        /// Sets the length to 0.
         /// </summary>
-        /// <remarks>List Capacity remains unchanged.</remarks>
+        /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
             this.ListData().Clear();
         }
 
         /// <summary>
-        /// Changes the list length, resizing if necessary.
+        /// Sets the length, expanding the capacity if necessary.
         /// </summary>
-        /// <param name="length">The new length of the list.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <param name="length">The new length.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
             this.ListData().Resize(length, options);
         }
 
         /// <summary>
-        /// Set the number of items that can fit in the list.
+        /// Sets the capacity.
         /// </summary>
-        /// <param name="capacity">The number of items that the list can hold before it resizes its internal storage.</param>
+        /// <param name="capacity">The new capacity.</param>
         public void SetCapacity(int capacity)
         {
             this.ListData().SetCapacity(capacity);
         }
 
         /// <summary>
-        /// Sets the capacity to the actual number of elements in the container.
+        /// Sets the capacity to match the length.
         /// </summary>
         public void TrimExcess()
         {
@@ -1831,80 +1317,89 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Searches for the specified element in list.
+        /// Returns the index of the first occurrence of a specific pointer in the list.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        public int IndexOf(void* value)
+        /// <param name="ptr">The pointer to search for in the list.</param>
+        /// <returns>The index of the first occurrence of the pointer. Returns -1 if it is not found in the list.</returns>
+        public int IndexOf(void* ptr)
         {
             for (int i = 0; i < Length; ++i)
             {
-                if (Ptr[i] == value) return i;
+                if (Ptr[i] == ptr) return i;
             }
 
             return -1;
         }
 
         /// <summary>
-        /// Determines whether an element is in the list.
+        /// Returns true if the list contains at least one occurrence of a specific pointer.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns>True, if element is found.</returns>
-        public bool Contains(void* value)
+        /// <param name="ptr">The pointer to search for in the list.</param>
+        /// <returns>True if the list contains at least one occurrence of the pointer.</returns>
+        public bool Contains(void* ptr)
         {
-            return IndexOf(value) != -1;
+            return IndexOf(ptr) != -1;
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Adds a pointer to the end of this list.
         /// </summary>
-        /// <param name="value">The value to be added at the end of the list.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by 1. Never increases the capacity.
         /// </remarks>
+        /// <param name="value">The pointer to add to the end of the list.</param>
+        /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
         public void AddNoResize(void* value)
         {
             this.ListData().AddNoResize((IntPtr)value);
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Copies pointers from a buffer to the end of this list.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by `count`. Never increases the capacity.
         /// </remarks>
-        public void AddRangeNoResize(void** ptr, int length)
+        /// <param name="ptr">The buffer to copy from.</param>
+        /// <param name="count">The number of pointers to copy from the buffer.</param>
+        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        public void AddRangeNoResize(void** ptr, int count)
         {
-            this.ListData().AddRangeNoResize(ptr, length);
+            this.ListData().AddRangeNoResize(ptr, count);
         }
 
         /// <summary>
-        /// Adds elements from a list to this list.
+        /// Copies the pointers of another list to the end of this list.
         /// </summary>
-        /// <param name="list">Other container to copy elements from.</param>
+        /// <param name="list">The other list to copy from.</param>
         /// <remarks>
-        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
+        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(UnsafePtrList<T> list)
         {
             this.ListData().AddRangeNoResize(list.Ptr, list.Length);
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Adds a pointer to the end of the list.
         /// </summary>
-        /// <param name="value">The struct to be added at the end of the list.</param>
+        /// <param name="value">The pointer to add to the end of this list.</param>
+        /// <remarks>
+        /// Increments the length by 1. Increases the capacity if necessary.
+        /// </remarks>
         public void Add(in IntPtr value)
         {
             this.ListData().Add(value);
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Adds a pointer to the end of the list.
         /// </summary>
-        /// <param name="value">The struct to be added at the end of the list.</param>
+        /// <param name="value">The pointer to add to the end of this list.</param>
+        /// <remarks>
+        /// Increments the length by 1. Increases the capacity if necessary.
+        /// </remarks>
         public void Add(void* value)
         {
             this.ListData().Add((IntPtr)value);
@@ -1921,75 +1416,127 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Adds the elements of a UnsafePtrList to this list.
+        /// Copies the elements of another list to the end of this list.
         /// </summary>
-        /// <param name="list">Other container to copy elements from.</param>
+        /// <param name="list">The other list to copy from.</param>
+        /// <remarks>
+        /// Increments the length by the length of the other list. Increases the capacity if necessary.
+        /// </remarks>
         public void AddRange(UnsafePtrList<T> list)
         {
             this.ListData().AddRange(list.ListData());
         }
 
         /// <summary>
-        /// Inserts a number of items into a container at a specified zero-based index.
+        /// Shifts pointers toward the end of this list, increasing its length.
         /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Right-shifts pointers in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `end - begin`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `end` equals `begin`, the method does nothing.
+        ///
+        /// The pointer at index `begin` will be copied to index `end`, the pointer at index `begin + 1` will be copied to `end + 1`, and so forth.
+        ///
+        /// The indexes `begin` up to `end` are not cleared: they will contain whatever pointers they held prior.
+        /// </remarks>
+        /// <param name="begin">The index of the first pointer that will be shifted up.</param>
+        /// <param name="end">The index where the first shifted pointer will end up.</param>
+        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             this.ListData().InsertRangeWithBeginEnd(begin, end);
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Copies the last pointer of this list to the specified index. Decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>Useful as a cheap way to remove a pointer from this list when you don't care about preserving order.</remarks>
+        /// <param name="index">The index to overwrite with the last pointer.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public void RemoveAtSwapBack(int index)
         {
             this.ListData().RemoveAtSwapBack(index);
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
+        /// Copies the last *N* pointer of this list to a range in this list. Decrements the length by *N*.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Copies the last `count` pointers to the indexes `index` up to `index + count`.
+        ///
+        /// Useful as a cheap way to remove pointers from a list when you don't care about preserving order.
+        /// </remarks>
+        /// <param name="index">The index of the first pointer to overwrite.</param>
+        /// <param name="count">The number of pointers to copy and remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// or `index + count` exceeds the length.</exception>
+        public void RemoveRangeSwapBack(int index, int count)
+        {
+            this.ListData().RemoveRangeSwapBack(index, count);
+        }
+
+        /// <summary>
+        /// Copies the last *N* pointers of this list to a range in this list. Decrements the length by *N*.
+        /// </summary>
+        /// <remarks>
+        /// Copies the last `end - begin` pointers to the indexes `begin` up to `end`.
+        ///
+        /// Useful as a cheap way to remove pointers from a list when you don't care about preserving order.
+        ///
+        /// Does nothing if `end - begin` is less than 1.
+        /// </remarks>
+        /// <param name="begin">The index of the first pointers to overwrite.</param>
+        /// <param name="end">The index one greater than the last pointers to overwrite.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
+        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeSwapBackWithBeginEnd(begin, end);
         }
 
         /// <summary>
-        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
-        /// is shortened by one.
+        /// Removes the pointer at an index, shifting everything above it down by one. Decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <param name="index">The index of the pointer to remove.</param>
         /// <remarks>
-        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// If you don't care about preserving the order of the pointers, <see cref="RemoveAtSwapBack(int)"/> is a more efficient way to remove pointers.
         /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public void RemoveAt(int index)
         {
             this.ListData().RemoveAt(index);
         }
 
         /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
+        /// Removes *N* pointers in a range, shifting everything above the range down by *N*. Decrements the length by *N*.
         /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <param name="index">The index of the first pointer to remove.</param>
+        /// <param name="count">The number of pointers to remove.</param>
         /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// If you don't care about preserving the order of the pointers, <see cref="RemoveRangeSwapBackWithBeginEnd"/>
+        /// is a more efficient way to remove pointers.
         /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// or `index + count` exceeds the length.</exception>
+        public void RemoveRange(int index, int count)
+        {
+            this.ListData().RemoveRange(index, count);
+        }
+
+        /// <summary>
+        /// Removes *N* pointers in a range, shifting everything above it down by *N*. Decrements the length by *N*.
+        /// </summary>
+        /// <param name="begin">The index of the first pointer to remove.</param>
+        /// <param name="end">The index one greater than the last pointer to remove.</param>
+        /// <remarks>
+        /// If you don't care about preserving the order of the pointers, <see cref="RemoveRangeSwapBackWithBeginEnd"/> is a more efficient way to remove pointers.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
+        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
         public void RemoveRangeWithBeginEnd(int begin, int end)
         {
             this.ListData().RemoveRangeWithBeginEnd(begin, end);
@@ -2018,28 +1565,31 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns parallel reader instance.
+        /// Returns a parallel reader of this list.
         /// </summary>
-        /// <returns>Parallel reader instance.</returns>
+        /// <returns>A parallel reader of this list.</returns>
         public ParallelReader AsParallelReader()
         {
             return new ParallelReader(Ptr, Length);
         }
 
         /// <summary>
-        /// Implements parallel reader. Use AsParallelReader to obtain it from container.
+        /// A parallel reader for an UnsafePtrList&lt;T&gt;.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
+        /// </remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelReader
         {
             /// <summary>
-            ///
+            /// The internal buffer of the list.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
             public readonly T** Ptr;
 
             /// <summary>
-            ///
+            /// The number of elements.
             /// </summary>
             public readonly int Length;
 
@@ -2050,54 +1600,56 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
-            ///
+            /// Returns the index of the first occurrence of a specific pointer in the list.
             /// </summary>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public int IndexOf(void* value)
+            /// <param name="ptr">The pointer to search for in the list.</param>
+            /// <returns>The index of the first occurrence of the pointer. Returns -1 if it is not found in the list.</returns>
+            public int IndexOf(void* ptr)
             {
                 for (int i = 0; i < Length; ++i)
                 {
-                    if (Ptr[i] == value) return i;
+                    if (Ptr[i] == ptr) return i;
                 }
-
                 return -1;
             }
 
             /// <summary>
-            ///
+            /// Returns true if the list contains at least one occurrence of a specific pointer.
             /// </summary>
-            /// <param name="value"></param>
-            /// <returns></returns>
-            public bool Contains(void* value)
+            /// <param name="ptr">The pointer to search for in the list.</param>
+            /// <returns>True if the list contains at least one occurrence of the pointer.</returns>
+            public bool Contains(void* ptr)
             {
-                return IndexOf(value) != -1;
+                return IndexOf(ptr) != -1;
             }
         }
 
         /// <summary>
-        /// Returns parallel writer instance.
+        /// Returns a parallel writer of this list.
         /// </summary>
-        /// <returns>Parallel writer instance.</returns>
+        /// <returns>A parallel writer of this list.</returns>
         public ParallelWriter AsParallelWriter()
         {
             return new ParallelWriter(Ptr, (UnsafeList<IntPtr>*)UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        ///
+        /// A parallel writer for an UnsafePtrList&lt;T&gt;.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a list.
+        /// </remarks>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
-            ///
+            /// The data of the list.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
             public readonly T** Ptr;
 
             /// <summary>
-            ///
+            /// The UnsafeList to write to.
             /// </summary>
             [NativeDisableUnsafePtrRestriction]
             public UnsafeList<IntPtr>* ListData;
@@ -2109,37 +1661,40 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
-            /// Adds an element to the list.
+            /// Adds a pointer to the end of the list.
             /// </summary>
-            /// <param name="value">The value to be added at the end of the list.</param>
+            /// <param name="value">The pointer to add to the end of the list.</param>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
+            /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
             public void AddNoResize(T* value)
             {
                 ListData->AddNoResize((IntPtr)value);
             }
 
             /// <summary>
-            /// Adds elements from a buffer to this list.
+            /// Copies pointers from a buffer to the end of the list.
             /// </summary>
-            /// <param name="ptr">A pointer to the buffer.</param>
-            /// <param name="length">The number of elements to add to the list.</param>
+            /// <param name="ptr">The buffer to copy from.</param>
+            /// <param name="count">The number of pointers to copy from the buffer.</param>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// Increments the length by `count`. Never increases the capacity.
             /// </remarks>
-            public void AddRangeNoResize(T** ptr, int length)
+            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            public void AddRangeNoResize(T** ptr, int count)
             {
-                ListData->AddRangeNoResize(ptr, length);
+                ListData->AddRangeNoResize(ptr, count);
             }
 
             /// <summary>
-            /// Adds elements from a list to this list.
+            /// Copies the pointers of another list to the end of this list.
             /// </summary>
-            /// <param name="list">Other container to copy elements from.</param>
+            /// <param name="list">The other list to copy from.</param>
             /// <remarks>
-            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
+            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
             public void AddRangeNoResize(UnsafePtrList<T> list)
             {
                 ListData->AddRangeNoResize(list.Ptr, list.Length);

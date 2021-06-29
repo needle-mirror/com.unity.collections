@@ -10,10 +10,14 @@ using Unity.Jobs;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Key value arrays.
+    /// The keys and values of a hash map copied into two parallel arrays.
     /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+    /// <remarks>For each key-value pair copied from the hash map, the key is stored in `Keys[i]` while the value is stored in `Values[i]` (for the same `i`).
+    ///
+    /// NativeKeyValueArrays is not actually itself a native collection: it contains a NativeArray for the keys and a NativeArray for the values,
+    /// but a NativeKeyValueArrays does not have its own safety handles.</remarks>
+    /// <typeparam name="TKey">The type of the keys.</typeparam>
+    /// <typeparam name="TValue">The type of the values.</typeparam>
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public struct NativeKeyValueArrays<TKey, TValue>
         : INativeDisposable
@@ -21,28 +25,29 @@ namespace Unity.Collections
         where TValue : struct
     {
         /// <summary>
-        ///
+        /// The keys.
         /// </summary>
+        /// <value>The keys. The key at `Keys[i]` is paired with the value at `Values[i]`.</value>
         public NativeArray<TKey> Keys;
 
         /// <summary>
-        ///
+        /// The values.
         /// </summary>
+        /// <value>The values. The value at `Values[i]` is paired with the key at `Keys[i]`.</value>
         public NativeArray<TValue> Values;
 
         /// <summary>
-        /// The current number of items in the container.
+        /// The number of key-value pairs.
         /// </summary>
-        /// <value>The item count.</value>
+        /// <value>The number of key-value pairs.</value>
         public int Length => Keys.Length;
 
         /// <summary>
-        /// NativeKeyValueArrays constructor.
+        /// Initializes and returns an instance of NativeKeyValueArrays.
         /// </summary>
-        /// <param name="length">The length of the arrays.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <param name="length">The number of keys-value pairs.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public NativeKeyValueArrays(int length, Allocator allocator, NativeArrayOptions options)
         {
             Keys = new NativeArray<TKey>(length, allocator, options);
@@ -50,7 +55,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -59,16 +64,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this collection's key and value arrays.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this collection's key and value arrays.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -77,10 +76,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Unordered associative array, a collection of keys and values.
+    /// An unordered, expandable associative array.
     /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+    /// <typeparam name="TKey">The type of the keys.</typeparam>
+    /// <typeparam name="TValue">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
@@ -109,12 +108,10 @@ namespace Unity.Collections
 #endif
 
         /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// Initializes and returns an instance of NativeHashMap.
         /// </summary>
-        /// <param name="capacity">The initial capacity of the container. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
         public NativeHashMap(int capacity, Allocator allocator)
             : this(capacity, allocator, 2)
         {
@@ -136,9 +133,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether this hash map is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this hash map is empty.</value>
         public bool IsEmpty
         {
             get
@@ -154,9 +151,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The current number of items in the container.
+        /// The current number of key-value pairs in this hash map.
         /// </summary>
-        /// <returns>The item count.</returns>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
         public int Count()
         {
             CheckRead();
@@ -164,12 +161,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The number of items that can fit in the container.
+        /// The number of key-value pairs that fit in the current allocation.
         /// </summary>
-        /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-        /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-        /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-        /// old array to the new one, and then deallocates the original array memory.</remarks>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             get
@@ -186,9 +182,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clears the container.
+        /// Removes all key-value pairs.
         /// </summary>
-        /// <remarks>Containers capacity remains unchanged.</remarks>
+        /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
             CheckWrite();
@@ -197,11 +193,12 @@ namespace Unity.Collections
 
 
         /// <summary>
-        /// Try adding an element with the specified key and value into the container. If the key already exist, the value won't be updated.
+        /// Adds a new key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
-        /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
+        /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the key-value pair was added.</returns>
         public bool TryAdd(TKey key, TValue item)
         {
             CheckWrite();
@@ -209,10 +206,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Add an element with the specified key and value into the container. If the key already exist an ArgumentException will be thrown.
+        /// Adds a new key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
+        /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
         public void Add(TKey key, TValue item)
         {
             var added = TryAdd(key, item);
@@ -224,10 +223,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes the element with the specified key from the container.
+        /// Removes a key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to remove.</param>
-        /// <returns>Returns true if the key was removed from the container, otherwise returns false indicating key wasn't in the container.</returns>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>True if a key-value pair was removed.</returns>
         public bool Remove(TKey key)
         {
             CheckWrite();
@@ -235,11 +234,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Gets the value associated with the specified key.
+        /// Returns the value associated with a key.
         /// </summary>
-        /// <param name="key">The key of the value to get.</param>
-        /// <param name="item">If key is found item parameter will contain value</param>
-        /// <returns>Returns true if key is found, otherwise returns false.</returns>
+        /// <param name="key">The key to look up.</param>
+        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+        /// <returns>True if the key was present.</returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             CheckRead();
@@ -247,10 +246,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Determines whether an key is in the container.
+        /// Returns true if a given key is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to locate in the container.</param>
-        /// <returns>Returns true if the container contains the key.</returns>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present.</returns>
         public bool ContainsKey(TKey key)
         {
             CheckRead();
@@ -258,10 +257,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieve a value by key.
+        /// Gets and sets values by key.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <remarks>Getting a key that is not present will throw. Setting a key that is not already present will add the key.</remarks>
+        /// <param name="key">The key to look up.</param>
+        /// <value>The value associated with the key.</value>
+        /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
         public TValue this[TKey key]
         {
             get
@@ -288,23 +289,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
-        /// </remarks>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
         public bool IsCreated => m_HashMapData.IsCreated;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -315,16 +306,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this hash map.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -347,11 +332,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrive array of key from the container.
+        /// Returns an array with a copy of all this hash map's keys (in no particular order).
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Key array.</returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
             CheckRead();
@@ -359,11 +343,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retreive array of values from the container.
+        /// Returns an array with a copy of all this hash map's values (in no particular order).
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Value array.</returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
             CheckRead();
@@ -371,11 +354,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieve key/value arrays.
+        /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Key/value arrays.</returns>
+        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
             CheckRead();
@@ -383,9 +366,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns parallel writer instance.
+        /// Returns a parallel writer for this hash map.
         /// </summary>
-        /// <returns>Parallel writer instance.</returns>
+        /// <returns>A parallel writer for this hash map.</returns>
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;
@@ -397,8 +380,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
+        /// A parallel writer for a NativeHashMap.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeHashMap.
+        /// </remarks>
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         [DebuggerDisplay("Capacity = {m_Writer.Capacity}")]
@@ -411,17 +397,17 @@ namespace Unity.Collections
             internal AtomicSafetyHandle m_Safety;
 #endif
             /// <summary>
-            ///
+            /// Returns the index of the current thread.
             /// </summary>
+            /// <remarks>In a job, each thread gets its own copy of the ParallelWriter struct, and the job system assigns
+            /// each copy the index of its thread.</remarks>
+            /// <value>The index of the current thread.</value>
             public int m_ThreadIndex => m_Writer.m_ThreadIndex;
 
             /// <summary>
-            /// The number of items that can fit in the container.
+            /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
-            /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-            /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-            /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-            /// old array to the new one, and then deallocates the original array memory.</remarks>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
             public int Capacity
             {
                 get
@@ -434,11 +420,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Try adding an element with the specified key and value into the container. If the key already exist, the value won't be updated.
+            /// Adds a new key-value pair.
             /// </summary>
-            /// <param name="key">The key of the element to add.</param>
-            /// <param name="item">The value of the element to add.</param>
-            /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
+            /// <remarks>If the key is already present, this method returns false without modifying this hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the key-value pair was added.</returns>
             public bool TryAdd(TKey key, TValue item)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -449,9 +436,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns an IEnumerator interface for the container.
+        /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
-        /// <returns>An IEnumerator interface for the container.</returns>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
         public Enumerator GetEnumerator()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -470,9 +457,8 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
@@ -481,9 +467,8 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator IEnumerable.GetEnumerator()
@@ -492,8 +477,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Implements iterator over the container.
+        /// An enumerator over the key-value pairs of a hash map.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// From this state, the first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
@@ -504,14 +493,14 @@ namespace Unity.Collections
             internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
-            /// Disposes enumerator.
+            /// Does nothing.
             /// </summary>
             public void Dispose() { }
 
             /// <summary>
-            /// Advances the enumerator to the next element of the container.
+            /// Advances the enumerator to the next key-value pair.
             /// </summary>
-            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -521,7 +510,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Resets the enumerator to the first element of the container.
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -532,8 +521,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Gets the element at the current position of the enumerator in the container.
+            /// The current key-value pair.
             /// </summary>
+            /// <value>The current key-value pair.</value>
             public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
             object IEnumerator.Current => Current;

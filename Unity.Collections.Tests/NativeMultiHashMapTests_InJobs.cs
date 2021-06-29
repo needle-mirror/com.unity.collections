@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
+using Assert = FastAssert;
 
 internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 {

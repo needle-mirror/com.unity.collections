@@ -6,7 +6,7 @@ using Unity.Mathematics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
-public class ConcurrentMaskTests
+internal class ConcurrentMaskTests
 {
     internal struct Test
     {

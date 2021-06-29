@@ -4,7 +4,7 @@ using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections.Tests
 {
-    public class CollectionsTestCommonBase
+    internal class CollectionsTestCommonBase
     {
         [SetUp]
         public virtual void Setup()

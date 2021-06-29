@@ -77,9 +77,9 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// Fixed-size circular buffer, without any thread safety check features.
+    /// A fixed-size circular buffer.
     /// </summary>
-    /// <typeparam name="T">Source type of elements.</typeparam>
+    /// <typeparam name="T">The type of the elements.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeRingQueueDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
@@ -88,37 +88,43 @@ namespace Unity.Collections.LowLevel.Unsafe
         where T : unmanaged
     {
         /// <summary>
+        /// The internal buffer where the content is stored.
         /// </summary>
+        /// <value>The internal buffer where the content is stored.</value>
         [NativeDisableUnsafePtrRestriction]
         public T* Ptr;
 
         /// <summary>
+        /// The allocator used to create the internal buffer.
         /// </summary>
+        /// <value>The allocator used to create the internal buffer.</value>
         public Allocator Allocator;
 
         internal RingControl Control;
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether the queue is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if the queue is empty.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
-        /// Returns number of items in the container.
+        /// The number of elements currently in this queue.
         /// </summary>
+        /// <value>The number of elements currently in this queue.</value>
         public int Length => Control.Length;
 
         /// <summary>
-        /// Returns capacity of the container.
+        /// The number of elements that fit in the internal buffer.
         /// </summary>
+        /// <value>The number of elements that fit in the internal buffer.</value>
         public int Capacity => Control.Capacity;
 
         /// <summary>
-        /// Constructs container as view into memory.
+        /// Initializes and returns an instance of UnsafeRingQueue which aliasing an existing buffer.
         /// </summary>
-        /// <param name="ptr"></param>
-        /// <param name="capacity"></param>
+        /// <param name="ptr">An existing buffer to set as the internal buffer.</param>
+        /// <param name="capacity">The capacity.</param>
         public UnsafeRingQueue(T* ptr, int capacity)
         {
             Ptr = ptr;
@@ -127,12 +133,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs a new container with the specified capacity and type of memory allocation.
+        /// Initializes and returns an instance of UnsafeRingQueue.
         /// </summary>
-        /// <param name="capacity">Container capacity.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <param name="capacity">The capacity.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public UnsafeRingQueue(int capacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             capacity += 1;
@@ -149,22 +154,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this queue has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this queue has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -178,16 +174,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this queue.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
+        /// <returns>The handle of a new job that will dispose this queue. The new job depends upon inputDeps.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -207,10 +197,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Try enqueuing value into the container. If container is full value won't be enqueued, and return result will be false.
+        /// Adds an element at the front of the queue.
         /// </summary>
-        /// <param name="value">The value to be appended.</param>
-        /// <returns>Returns true if value was appended, otherwise returns false.</returns>
+        /// <remarks>Does nothing if the queue is full.</remarks>
+        /// <param name="value">The value to be added.</param>
+        /// <returns>True if the value was added.</returns>
         public bool TryEnqueue(T value)
         {
             if (1 != Control.Reserve(1))
@@ -231,10 +222,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Enqueue value into the container.
+        /// Adds an element at the front of the queue.
         /// </summary>
-        /// <param name="value">The value to be appended.</param>
-        /// <exception cref="InvalidOperationException">Thrown if capacity is reached and is not possible to enqueue value <see cref="Capacity"/>.</exception>
+        /// <param name="value">The value to be added.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the queue was full.</exception>
         public void Enqueue(T value)
         {
             if (!TryEnqueue(value))
@@ -244,10 +235,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Try dequeueing item from the container. If container is empty item won't be changed, and return result will be false.
+        /// Removes the element from the end of the queue.
         /// </summary>
-        /// <param name="item">Item value if dequeued.</param>
-        /// <returns>Returns true if item was dequeued.</returns>
+        /// <remarks>Does nothing if the queue is empty.</remarks>
+        /// <param name="item">Outputs the element removed.</param>
+        /// <returns>True if an element was removed.</returns>
         public bool TryDequeue(out T item)
         {
             item = Ptr[Control.Read];
@@ -261,10 +253,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Dequeue item from the container.
+        /// Removes the element from the end of the queue.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if queue is empty <see cref="Length"/>.</exception>
-        /// <returns>Returns item from the container.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the queue was empty.</exception>
+        /// <returns>Returns the removed element.</returns>
         public T Dequeue()
         {
             if (!TryDequeue(out T item))

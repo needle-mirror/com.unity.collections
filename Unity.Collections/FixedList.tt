@@ -34,18 +34,18 @@ namespace Unity.Collections
 {
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
     [Serializable]
-    internal struct FixedList<T,U> 
-    : INativeList<T> 
-    where T : unmanaged 
+    internal struct FixedList<T,U>
+    : INativeList<T>
+    where T : unmanaged
     where U : unmanaged
     {
         [SerializeField] internal ushort length;
         [SerializeField] internal U buffer;
-        
+
         /// <summary>
-        /// The current number of items in the list.
+        /// The current number of items in this list.
         /// </summary>
-        /// <value>The item length.</value>
+        /// <value>The current number of items in this list.</value>
         [CreateProperty]
         public int Length
         {
@@ -63,9 +63,9 @@ namespace Unity.Collections
         [CreateProperty] IEnumerable<T> Elements => this.ToArray();
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether the list is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this list is empty.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -80,11 +80,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The number of items that can fit in the list.
+        /// The number of elements that can fit in this list.
         /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
+        /// <value>The number of elements that can fit in this list.</value>
+        /// <remarks>The capacity of a FixedList cannot be changed. The setter is included only for conformity with <see cref="INativeList{T}"/>.</remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
           get
@@ -98,11 +98,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieve a member of the list by index.
+        /// The element at a given index.
         /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
+        /// <param name="index">An index.</param>
+        /// <value>The value to store at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
             get
@@ -123,10 +123,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns the element at a given index.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">An index.</param>
+        /// <returns>A reference to the element at the index.</returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
@@ -137,9 +137,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Computes a hash code summary of the FixedList32&lt;T&gt;.
+        /// Returns the hash code of this list.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Only the content of the list (the bytes of the elements) are included in the hash. Any bytes beyond the length are not part of the hash.</remarks>
+        /// <returns>The hash code of this list.</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -149,20 +151,23 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <param name="item">The T to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        /// <remarks>The same as <see cref="AddNoResize"/> (because a fixed list is never resized).</remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public void Add(in T item)
         {
             this[Length++] = item;
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public unsafe void AddRange(void* ptr, int length)
         {
             T* data = (T*)ptr;
@@ -173,34 +178,48 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <param name="item">The T to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public void AddNoResize(in T item) => Add(item);
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
-        /// Clears the list.
+        /// Sets the length to 0.
         /// </summary>
+        /// <remarks> Does *not* zero out the bytes.</remarks>
         public void Clear()
         {
             Length = 0;
         }
 
         /// <summary>
-        /// Inserts a number of items into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// Shifts elements toward the end of this list, increasing its length.
         /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `end - begin`.
+        ///
+        /// If `end` equals `begin`, the method does nothing.
+        ///
+        /// The element at index `begin` will be copied to index `end`, the element at index `begin + 1` will be copied to `end + 1`, and so forth.
+        ///
+        /// The indexes `begin` up to `end` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="begin">The index of the first element that will be shifted up.</param>
+        /// <param name="end">The index where the first shifted element will end up.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the new length exceeds the capacity.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -221,10 +240,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Inserts a single element into a FixedList32&lt;T&gt; at a specified zero-based index.
+        /// Inserts a single element at an index. Increments the length by 1.
         /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
+        /// <param name="index">The index at which to insert the element.</param>
+        /// <param name="item">The element to insert.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void Insert(int index, in T item)
         {
             InsertRangeWithBeginEnd(index, index+1);
@@ -232,23 +252,29 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Copies the last element of this list to an index. Decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>Useful as a cheap way to remove elements from a list when you don't care about preserving order.</remarks>
+        /// <param name="index">The index to overwrite with the last element.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveAtSwapBack(int index)
         {
             RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
+        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
         /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Copies the last `count`-numbered elements to the range starting at `index`.
+        ///
+        /// Useful as a cheap way to remove elements from a list when you don't care about preserving order.
+        ///
+        /// Does nothing if the count is less than 1.
+        /// </remarks>
+        /// <param name="index">The first index of the destination range.</param>
+        /// <param name="count">The number of elements to copy and the amount by which to decrement the length.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveRangeSwapBack(int index, int count)
         {
             if (count > 0)
@@ -279,31 +305,27 @@ namespace Unity.Collections
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
-        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
-        /// is shortened by one.
+        /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <param name="index">The index of the element to remove.</param>
         /// <remarks>
-        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// If you don't care about preserving the order of the elements, `RemoveAtSwapBack` is a more efficient way to remove an element.
         /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveAt(int index)
         {
             RemoveRange(index, 1);
         }
 
         /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
+        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
         /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
         /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// If you don't care about preserving the order of the elements, `RemoveAtSwapBack` is a more efficient way to remove elements.
         /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <param name="index">The first index of the range to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveRange(int index, int count)
         {
             if (count > 0)
@@ -338,9 +360,9 @@ namespace Unity.Collections
         public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
-        /// Creates a managed Array of T that is a copy of this FixedList32&lt;T&gt;.
+        /// Returns a managed array that is a copy of this list.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A managed array that is a copy of this list.</returns>
         [NotBurstCompatible]
         public T[] ToArray()
         {
@@ -355,11 +377,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Creates an unmanaged NativeArray&lt;T&gt; that is a copy of this FixedList32&lt;T&gt;.
+        /// Returns an array that is a copy of this list.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array that is a copy of this list.</returns>
         public NativeArray<T> ToNativeArray(Allocator allocator)
         {
             unsafe
@@ -369,13 +390,13 @@ namespace Unity.Collections
                 return copy;
             }
         }
-        
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }        
+        }
     }
 
     [BurstCompatible]
@@ -425,10 +446,9 @@ for(var size = 0; size < 5; ++size)
     var TYPENAME = String.Format("FixedList{0}", BYTES);
 #>
     /// <summary>
-    /// An unmanaged, resizable list that does not allocate memory.
-    /// It is <#=BYTES#> bytes in size, and contains all the memory it needs.
+    /// An unmanaged, resizable list whose content is all stored directly in the <#=BYTES#>-byte struct. Useful for small lists.
     /// </summary>
-    /// <typeparam name="T">The type of the elements in the container.</typeparam>
+    /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
@@ -448,9 +468,9 @@ for(var size = 0; size < 5; ++size)
         [SerializeField] internal FixedBytes<#=BUFFER_BYTES#> buffer;
 
         /// <summary>
-        /// The current number of items in the list.
+        /// The current number of items in this list.
         /// </summary>
-        /// <value>The item length.</value>
+        /// <value>The current number of items in this list.</value>
         [CreateProperty]
         public int Length
         {
@@ -468,9 +488,9 @@ for(var size = 0; size < 5; ++size)
         [CreateProperty] IEnumerable<T> Elements => this.ToArray();
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this list is empty.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -485,11 +505,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// The number of items that can fit in the list.
+        /// The number of elements that can fit in this list.
         /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
+        /// <value>The number of elements that can fit in this list.</value>
+        /// <remarks>The capacity of a FixedList cannot be changed. The setter is included only for conformity with <see cref="INativeList{T}"/>.</remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
           get
@@ -503,11 +523,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Retrieve a member of the list by index.
+        /// The element at a given index.
         /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
+        /// <param name="index">An index.</param>
+        /// <value>The value to store at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
             get
@@ -528,10 +548,10 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        ///
+        /// Returns the element at a given index.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">An index.</param>
+        /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
             FixedList.CheckElementAccess(index, length);
@@ -542,9 +562,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Computes a hash code summary of the <#=TYPENAME#>&lt;T&gt;.
+        /// Returns the hash code of this list.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Only the content of the list (the bytes of the elements) are included in the hash. Any bytes beyond the length are not part of the hash.</remarks>
+        /// <returns>The hash code of this list.</returns>
         public override int GetHashCode()
         {
             unsafe
@@ -554,20 +576,23 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <param name="item">The T to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public void Add(in T item)
         {
             this[Length++] = item;
         }
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public unsafe void AddRange(void* ptr, int length)
         {
             T* data = (T*)ptr;
@@ -578,34 +603,48 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Adds an element to the list.
+        /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <param name="item">The T to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
+        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public void AddNoResize(in T item) => Add(item);
 
         /// <summary>
-        /// Adds elements from a buffer to this list.
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
         public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
 
         /// <summary>
-        /// Clears the list.
+        /// Sets the length to 0.
         /// </summary>
+        /// <remarks> Does *not* zero out the bytes.</remarks>
         public void Clear()
         {
             Length = 0;
         }
 
         /// <summary>
-        /// Inserts a number of items into a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
+        /// Shifts elements toward the end of this list, increasing its length.
         /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `end - begin`.
+        ///
+        /// If `end` equals `begin`, the method does nothing.
+        ///
+        /// The element at index `begin` will be copied to index `end`, the element at index `begin + 1` will be copied to `end + 1`, and so forth.
+        ///
+        /// The indexes `begin` up to `end` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="begin">The index of the first element that will be shifted up.</param>
+        /// <param name="end">The index where the first shifted element will end up.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the new length exceeds the capacity.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
             int items = end - begin;
@@ -626,10 +665,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Inserts a single element into a <#=TYPENAME#>&lt;T&gt; at a specified zero-based index.
+        /// Inserts a single element at an index. Increments the length by 1.
         /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
+        /// <param name="index">The index at which to insert the element.</param>
+        /// <param name="item">The element to insert.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void Insert(int index, in T item)
         {
             InsertRangeWithBeginEnd(index, index+1);
@@ -637,23 +677,29 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Copies the last element of this list to an index. Decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>Useful as a cheap way to remove elements from a list when you don't care about preserving order.</remarks>
+        /// <param name="index">The index to overwrite with the last element.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveAtSwapBack(int index)
         {
             RemoveRangeSwapBack(index, 1);
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
+        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
         /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <remarks>
+        /// Copies the last `count`-numbered elements to the range starting at `index`.
+        ///
+        /// Useful as a cheap way to remove elements from a list when you don't care about preserving order.
+        ///
+        /// Does nothing if the count is less than 1.
+        /// </remarks>
+        /// <param name="index">The first index of the destination range.</param>
+        /// <param name="count">The number of elements to copy and the amount by which to decrement the length.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveRangeSwapBack(int index, int count)
         {
             if (count > 0)
@@ -673,8 +719,7 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
+        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
@@ -684,31 +729,27 @@ for(var size = 0; size < 5; ++size)
         public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
 
         /// <summary>
-        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
-        /// is shortened by one.
+        /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <param name="index">The index of the element to remove.</param>
         /// <remarks>
-        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// If you don't care about preserving the order of the elements, `RemoveAtSwapBack` is a more efficient way to remove an element.
         /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveAt(int index)
         {
             RemoveRange(index, 1);
         }
 
         /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
+        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
         /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
         /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
+        /// If you don't care about preserving the order of the elements, `RemoveAtSwapBack` is a more efficient way to remove elements.
         /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        /// <param name="index">The first index of the range to remove.</param>
+        /// <param name="count">The number of elements to remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public void RemoveRange(int index, int count)
         {
             if (count > 0)
@@ -728,8 +769,7 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
+        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
         /// </summary>
         /// <param name="begin">The first index of the item to remove.</param>
         /// <param name="end">The index past-the-last item to remove.</param>
@@ -743,9 +783,9 @@ for(var size = 0; size < 5; ++size)
         public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
 
         /// <summary>
-        /// Creates a managed Array of T that is a copy of this <#=TYPENAME#>&lt;T&gt;.
+        /// Returns a managed array that is a copy of this list.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A managed array that is a copy of this list.</returns>
         [NotBurstCompatible]
         public T[] ToArray()
         {
@@ -760,11 +800,10 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Creates an unmanaged NativeArray&lt;T&gt; that is a copy of this <#=TYPENAME#>&lt;T&gt;.
+        /// Returns an array that is a copy of this list.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array that is a copy of this list.</returns>
         public NativeArray<T> ToNativeArray(Allocator allocator)
         {
             unsafe
@@ -783,11 +822,12 @@ for(var size = 0; size < 5; ++size)
 #>
 
         /// <summary>
-        /// Determines whether a <#=TYPENAME#>&lt;T&gt; and <#=OTHERTYPENAME#>&lt;T&gt; have the same value.
+        /// Returns true if two lists are equal.
         /// </summary>
-        /// <param name="a">The <#=TYPENAME#>&lt;T&gt; to compare for equality</param>
-        /// <param name="b">The <#=OTHERTYPENAME#>&lt;T&gt; to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
+        /// <param name="a">The first list to compare for equality.</param>
+        /// <param name="b">The second list to compare for equality.</param>
+        /// <returns>True if the two lists are equal.</returns>
         public static bool operator ==(in <#=TYPENAME#><T> a, in <#=OTHERTYPENAME#><T> b)
         {
             unsafe
@@ -799,22 +839,27 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Determines whether a <#=TYPENAME#>&lt;T&gt; and <#=OTHERTYPENAME#>&lt;T&gt; have different values.
+        /// Returns true if two lists are unequal.
         /// </summary>
-        /// <param name="a">The <#=TYPENAME#>&lt;T&gt; to compare for inequality</param>
-        /// <param name="b">The <#=OTHERTYPENAME#>&lt;T&gt; to compare for inequality</param>
-        /// <returns></returns>
+        /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
+        /// <param name="a">The first list to compare for inequality.</param>
+        /// <param name="b">The second list to compare for inequality.</param>
+        /// <returns>True if the two lists are unequal.</returns>
         public static bool operator !=(in <#=TYPENAME#><T> a, in <#=OTHERTYPENAME#><T> b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        /// Compares this instance with a specified <#=OTHERTYPENAME#>&lt;T&gt; and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified <#=OTHERTYPENAME#>&lt;T&gt;.
+        /// Returns a number denoting whether this list should be placed before or after another list in a sort.
         /// </summary>
-        /// <param name="other">The specified <#=OTHERTYPENAME#>&lt;T&gt; to compare with</param>
-        /// <returns></returns>
+        /// <param name="other">A list to to compare with.</param>
+        /// <returns>An integer denoting the respective sort position of the list relative to the other:
+        ///
+        /// 0 denotes that both lists should have the same position in a sort.
+        /// -1 denotes that this list should precede the other list in a sort.
+        /// +1 denotes that this list should follow the other list in a sort.
+        /// </returns>
         public int CompareTo(<#=OTHERTYPENAME#><T> other)
         {
             unsafe
@@ -837,11 +882,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Compares this instance with a specified <#=OTHERTYPENAME#>&lt;T&gt; and indicates whether this instance
-        /// is equal to the specified <#=OTHERTYPENAME#>&lt;T&gt;.
+        /// Returns true if this list and another list are equal.
         /// </summary>
-        /// <param name="other">The specified <#=OTHERTYPENAME#>&lt;T&gt; to compare with for equality</param>
-        /// <returns></returns>
+        /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
+        /// <param name="other">The list to compare for equality.</param>
+        /// <returns>True if the two lists are equal.</returns>
         public bool Equals(<#=OTHERTYPENAME#><T> other)
         {
             return CompareTo(other) == 0;
@@ -853,9 +898,10 @@ for(var size = 0; size < 5; ++size)
 #>
 
         /// <summary>
-        /// Constructs a new <#=TYPENAME#>&lt;T&gt; that is a copy of a <#=OTHERTYPENAME#>&lt;T&gt;.
+        /// Initializes and returns an instance of <#=TYPENAME#> with content copied from another list.
         /// </summary>
-        /// <param name="other">The <#=OTHERTYPENAME#>&lt;T&gt; to copy</param>
+        /// <param name="other">The list to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of <#=TYPENAME#>&lt;T&gt;.</exception>
         public <#=TYPENAME#>(in <#=OTHERTYPENAME#><T> other)
         {
             FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,T>(other.length);
@@ -868,10 +914,11 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Implicitly converts a <#=OTHERTYPENAME#>&lt;T&gt; to a <#=TYPENAME#>&lt;T&gt;.
+        /// Returns a new list that is a copy of another list.
         /// </summary>
-        /// <param name="other">The <#=OTHERTYPENAME#>&lt;T&gt; to copy</param>
-        /// <returns></returns>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>A new list that is a copy of the other.</returns>
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of <#=TYPENAME#>&lt;T&gt;.</exception>
         public static implicit operator <#=TYPENAME#><T>(in <#=OTHERTYPENAME#><T> other)
         {
             return new <#=TYPENAME#><T>(other);
@@ -882,11 +929,14 @@ for(var size = 0; size < 5; ++size)
 #>
 
         /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
+        /// Returns true if the list is equal to an object.
         /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
+        /// <remarks>Two lists are equal if their length and bytes are equal.
+        ///
+        /// A FixedList*N*&lt;T&gt; can only be equal to another FixedList*N*&lt;T&gt; with the same *N* and T.
+        /// </remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if the list is equal to the object.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -901,17 +951,20 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the elements of a <#=TYPENAME#>&lt;T&gt;.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
+        /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
             <#=TYPENAME#><T> m_List;
             int m_Index;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of <#=TYPENAME#>&lt;T&gt;.
             /// </summary>
-            /// <param name="list"><undoc /></param>
+            /// <param name="list">The list for which to create an enumerator.</param>
             public Enumerator(ref <#=TYPENAME#><T> list)
             {
                 m_List = list;
@@ -919,16 +972,16 @@ for(var size = 0; size < 5; ++size)
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next element.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 m_Index++;
@@ -936,7 +989,7 @@ for(var size = 0; size < 5; ++size)
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -944,27 +997,27 @@ for(var size = 0; size < 5; ++size)
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current element.
             /// </summary>
+            /// <value>The current element.</value>
             public T Current => m_List[m_Index]; // Let <#=TYPENAME#><T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the elements of this list.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the elements of this list.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(ref this);
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
+        /// <returns>Nothing because it always throws <see cref="NotImplementedException"/>.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator IEnumerable.GetEnumerator()
         {
@@ -972,10 +1025,9 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
+        /// <returns>Nothing because it always throws <see cref="NotImplementedException"/>.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
@@ -991,19 +1043,19 @@ for(var size = 0; size < 5; ++size)
     }
 
     /// <summary>
-    /// <#=TYPENAME#> extension methods.
+    /// Provides extension methods for <#=TYPENAME#>.
     /// </summary>
     [BurstCompatible]
     public unsafe static class <#=TYPENAME#>Extensions
     {
         /// <summary>
-        /// Searches for the specified element in <#=TYPENAME#>&lt;T&gt;.
+        /// Finds the index of the first occurrence of a particular value in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1011,13 +1063,13 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Determines whether an element is in the <#=TYPENAME#>&lt;T&gt;.
+        /// Returns true if a particular value is present in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1025,14 +1077,18 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Searches for the specified item from the begining of the <#=TYPENAME#> forward, removes it if possible,
-        /// and returns true if the item was successfully removed.
+        /// Removes the first occurrence of a particular value in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <remarks>
+        /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
+        ///
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.<#=TYPENAME#>Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
-        /// <returns>True, if element is removed.</returns>
+        /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1048,14 +1104,18 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Removes the first occurrence of an item from the <#=TYPENAME#>&lt;T&gt; and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
+        /// Removes the first occurrence of a particular value in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <remarks>
+        /// If a value is removed, the last element of the list is copied to overwrite the removed value, and the list's length is decremented by one.
+        ///
+        /// This is cheaper than <see cref="Remove"/>, but the order of the remaining elements is not preserved.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
-        /// <returns>Returns true if item is removed.</returns>
+        /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref <#=TYPENAME#><T> list, U value) where T : unmanaged, IEquatable<U>
         {
@@ -1104,7 +1164,7 @@ for(var size = 0; size < 5; ++size)
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
     [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView))]
-    [BurstCompatible]
+    [Obsolete("<#=TYPENAME#> is deprecated, please use FixedList<#=BYTES#><<#=TYPE#>> instead. (RemovedAfter 2021-06-10)", false)]
     public struct <#=TYPENAME#>
     : INativeList<<#=TYPE#>>
     , IEnumerable<<#=TYPE#>> // Used by collection initializers.
@@ -1121,9 +1181,9 @@ for(var size = 0; size < 5; ++size)
         [SerializeField] [FieldOffset(2)] internal FixedBytes<#=BUFFER_BYTES#> buffer;
 
         /// <summary>
-        /// The current number of items in the list.
+        /// The current number of elements in this list.
         /// </summary>
-        /// <value>The item length.</value>
+        /// <value>The current number of elements in this list.</value>
         [CreateProperty]
         public int Length
         {
@@ -1274,25 +1334,25 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Determines whether an element is in the <#=TYPENAME#>.
+        /// Returns true if the list contains at least one occurrence of a specific element.
         /// </summary>
-        /// <param name="item">The object to locate in the <#=TYPENAME#>.</param>
-        /// <returns></returns>
-        public bool Contains(<#=TYPE#> item)
+        /// <param name="value">The element to search for in the list.</param>
+        /// <returns>True if the list contains the element.</returns>
+        public bool Contains(<#=TYPE#> value)
         {
-            return IndexOf(item) >= 0;
+            return IndexOf(value) >= 0;
         }
 
         /// <summary>
-        /// Searches for the specified <#=TYPE#> and returns the zero-based index of the first occurrence within the entire <#=TYPENAME#>.
+        /// Returns the index of the first occurrence of a specific element in the list.
         /// </summary>
-        /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#>.</param>
-        /// <returns></returns>
-        public int IndexOf(<#=TYPE#> item)
+        /// <param name="value">The element to search for in the list.</param>
+        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
+        public int IndexOf(<#=TYPE#> value)
         {
             for (var i = 0; i < length; ++i)
             {
-                if (this[i].Equals(item))
+                if (this[i].Equals(value))
                 {
                     return i;
                 }
@@ -1302,7 +1362,7 @@ for(var size = 0; size < 5; ++size)
         }
 
         /// <summary>
-        /// Inserts a number of items into a <#=TYPENAME#> at a specified zero-based index.
+        /// Inserts a number of items into a <#=TYPENAME#> at a specified zero-based index. Increases the length.
         /// </summary>
         /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
         /// <param name="end">The zero-based index just after where the elements should be removed.</param>
@@ -1526,7 +1586,6 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <typeparam name="U">The comparer type.</typeparam>
         /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(NativeSortExtension.DefaultComparer<<#=TYPE#>>) })]
         public void Sort<U>(U comp) where U : IComparer<<#=TYPE#>>
         {
             unsafe
@@ -1607,9 +1666,9 @@ foreach(var OTHERBYTES in SIZES)
 #>
 
         /// <summary>
-        /// Constructs a new <#=TYPENAME#> that is a copy of a <#=OTHERTYPENAME#>.
+        /// Initializes and returns an instance of <#=TYPENAME#> with the content copied from another list.
         /// </summary>
-        /// <param name="other">The <#=OTHERTYPENAME#> to copy</param>
+        /// <param name="other">The <#=OTHERTYPENAME#> to copy.</param>
         public <#=TYPENAME#>(in <#=OTHERTYPENAME#> other)
         {
             FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,<#=TYPE#>>(other.length);
@@ -1751,6 +1810,7 @@ foreach(var OTHERBYTES in SIZES)
         }
     }
 
+    [Obsolete("<#=TYPENAME#>DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
     sealed class <#=TYPENAME#>DebugView
     {
         <#=TYPENAME#> m_List;
@@ -1765,7 +1825,7 @@ foreach(var OTHERBYTES in SIZES)
 }
 #>
     /// <summary>
-    /// <undoc />
+    /// Provides extension methods for FixedList*N*.
     /// </summary>
     public static class FixedListExtensions
     {
@@ -1778,42 +1838,42 @@ for(var size = 0; size < 5; ++size)
 #>
 
         /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#>&lt;T&gt; in ascending order.
+        /// Sorts the elements in this list in ascending order.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="data">Container to perform sort.</param>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref <#=TYPENAME#><T> data)
+        public static void Sort<T>(this ref <#=TYPENAME#><T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
             {
-                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                fixed(byte* b = &list.buffer.offset0000.byte0000)
                 {
                     var c = b + FixedList.PaddingBytes<T>();
-                    NativeSortExtension.Sort((T*)c, data.Length);
+                    NativeSortExtension.Sort((T*)c, list.Length);
                 }
             }
         }
 
         /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#>&lt;T&gt; using a custom comparison function.
+        /// Sorts the elements in this list using a custom comparison.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="data">Container to perform sort.</param>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <typeparam name="U">The type of the comparer.</typeparam>
+        /// <param name="list">The list to sort.</param>
+        /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref <#=TYPENAME#><T> data, U comp)
+        public static void Sort<T, U>(this ref <#=TYPENAME#><T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {
             unsafe
             {
-                fixed(byte* b = &data.buffer.offset0000.byte0000)
+                fixed(byte* b = &list.buffer.offset0000.byte0000)
                 {
                     var c = b + FixedList.PaddingBytes<T>();
-                    NativeSortExtension.Sort((T*)c, data.Length, comp);
+                    NativeSortExtension.Sort((T*)c, list.Length, comp);
                 }
             }
         }

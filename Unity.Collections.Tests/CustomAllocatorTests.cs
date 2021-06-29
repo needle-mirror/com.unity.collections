@@ -7,7 +7,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
-public class CustomAllocatorTests
+internal class CustomAllocatorTests
 {
 
     [Test]
@@ -18,7 +18,8 @@ public class CustomAllocatorTests
         var storage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
         for(var i = 1; i <= 3; ++i)
         {
-            var allocator = new AllocatorManager.StackAllocator(storage);
+            AllocatorManager.StackAllocator allocator = default;
+            allocator.Initialize(storage);
             var oldIndex = allocator.Handle.Index;
             var oldVersion = allocator.Handle.Version;
             allocator.Dispose();
@@ -26,9 +27,9 @@ public class CustomAllocatorTests
             Assert.AreEqual(oldVersion + 1, newVersion);
         }
         storage.Dispose();
-        AllocatorManager.Shutdown();    
+        AllocatorManager.Shutdown();
     }
-    
+
 
 #if !UNITY_DOTSRUNTIME
     [Test]
@@ -37,7 +38,8 @@ public class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var storage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        var allocator = new AllocatorManager.StackAllocator(storage);
+        AllocatorManager.StackAllocator allocator = default;
+        allocator.Initialize(storage);
         var list = NativeList<int>.New(10, ref allocator);
         list.Add(0); // put something in the list, so it'll have a size for later
         allocator.Dispose(); // ok to tear down the storage that the stack allocator used, too.
@@ -46,9 +48,9 @@ public class CustomAllocatorTests
             list[0] = 0; // we haven't disposed this list, but it was released automatically already. so this is an error.
         });
         storage.Dispose();
-        AllocatorManager.Shutdown();    
+        AllocatorManager.Shutdown();
     }
-    
+
     [Test]
     public unsafe void ReleasingChildAllocatorsWorks()
     {
@@ -56,22 +58,24 @@ public class CustomAllocatorTests
 
         var origin = AllocatorManager.Persistent;
         var parentStorage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        var parent = new AllocatorManager.StackAllocator(parentStorage);  // and make a stack allocator from it
+        AllocatorManager.StackAllocator parent = default;
+        parent.Initialize(parentStorage);  // and make a stack allocator from it
 
-        var childStorage = parent.AllocateBlock(default(byte), 10000); // allocate some space from the parent 
-        var child = new AllocatorManager.StackAllocator(childStorage);  // and make a stack allocator from it
-               
+        var childStorage = parent.AllocateBlock(default(byte), 10000); // allocate some space from the parent
+        AllocatorManager.StackAllocator child = default;
+        child.Initialize(childStorage);  // and make a stack allocator from it
+
         parent.Dispose(); // tear down the parent allocator
-        
-        Assert.Throws<ArgumentException>(() => 
-        { 
+
+        Assert.Throws<ArgumentException>(() =>
+        {
             child.Allocate(default(byte), 1000); // try to allocate from the child - it should fail.
         });
-        
+
         parentStorage.Dispose();
-        
-        AllocatorManager.Shutdown();    
-    }    
+
+        AllocatorManager.Shutdown();
+    }
 #endif
 
     [Test]
@@ -161,21 +165,22 @@ public class CustomAllocatorTests
     struct ClearToValueAllocator : AllocatorManager.IAllocator
     {
         public AllocatorManager.AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
+
+        public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
+
         internal AllocatorManager.AllocatorHandle m_handle;
         internal AllocatorManager.AllocatorHandle m_parent;
-         
+
         public byte m_clearValue;
-        
-        static public ClearToValueAllocator New<T>(byte ClearValue, ref T parent) where T : unmanaged, AllocatorManager.IAllocator 
+
+        public void Initialize<T>(byte ClearValue, ref T parent) where T : unmanaged, AllocatorManager.IAllocator
         {
-            var temp = new ClearToValueAllocator();
-            temp.m_parent = parent.Handle;
-            temp.m_clearValue = ClearValue;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS            
-            AllocatorManager.Register(ref temp);
-            parent.Handle.AddChildAllocator(temp.m_handle);
-#endif                
-            return temp;
+            m_parent = parent.Handle;
+            m_clearValue = ClearValue;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AllocatorManager.Register(ref this);
+            parent.Handle.AddChildAllocator(m_handle);
+#endif
         }
 
         public unsafe int Try(ref AllocatorManager.Block block)
@@ -210,7 +215,8 @@ public class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         var parent = AllocatorManager.Persistent;
-        var allocator = ClearToValueAllocator.New(0, ref parent);
+        ClearToValueAllocator allocator = default;
+        allocator.Initialize(0, ref parent);
         for (byte ClearValue = 0; ClearValue < 0xF; ++ClearValue)
         {
             allocator.m_clearValue = ClearValue;
@@ -237,7 +243,8 @@ public class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var backingStorage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        var allocator = new AllocatorManager.StackAllocator(backingStorage);
+        AllocatorManager.StackAllocator allocator = default;
+        allocator.Initialize(backingStorage);
         const int kLength = 100;
         for (int i = 1; i < kLength; ++i)
         {
@@ -272,7 +279,7 @@ public class CustomAllocatorTests
         var allocator1 = AllocatorManager.TempJob;
         var list = NativeList<byte>.New(100, ref allocator0);
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-        {        
+        {
             list.Dispose(ref allocator1);
         });
         list.Dispose(ref allocator0);
@@ -287,13 +294,14 @@ public class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         var parent = AllocatorManager.Persistent;
-        var allocator = ClearToValueAllocator.New(0xFE, ref parent);
+        ClearToValueAllocator allocator = default;
+        allocator.Initialize(0xFE, ref parent);
         allocator.Register();
         for (byte ClearValue = 0; ClearValue < 0xF; ++ClearValue)
         {
             allocator.m_clearValue = ClearValue;
             var unsafelist = new UnsafeList<byte>(1, allocator.Handle);
-            const int kLength = 100; 
+            const int kLength = 100;
             unsafelist.Resize(kLength);
             for (int i = 0; i < kLength; ++i)
                 Assert.AreEqual(ClearValue, unsafelist[i]);
@@ -312,7 +320,8 @@ public class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var backingStorage = origin.AllocateBlock(default(byte), Slabs * SlabSizeInBytes); // allocate a block of bytes from Malloc.Persistent
-        var allocator = new AllocatorManager.SlabAllocator(backingStorage, SlabSizeInBytes, Slabs * SlabSizeInBytes);
+        AllocatorManager.SlabAllocator allocator = default;
+        allocator.Initialize(backingStorage, SlabSizeInBytes, Slabs * SlabSizeInBytes);
 
         var block0 = allocator.AllocateBlock(default(int), SlabSizeInInts);
         Assert.AreNotEqual(IntPtr.Zero, block0.Range.Pointer);
@@ -337,10 +346,22 @@ public class CustomAllocatorTests
         {
             allocator.AllocateBlock(default(int), 65);
         });
-        
+
         allocator.Dispose();
         backingStorage.Dispose();
         AllocatorManager.Shutdown();
     }
 
+    [Test]
+    public unsafe void CollectionHelper_IsAligned()
+    {
+        Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x0, 0)); // value is 0
+        Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x1000, 0)); // alignment is 0
+        Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x1000, 3)); // alignment is not pow2
+
+        for (var i = 0; i < 31; ++i)
+        {
+            Assert.IsTrue(CollectionHelper.IsAligned((void*)0x80000000, 1<<i));
+        }
+    }
 }

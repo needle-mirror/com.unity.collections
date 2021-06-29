@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.NotBurstCompatible;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs;
@@ -145,7 +146,7 @@ internal class NativeListTests : CollectionsTestFixture
     {
         var list = new NativeList<float>(4, Allocator.Persistent);
         var ar = new float[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-        list.CopyFrom(ar);
+        list.CopyFromNBC(ar);
         ExpectedLength(ref list, 8);
         for (int i = 0; i < list.Length; ++i)
         {

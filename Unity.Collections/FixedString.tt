@@ -31,14 +31,13 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
-
     // A temporary copy of a struct is made before it is displayed in a C# debugger.
     // However, only the first element of data members with names is copied at this time.
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// <undoc /> [FixedBytes will be removed]
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
@@ -51,7 +50,7 @@ namespace Unity.Collections
        var offset = i.ToString("D4");
 #>
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 
@@ -74,7 +73,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=MAXLENGTH#>)]
@@ -87,7 +86,7 @@ namespace Unity.Collections
         var offset = i.ToString("D4");
 #>
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(<#=i#>)] public FixedBytes16 offset<#=offset#>;
 
@@ -98,7 +97,7 @@ namespace Unity.Collections
         var offset = i.ToString("D4");
 #>
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(<#=i#>)] public byte byte<#=offset#>;
 
@@ -108,20 +107,18 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the <#=BYTES#>-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than <#=BYTES#> (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList<#=BYTES#>{T}"/> of bytes, thus allowing reinterpretation between FixedString<#=BYTES#> and FixedList<#=BYTES#>.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=<#=BYTES#>)]
     [BurstCompatible]
@@ -146,39 +143,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes<#=MAXLENGTH#> bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -197,12 +198,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString<#=BYTES#>, attempting to set this value
-        /// to anything lower than <#=BYTES-3#> will throw.  The Capacity will always be <#=BYTES-3#>.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at <#=BYTES-3#>.
+        /// Setting the value to anything other than <#=BYTES-3#> throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than <#=BYTES-3#>.</exception>
         public int Capacity
         {
             get
@@ -216,11 +224,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -244,15 +252,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -274,13 +284,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -291,7 +301,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -299,19 +309,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString<#=BYTES#>.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString<#=BYTES#> target;
@@ -319,9 +336,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString<#=BYTES#>.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString<#=BYTES#> for which to create an enumerator.</param>
             public Enumerator(FixedString<#=BYTES#> other)
             {
                 target = other;
@@ -330,16 +347,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -354,7 +372,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -363,31 +381,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString<#=BYTES#>.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString<#=BYTES#> with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString<#=BYTES#> would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -396,11 +418,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString<#=BYTES#> with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -408,19 +429,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte<#=BYTES#> representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte<#=BYTES#> AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte<#=BYTES#> is the very same bytes as the original FixedString<#=BYTES#>,
+        /// so it is only valid as long as the original FixedString<#=BYTES#> is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte<#=BYTES#> representation of the FixedString<#=BYTES#>.</returns>
+        public unsafe ref FixedList<#=BYTES#><byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte<#=BYTES#>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList<#=BYTES#><byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString<#=BYTES#> from a System.String object.
+        /// Initializes and returns an instance of FixedString<#=BYTES#> with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString<#=BYTES#> with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString<#=BYTES#>(String source)
         {
@@ -438,10 +462,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString<#=BYTES#> by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString<#=BYTES#> with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString<#=BYTES#>(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -456,15 +480,16 @@ namespace Unity.Collections
     foreach (var OTHERBYTES in SIZES)
     {
 #>
+
         /// <summary>
-        /// Compare this FixedString<#=BYTES#> with a FixedString<#=OTHERBYTES#> in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString<#=BYTES#> would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString<#=OTHERBYTES#> would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString<#=OTHERBYTES#> other)
         {
@@ -472,18 +497,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString<#=BYTES#> by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString<#=BYTES#> that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString<#=BYTES#>(in FixedString<#=OTHERBYTES#> source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>.</exception>
+        public FixedString<#=BYTES#>(in FixedString<#=OTHERBYTES#> other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -491,11 +517,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString<#=BYTES#> and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString<#=BYTES#> to compare for equality.</param>
+        /// <param name="b">A FixedString<#=OTHERBYTES#> to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString<#=BYTES#> a, in FixedString<#=OTHERBYTES#> b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -509,21 +536,23 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString<#=BYTES#> and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString<#=BYTES#> to compare for inequality.</param>
+        /// <param name="b">A FixedString<#=OTHERBYTES#> to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString<#=BYTES#> a, in FixedString<#=OTHERBYTES#> b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString<#=OTHERBYTES#> to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString<#=OTHERBYTES#> other)
         {
             return this == other;
@@ -535,10 +564,11 @@ namespace Unity.Collections
             // Generate implicit conversions to bigger-sized FixedStrings
 #>
         /// <summary>
-        ///
+        /// Returns a new FixedString<#=OTHERBYTES#> that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString<#=BYTES#> to copy.</param>
+        /// <returns>A new FixedString<#=OTHERBYTES#> that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=OTHERBYTES#>.</exception>
         public static implicit operator FixedString<#=OTHERBYTES#>(in FixedString<#=BYTES#> fs) => new FixedString<#=OTHERBYTES#>(in fs);
 
 <#
@@ -546,17 +576,18 @@ namespace Unity.Collections
     }
 #>
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString<#=BYTES#>.
+        /// Returns a new FixedString<#=BYTES#> that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString<#=BYTES#></param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString<#=BYTES#> that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString<#=BYTES#>(string b) => new FixedString<#=BYTES#>(b);
 
         /// <summary>
-        /// Convert this FixedString<#=BYTES#> to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString<#=BYTES#></returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -564,20 +595,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString<#=BYTES#>: an integer that is likely to be different for
-        /// two FixedString<#=BYTES#>, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString<#=BYTES#></returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString<#=BYTES#> has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {

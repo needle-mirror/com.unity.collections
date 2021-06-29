@@ -4,19 +4,24 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections
 {
     /// <summary>
-    /// NativeHashMap extensions.
+    /// Provides extension methods for hash maps.
     /// </summary>
     [BurstCompatible]
     public static class NativeHashMapExtensions
     {
-#if !NET_DOTS // Tuple is not supported by TinyBCL
         /// <summary>
-        /// Eliminates duplicates from every consecutive group of equivalent elements.
+        /// Removes duplicate values from this sorted array and returns the number of values remaining.
         /// </summary>
-        /// <remarks>Array should be sorted before running unique operation.</remarks>
+        /// <remarks>
+        /// Uses `Equals` to determine whether values are duplicates.
+        ///
+        /// Expects the array to already be sorted.
+        ///
+        /// The remaining elements will be tightly packed at the front of the array.
+        /// </remarks>
         /// <typeparam name="T">The type of values in the array.</typeparam>
-        /// <param name="array">Array to perform unique operation on.</param>
-        /// <returns>Number of unique elements in array.</returns>
+        /// <param name="array">The array from which to remove duplicates.</param>
+        /// <returns>The number of unique elements in this array.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static int Unique<T>(this NativeArray<T> array)
             where T : struct, IEquatable<T>
@@ -40,57 +45,52 @@ namespace Unity.Collections
             return ++result;
         }
 
+#if !NET_DOTS // Tuple is not supported by TinyBCL
         /// <summary>
-        /// Returns array populated with unique keys.
+        /// Returns an array populated with the unique keys from this multi hash map.
         /// </summary>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="container">This container.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Unique keys of the container.</returns>
-        [NotBurstCompatible]
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The multi hash map.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array populated with the unique keys from this multi hash map.</returns>
+        [NotBurstCompatible /* Deprecated */]
+        [Obsolete("Please use `GetUniqueKeyArrayNBC` from `Unity.Collections.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
         public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, Allocator allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
-            where TValue : struct
-        {
-            var result = container.GetKeyArray(allocator);
-            result.Sort();
-            int uniques = result.Unique();
-            return (result, uniques);
-        }
+            where TValue : struct => NotBurstCompatible.Extensions.GetUniqueKeyArrayNBC(container, allocator);
 
         /// <summary>
-        /// Returns array populated with unique keys.
+        /// Returns an array populated with the unique keys from this multi hash map.
         /// </summary>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="container">This container.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>Unique keys of the container.</returns>
-        [NotBurstCompatible]
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The multi hash map.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array populated with the unique keys from this multi hash map.</returns>
+        [NotBurstCompatible /* Deprecated */]
+        [Obsolete("Please use `GetUniqueKeyArrayNBC` from `Unity.Collections.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
         public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, Allocator allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
-            where TValue : struct
-        {
-            var result = container.GetKeyArray(allocator);
-            result.Sort();
-            int uniques = result.Unique();
-            return (result, uniques);
-        }
+            where TValue : struct => NotBurstCompatible.Extensions.GetUniqueKeyArrayNBC(container, allocator);
 
 #endif
 
         /// <summary>
-        /// Returns internal bucked data structure. Internal bucket structure is useful when creating custom
-        /// jobs operating on container. Each bucket can be processed concurrently with other buckets, and all key/value
-        /// pairs in each bucket must processed individually (in sequential order) by a single thread.
+        /// Returns a "bucket" view of this hash map.
         /// </summary>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="container">This container.</param>
-        /// <returns>Returns internal bucked data structure.</returns>
+        /// <remarks>
+        /// Internally, the elements of a hash map are split into buckets of type <see cref="UnsafeHashMapBucketData"/>.
+        ///
+        /// With buckets, a job can safely access the elements of a hash map concurrently as long as each individual bucket is accessed
+        /// only from an individual thread. Effectively, it is not safe to read elements of an individual bucket concurrently,
+        /// but it is safe to read elements of separate buckets concurrently.
+        /// </remarks>
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The hash map.</param>
+        /// <returns>A "bucket" view of this hash map.</returns>
+        [Obsolete("GetBucketData is deprecated, please use GetUnsafeBucketData instead. (RemovedAfter 2021-07-08) (UnityUpgradable) -> GetUnsafeBucketData<TKey,TValue>(*)", false)]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
@@ -100,14 +100,41 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns internal bucked data structure. Internal bucket structure is useful when creating custom
-        /// jobs operating on container. Each bucket can be processed concurrently with other buckets, and all key/value
-        /// pairs in each bucket must processed individually (in sequential order) by a single thread.
+        /// Returns a "bucket" view of this hash map.
         /// </summary>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="container">This container.</param>
-        /// <returns>Returns internal bucked data structure.</returns>
+        /// <remarks>
+        /// Internally, the elements of a hash map are split into buckets of type <see cref="UnsafeHashMapBucketData"/>.
+        ///
+        /// With buckets, a job can safely access the elements of a hash map concurrently as long as each individual bucket is accessed
+        /// only from an individual thread. Effectively, it is not safe to read elements of an individual bucket concurrently,
+        /// but it is safe to read elements of separate buckets concurrently.
+        /// </remarks>
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The hash map.</param>
+        /// <returns>A "bucket" view of this hash map.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+        {
+            return container.m_HashMapData.m_Buffer->GetBucketData();
+        }
+
+        /// <summary>
+        /// Returns a "bucket" view of this multi hash map.
+        /// </summary>
+        /// <remarks>
+        /// Internally, the elements of a hash map are split into buckets of type <see cref="UnsafeHashMapBucketData"/>.
+        ///
+        /// With buckets, a job can safely access the elements of a hash map concurrently as long as each individual bucket is accessed
+        /// only from an individual thread. Effectively, it is not safe to read elements of an individual bucket concurrently,
+        /// but it is safe to read elements of separate buckets concurrently.
+        /// </remarks>
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The multi hash map.</param>
+        /// <returns>A "bucket" view of this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
@@ -117,13 +144,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes all elements with the specified key from the container.
+        /// Removes all occurrences of a particular key-value pair.
         /// </summary>
-        /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-        /// <typeparam name="TValue">The type of the values in the container.</typeparam>
-        /// <param name="container">This container.</param>
-        /// <param name="key">The key of the element to remove.</param>
-        /// <param name="value">The value of the element to remove.</param>
+        /// <remarks>Removes all key-value pairs which have a particular key and which *also have* a particular value.
+        /// In other words: (key *AND* value) rather than (key *OR* value).</remarks>
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <param name="container">The multi hash map.</param>
+        /// <param name="key">The key of the key-value pairs to remove.</param>
+        /// <param name="value">The value of the key-value pairs to remove.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
         {

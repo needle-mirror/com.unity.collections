@@ -7,9 +7,11 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Unity.Collections.LowLevel.Unsafe;
 #if !UNITY_PORTABLE_TEST_RUNNER
 using System.Text.RegularExpressions;
 #endif
+using Assert = FastAssert;
 
 internal class NativeHashMapTests : CollectionsTestFixture
 {
@@ -550,7 +552,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
         var container = new NativeHashMap<int, int>(10, Allocator.TempJob);
         container[0] = 123;
         container.Dispose();
-        Assert.That(() => container[0],
+        NUnit.Framework.Assert.That(() => container[0],
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
@@ -795,6 +797,62 @@ internal class NativeHashMapTests : CollectionsTestFixture
             });
 
             jobHandle.Complete();
+        }
+    }
+
+    [Test]
+    public unsafe void NativeHashMap_GetUnsafeBucketData()
+    {
+        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        {
+            container.Add(0, 012);
+            container.Add(1, 123);
+            container.Add(2, 234);
+            container.Add(3, 345);
+            container.Add(4, 456);
+            container.Add(5, 567);
+            container.Add(6, 678);
+            container.Add(7, 789);
+            container.Add(8, 890);
+            container.Add(9, 901);
+
+            var bucketData = container.GetUnsafeBucketData();
+
+            var buckets = (int*)bucketData.buckets;
+            var nextPtrs = (int*)bucketData.next;
+            var keys = bucketData.keys;
+            var values = bucketData.values;
+
+            var other = new NativeHashMap<int, int>(32, Allocator.TempJob);
+
+            for (int i = 0, count = container.Count(); i < count; i++)
+            {
+                int entryIndex = buckets[i];
+
+                while (entryIndex != -1)
+                {
+                    var bdKey = UnsafeUtility.ReadArrayElement<int>(keys, entryIndex);
+                    var bdValue = UnsafeUtility.ArrayElementAsRef<int>(values, entryIndex);
+
+                    other.Add(bdKey, bdValue);
+
+                    entryIndex = nextPtrs[entryIndex];
+                }
+            }
+
+            Assert.AreEqual(container.Count(), other.Count());
+
+            var kvArray = container.GetKeyValueArrays(Allocator.TempJob);
+
+            for (int i = 0, count = kvArray.Length; i < count; i++)
+            {
+                int value;
+                Assert.True(other.TryGetValue(kvArray.Keys[i], out value));
+                Assert.AreEqual(value, kvArray.Values[i]);
+            }
+
+            kvArray.Dispose();
+            other.Dispose();
         }
     }
 }

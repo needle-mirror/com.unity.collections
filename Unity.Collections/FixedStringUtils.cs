@@ -6,28 +6,29 @@ using System.Diagnostics;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Interface marking this type as a run of UTF-8 encoded text.
+    /// An interface for a sequence of UTF-8 encoded text.
     /// </summary>
     public interface IUTF8Bytes
     {
         /// <summary>
-        /// Returns true if this IUTF8Bytes is empty.
+        /// Whether this IUTF8Bytes is empty.
         /// </summary>
+        /// <value>True if this IUTF8Bytes is empty.</value>
         bool IsEmpty { get; }
 
         /// <summary>
-        /// Returns an unsafe byte pointer to the bytes in this IUTF8Bytes.
-        /// Special care must be taken with the lifettime of this pointer, as it may point to stack memory.
+        /// Returns a pointer to the content of this IUTF8Bytes.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>The pointer may point to stack memory.</remarks>
+        /// <returns>A pointer to the content of this IUTF8Bytes.</returns>
         unsafe byte* GetUnsafePtr();
 
         /// <summary>
-        /// Attempt to set the size of the underlying buffer.
+        /// Attempt to set the length in bytes of this IUTF8Bytes's content buffer.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not.</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The new length in bytes of the IUTF8Bytes's content buffer.</param>
+        /// <param name="clearOptions">Whether any bytes added should be zeroed out.</param>
+        /// <returns>True if the new length is valid.</returns>
         bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory);
     }
 

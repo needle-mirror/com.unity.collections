@@ -32,6 +32,35 @@ internal class UnsafeRingQueueTests
     }
 
     [Test]
+    public unsafe void UnsafeRingQueue_Enqueue_Dequeue_View()
+    {
+        var list = new UnsafeList<int>(16, Allocator.Persistent);
+        list.Length = 16;
+        var test = new UnsafeRingQueue<int>(list.Ptr, list.Length);
+
+        Assert.AreEqual(0, test.Length);
+
+        int item;
+        Assert.False(test.TryDequeue(out item));
+
+        test.Enqueue(123);
+        Assert.AreEqual(1, test.Length);
+
+        Assert.True(test.TryEnqueue(456));
+        Assert.AreEqual(2, test.Length);
+
+        Assert.True(test.TryDequeue(out item));
+        Assert.AreEqual(123, item);
+        Assert.AreEqual(1, test.Length);
+
+        Assert.AreEqual(456, test.Dequeue());
+        Assert.AreEqual(0, test.Length);
+
+        test.Dispose();
+        list.Dispose();
+    }
+
+    [Test]
     public void UnsafeRingQueue_Throws()
     {
         using (var test = new UnsafeRingQueue<int>(1, Allocator.Persistent))

@@ -4,6 +4,7 @@ using System;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.NotBurstCompatible;
 using Unity.Collections.Tests;
 
 #pragma warning disable 0219
@@ -221,7 +222,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         jobData.list = new NativeList<int>(1, Allocator.Persistent);
         jobData.Schedule().Complete();
 
-        Assert.AreEqual(new int[] { 1, 2 }, jobData.list.ToArray());
+        Assert.AreEqual(new int[] { 1, 2 }, jobData.list.ToArrayNBC());
         jobData.list.Dispose();
     }
 
@@ -432,9 +433,12 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         [WriteOnly]
         public NativeList<int>.ParallelWriter writer;
 
-        public void Execute()
+        public unsafe void Execute()
         {
-            writer.AddNoResize(7);
+            var range = stackalloc int[2] { 7, 3 };
+
+            writer.AddNoResize(range[0]);
+            writer.AddRangeNoResize(range, 1);
         }
     }
 
@@ -444,7 +448,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         NativeList<int> list;
 
         {
-            list = new NativeList<int>(Allocator.Persistent);
+            list = new NativeList<int>(2, Allocator.Persistent);
             var writer = list.AsParallelWriter();
             list.Dispose(); // <- cause invalid use
             Assert.Throws<InvalidOperationException>(() =>
@@ -455,14 +459,15 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
 
         {
-            list = new NativeList<int>(Allocator.Persistent);
+            list = new NativeList<int>(2, Allocator.Persistent);
             var writer = list.AsParallelWriter();
             var writerJob = new NativeListTestParallelWriter { writer = writer }.Schedule();
             writerJob.Complete();
         }
 
-        Assert.AreEqual(1, list.Length);
+        Assert.AreEqual(2, list.Length);
         Assert.AreEqual(7, list[0]);
+        Assert.AreEqual(7, list[1]);
 
         list.Dispose();
     }
@@ -483,5 +488,56 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
 
         list.Dispose(jobHandle);
         jobHandle.Complete();
+    }
+
+    unsafe void Expected(ref NativeList<int> list, int expectedLength, int[] expected)
+    {
+        Assert.AreEqual(0 == expectedLength, list.IsEmpty);
+        Assert.AreEqual(list.Length, expectedLength);
+        for (var i = 0; i < list.Length; ++i)
+        {
+            var value = list[i];
+            Assert.AreEqual(expected[i], value);
+        }
+    }
+
+    [Test]
+    public unsafe void NativeList_RemoveRange()
+    {
+        var list = new NativeList<int>(10, Allocator.Persistent);
+
+        int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+        // test removing from the end
+        fixed (int* r = range) list.AddRange(r, 10);
+        list.RemoveRange(6, 3);
+        Expected(ref list, 7, new int[] { 0, 1, 2, 3, 4, 5, 9 });
+        list.Clear();
+
+        // test removing all but one
+        fixed (int* r = range) list.AddRange(r, 10);
+        list.RemoveRange(0, 9);
+        Expected(ref list, 1, new int[] { 9 });
+        list.Clear();
+
+        // test removing from the front
+        fixed (int* r = range) list.AddRange(r, 10);
+        list.RemoveRange(0, 3);
+        Expected(ref list, 7, new int[] { 3, 4, 5, 6, 7, 8, 9 });
+        list.Clear();
+
+        // test removing from the middle
+        fixed (int* r = range) list.AddRange(r, 10);
+        list.RemoveRange(0, 3);
+        Expected(ref list, 7, new int[] { 3, 4, 5, 6, 7, 8, 9 });
+        list.Clear();
+
+        // test removing whole range
+        fixed (int* r = range) list.AddRange(r, 10);
+        list.RemoveRange(0, 10);
+        Expected(ref list, 0, new int[] { 0 });
+        list.Clear();
+
+        list.Dispose();
     }
 }

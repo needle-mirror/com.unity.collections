@@ -3,18 +3,18 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections
 {
     /// <summary>
-    /// <undoc />
+    /// Provides extension methods for FixedString*N*.
     /// </summary>
     [BurstCompatible]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
-        /// Append the given Unicode code point to this IUTF8Bytes.
+        /// Appends a Unicode.Rune to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="rune">The Unicode.Rune to append.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="rune">A Unicode.Rune to append.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -27,12 +27,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append a character to this IUTF8Bytes.
+        /// Appends a char to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="ch">The char to append.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="ch">A char to append.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, char ch)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -41,12 +41,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append a raw byte to this IUTF8Bytes.
+        /// Appends a byte to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="a">The byte to append.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <remarks>
+        /// No validation is performed: it is your responsibility for the data to be valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="a">A byte to append.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError AppendRawByte<T>(ref this T fs, byte a)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -59,13 +62,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given Unicode.Rune to this FixedString repeated count times.
+        /// Appends a Unicode.Rune a number of times to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat the Unicode.Rune</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="rune">A Unicode.Rune to append some number of times.</param>
+        /// <param name="count">The number of times to append the rune.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune, int count)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -89,12 +92,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given long integer to the contents of this IUTF8Bytes.
+        /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="input">A long integer to append to the string.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, long input)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -128,12 +131,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given integer to the contents of this IUTF8Bytes.
+        /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="input">An int to append to the string.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, int input)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -142,12 +145,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given unsigned long integer to the contents of this IUTF8Bytes.
+        /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="input">A ulong integer to append to the string.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, ulong input)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -167,12 +170,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given unsigned integer to the contents of this IUTF8Bytes.
+        /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="input">The long integer to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="input">A uint to append to the string.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, uint input)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -181,14 +184,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given float to the contents of this IUTF8Bytes.
+        /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type</param>
-        /// <param name="input">The float to append as UTF-8 to the contents of this IUTF8Bytes</param>
-        /// <param name="decimalSeparator">The character used to separate the integral part from the fractional part.
-        /// A period by default.</param>
-        /// <returns>An error code, if any, in the case that the format fails.</returns>
+        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
+        /// <param name="fs">A FixedString*N*.</param>
+        /// <param name="input">A float to append to the string.</param>
+        /// <param name="decimalSeparator">The character to use as the decimal separator. Defaults to a period ('.').</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public static FormatError Append<T>(ref this T fs, float input, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -278,30 +280,36 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Appends two different types of FixedString.
+        /// Appends another string to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <typeparam name="T2">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="inputIn">A FixedString-like type.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <typeparam name="T2">The type of the source string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="input">The source string.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
-        public static FormatError Append<T,T2>(ref this T fs, in T2 inputIn)
+        public static FormatError Append<T,T2>(ref this T fs, in T2 input)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
         {
-            ref var input = ref UnsafeUtilityExtensions.AsRef(inputIn);
-            return fs.Append(input.GetUnsafePtr(), input.Length);
+            ref var inputRef = ref UnsafeUtilityExtensions.AsRef(input);
+            return fs.Append(inputRef.GetUnsafePtr(), inputRef.Length);
         }
 
         /// <summary>
-        /// Copies between two different types of FixedString.
+        /// Copies another string to this string (making the two strings equal).
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <typeparam name="T2">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="input">A FixedString-like type.</param>
-        /// <returns>An error code, if any, in the case that the copy fails.</returns>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <typeparam name="T2">The type of the source string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="input">The source string.</param>
+        /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
         public static CopyError CopyFrom<T, T2>(ref this T fs, in T2 input)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -315,13 +323,18 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the UTF-8 representation of a given long integer to the contents of this IUTF8Bytes.
+        /// Appends bytes to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="utf8Bytes">UTF-8 encoded string.</param>
-        /// <param name="utf8BytesLength">UTF-8 string length in bytes.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        ///
+        /// No validation is performed: it is your responsibility for the destination to contain valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="utf8Bytes">The bytes to append.</param>
+        /// <param name="utf8BytesLength">The number of bytes to append.</param>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
         public unsafe static FormatError Append<T>(ref this T fs, byte* utf8Bytes, int utf8BytesLength)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -334,12 +347,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the string.
+        /// Appends another string to this string.
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <param name="fs">The destination string.</param>
         /// <param name="s">The string to append.</param>
-        /// <returns>An error code, if any, in the case that the append fails.</returns>
+        /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
         [NotBurstCompatible]
         public unsafe static FormatError Append<T>(ref this T fs, string s)
             where T : struct, INativeList<byte>, IUTF8Bytes
@@ -362,12 +378,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the string to FixedString.
+        /// Copies another string to this string (making the two strings equal).
         /// </summary>
-        /// <typeparam name="T">The type of the elements in the container.</typeparam>
-        /// <param name="fs">A FixedString-like type.</param>
-        /// <param name="s">The string to copy.</param>
-        /// <returns>An error code, if any, in the case that the copy fails.</returns>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="s">The source string.</param>
+        /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
         [NotBurstCompatible]
         public static CopyError CopyFrom<T>(ref this T fs, string s)
             where T : struct, INativeList<byte>, IUTF8Bytes

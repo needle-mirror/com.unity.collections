@@ -27,14 +27,13 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
-
     // A temporary copy of a struct is made before it is displayed in a C# debugger.
     // However, only the first element of data members with names is copied at this time.
     // Therefore, it's important that all data visible in the debugger, has a name
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// <undoc /> [FixedBytes will be removed]
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
@@ -42,82 +41,82 @@ namespace Unity.Collections
     public struct FixedBytes16
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public byte byte0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1)] public byte byte0001;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2)] public byte byte0002;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3)] public byte byte0003;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4)] public byte byte0004;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(5)] public byte byte0005;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(6)] public byte byte0006;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(7)] public byte byte0007;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(8)] public byte byte0008;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(9)] public byte byte0009;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(10)] public byte byte0010;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(11)] public byte byte0011;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(12)] public byte byte0012;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(13)] public byte byte0013;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(14)] public byte byte0014;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(15)] public byte byte0015;
 
@@ -130,7 +129,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=30)]
@@ -138,97 +137,95 @@ namespace Unity.Collections
     public struct FixedBytes30
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(16)] public byte byte0016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(17)] public byte byte0017;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(18)] public byte byte0018;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(19)] public byte byte0019;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(20)] public byte byte0020;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(21)] public byte byte0021;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(22)] public byte byte0022;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(23)] public byte byte0023;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(24)] public byte byte0024;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(25)] public byte byte0025;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(26)] public byte byte0026;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(27)] public byte byte0027;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(28)] public byte byte0028;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(29)] public byte byte0029;
 
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the 32-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than 32 (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList32{T}"/> of bytes, thus allowing reinterpretation between FixedString32 and FixedList32.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=32)]
     [BurstCompatible]
@@ -254,39 +251,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes30 bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -305,12 +306,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString32, attempting to set this value
-        /// to anything lower than 29 will throw.  The Capacity will always be 29.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at 29.
+        /// Setting the value to anything other than 29 throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 29.</exception>
         public int Capacity
         {
             get
@@ -324,11 +332,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -352,15 +360,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -382,13 +392,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -399,7 +409,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -407,19 +417,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString32.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString32 target;
@@ -427,9 +444,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString32.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString32 for which to create an enumerator.</param>
             public Enumerator(FixedString32 other)
             {
                 target = other;
@@ -438,16 +455,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -462,7 +480,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -471,31 +489,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString32.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString32 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -504,11 +526,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString32 with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -516,19 +537,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte32 representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte32 AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte32 is the very same bytes as the original FixedString32,
+        /// so it is only valid as long as the original FixedString32 is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte32 representation of the FixedString32.</returns>
+        public unsafe ref FixedList32<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte32>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList32<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString32 from a System.String object.
+        /// Initializes and returns an instance of FixedString32 with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString32 with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString32(String source)
         {
@@ -546,10 +570,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString32 with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString32(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -557,15 +581,16 @@ namespace Unity.Collections
             this.Append(rune, count);
         }
 
+
         /// <summary>
-        /// Compare this FixedString32 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString32 other)
         {
@@ -573,18 +598,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString32(in FixedString32 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        public FixedString32(in FixedString32 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -592,11 +618,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for equality.</param>
+        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString32 a, in FixedString32 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -610,35 +637,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for inequality.</param>
+        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString32 a, in FixedString32 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString32 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString32 with a FixedString64 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString64 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString64 other)
         {
@@ -646,18 +676,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString32(in FixedString64 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        public FixedString32(in FixedString64 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -665,11 +696,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for equality.</param>
+        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString32 a, in FixedString64 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -683,42 +715,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for inequality.</param>
+        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString32 a, in FixedString64 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString64 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString32 to copy.</param>
+        /// <returns>A new FixedString64 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
         public static implicit operator FixedString64(in FixedString32 fs) => new FixedString64(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString32 with a FixedString128 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString128 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString128 other)
         {
@@ -726,18 +762,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString32(in FixedString128 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        public FixedString32(in FixedString128 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -745,11 +782,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for equality.</param>
+        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString32 a, in FixedString128 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -763,42 +801,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for inequality.</param>
+        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString32 a, in FixedString128 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString128 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString32 to copy.</param>
+        /// <returns>A new FixedString128 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
         public static implicit operator FixedString128(in FixedString32 fs) => new FixedString128(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString32 with a FixedString512 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString512 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString512 other)
         {
@@ -806,18 +848,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString32(in FixedString512 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        public FixedString32(in FixedString512 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -825,11 +868,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for equality.</param>
+        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString32 a, in FixedString512 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -843,42 +887,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for inequality.</param>
+        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString32 a, in FixedString512 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString512 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString32 to copy.</param>
+        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
         public static implicit operator FixedString512(in FixedString32 fs) => new FixedString512(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString32 with a FixedString4096 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString32 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString4096 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString4096 other)
         {
@@ -886,18 +934,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString32 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString32(in FixedString4096 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        public FixedString32(in FixedString4096 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -905,11 +954,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for equality.</param>
+        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString32 a, in FixedString4096 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -923,45 +973,49 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString32 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString32 to compare for inequality.</param>
+        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString32 a, in FixedString4096 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString4096 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString32 to copy.</param>
+        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
         public static implicit operator FixedString4096(in FixedString32 fs) => new FixedString4096(in fs);
 
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString32.
+        /// Returns a new FixedString32 that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString32</param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString32 that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString32(string b) => new FixedString32(b);
 
         /// <summary>
-        /// Convert this FixedString32 to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString32</returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -969,20 +1023,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString32: an integer that is likely to be different for
-        /// two FixedString32, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString32</returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString32 has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -1042,7 +1100,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=62)]
@@ -1050,107 +1108,105 @@ namespace Unity.Collections
     public struct FixedBytes62
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(48)] public byte byte0048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(49)] public byte byte0049;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(50)] public byte byte0050;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(51)] public byte byte0051;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(52)] public byte byte0052;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(53)] public byte byte0053;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(54)] public byte byte0054;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(55)] public byte byte0055;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(56)] public byte byte0056;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(57)] public byte byte0057;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(58)] public byte byte0058;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(59)] public byte byte0059;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(60)] public byte byte0060;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(61)] public byte byte0061;
 
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the 64-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than 64 (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList64{T}"/> of bytes, thus allowing reinterpretation between FixedString64 and FixedList64.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=64)]
     [BurstCompatible]
@@ -1176,39 +1232,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes62 bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -1227,12 +1287,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString64, attempting to set this value
-        /// to anything lower than 61 will throw.  The Capacity will always be 61.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at 61.
+        /// Setting the value to anything other than 61 throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 61.</exception>
         public int Capacity
         {
             get
@@ -1246,11 +1313,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -1274,15 +1341,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -1304,13 +1373,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -1321,7 +1390,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -1329,19 +1398,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString64.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString64 target;
@@ -1349,9 +1425,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString64.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString64 for which to create an enumerator.</param>
             public Enumerator(FixedString64 other)
             {
                 target = other;
@@ -1360,16 +1436,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -1384,7 +1461,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -1393,31 +1470,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString64.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString64 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -1426,11 +1507,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString64 with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -1438,19 +1518,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte64 representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte64 AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte64 is the very same bytes as the original FixedString64,
+        /// so it is only valid as long as the original FixedString64 is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte64 representation of the FixedString64.</returns>
+        public unsafe ref FixedList64<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte64>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList64<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString64 from a System.String object.
+        /// Initializes and returns an instance of FixedString64 with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString64 with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString64(String source)
         {
@@ -1468,10 +1551,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString64 with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString64(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -1479,15 +1562,16 @@ namespace Unity.Collections
             this.Append(rune, count);
         }
 
+
         /// <summary>
-        /// Compare this FixedString64 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString32 other)
         {
@@ -1495,18 +1579,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString64(in FixedString32 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        public FixedString64(in FixedString32 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -1514,11 +1599,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for equality.</param>
+        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString64 a, in FixedString32 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -1532,35 +1618,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for inequality.</param>
+        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString64 a, in FixedString32 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString32 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString64 with a FixedString64 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString64 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString64 other)
         {
@@ -1568,18 +1657,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString64(in FixedString64 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        public FixedString64(in FixedString64 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -1587,11 +1677,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for equality.</param>
+        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString64 a, in FixedString64 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -1605,35 +1696,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for inequality.</param>
+        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString64 a, in FixedString64 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString64 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString64 with a FixedString128 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString128 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString128 other)
         {
@@ -1641,18 +1735,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString64(in FixedString128 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        public FixedString64(in FixedString128 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -1660,11 +1755,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for equality.</param>
+        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString64 a, in FixedString128 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -1678,42 +1774,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for inequality.</param>
+        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString64 a, in FixedString128 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString128 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString64 to copy.</param>
+        /// <returns>A new FixedString128 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
         public static implicit operator FixedString128(in FixedString64 fs) => new FixedString128(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString64 with a FixedString512 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString512 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString512 other)
         {
@@ -1721,18 +1821,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString64(in FixedString512 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        public FixedString64(in FixedString512 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -1740,11 +1841,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for equality.</param>
+        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString64 a, in FixedString512 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -1758,42 +1860,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for inequality.</param>
+        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString64 a, in FixedString512 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString512 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString64 to copy.</param>
+        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
         public static implicit operator FixedString512(in FixedString64 fs) => new FixedString512(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString64 with a FixedString4096 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString64 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString4096 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString4096 other)
         {
@@ -1801,18 +1907,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString64 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString64(in FixedString4096 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        public FixedString64(in FixedString4096 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -1820,11 +1927,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for equality.</param>
+        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString64 a, in FixedString4096 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -1838,45 +1946,49 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString64 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString64 to compare for inequality.</param>
+        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString64 a, in FixedString4096 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString4096 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString64 to copy.</param>
+        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
         public static implicit operator FixedString4096(in FixedString64 fs) => new FixedString4096(in fs);
 
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString64.
+        /// Returns a new FixedString64 that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString64</param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString64 that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString64(string b) => new FixedString64(b);
 
         /// <summary>
-        /// Convert this FixedString64 to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString64</returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -1884,20 +1996,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString64: an integer that is likely to be different for
-        /// two FixedString64, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString64</returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString64 has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -1957,7 +2073,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=126)]
@@ -1965,127 +2081,125 @@ namespace Unity.Collections
     public struct FixedBytes126
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(112)] public byte byte0112;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(113)] public byte byte0113;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(114)] public byte byte0114;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(115)] public byte byte0115;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(116)] public byte byte0116;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(117)] public byte byte0117;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(118)] public byte byte0118;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(119)] public byte byte0119;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(120)] public byte byte0120;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(121)] public byte byte0121;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(122)] public byte byte0122;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(123)] public byte byte0123;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(124)] public byte byte0124;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(125)] public byte byte0125;
 
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the 128-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than 128 (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList128{T}"/> of bytes, thus allowing reinterpretation between FixedString128 and FixedList128.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=128)]
     [BurstCompatible]
@@ -2111,39 +2225,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes126 bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -2162,12 +2280,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString128, attempting to set this value
-        /// to anything lower than 125 will throw.  The Capacity will always be 125.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at 125.
+        /// Setting the value to anything other than 125 throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 125.</exception>
         public int Capacity
         {
             get
@@ -2181,11 +2306,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -2209,15 +2334,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -2239,13 +2366,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -2256,7 +2383,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -2264,19 +2391,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString128.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString128 target;
@@ -2284,9 +2418,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString128.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString128 for which to create an enumerator.</param>
             public Enumerator(FixedString128 other)
             {
                 target = other;
@@ -2295,16 +2429,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -2319,7 +2454,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -2328,31 +2463,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString128.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString128 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -2361,11 +2500,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString128 with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -2373,19 +2511,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte128 representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte128 AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte128 is the very same bytes as the original FixedString128,
+        /// so it is only valid as long as the original FixedString128 is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte128 representation of the FixedString128.</returns>
+        public unsafe ref FixedList128<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte128>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList128<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString128 from a System.String object.
+        /// Initializes and returns an instance of FixedString128 with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString128 with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString128(String source)
         {
@@ -2403,10 +2544,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString128 with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString128(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -2414,15 +2555,16 @@ namespace Unity.Collections
             this.Append(rune, count);
         }
 
+
         /// <summary>
-        /// Compare this FixedString128 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString32 other)
         {
@@ -2430,18 +2572,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString128(in FixedString32 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        public FixedString128(in FixedString32 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -2449,11 +2592,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for equality.</param>
+        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString128 a, in FixedString32 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -2467,35 +2611,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for inequality.</param>
+        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString128 a, in FixedString32 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString32 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString128 with a FixedString64 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString64 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString64 other)
         {
@@ -2503,18 +2650,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString128(in FixedString64 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        public FixedString128(in FixedString64 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -2522,11 +2670,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for equality.</param>
+        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString128 a, in FixedString64 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -2540,35 +2689,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for inequality.</param>
+        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString128 a, in FixedString64 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString64 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString128 with a FixedString128 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString128 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString128 other)
         {
@@ -2576,18 +2728,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString128(in FixedString128 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        public FixedString128(in FixedString128 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -2595,11 +2748,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for equality.</param>
+        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString128 a, in FixedString128 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -2613,35 +2767,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for inequality.</param>
+        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString128 a, in FixedString128 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString128 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString128 with a FixedString512 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString512 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString512 other)
         {
@@ -2649,18 +2806,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString128(in FixedString512 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        public FixedString128(in FixedString512 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -2668,11 +2826,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for equality.</param>
+        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString128 a, in FixedString512 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -2686,42 +2845,46 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for inequality.</param>
+        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString128 a, in FixedString512 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString512 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString128 to copy.</param>
+        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
         public static implicit operator FixedString512(in FixedString128 fs) => new FixedString512(in fs);
 
+
         /// <summary>
-        /// Compare this FixedString128 with a FixedString4096 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString128 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString4096 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString4096 other)
         {
@@ -2729,18 +2892,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString128 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString128(in FixedString4096 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        public FixedString128(in FixedString4096 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -2748,11 +2912,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for equality.</param>
+        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString128 a, in FixedString4096 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -2766,45 +2931,49 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString128 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString128 to compare for inequality.</param>
+        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString128 a, in FixedString4096 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString4096 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString128 to copy.</param>
+        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
         public static implicit operator FixedString4096(in FixedString128 fs) => new FixedString4096(in fs);
 
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString128.
+        /// Returns a new FixedString128 that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString128</param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString128 that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString128(string b) => new FixedString128(b);
 
         /// <summary>
-        /// Convert this FixedString128 to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString128</returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -2812,20 +2981,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString128: an integer that is likely to be different for
-        /// two FixedString128, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString128</returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString128 has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -2885,7 +3058,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=510)]
@@ -2893,247 +3066,245 @@ namespace Unity.Collections
     public struct FixedBytes510
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(112)] public FixedBytes16 offset0112;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(128)] public FixedBytes16 offset0128;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(144)] public FixedBytes16 offset0144;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(160)] public FixedBytes16 offset0160;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(176)] public FixedBytes16 offset0176;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(192)] public FixedBytes16 offset0192;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(208)] public FixedBytes16 offset0208;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(224)] public FixedBytes16 offset0224;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(240)] public FixedBytes16 offset0240;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(256)] public FixedBytes16 offset0256;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(272)] public FixedBytes16 offset0272;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(288)] public FixedBytes16 offset0288;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(304)] public FixedBytes16 offset0304;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(320)] public FixedBytes16 offset0320;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(336)] public FixedBytes16 offset0336;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(352)] public FixedBytes16 offset0352;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(368)] public FixedBytes16 offset0368;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(384)] public FixedBytes16 offset0384;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(400)] public FixedBytes16 offset0400;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(416)] public FixedBytes16 offset0416;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(432)] public FixedBytes16 offset0432;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(448)] public FixedBytes16 offset0448;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(464)] public FixedBytes16 offset0464;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(480)] public FixedBytes16 offset0480;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(496)] public byte byte0496;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(497)] public byte byte0497;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(498)] public byte byte0498;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(499)] public byte byte0499;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(500)] public byte byte0500;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(501)] public byte byte0501;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(502)] public byte byte0502;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(503)] public byte byte0503;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(504)] public byte byte0504;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(505)] public byte byte0505;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(506)] public byte byte0506;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(507)] public byte byte0507;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(508)] public byte byte0508;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(509)] public byte byte0509;
 
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the 512-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than 512 (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList512{T}"/> of bytes, thus allowing reinterpretation between FixedString512 and FixedList512.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=512)]
     [BurstCompatible]
@@ -3159,39 +3330,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes510 bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -3210,12 +3385,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString512, attempting to set this value
-        /// to anything lower than 509 will throw.  The Capacity will always be 509.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at 509.
+        /// Setting the value to anything other than 509 throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 509.</exception>
         public int Capacity
         {
             get
@@ -3229,11 +3411,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -3257,15 +3439,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -3287,13 +3471,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -3304,7 +3488,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -3312,19 +3496,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString512.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString512 target;
@@ -3332,9 +3523,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString512.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString512 for which to create an enumerator.</param>
             public Enumerator(FixedString512 other)
             {
                 target = other;
@@ -3343,16 +3534,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -3367,7 +3559,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -3376,31 +3568,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString512.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString512 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -3409,11 +3605,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString512 with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -3421,19 +3616,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte512 representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte512 AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte512 is the very same bytes as the original FixedString512,
+        /// so it is only valid as long as the original FixedString512 is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte512 representation of the FixedString512.</returns>
+        public unsafe ref FixedList512<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte512>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList512<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString512 from a System.String object.
+        /// Initializes and returns an instance of FixedString512 with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString512 with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString512(String source)
         {
@@ -3451,10 +3649,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString512 with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString512(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -3462,15 +3660,16 @@ namespace Unity.Collections
             this.Append(rune, count);
         }
 
+
         /// <summary>
-        /// Compare this FixedString512 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString32 other)
         {
@@ -3478,18 +3677,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString512(in FixedString32 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        public FixedString512(in FixedString32 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -3497,11 +3697,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for equality.</param>
+        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString512 a, in FixedString32 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -3515,35 +3716,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for inequality.</param>
+        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString512 a, in FixedString32 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString32 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString512 with a FixedString64 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString64 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString64 other)
         {
@@ -3551,18 +3755,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString512(in FixedString64 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        public FixedString512(in FixedString64 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -3570,11 +3775,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for equality.</param>
+        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString512 a, in FixedString64 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -3588,35 +3794,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for inequality.</param>
+        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString512 a, in FixedString64 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString64 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString512 with a FixedString128 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString128 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString128 other)
         {
@@ -3624,18 +3833,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString512(in FixedString128 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        public FixedString512(in FixedString128 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -3643,11 +3853,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for equality.</param>
+        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString512 a, in FixedString128 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -3661,35 +3872,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for inequality.</param>
+        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString512 a, in FixedString128 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString128 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString512 with a FixedString512 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString512 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString512 other)
         {
@@ -3697,18 +3911,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString512(in FixedString512 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        public FixedString512(in FixedString512 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -3716,11 +3931,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for equality.</param>
+        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString512 a, in FixedString512 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -3734,35 +3950,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for inequality.</param>
+        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString512 a, in FixedString512 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString512 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString512 with a FixedString4096 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString512 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString4096 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString4096 other)
         {
@@ -3770,18 +3989,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString512 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString512(in FixedString4096 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        public FixedString512(in FixedString4096 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -3789,11 +4009,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for equality.</param>
+        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString512 a, in FixedString4096 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -3807,45 +4028,49 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString512 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString512 to compare for inequality.</param>
+        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString512 a, in FixedString4096 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString4096 other)
         {
             return this == other;
         }
 
         /// <summary>
-        ///
+        /// Returns a new FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="fs"></param>
-        /// <returns></returns>
+        /// <param name="fs">A FixedString512 to copy.</param>
+        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
         public static implicit operator FixedString4096(in FixedString512 fs) => new FixedString4096(in fs);
 
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString512.
+        /// Returns a new FixedString512 that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString512</param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString512 that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString512(string b) => new FixedString512(b);
 
         /// <summary>
-        /// Convert this FixedString512 to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString512</returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -3853,20 +4078,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString512: an integer that is likely to be different for
-        /// two FixedString512, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString512</returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString512 has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -3926,7 +4155,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4094)]
@@ -3934,1367 +4163,1365 @@ namespace Unity.Collections
     public struct FixedBytes4094
     {
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(0)] public FixedBytes16 offset0000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(16)] public FixedBytes16 offset0016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(32)] public FixedBytes16 offset0032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(48)] public FixedBytes16 offset0048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(64)] public FixedBytes16 offset0064;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(80)] public FixedBytes16 offset0080;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(96)] public FixedBytes16 offset0096;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(112)] public FixedBytes16 offset0112;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(128)] public FixedBytes16 offset0128;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(144)] public FixedBytes16 offset0144;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(160)] public FixedBytes16 offset0160;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(176)] public FixedBytes16 offset0176;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(192)] public FixedBytes16 offset0192;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(208)] public FixedBytes16 offset0208;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(224)] public FixedBytes16 offset0224;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(240)] public FixedBytes16 offset0240;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(256)] public FixedBytes16 offset0256;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(272)] public FixedBytes16 offset0272;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(288)] public FixedBytes16 offset0288;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(304)] public FixedBytes16 offset0304;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(320)] public FixedBytes16 offset0320;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(336)] public FixedBytes16 offset0336;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(352)] public FixedBytes16 offset0352;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(368)] public FixedBytes16 offset0368;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(384)] public FixedBytes16 offset0384;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(400)] public FixedBytes16 offset0400;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(416)] public FixedBytes16 offset0416;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(432)] public FixedBytes16 offset0432;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(448)] public FixedBytes16 offset0448;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(464)] public FixedBytes16 offset0464;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(480)] public FixedBytes16 offset0480;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(496)] public FixedBytes16 offset0496;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(512)] public FixedBytes16 offset0512;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(528)] public FixedBytes16 offset0528;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(544)] public FixedBytes16 offset0544;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(560)] public FixedBytes16 offset0560;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(576)] public FixedBytes16 offset0576;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(592)] public FixedBytes16 offset0592;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(608)] public FixedBytes16 offset0608;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(624)] public FixedBytes16 offset0624;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(640)] public FixedBytes16 offset0640;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(656)] public FixedBytes16 offset0656;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(672)] public FixedBytes16 offset0672;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(688)] public FixedBytes16 offset0688;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(704)] public FixedBytes16 offset0704;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(720)] public FixedBytes16 offset0720;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(736)] public FixedBytes16 offset0736;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(752)] public FixedBytes16 offset0752;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(768)] public FixedBytes16 offset0768;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(784)] public FixedBytes16 offset0784;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(800)] public FixedBytes16 offset0800;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(816)] public FixedBytes16 offset0816;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(832)] public FixedBytes16 offset0832;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(848)] public FixedBytes16 offset0848;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(864)] public FixedBytes16 offset0864;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(880)] public FixedBytes16 offset0880;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(896)] public FixedBytes16 offset0896;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(912)] public FixedBytes16 offset0912;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(928)] public FixedBytes16 offset0928;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(944)] public FixedBytes16 offset0944;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(960)] public FixedBytes16 offset0960;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(976)] public FixedBytes16 offset0976;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(992)] public FixedBytes16 offset0992;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1008)] public FixedBytes16 offset1008;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1024)] public FixedBytes16 offset1024;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1040)] public FixedBytes16 offset1040;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1056)] public FixedBytes16 offset1056;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1072)] public FixedBytes16 offset1072;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1088)] public FixedBytes16 offset1088;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1104)] public FixedBytes16 offset1104;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1120)] public FixedBytes16 offset1120;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1136)] public FixedBytes16 offset1136;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1152)] public FixedBytes16 offset1152;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1168)] public FixedBytes16 offset1168;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1184)] public FixedBytes16 offset1184;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1200)] public FixedBytes16 offset1200;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1216)] public FixedBytes16 offset1216;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1232)] public FixedBytes16 offset1232;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1248)] public FixedBytes16 offset1248;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1264)] public FixedBytes16 offset1264;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1280)] public FixedBytes16 offset1280;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1296)] public FixedBytes16 offset1296;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1312)] public FixedBytes16 offset1312;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1328)] public FixedBytes16 offset1328;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1344)] public FixedBytes16 offset1344;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1360)] public FixedBytes16 offset1360;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1376)] public FixedBytes16 offset1376;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1392)] public FixedBytes16 offset1392;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1408)] public FixedBytes16 offset1408;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1424)] public FixedBytes16 offset1424;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1440)] public FixedBytes16 offset1440;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1456)] public FixedBytes16 offset1456;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1472)] public FixedBytes16 offset1472;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1488)] public FixedBytes16 offset1488;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1504)] public FixedBytes16 offset1504;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1520)] public FixedBytes16 offset1520;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1536)] public FixedBytes16 offset1536;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1552)] public FixedBytes16 offset1552;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1568)] public FixedBytes16 offset1568;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1584)] public FixedBytes16 offset1584;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1600)] public FixedBytes16 offset1600;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1616)] public FixedBytes16 offset1616;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1632)] public FixedBytes16 offset1632;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1648)] public FixedBytes16 offset1648;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1664)] public FixedBytes16 offset1664;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1680)] public FixedBytes16 offset1680;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1696)] public FixedBytes16 offset1696;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1712)] public FixedBytes16 offset1712;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1728)] public FixedBytes16 offset1728;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1744)] public FixedBytes16 offset1744;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1760)] public FixedBytes16 offset1760;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1776)] public FixedBytes16 offset1776;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1792)] public FixedBytes16 offset1792;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1808)] public FixedBytes16 offset1808;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1824)] public FixedBytes16 offset1824;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1840)] public FixedBytes16 offset1840;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1856)] public FixedBytes16 offset1856;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1872)] public FixedBytes16 offset1872;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1888)] public FixedBytes16 offset1888;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1904)] public FixedBytes16 offset1904;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1920)] public FixedBytes16 offset1920;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1936)] public FixedBytes16 offset1936;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1952)] public FixedBytes16 offset1952;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1968)] public FixedBytes16 offset1968;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(1984)] public FixedBytes16 offset1984;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2000)] public FixedBytes16 offset2000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2016)] public FixedBytes16 offset2016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2032)] public FixedBytes16 offset2032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2048)] public FixedBytes16 offset2048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2064)] public FixedBytes16 offset2064;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2080)] public FixedBytes16 offset2080;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2096)] public FixedBytes16 offset2096;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2112)] public FixedBytes16 offset2112;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2128)] public FixedBytes16 offset2128;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2144)] public FixedBytes16 offset2144;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2160)] public FixedBytes16 offset2160;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2176)] public FixedBytes16 offset2176;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2192)] public FixedBytes16 offset2192;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2208)] public FixedBytes16 offset2208;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2224)] public FixedBytes16 offset2224;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2240)] public FixedBytes16 offset2240;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2256)] public FixedBytes16 offset2256;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2272)] public FixedBytes16 offset2272;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2288)] public FixedBytes16 offset2288;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2304)] public FixedBytes16 offset2304;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2320)] public FixedBytes16 offset2320;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2336)] public FixedBytes16 offset2336;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2352)] public FixedBytes16 offset2352;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2368)] public FixedBytes16 offset2368;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2384)] public FixedBytes16 offset2384;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2400)] public FixedBytes16 offset2400;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2416)] public FixedBytes16 offset2416;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2432)] public FixedBytes16 offset2432;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2448)] public FixedBytes16 offset2448;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2464)] public FixedBytes16 offset2464;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2480)] public FixedBytes16 offset2480;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2496)] public FixedBytes16 offset2496;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2512)] public FixedBytes16 offset2512;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2528)] public FixedBytes16 offset2528;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2544)] public FixedBytes16 offset2544;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2560)] public FixedBytes16 offset2560;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2576)] public FixedBytes16 offset2576;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2592)] public FixedBytes16 offset2592;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2608)] public FixedBytes16 offset2608;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2624)] public FixedBytes16 offset2624;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2640)] public FixedBytes16 offset2640;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2656)] public FixedBytes16 offset2656;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2672)] public FixedBytes16 offset2672;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2688)] public FixedBytes16 offset2688;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2704)] public FixedBytes16 offset2704;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2720)] public FixedBytes16 offset2720;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2736)] public FixedBytes16 offset2736;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2752)] public FixedBytes16 offset2752;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2768)] public FixedBytes16 offset2768;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2784)] public FixedBytes16 offset2784;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2800)] public FixedBytes16 offset2800;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2816)] public FixedBytes16 offset2816;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2832)] public FixedBytes16 offset2832;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2848)] public FixedBytes16 offset2848;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2864)] public FixedBytes16 offset2864;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2880)] public FixedBytes16 offset2880;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2896)] public FixedBytes16 offset2896;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2912)] public FixedBytes16 offset2912;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2928)] public FixedBytes16 offset2928;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2944)] public FixedBytes16 offset2944;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2960)] public FixedBytes16 offset2960;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2976)] public FixedBytes16 offset2976;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(2992)] public FixedBytes16 offset2992;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3008)] public FixedBytes16 offset3008;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3024)] public FixedBytes16 offset3024;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3040)] public FixedBytes16 offset3040;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3056)] public FixedBytes16 offset3056;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3072)] public FixedBytes16 offset3072;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3088)] public FixedBytes16 offset3088;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3104)] public FixedBytes16 offset3104;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3120)] public FixedBytes16 offset3120;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3136)] public FixedBytes16 offset3136;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3152)] public FixedBytes16 offset3152;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3168)] public FixedBytes16 offset3168;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3184)] public FixedBytes16 offset3184;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3200)] public FixedBytes16 offset3200;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3216)] public FixedBytes16 offset3216;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3232)] public FixedBytes16 offset3232;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3248)] public FixedBytes16 offset3248;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3264)] public FixedBytes16 offset3264;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3280)] public FixedBytes16 offset3280;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3296)] public FixedBytes16 offset3296;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3312)] public FixedBytes16 offset3312;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3328)] public FixedBytes16 offset3328;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3344)] public FixedBytes16 offset3344;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3360)] public FixedBytes16 offset3360;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3376)] public FixedBytes16 offset3376;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3392)] public FixedBytes16 offset3392;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3408)] public FixedBytes16 offset3408;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3424)] public FixedBytes16 offset3424;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3440)] public FixedBytes16 offset3440;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3456)] public FixedBytes16 offset3456;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3472)] public FixedBytes16 offset3472;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3488)] public FixedBytes16 offset3488;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3504)] public FixedBytes16 offset3504;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3520)] public FixedBytes16 offset3520;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3536)] public FixedBytes16 offset3536;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3552)] public FixedBytes16 offset3552;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3568)] public FixedBytes16 offset3568;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3584)] public FixedBytes16 offset3584;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3600)] public FixedBytes16 offset3600;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3616)] public FixedBytes16 offset3616;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3632)] public FixedBytes16 offset3632;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3648)] public FixedBytes16 offset3648;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3664)] public FixedBytes16 offset3664;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3680)] public FixedBytes16 offset3680;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3696)] public FixedBytes16 offset3696;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3712)] public FixedBytes16 offset3712;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3728)] public FixedBytes16 offset3728;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3744)] public FixedBytes16 offset3744;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3760)] public FixedBytes16 offset3760;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3776)] public FixedBytes16 offset3776;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3792)] public FixedBytes16 offset3792;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3808)] public FixedBytes16 offset3808;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3824)] public FixedBytes16 offset3824;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3840)] public FixedBytes16 offset3840;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3856)] public FixedBytes16 offset3856;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3872)] public FixedBytes16 offset3872;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3888)] public FixedBytes16 offset3888;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3904)] public FixedBytes16 offset3904;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3920)] public FixedBytes16 offset3920;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3936)] public FixedBytes16 offset3936;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3952)] public FixedBytes16 offset3952;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3968)] public FixedBytes16 offset3968;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(3984)] public FixedBytes16 offset3984;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4000)] public FixedBytes16 offset4000;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4016)] public FixedBytes16 offset4016;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4032)] public FixedBytes16 offset4032;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4048)] public FixedBytes16 offset4048;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4064)] public FixedBytes16 offset4064;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4080)] public byte byte4080;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4081)] public byte byte4081;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4082)] public byte byte4082;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4083)] public byte byte4083;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4084)] public byte byte4084;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4085)] public byte byte4085;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4086)] public byte byte4086;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4087)] public byte byte4087;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4088)] public byte byte4088;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4089)] public byte byte4089;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4090)] public byte byte4090;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4091)] public byte byte4091;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4092)] public byte byte4092;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [FieldOffset(4093)] public byte byte4093;
 
     }
 
     /// <summary>
-    /// An unmanaged string in UTF-8 format that contains its own fixed-size buffer of the given size in bytes.
-    /// The string is guaranteed to be null-terminated, at the byte at the current Length offset.
-    /// No memory is ever allocated, and no attempt is made to share memory when strings are copied.
-    /// Since this structure is not generic and needs no disposing, it can exist inside ECS components,
-    /// can be put in a FixedArray, FixedList or FixedHashMap, and can be a data member of unmanaged structs
-    /// that are allocated from the unmanaged heap. This string is entirely compatible with Burst compilation.
-    ///
-    /// The binary layout of this string is guaranteed, for now and all time, to be two bytes of little-endian length,
-    /// followed by a contiguous array of bytes with that length, with no padding in between. This is intentionally
-    /// identical to FixedList of byte, which is guaranteed to always have the same memory layout.
-    ///
-    /// Those who need more than 65,535 contiguous items should allocate from the heap, as storing that many things
-    /// contiguously in a C# struct is likely to result in much wasted time, as the compiler copies the struct often.
+    /// An unmanaged UTF-8 string whose content is stored directly in the 4096-byte struct.
     /// </summary>
+    /// <remarks>
+    /// The binary layout of this string is guaranteed, for now and all time, to be a length (a little-endian two byte integer)
+    /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
+    /// Effectively, the number of bytes for storing characters is 3 less than 4096 (two length bytes and one null byte).
+    ///
+    /// This layout is identical to a <see cref="FixedList4096{T}"/> of bytes, thus allowing reinterpretation between FixedString4096 and FixedList4096.
+    ///
+    /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
+    /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
+    /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=4096)]
     [BurstCompatible]
@@ -5320,39 +5547,43 @@ namespace Unity.Collections
         [SerializeField] internal FixedBytes4094 bytes;
 
         /// <summary>
-        /// Returns the maximum number of utf8 bytes that can be stored in this type.
+        /// Returns the maximum number of UTF-8 bytes that can be stored in this string.
         /// </summary>
+        /// <returns>
+        /// The maximum number of UTF-8 bytes that can be stored in this string.
+        /// </returns>
         public static int UTF8MaxLengthInBytes => utf8MaxLengthInBytes;
 
         /// <summary>
-        /// A property in order to display the value in Unity.Properties generated UI.
+        /// For internal use only. Use <see cref="ToString"/> instead.
         /// </summary>
+        /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         [NotBurstCompatible]
         public string Value => ToString();
 
         /// <summary>
-        /// Returns a pointer to the underlying byte stream.  This pointer will become invalid if the underlying
-        /// allocation is changed, such as by changing the Capacity or adding any data to the HeapString.
+        /// Returns a pointer to the character bytes.
         /// </summary>
-        /// <returns>A pointer to the first element in the array.</returns>
-        /// <remarks>You can only call this function in an [unsafe context].</remarks>
+        /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe byte* GetUnsafePtr()
         {
             return (byte*) UnsafeUtility.AddressOf(ref bytes);
         }
 
-        //
-        // INativeList<byte> methods
-        //
-
         /// <summary>
-        /// The current length of the UTF-8 encoded string, in bytes. The string is guaranteed to be
-        /// null-terminated. The length value does not include the null terminating byte. It is valid to
-        /// read the null byte at the Length position when accessing this data by raw pointer.
+        /// The current length in bytes of this string's content.
         /// </summary>
+        /// <remarks>
+        /// The length value does not include the null-terminator byte.
+        /// </remarks>
+        /// <param name="value">The new length in bytes of the string's content.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the new length is out of bounds.</exception>
+        /// <value>
+        /// The current length in bytes of this string's content.
+        /// </value>
         public int Length
         {
             get
@@ -5371,12 +5602,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The maximum available capacity of the UTF-8 encoded string, in bytes.
-        /// Due to the UTF-8 encoding, each Unicode code point requires between 1 and 4 bytes to encode.
-        /// The null terminating byte is not included in the capacity.  The FixedString always
-        /// has space for a null terminating byte.  For FixedString4096, attempting to set this value
-        /// to anything lower than 4093 will throw.  The Capacity will always be 4093.
+        /// The number of bytes this string has for storing UTF-8 characters.
         /// </summary>
+        /// <value>The number of bytes this string has for storing UTF-8 characters.</value>
+        /// <remarks>
+        /// Does not include the null-terminator byte.
+        ///
+        /// A setter is included for conformity with <see cref="INativeList{T}"/>, but <see cref="Capacity"/> is fixed at 4093.
+        /// Setting the value to anything other than 4093 throws an exception.
+        ///
+        /// In UTF-8 encoding, each Unicode code point (character) requires 1 to 4 bytes,
+        /// so the number of characters that can be stored may be less than the capacity.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 4093.</exception>
         public int Capacity
         {
             get
@@ -5390,11 +5628,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Attempt to set the length of the string, in UTF-8 bytes.
+        /// Attempts to set the length in bytes. Does nothing if the new length is invalid.
         /// </summary>
-        /// <param name="newLength">The new length of the string</param>
-        /// <param name="clearOptions">Whether the new memory should be initialized or not</param>
-        /// <returns>Whether the resize was successful.</returns>
+        /// <param name="newLength">The desired length.</param>
+        /// <param name="clearOptions">Whether added or removed bytes should be cleared (zeroed). (Increasing the length adds bytes; decreasing the length removes bytes.)</param>
+        /// <returns>True if the new length is valid.</returns>
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             if (newLength < 0 || newLength > utf8MaxLengthInBytes)
@@ -5418,15 +5656,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this string is empty (has no characters).
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string is empty (has no characters).</value>
         public bool IsEmpty => utf8LengthInBytes == 0;
 
         /// <summary>
-        /// Return the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length)
+        /// Returns the byte (not character) at an index.
         /// </summary>
+        /// <param name="index">A byte index.</param>
+        /// <value>The byte at the index.</value>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
             get
@@ -5448,13 +5688,13 @@ namespace Unity.Collections
             }
         }
 
+
         /// <summary>
-        /// Return a ref to the the byte at the given byte (not character) index.  The index
-        /// must be in the range of [0..Length).  The ref byte is a direct reference into
-        /// this FixedString, and is only valid while this FixedString is valid.
+        /// Returns the reference to a byte (not character) at an index.
         /// </summary>
-        /// <param name="index">The byte index to access</param>
-        /// <returns>A ref byte for the requested index</returns>
+        /// <param name="index">A byte index.</param>
+        /// <returns>A reference to the byte at the index.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -5465,7 +5705,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Clear this string by setting its Length to 0.
+        /// Sets the length to 0.
         /// </summary>
         public void Clear()
         {
@@ -5473,19 +5713,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Append the given byte value to this string. The string will remain null-terminated after the new
-        /// byte. Appending an invalid UTF-8 sequence will cause the contents of this string to be invalid when
-        /// converted to UTF-16 or UCS-2. No validation of the appended bytes is done.
+        /// Appends a byte.
         /// </summary>
-        /// <param name="value">The byte to append.</param>
+        /// <remarks>
+        /// A zero byte will always follow the newly appended byte.
+        ///
+        /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
+        /// </remarks>
+        /// <param name="value">A byte to append.</param>
         public void Add(in byte value)
         {
             this[Length++] = value;
         }
 
         /// <summary>
-        /// <undoc />
+        /// An enumerator over the characters (not bytes) of a FixedString4096.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator's index to the first character.
+        /// </remarks>
         public struct Enumerator : IEnumerator
         {
             FixedString4096 target;
@@ -5493,9 +5740,9 @@ namespace Unity.Collections
             Unicode.Rune current;
 
             /// <summary>
-            /// <undoc />
+            /// Initializes and returns an instance of FixedString4096.Enumerator.
             /// </summary>
-            /// <param name="other"><undoc /></param>
+            /// <param name="other">A FixeString4096 for which to create an enumerator.</param>
             public Enumerator(FixedString4096 other)
             {
                 target = other;
@@ -5504,16 +5751,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Does nothing.
             /// </summary>
             public void Dispose()
             {
             }
 
+
             /// <summary>
-            /// <undoc />
+            /// Advances the enumerator to the next character.
             /// </summary>
-            /// <returns><undoc /></returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -5528,7 +5776,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset()
             {
@@ -5537,31 +5785,35 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// <undoc />
+            /// The current character.
             /// </summary>
+            /// <remarks>
+            /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+            /// </remarks>
+            /// <value>The current character.</value>
             public Unicode.Rune Current => current;
 
             object IEnumerator.Current => Current;
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a container.
+        /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString4096.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
         }
 
         /// <summary>
-        /// Compare this FixedString4096 with a System.String in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other System.String would appear first if sorted.
+        /// <param name="other">A `System.String` to compare with.</param>
+        /// <returns>An integer denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other string.<br/>
+        /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
         [NotBurstCompatible]
         public int CompareTo(String other)
@@ -5570,11 +5822,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compare this FixedString4096 with a System.String,
-        /// and return whether they contain the same string or not.
+        /// Returns true if this string and another have the same length and all the same characters.
         /// </summary>
-        /// <param name="other">The System.String to compare with</param>
-        /// <returns>true if they are equal, or false if they are not.</returns>
+        /// <param name="other">A string to compare for equality.</param>
+        /// <returns>True if this string and the other have the same length and all the same characters.</returns>
         [NotBurstCompatible]
         public bool Equals(String other)
         {
@@ -5582,19 +5833,22 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Transform this struct to a reference to a FixedListByteN, which has the same layout.
-        /// The returned reference is a reference to this data, and is only valid while it is valid.
+        /// Returns a reference to a FixedListByte4096 representation of this string.
         /// </summary>
-        /// <returns></returns>
-        public unsafe ref FixedListByte4096 AsFixedList()
+        /// <remarks>
+        /// The referenced FixedListByte4096 is the very same bytes as the original FixedString4096,
+        /// so it is only valid as long as the original FixedString4096 is valid.
+        /// </remarks>
+        /// <returns>A ref to a FixedListByte4096 representation of the FixedString4096.</returns>
+        public unsafe ref FixedList4096<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedListByte4096>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList4096<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Construct a FixedString4096 from a System.String object.
+        /// Initializes and returns an instance of FixedString4096 with the characters copied from a string.
         /// </summary>
-        /// <param name="source">The System.String object to construct this FixedString4096 with</param>
+        /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
         public FixedString4096(String source)
         {
@@ -5612,10 +5866,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by repeating the given Unicode.Rune a number of times.
+        /// Initializes and returns an instance of FixedString4096 with a single character repeatedly appended some number of times.
         /// </summary>
-        /// <param name="rune">The Unicode.Rune to repeat</param>
-        /// <param name="count">The number of times to repeat, default 1</param>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString4096(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
@@ -5623,15 +5877,16 @@ namespace Unity.Collections
             this.Append(rune, count);
         }
 
+
         /// <summary>
-        /// Compare this FixedString4096 with a FixedString32 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString32 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString32 other)
         {
@@ -5639,18 +5894,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString4096(in FixedString32 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        public FixedString4096(in FixedString32 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -5658,11 +5914,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for equality.</param>
+        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString4096 a, in FixedString32 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -5676,35 +5933,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for inequality.</param>
+        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString4096 a, in FixedString32 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString32 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString4096 with a FixedString64 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString64 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString64 other)
         {
@@ -5712,18 +5972,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString4096(in FixedString64 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        public FixedString4096(in FixedString64 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -5731,11 +5992,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for equality.</param>
+        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString4096 a, in FixedString64 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -5749,35 +6011,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for inequality.</param>
+        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString4096 a, in FixedString64 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString64 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString4096 with a FixedString128 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString128 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString128 other)
         {
@@ -5785,18 +6050,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString4096(in FixedString128 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        public FixedString4096(in FixedString128 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -5804,11 +6070,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for equality.</param>
+        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString4096 a, in FixedString128 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -5822,35 +6089,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for inequality.</param>
+        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString4096 a, in FixedString128 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString128 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString4096 with a FixedString512 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString512 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString512 other)
         {
@@ -5858,18 +6128,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString4096(in FixedString512 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        public FixedString4096(in FixedString512 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -5877,11 +6148,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for equality.</param>
+        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString4096 a, in FixedString512 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -5895,35 +6167,38 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for inequality.</param>
+        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString4096 a, in FixedString512 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString512 other)
         {
             return this == other;
         }
 
+
         /// <summary>
-        /// Compare this FixedString4096 with a FixedString4096 in terms of lexigraphical order,
-        /// and return which of the two strings would come first if sorted.
+        /// Returns the lexicographical sort order of this string relative to another.
         /// </summary>
-        /// <param name="other">The FixedString to compare with</param>
-        /// <returns>
-        /// -1 if this FixedString4096 would appear first if sorted,
-        ///  0 if they are identical, or
-        ///  1 if the other FixedString4096 would appear first if sorted.
+        /// <param name="other">A string to compare with.</param>
+        /// <returns>A number denoting the lexicographical sort order of this string relative to the other:
+        ///
+        /// 0 denotes that both strings have the same sort position.<br/>
+        /// -1 denotes that this string should be sorted to precede the other.<br/>
+        /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
         public int CompareTo(FixedString4096 other)
         {
@@ -5931,18 +6206,19 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Construct a FixedString4096 by copying from another FixedString source.
+        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="source"></param>
-        public FixedString4096(in FixedString4096 source)
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        public FixedString4096(in FixedString4096 other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
                 int len = 0;
                 byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                var srcLength = source.utf8LengthInBytes;
+                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
+                var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
                 CheckFormatError(error);
                 this.Length = len;
@@ -5950,11 +6226,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are equal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for equality.</param>
+        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public static bool operator ==(in FixedString4096 a, in FixedString4096 b)
         {
             // this must not call any methods on 'a' or 'b'
@@ -5968,38 +6245,41 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        ///
+        /// Returns true if a FixedString4096 and another string are unequal.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A FixedString4096 to compare for inequality.</param>
+        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <returns>True if the two strings are unequal.</returns>
         public static bool operator !=(in FixedString4096 a, in FixedString4096 b)
         {
             return !(a == b);
         }
 
         /// <summary>
-        ///
+        /// Returns true if this string and another string are equal.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
         public bool Equals(FixedString4096 other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Enable implicit conversion of System.String to FixedString4096.
+        /// Returns a new FixedString4096 that is a copy of another string.
         /// </summary>
-        /// <param name="b">The System.String object to convert to a FixedString4096</param>
-        /// <returns></returns>
+        /// <param name="b">A string to copy.</param>
+        /// <returns>A new FixedString4096 that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
         [NotBurstCompatible]
         public static implicit operator FixedString4096(string b) => new FixedString4096(b);
 
         /// <summary>
-        /// Convert this FixedString4096 to a System.String.
+        /// Returns a new managed string that is a copy of this string.
         /// </summary>
-        /// <returns>A System.String with a copy of this FixedString4096</returns>
+        /// <returns>A new managed string that is a copy of this string.</returns>
         [NotBurstCompatible]
         public override String ToString()
         {
@@ -6007,20 +6287,24 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Compute a hash code of this FixedString4096: an integer that is likely to be different for
-        /// two FixedString4096, if their contents are different.
+        /// Returns a hash code of this string.
         /// </summary>
-        /// <returns>A hash code of this FixedString4096</returns>
+        /// <remarks>Only the character bytes are included in the hash: any bytes beyond <see cref="Length"/> are not part of the hash.</remarks>
+        /// <returns>The hash code of this string.</returns>
         public override int GetHashCode()
         {
             return this.ComputeHashCode();
         }
 
         /// <summary>
-        /// Determines whether a FixedString4096 has the same value as some other object.
+        /// Returns true if this string and an object are equal.
         /// </summary>
-        /// <param name="obj">The object to compare for equality</param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returns false if the object is neither a System.String or a FixedString.
+        ///
+        /// Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="obj">An object to compare for equality.</param>
+        /// <returns>True if this string and the object are equal.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {

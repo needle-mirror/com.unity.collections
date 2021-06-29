@@ -4,6 +4,7 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 #endif
 using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 using Unity.Mathematics;
 
 namespace Unity.Collections
@@ -224,7 +225,12 @@ namespace Unity.Collections
         private unsafe delegate void _dlg_Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result);
         private static _dlg_Hash128Long _bfp_Hash128Long;
 
+#if !UNITY_DOTSRUNTIME
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static unsafe void Initialize()
+#else
         static unsafe xxHash3()
+#endif
         {
             if (_initialized)
                 return;

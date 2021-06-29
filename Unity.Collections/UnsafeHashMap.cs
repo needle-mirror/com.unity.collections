@@ -13,8 +13,9 @@ using UnityEngine.Assertions;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    ///
+    /// A bucket of key-value pairs. Used as the internal storage for hash maps.
     /// </summary>
+    /// <remarks>Exposed publicly only for advanced use cases.</remarks>
     [BurstCompatible]
     public unsafe struct UnsafeHashMapBucketData
     {
@@ -28,28 +29,33 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// The buffer of values.
         /// </summary>
+        /// <value>The buffer of values.</value>
         public readonly byte* values;
 
         /// <summary>
-        ///
+        /// The buffer of keys.
         /// </summary>
+        /// <value>The buffer of keys.</value>
         public readonly byte* keys;
 
         /// <summary>
-        ///
+        /// The next bucket in the chain.
         /// </summary>
+        /// <value>The next bucket in the chain.</value>
         public readonly byte* next;
 
         /// <summary>
-        ///
+        /// The first bucket in the chain.
         /// </summary>
+        /// <value>The first bucket in the chain.</value>
         public readonly byte* buckets;
 
         /// <summary>
-        ///
+        /// One less than the bucket capacity.
         /// </summary>
+        /// <value>One less than the bucket capacity.</value>
         public readonly int bucketCapacityMask;
     }
 
@@ -103,23 +109,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             return capacity * 2;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [NotBurstCompatible]
-        internal static void IsBlittableAndThrow<TKey, TValue>()
-            where TKey : struct
-            where TValue : struct
-        {
-            CollectionHelper.CheckIsUnmanaged<TKey>();
-            CollectionHelper.CheckIsUnmanaged<TValue>();
-        }
-
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
             out UnsafeHashMapData* outBuf)
             where TKey : struct
             where TValue : struct
         {
-            IsBlittableAndThrow<TKey, TValue>();
+            CollectionHelper.CheckIsUnmanaged<TKey>();
+            CollectionHelper.CheckIsUnmanaged<TValue>();
 
             UnsafeHashMapData* data = (UnsafeHashMapData*)Memory.Unmanaged.Allocate(sizeof(UnsafeHashMapData), UnsafeUtility.AlignOf<UnsafeHashMapData>(), label);
 
@@ -705,7 +702,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             // Add the index to the hash-map
             int* buckets = (int*)data->buckets;
             nextPtrs = (int*)data->next;
-
             nextPtrs[idx] = buckets[bucket];
             buckets[bucket] = idx;
 
@@ -932,12 +928,13 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// Defines a key/value pair retrieved by enumerator.
+    /// A key-value pair.
     /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+    /// <remarks>Used for enumerators.</remarks>
+    /// <typeparam name="TKey">The type of the keys.</typeparam>
+    /// <typeparam name="TValue">The type of the values.</typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+    [BurstCompatible(GenericTypeArguments = new[] {typeof(int), typeof(int)})]
     public unsafe struct KeyValue<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
@@ -947,8 +944,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal int m_Next;
 
         /// <summary>
-        /// Key of key/value pair.
+        ///  An invalid KeyValue.
         /// </summary>
+        /// <value>In a hash map enumerator's initial state, its <see cref="UnsafeHashMap{TKey,TValue}.Enumerator.Current"/> value is Null.</value>
+        public static KeyValue<TKey, TValue> Null => new KeyValue<TKey, TValue>{m_Index = -1};
+
+        /// <summary>
+        /// The key.
+        /// </summary>
+        /// <value>The key. If this KeyValue is Null, returns the default of TKey.</value>
         public TKey Key
         {
             get
@@ -963,8 +967,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Value of key/value pair.
+        /// The value.
         /// </summary>
+        /// <value>The value. If this KeyValue is Null, returns the default of TValue.</value>
         public TValue Value
         {
             get
@@ -979,11 +984,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retrives both key and value.
+        /// Gets the key and the value.
         /// </summary>
-        /// <param name="key">Key of key/value pair.</param>
-        /// <param name="value">Value of key/value pair.</param>
-        /// <returns>Returns true if key/value pair is valid.</returns>
+        /// <param name="key">Outputs the key. If this KeyValue is Null, outputs the default of TKey.</param>
+        /// <param name="value">Outputs the value. If this KeyValue is Null, outputs the default of TValue.</param>
+        /// <returns>True if the key-value pair is valid.</returns>
         public bool GetKeyValue(out TKey key, out TValue value)
         {
             if (m_Index != -1)
@@ -1047,10 +1052,10 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// Unordered associative array, a collection of keys and values, without any thread safety check features.
+    /// An unordered, expandable associative array.
     /// </summary>
-    /// <typeparam name="TKey">The type of the keys in the container.</typeparam>
-    /// <typeparam name="TValue">The type of the values in the container.</typeparam>
+    /// <typeparam name="TKey">The type of the keys.</typeparam>
+    /// <typeparam name="TValue">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerDisplay("Count = {Count()}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeHashMapDebuggerTypeProxy<,>))]
@@ -1066,12 +1071,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal Allocator m_AllocatorLabel;
 
         /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// Initializes and returns an instance of UnsafeHashMap.
         /// </summary>
-        /// <param name="capacity">The initial capacity of the container. If the list grows larger than its capacity,
-        /// the internal array is copied to a new, larger array.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
         public UnsafeHashMap(int capacity, Allocator allocator)
         {
             CollectionHelper.CheckIsUnmanaged<TKey>();
@@ -1085,24 +1088,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Whether this hash map is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this hash map is empty.</value>
         public bool IsEmpty => !IsCreated || UnsafeHashMapData.IsEmpty(m_Buffer);
 
         /// <summary>
-        /// The current number of items in the container.
+        /// The current number of key-value pairs in this hash map.
         /// </summary>
-        /// <returns>The item count.</returns>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
         public int Count() => UnsafeHashMapData.GetCount(m_Buffer);
 
         /// <summary>
-        /// The number of items that can fit in the container.
+        /// The number of key-value pairs that fit in the current allocation.
         /// </summary>
-        /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-        /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-        /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-        /// old array to the new one, and then deallocates the original array memory.</remarks>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             get
@@ -1119,51 +1121,54 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clears the container.
+        /// Removes all key-value pairs.
         /// </summary>
-        /// <remarks>Containers capacity remains unchanged.</remarks>
+        /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
             UnsafeHashMapBase<TKey, TValue>.Clear(m_Buffer);
         }
 
         /// <summary>
-        /// Try adding an element with the specified key and value into the container. If the key already exist, the value won't be updated.
+        /// Adds a new key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
-        /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
+        /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the key-value pair was added.</returns>
         public bool TryAdd(TKey key, TValue item)
         {
             return UnsafeHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
         }
 
         /// <summary>
-        /// Add an element with the specified key and value into the container.
+        /// Adds a new key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to add.</param>
-        /// <param name="item">The value of the element to add.</param>
+        /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
         public void Add(TKey key, TValue item)
         {
             TryAdd(key, item);
         }
 
         /// <summary>
-        /// Removes the element with the specified key from the container.
+        /// Removes a key-value pair.
         /// </summary>
-        /// <param name="key">The key of the element to remove.</param>
-        /// <returns>Returns true if the key was removed from the container, otherwise returns false indicating key wasn't in the container.</returns>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>True if a key-value pair was removed.</returns>
         public bool Remove(TKey key)
         {
             return UnsafeHashMapBase<TKey, TValue>.Remove(m_Buffer, key, false) != 0;
         }
 
         /// <summary>
-        /// Gets the value associated with the specified key.
+        /// Returns the value associated with a key.
         /// </summary>
-        /// <param name="key">The key of the value to get.</param>
-        /// <param name="item">If key is found item parameter will contain value</param>
-        /// <returns>Returns true if key is found, otherwise returns false.</returns>
+        /// <param name="key">The key to look up.</param>
+        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+        /// <returns>True if the key was present.</returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
             NativeMultiHashMapIterator<TKey> tempIt;
@@ -1171,20 +1176,22 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Determines whether an key is in the container.
+        /// Returns true if a given key is present in this hash map.
         /// </summary>
-        /// <param name="key">The key to locate in the container.</param>
-        /// <returns>Returns true if the container contains the key.</returns>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present.</returns>
         public bool ContainsKey(TKey key)
         {
             return UnsafeHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var tempValue, out var tempIt);
         }
 
         /// <summary>
-        /// Retrieve a value from container by key.
+        /// Gets and sets values by key.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <remarks>Getting a key that is not present will throw. Setting a key that is not already present will add the key.</remarks>
+        /// <param name="key">The key to look up.</param>
+        /// <value>The value associated with the key.</value>
+        /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
         public TValue this[TKey key]
         {
             get
@@ -1208,22 +1215,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
         public bool IsCreated => m_Buffer != null;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory).
         /// </summary>
         public void Dispose()
         {
@@ -1232,16 +1230,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this hash map.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -1251,11 +1243,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retrive array of key from the container.
+        /// Returns an array with a copy of all this hash map's keys (in no particular order).
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
         public NativeArray<TKey> GetKeyArray(Allocator allocator)
         {
             var result = new NativeArray<TKey>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
@@ -1264,11 +1255,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retreive array of values from the container.
+        /// Returns an array with a copy of all this hash map's values (in no particular order).
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
         public NativeArray<TValue> GetValueArray(Allocator allocator)
         {
             var result = new NativeArray<TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
@@ -1277,11 +1267,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retrieve key/value arrays.
+        /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
@@ -1290,9 +1280,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns parallel writer instance.
+        /// Returns a parallel writer for this hash map.
         /// </summary>
-        /// <returns>Parallel writer instance.</returns>
+        /// <returns>A parallel writer for this hash map.</returns>
         public ParallelWriter AsParallelWriter()
         {
             ParallelWriter writer;
@@ -1302,8 +1292,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Implements parallel writer. Use AsParallelWriter to obtain it from container.
+        /// A parallel writer for a NativeHashMap.
         /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeHashMap.
+        /// </remarks>
         [NativeContainerIsAtomicWriteOnly]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
@@ -1315,12 +1308,9 @@ namespace Unity.Collections.LowLevel.Unsafe
             internal int m_ThreadIndex;
 
             /// <summary>
-            /// The number of items that can fit in the container.
+            /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
-            /// <value>The number of items that the container can hold before it resizes its internal storage.</value>
-            /// <remarks>Capacity specifies the number of items the container can currently hold. You can change Capacity
-            /// to fit more or fewer items. Changing Capacity creates a new array of the specified size, copies the
-            /// old array to the new one, and then deallocates the original array memory.</remarks>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
             public int Capacity
             {
                 get
@@ -1331,11 +1321,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
-            /// Try adding an element with the specified key and value into the container. If the key already exist, the value won't be updated.
+            /// Adds a new key-value pair.
             /// </summary>
-            /// <param name="key">The key of the element to add.</param>
-            /// <param name="item">The value of the element to add.</param>
-            /// <returns>Returns true if value is added into the container, otherwise returns false.</returns>
+            /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the key-value pair was added.</returns>
             public bool TryAdd(TKey key, TValue item)
             {
                 Assert.IsTrue(m_ThreadIndex >= 0);
@@ -1344,18 +1335,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns an IEnumerator interface for the container.
+        /// Returns an enumerator over the key-value pairs of this hash map.
         /// </summary>
-        /// <returns>An IEnumerator interface for the container.</returns>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Buffer) };
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
@@ -1364,9 +1354,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
         /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
         /// <returns>Throws NotImplementedException.</returns>
         /// <exception cref="NotImplementedException">Method is not implemented.</exception>
         IEnumerator IEnumerable.GetEnumerator()
@@ -1375,31 +1364,36 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Implements iterator over the container.
+        /// An enumerator over the key-value pairs of a hash map.
         /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// From this state, the first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
         public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
             internal UnsafeHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
-            /// Disposes enumerator.
+            /// Does nothing.
             /// </summary>
             public void Dispose() { }
 
             /// <summary>
-            /// Advances the enumerator to the next element of the container.
+            /// Advances the enumerator to the next key-value pair.
             /// </summary>
-            /// <returns>Returns true if the iterator is successfully moved to the next element, otherwise it returns false.</returns>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
             public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
-            /// Resets the enumerator to the first element of the container.
+            /// Resets the enumerator to its initial state.
             /// </summary>
             public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
-            /// Gets the element at the current position of the enumerator in the container.
+            /// The current key-value pair.
             /// </summary>
+            /// <value>The current key-value pair.</value>
             public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
 
             object IEnumerator.Current => Current;
@@ -1450,7 +1444,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     /// <summary>
-    /// <undoc />
+    /// For internal use only.
     /// </summary>
     public unsafe struct UntypedUnsafeHashMap
     {

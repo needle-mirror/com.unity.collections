@@ -4,9 +4,66 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Jobs;
+using Unity.Collections.LowLevel.Unsafe;
 
 internal class NativeArrayTests : CollectionsTestFixture
 {
+    [Test]
+    public unsafe void NativeArray_IndexOf_Int()
+    {
+        var container = new NativeArray<int>(10, Allocator.Persistent);
+        container[0] = 123;
+        container[1] = 789;
+
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != container.IndexOf(456);
+            r1 = container.Contains(123);
+            r2 = container.Contains(789);
+        });
+
+        Assert.False(r0);
+        Assert.False(-1 != NativeArrayExtensions.IndexOf<int, int>(container.GetUnsafePtr(), container.Length, 456));
+
+        Assert.True(r1);
+        Assert.True(NativeArrayExtensions.Contains<int, int>(container.GetUnsafePtr(), container.Length, 123));
+
+        Assert.True(r2);
+        Assert.True(NativeArrayExtensions.Contains<int, int>(container.GetUnsafePtr(), container.Length, 789));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public unsafe void NativeArray_IndexOf_FixedString128()
+    {
+        var container = new NativeArray<FixedString128>(10, Allocator.Persistent);
+        container[0] = new FixedString128("123");
+        container[1] = new FixedString128("789");
+
+        bool r0 = false, r1 = false, r2 = false;
+
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            r0 = -1 != container.IndexOf(new FixedString128("456"));
+            r1 = container.Contains(new FixedString128("123"));
+            r2 = container.Contains(new FixedString128("789"));
+        });
+
+        Assert.False(r0);
+        Assert.False(-1 != NativeArrayExtensions.IndexOf<FixedString128, FixedString128>(container.GetUnsafePtr(), container.Length, new FixedString128("456")));
+
+        Assert.True(r1);
+        Assert.True(NativeArrayExtensions.Contains<FixedString128, FixedString128>(container.GetUnsafePtr(), container.Length, new FixedString128("123")));
+
+        Assert.True(r2);
+        Assert.True(NativeArrayExtensions.Contains<FixedString128, FixedString128>(container.GetUnsafePtr(), container.Length, new FixedString128("789")));
+
+        container.Dispose();
+    }
+
     [Test]
     public void NativeArray_DisposeJob()
     {

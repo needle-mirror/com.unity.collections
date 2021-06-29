@@ -4,21 +4,23 @@ using System.Collections.Generic;
 namespace Unity.Collections
 {
     /// <summary>
-    /// List extensions.
+    /// Extension methods for lists.
     /// </summary>
     public static class ListExtensions
     {
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Finds and removes the first occurrence of a particular value in the list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">List to perform removal.</param>
-        /// <param name="item">Item value to remove.</param>
-        /// <returns>Returns true if item is removed, if item was not in the container returns false.</returns>
-        public static bool RemoveSwapBack<T>(this List<T> list, T item)
+        /// <remarks>
+        /// If found, the first occurrence of the value is overwritten by the last element of the list, and the list's length is decremented by one.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to search.</param>
+        /// <param name="value">The value to locate and remove.</param>
+        /// <returns>Returns true if an element was removed.</returns>
+        public static bool RemoveSwapBack<T>(this List<T> list, T value)
         {
-            int index = list.IndexOf(item);
+            int index = list.IndexOf(value);
             if (index < 0)
                 return false;
 
@@ -27,13 +29,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Finds and removes the first value which satisfies a predicate.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">List to perform removal.</param>
-        /// <param name="matcher"></param>
-        /// <returns>Returns true if item is removed, if item was not in the container returns false.</returns>
+        /// <remarks>
+        /// The first value satisfying the predicate is overwritten by the last element of the list, and the list's length is decremented by one.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to search.</param>
+        /// <param name="matcher">The predicate for testing the elements of the list.</param>
+        /// <returns>Returns true if an element was removed.</returns>
         public static bool RemoveSwapBack<T>(this List<T> list, Predicate<T> matcher)
         {
             int index = list.FindIndex(matcher);
@@ -45,12 +49,14 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
+        /// Removes the value at an index.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">List to perform removal.</param>
-        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// The value at the index is overwritten by the last element of the list, and the list's length is decremented by one.
+        /// </remarks>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to search.</param>
+        /// <param name="index">The index at which to remove an element from the list.</param>
         public static void RemoveAtSwapBack<T>(this List<T> list, int index)
         {
             int lastIndex = list.Count - 1;
@@ -59,13 +65,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Convert System.Collections.Generics.List to Unity.Collections.NativeList.
+        /// Returns a copy of this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">List to perform conversion.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>A NativeList copy of the List.</returns>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to copy.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A copy of this list.</returns>
         public static NativeList<T> ToNativeList<T>(this List<T> list, Allocator allocator) where T : unmanaged
         {
             var container = new NativeList<T>(list.Count, allocator);
@@ -77,13 +82,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Convert System.Collections.Generics.List to Unity.Collections.NativeArray.
+        /// Returns an array that is a copy of this list.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="list">List to perform conversion.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>A NativeArray copy of the List.</returns>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <param name="list">The list to copy.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array that is a copy of this list.</returns>
         public unsafe static NativeArray<T> ToNativeArray<T>(this List<T> list, Allocator allocator) where T : unmanaged
         {
             var container = new NativeArray<T>(list.Count, allocator);

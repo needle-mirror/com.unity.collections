@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
+using Assert = FastAssert;
 
 internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.Tests;
+using Assert = FastAssert;
 
 internal class MathTests : CollectionsTestCommonBase
 {

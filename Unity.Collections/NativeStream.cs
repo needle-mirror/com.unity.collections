@@ -8,9 +8,28 @@ using UnityEngine.Assertions;
 namespace Unity.Collections
 {
     /// <summary>
-    /// A deterministic data streaming supporting parallel reading and parallel writing.
-    /// Allows you to write different types or arrays into a single stream.
+    /// A set of untyped, append-only buffers. Allows for concurrent reading and concurrent writing without synchronization.
     /// </summary>
+    /// <remarks>
+    /// As long as each individual buffer is written in one thread and read in one thread, multiple
+    /// threads can read and write the stream concurrently, *e.g.*
+    /// while thread *A* reads from buffer *X* of a stream, thread *B* can read from
+    /// buffer *Y* of the same stream.
+    ///
+    /// Each buffer is stored as a chain of blocks. When a write exceeds a buffer's current capacity, another block
+    /// is allocated and added to the end of the chain. Effectively, expanding the buffer never requires copying the existing
+    /// data (unlike with <see cref="NativeList{T}"/>, for example).
+    ///
+    /// **All writing to a stream should be completed before the stream is first read. Do not write to a stream after the first read.**
+    /// Violating these rules won't *necessarily* cause any problems, but they are the intended usage pattern.
+    ///
+    /// Writing is done with <see cref="NativeStream.Writer"/>, and reading is done with <see cref="NativeStream.Reader"/>.
+    /// An individual reader or writer cannot be used concurrently across threads: each thread must use its own.
+    ///
+    /// The data written to an individual buffer can be heterogeneous in type, and the data written
+    /// to different buffers of a stream can be entirely different in type, number, and order. Just make sure
+    /// that the code reading from a particular buffer knows what to expect to read from it.
+    /// </remarks>
     [NativeContainer]
     [BurstCompatible]
     public unsafe struct NativeStream : IDisposable
@@ -25,57 +44,65 @@ namespace Unity.Collections
 #endif
 
         /// <summary>
-        /// Constructs a new NativeStream using the specified type of memory allocation.
+        /// Initializes and returns an instance of NativeStream.
         /// </summary>
-        /// <param name="foreachCount"></param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        public NativeStream(int foreachCount, Allocator allocator)
+        /// <param name="bufferCount">The number of buffers to give the stream. You usually want
+        /// one buffer for each thread that will read or write the stream.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeStream(int bufferCount, Allocator allocator)
         {
             AllocateBlock(out this, allocator);
-            m_Stream.AllocateForEach(foreachCount);
+            m_Stream.AllocateForEach(bufferCount);
         }
 
         /// <summary>
-        /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
+        /// Creates and schedules a job to allocate a new stream.
         /// </summary>
-        /// <typeparam name="T">The type of value.</typeparam>
-        /// <param name="stream"></param>
-        /// <param name="forEachCountFromList"></param>
-        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <remarks>The stream can be used on the main thread after completing the returned job or used in other jobs that depend upon the returned job.
+        ///
+        /// Using a job to allocate the buffers can be more efficient, particularly for a stream with many buffers.
+        /// </remarks>
+        /// <typeparam name="T">Ignored.</typeparam>
+        /// <param name="stream">Outputs the new stream.</param>
+        /// <param name="bufferCount">A list whose length determines the number of buffers in the stream.</param>
+        /// <param name="dependency">A job handle. The new job will depend upon this handle.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> forEachCountFromList, JobHandle dependency, Allocator allocator)
-            where T : struct
+        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> bufferCount, JobHandle dependency, Allocator allocator)
+            where T : unmanaged
         {
             AllocateBlock(out stream, allocator);
-            var jobData = new ConstructJobList { List = forEachCountFromList.GetUnsafeList(), Container = stream };
+            var jobData = new ConstructJobList { List = (UntypedUnsafeList*)bufferCount.GetUnsafeList(), Container = stream };
             return jobData.Schedule(dependency);
         }
 
         /// <summary>
-        /// Schedule job to construct a new NativeStream using the specified type of memory allocation.
+        /// Creates and schedules a job to allocate a new stream.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="lengthFromIndex0"></param>
-        /// <param name="dependency"></param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
+        /// <remarks>The stream can be used...
+        /// - after completing the returned job
+        /// - or in other jobs that depend upon the returned job.
+        ///
+        /// Allocating the buffers in a job can be more efficient, particularly for a stream with many buffers.
+        /// </remarks>
+        /// <param name="stream">Outputs the new stream.</param>
+        /// <param name="bufferCount">An array whose value at index 0 determines the number of buffers in the stream.</param>
+        /// <param name="dependency">A job handle. The new job will depend upon this handle.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> lengthFromIndex0, JobHandle dependency, Allocator allocator)
+        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> bufferCount, JobHandle dependency, Allocator allocator)
         {
             AllocateBlock(out stream, allocator);
-            var jobData = new ConstructJob { Length = lengthFromIndex0, Container = stream };
+            var jobData = new ConstructJob { Length = bufferCount, Container = stream };
             return jobData.Schedule(dependency);
         }
 
         /// <summary>
-        /// Reports whether container is empty.
+        /// Returns true if this stream is empty.
         /// </summary>
-        /// <returns>True if this container empty.</returns>
+        /// <returns>True if this stream is empty.</returns>
         public bool IsEmpty()
         {
             CheckReadAccess();
@@ -83,23 +110,16 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this stream has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
-        /// </remarks>
+        /// <remarks>Does not necessarily reflect whether the buffers of the stream have themselves been allocated.</remarks>
+        /// <value>True if this stream has been allocated (and not yet deallocated).</value>
         public bool IsCreated => m_Stream.IsCreated;
 
         /// <summary>
+        /// The number of buffers in this stream.
         /// </summary>
+        /// <value>The number of buffers in this stream.</value>
         public int ForEachCount
         {
             get
@@ -110,27 +130,28 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns reader instance.
+        /// Returns a reader of this stream.
         /// </summary>
-        /// <returns>Reader instance</returns>
+        /// <returns>A reader of this stream.</returns>
         public Reader AsReader()
         {
             return new Reader(ref this);
         }
 
         /// <summary>
-        /// Returns writer instance.
+        /// Returns a writer of this stream.
         /// </summary>
-        /// <returns>Writer instance.</returns>
+        /// <returns>A writer of this stream.</returns>
         public Writer AsWriter()
         {
             return new Writer(ref this);
         }
 
         /// <summary>
-        /// The current number of items in the container.
+        /// Returns the total number of items in the buffers of this stream.
         /// </summary>
-        /// <returns>The item count.</returns>
+        /// <remarks>Each <see cref="Writer.Write{T}"/> and <see cref="Writer.Allocate"/> call increments this number.</remarks>
+        /// <returns>The total number of items in the buffers of this stream.</returns>
         public int Count()
         {
             CheckReadAccess();
@@ -138,14 +159,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies stream data into NativeArray.
+        /// Returns a new NativeArray copy of this stream's data.
         /// </summary>
-        /// <typeparam name="T">The type of value.</typeparam>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns>A new NativeArray, allocated with the given strategy and wrapping the stream data.</returns>
-        /// <remarks>The array is a copy of stream data.</remarks>
-        /// <returns></returns>
+        /// <remarks>The length of the array will equal the count of this stream.
+        ///
+        /// Each buffer of this stream is copied to the array, one after the other.
+        /// </remarks>
+        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A new NativeArray copy of this stream's data.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
         {
@@ -154,7 +176,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Disposes of this stream and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -165,18 +187,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will release all resources (memory and safety handles) of this stream.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="dependency">All jobs spawned will depend on this JobHandle.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">A job handle which the newly scheduled job will depend upon.</param>
+        /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this stream.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public JobHandle Dispose(JobHandle dependency)
+        public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
@@ -185,7 +201,7 @@ namespace Unity.Collections
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-            var jobHandle = m_Stream.Dispose(dependency);
+            var jobHandle = m_Stream.Dispose(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(m_Safety);
@@ -200,7 +216,7 @@ namespace Unity.Collections
 
             [ReadOnly]
             [NativeDisableUnsafePtrRestriction]
-            public UnsafeList* List;
+            public UntypedUnsafeList* List;
 
             public void Execute()
             {
@@ -246,7 +262,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Writes data into a buffer of a <see cref="NativeStream"/>.
         /// </summary>
+        /// <remarks>An individual writer can only be used for one buffer of one stream.
+        /// Do not create more than one writer for an individual buffer.</remarks>
         [NativeContainer]
         [NativeContainerSupportsMinMaxWriteRestriction]
         [BurstCompatible]
@@ -280,8 +299,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            ///
+            /// The number of buffers in the stream of this writer.
             /// </summary>
+            /// <value>The number of buffers in the stream of this writer.</value>
             public int ForEachCount
             {
                 get
@@ -294,7 +314,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            ///
+            /// For internal use only.
             /// </summary>
             /// <param name="foreEachIndex"></param>
             public void PatchMinMaxRange(int foreEachIndex)
@@ -306,10 +326,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Begin reading data at the iteration index.
+            /// Readies this writer to write to a particular buffer of the stream.
             /// </summary>
-            /// <param name="foreachIndex"></param>
-            /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
+            /// <remarks>Must be called before using this writer. For an individual writer, call this method only once.
+            ///
+            /// When done using this writer, you must call <see cref="EndForEachIndex"/>.</remarks>
+            /// <param name="foreachIndex">The index of the buffer to write.</param>
             public void BeginForEachIndex(int foreachIndex)
             {
                 //@TODO: Check that no one writes to the same for each index multiple times...
@@ -318,9 +340,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Ensures that all data has been read for the active iteration index.
+            /// Readies the buffer written by this writer for reading.
             /// </summary>
-            /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
+            /// <remarks>Must be called before reading the buffer written by this writer.</remarks>
             public void EndForEachIndex()
             {
                 CheckEndForEachIndex();
@@ -332,10 +354,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Write data.
+            /// Write a value to a buffer.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <param name="value"></param>
+            /// <remarks>The value is written to the buffer which was specified
+            /// with <see cref="BeginForEachIndex"/>.</remarks>
+            /// <typeparam name="T">The type of value to write.</typeparam>
+            /// <param name="value">The value to write.</param>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public void Write<T>(T value) where T : struct
             {
@@ -344,10 +368,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Allocate space for data.
+            /// Allocate space in a buffer.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns></returns>
+            /// <remarks>The space is allocated in the buffer which was specified
+            /// with <see cref="BeginForEachIndex"/>.</remarks>
+            /// <typeparam name="T">The type of value to allocate space for.</typeparam>
+            /// <returns>A reference to the allocation.</returns>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Allocate<T>() where T : struct
             {
@@ -357,10 +383,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Allocate space for data.
+            /// Allocate space in a buffer.
             /// </summary>
-            /// <param name="size">Size in bytes.</param>
-            /// <returns></returns>
+            /// <remarks>The space is allocated in the buffer which was specified
+            /// with <see cref="BeginForEachIndex"/>.</remarks>
+            /// <param name="size">The number of bytes to allocate.</param>
+            /// <returns>The allocation.</returns>
             public byte* Allocate(int size)
             {
                 CheckAllocateSize(size);
@@ -447,7 +475,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Reads data from a buffer of a <see cref="NativeStream"/>.
         /// </summary>
+        /// <remarks>An individual reader can only be used for one buffer of one stream.
+        /// Do not create more than one reader for an individual buffer.</remarks>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         [BurstCompatible]
@@ -471,11 +502,13 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Begin reading data at the iteration index.
+            /// Readies this reader to read a particular buffer of the stream.
             /// </summary>
-            /// <param name="foreachIndex"></param>
-            /// <remarks>BeginForEachIndex must always be called balanced by a EndForEachIndex.</remarks>
-            /// <returns>The number of elements at this index.</returns>
+            /// <remarks>Must be called before using this reader. For an individual reader, call this method only once.
+            ///
+            /// When done using this reader, you must call <see cref="EndForEachIndex"/>.</remarks>
+            /// <param name="foreachIndex">The index of the buffer to read.</param>
+            /// <returns>The number of elements left to read from the buffer.</returns>
             public int BeginForEachIndex(int foreachIndex)
             {
                 CheckBeginForEachIndex(foreachIndex);
@@ -494,9 +527,11 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Ensures that all data has been read for the active iteration index.
+            /// Checks if all data has been read from the buffer.
             /// </summary>
-            /// <remarks>EndForEachIndex must always be called balanced by a BeginForEachIndex.</remarks>
+            /// <remarks>If you intentionally don't want to read *all* the data in the buffer, don't call this method.
+            /// Otherwise, calling this method is recommended, even though it's not strictly necessary.</remarks>
+            /// <exception cref="ArgumentException">Thrown if not all the buffer's data has been read.</exception>
             public void EndForEachIndex()
             {
                 m_Reader.EndForEachIndex();
@@ -504,8 +539,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Returns for each count.
+            /// The number of buffers in the stream of this reader.
             /// </summary>
+            /// <value>The number of buffers in the stream of this reader.</value>
             public int ForEachCount
             {
                 get
@@ -516,15 +552,17 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Returns remaining item count.
+            /// The number of items not yet read from the buffer.
             /// </summary>
-            public int RemainingItemCount { get { return m_Reader.RemainingItemCount; } }
+            /// <value>The number of items not yet read from the buffer.</value>
+            public int RemainingItemCount => m_Reader.RemainingItemCount;
 
             /// <summary>
-            /// Returns pointer to data.
+            /// Returns a pointer to the next position to read from the buffer. Advances the reader some number of bytes.
             /// </summary>
-            /// <param name="size">Size in bytes.</param>
-            /// <returns>Pointer to data.</returns>
+            /// <param name="size">The number of bytes to advance the reader.</param>
+            /// <returns>A pointer to the next position to read from the buffer.</returns>
+            /// <exception cref="ArgumentException">Thrown if the reader would advance past the end of the buffer.</exception>
             public byte* ReadUnsafePtr(int size)
             {
                 CheckReadSize(size);
@@ -569,10 +607,12 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Read data.
+            /// Reads the next value from the buffer.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns>Reference to data.</returns>
+            /// <remarks>Each read advances the reader to the next item in the buffer.</remarks>
+            /// <typeparam name="T">The type of value to read.</typeparam>
+            /// <returns>A reference to the next value from the buffer.</returns>
+            /// <exception cref="ArgumentException">Thrown if the reader would advance past the end of the buffer.</exception>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Read<T>() where T : struct
             {
@@ -581,10 +621,11 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Peek into data.
+            /// Reads the next value from the buffer. Does not advance the reader.
             /// </summary>
-            /// <typeparam name="T">The type of value.</typeparam>
-            /// <returns>Reference to data.</returns>
+            /// <typeparam name="T">The type of value to read.</typeparam>
+            /// <returns>A reference to the next value from the buffer.</returns>
+            /// <exception cref="ArgumentException">Thrown if the read would go past the end of the buffer.</exception>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Peek<T>() where T : struct
             {
@@ -595,9 +636,9 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// The current number of items in the container.
+            /// Returns the total number of items in the buffers of the stream.
             /// </summary>
-            /// <returns>The item count.</returns>
+            /// <returns>The total number of items in the buffers of the stream.</returns>
             public int Count()
             {
                 CheckRead();
@@ -686,14 +727,6 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckWriteAccess()
-        {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
         }
     }

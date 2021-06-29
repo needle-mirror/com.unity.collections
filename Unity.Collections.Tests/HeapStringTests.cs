@@ -1,4 +1,5 @@
-﻿#if !UNITY_DOTSRUNTIME
+#if !UNITY_DOTSRUNTIME
+#pragma warning disable 618
 using System;
 using NUnit.Framework;
 using Unity.Collections;
@@ -11,18 +12,75 @@ namespace FixedStringTests
     internal class HeapStringTests
     {
         [Test]
+        public void HeapStringFixedStringCtors()
+        {
+            using (HeapString aa = new HeapString(new FixedString32("test32"), Allocator.Temp))
+            {
+                Assert.True(aa != new FixedString32("test"));
+                Assert.True(aa.Value == "test32");
+                Assert.AreEqual("test32", aa);
+            }
+
+            using (HeapString aa = new HeapString(new FixedString64("test64"), Allocator.Temp))
+            {
+                Assert.True(aa != new FixedString64("test"));
+                Assert.True(aa.Value == "test64");
+                Assert.AreEqual("test64", aa);
+            }
+
+            using (HeapString aa = new HeapString(new FixedString128("test128"), Allocator.Temp))
+            {
+                Assert.True(aa != new FixedString128("test"));
+                Assert.True(aa.Value == "test128");
+                Assert.AreEqual("test128", aa);
+            }
+
+            using (HeapString aa = new HeapString(new FixedString512("test512"), Allocator.Temp))
+            {
+                Assert.True(aa != new FixedString512("test"));
+                Assert.True(aa.Value == "test512");
+                Assert.AreEqual("test512", aa);
+            }
+
+            using (HeapString aa = new HeapString(new FixedString4096("test4096"), Allocator.Temp))
+            {
+                Assert.True(aa != new FixedString4096("test"));
+                Assert.True(aa.Value == "test4096");
+                Assert.AreEqual("test4096", aa);
+            }
+        }
+
+        [Test]
         public void HeapStringFormatExtension1Params()
         {
             HeapString aa = new HeapString(4, Allocator.Temp);
+            Assert.True(aa.IsCreated);
             aa.Junk();
             FixedString32 format = "{0}";
             FixedString32 arg0 = "a";
             aa.AppendFormat(format, arg0);
-            Assert.AreEqual("a", aa);
+            aa.Add(0x61);
+            Assert.AreEqual("aa", aa);
             aa.AssertNullTerminated();
             aa.Dispose();
         }
 
+        [Test]
+        public void HeapStringCorrectLengthAfterClear()
+        {
+            HeapString aa = new HeapString(4, Allocator.Temp);
+            Assert.True(aa.IsCreated);
+            Assert.AreEqual(0, aa.Length, "Length after creation is not 0");
+            aa.AssertNullTerminated();
+
+            aa.Junk();
+
+            aa.Clear();
+            Assert.AreEqual(0, aa.Length, "Length after clear is not 0");
+            aa.AssertNullTerminated();
+
+            aa.Dispose();
+        }
 
         [Test]
         public void HeapStringFormatExtension2Params()
@@ -279,7 +337,7 @@ namespace FixedStringTests
         public void HeapStringForEach()
         {
             HeapString actual = new HeapString("A🌕Z🌑", Allocator.Temp);
-            FixedListInt32 expected = default;
+            FixedList32<int> expected = default;
             expected.Add('A');
             expected.Add(0x1F315);
             expected.Add('Z');

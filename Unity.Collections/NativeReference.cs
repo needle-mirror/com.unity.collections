@@ -8,9 +8,11 @@ using Unity.Jobs;
 namespace Unity.Collections
 {
     /// <summary>
-    /// An unmanaged, reference container.
+    /// An unmanaged single value.
     /// </summary>
-    /// <typeparam name="T">The type of the reference in the container.</typeparam>
+    /// <remarks>The functional equivalent of an array of length 1.
+    /// When you need just one value, NativeReference can be preferable to an array because it better conveys the intent.</remarks>
+    /// <typeparam name="T">The type of value.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
@@ -40,12 +42,10 @@ namespace Unity.Collections
         internal Allocator m_AllocatorLabel;
 
         /// <summary>
-        /// Constructs a new reference container using the specified type of memory allocation.
+        /// Initializes and returns an instance of NativeReference.
         /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">A member of the
-        /// [Unity.Collections.NativeArrayOptions](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArrayOptions.html) enumeration.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public NativeReference(Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             Allocate(allocator, out this);
@@ -56,11 +56,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Constructs a new reference container using the specified type of memory allocation, and initialize it to specific value.
+        /// Initializes and returns an instance of NativeReference.
         /// </summary>
-        /// <param name="value">The value of this container.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="value">The initial value.</param>
         public NativeReference(T value, Allocator allocator)
         {
             Allocate(allocator, out this);
@@ -87,8 +86,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// The value of this container.
+        /// The value stored in this reference.
         /// </summary>
+        /// <param name="value">The new value to store in this reference.</param>
+        /// <value>The value stored in this reference.</value>
         public T Value
         {
             get
@@ -109,19 +110,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Determine whether or not this container is created.
+        /// Whether this reference has been allocated (and not yet deallocated).
         /// </summary>
-        /// <remarks>
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// Accessing the data of a native container that has been disposed throws a <see cref='InvalidOperationException'/> exception.
-        /// </remarks>
+        /// <value>True if this reference has been allocated (and not yet deallocated).</value>
         public bool IsCreated => m_Data != null;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -140,14 +135,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will release all resources (memory and safety handles) of this reference.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job.
-        /// Pass the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes the container.</returns>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this reference.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -191,28 +182,28 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copy this container from another container.
+        /// Copy the value of another reference to this reference.
         /// </summary>
-        /// <param name="reference">The container to copy from.</param>
+        /// <param name="reference">The reference to copy from.</param>
         public void CopyFrom(NativeReference<T> reference)
         {
             Copy(this, reference);
         }
 
         /// <summary>
-        /// Copy this container to another container.
+        /// Copy the value of this reference to another reference.
         /// </summary>
-        /// <param name="reference">The container to copy to.</param>
+        /// <param name="reference">The reference to copy to.</param>
         public void CopyTo(NativeReference<T> reference)
         {
             Copy(reference, this);
         }
 
         /// <summary>
-        /// Determine whether this container is equal to another container.
+        /// Returns true if the value stored in this reference is equal to the value stored in another reference.
         /// </summary>
-        /// <param name="other">A container to compare with this container.</param>
-        /// <returns><see langword="true"/> if this container is equal to the <paramref name="other"/> parameter, otherwise <see langword="false"/>.</returns>
+        /// <param name="other">A reference to compare with.</param>
+        /// <returns>True if the value stored in this reference is equal to the value stored in another reference.</returns>
         [NotBurstCompatible]
         public bool Equals(NativeReference<T> other)
         {
@@ -220,10 +211,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Determine whether this object is equal to another object of the same type.
+        /// Returns true if the value stored in this reference is equal to an object.
         /// </summary>
-        /// <param name="obj">An object to compare with this object.</param>
-        /// <returns><see langword="true"/> if this object is equal to the <paramref name="obj"/> parameter, otherwise <see langword="false"/>.</returns>
+        /// <remarks>Can only be equal if the object is itself a NativeReference.</remarks>
+        /// <param name="obj">An object to compare with.</param>
+        /// <returns>True if the value stored in this reference is equal to the object.</returns>
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
@@ -235,38 +227,39 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns the hash code for this container.
+        /// Returns the hash code of this reference.
         /// </summary>
-        /// <returns>A 32-bit signed integer hash code.</returns>
+        /// <returns>The hash code of this reference.</returns>
         public override int GetHashCode()
         {
             return Value.GetHashCode();
         }
 
+
         /// <summary>
-        /// Determine whether a container is equal to another container.
+        /// Returns true if the values stored in two references are equal.
         /// </summary>
-        /// <param name="left">Left-hand side container.</param>
-        /// <param name="right">Right-hand side container.</param>
-        /// <returns><see langword="true"/> if <paramref name="left"/> parameter is equal to the <paramref name="right"/> parameter, otherwise <see langword="false"/>.</returns>
+        /// <param name="left">A reference.</param>
+        /// <param name="right">Another reference.</param>
+        /// <returns>True if the two values are equal.</returns>
         public static bool operator ==(NativeReference<T> left, NativeReference<T> right)
         {
             return left.Equals(right);
         }
 
         /// <summary>
-        /// Determine whether a container is not equal to another container.
+        /// Returns true if the values stored in two references are unequal.
         /// </summary>
-        /// <param name="left">Left-hand side container.</param>
-        /// <param name="right">Right-hand side container.</param>
-        /// <returns><see langword="true"/> if <paramref name="left"/> parameter is not equal to the <paramref name="right"/> parameter, otherwise <see langword="false"/>.</returns>
+        /// <param name="left">A reference.</param>
+        /// <param name="right">Another reference.</param>
+        /// <returns>True if the two values are unequal.</returns>
         public static bool operator !=(NativeReference<T> left, NativeReference<T> right)
         {
             return !left.Equals(right);
         }
 
         /// <summary>
-        /// Copy source container to destination container.
+        /// Copies the value of a reference to another reference.
         /// </summary>
         /// <param name="dst">The destination reference.</param>
         /// <param name="src">The source reference.</param>
@@ -280,9 +273,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieve this container as read-only.
+        /// Returns a read-only reference aliasing the value of this reference.
         /// </summary>
-        /// <returns>A read-only reference container.</returns>
+        /// <returns>A read-only reference aliasing the value of this reference.</returns>
         public ReadOnly AsReadOnly()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -293,7 +286,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An unmanaged, read-only reference container.
+        /// A read-only alias for the value of a NativeReference. Does not have its own allocated storage.
         /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
@@ -320,8 +313,9 @@ namespace Unity.Collections
 #endif
 
             /// <summary>
-            /// The value of this container.
+            /// The value aliased by this reference.
             /// </summary>
+            /// <value>The value aliased by the reference.</value>
             public T Value
             {
                 get
@@ -383,17 +377,18 @@ namespace Unity.Collections
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// <see cref="NativeReference{T}"/> unsafe utilities.
+    /// Provides extension methods for NativeReference.
     /// </summary>
     [BurstCompatible]
     public static class NativeReferenceUnsafeUtility
     {
         /// <summary>
-        /// Retrieve the data pointer of this container and check for write access.
+        /// Returns a pointer to this reference's stored value.
         /// </summary>
-        /// <typeparam name="T">The type of the reference in the container.</typeparam>
-        /// <param name="reference">The reference container.</param>
-        /// <returns>The data pointer.</returns>
+        /// <remarks>Performs a job safety check for read-write access.</remarks>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="reference">The reference.</param>
+        /// <returns>A pointer to this reference's stored value.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafePtr<T>(this NativeReference<T> reference)
             where T : unmanaged
@@ -405,11 +400,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retrieve the data pointer of this container and check for read access.
+        /// Returns a pointer to this reference's stored value.
         /// </summary>
-        /// <typeparam name="T">The type of the reference in the container.</typeparam>
-        /// <param name="reference">The reference container.</param>
-        /// <returns>The data pointer.</returns>
+        /// <remarks>Performs a job safety check for read-only access.</remarks>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="reference">The reference.</param>
+        /// <returns>A pointer to this reference's stored value.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeReference<T> reference)
             where T : unmanaged
@@ -421,13 +417,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Retrieve the data pointer of this container without read/write access checks.
+        /// Returns a pointer to this reference's stored value.
         /// </summary>
-        /// <typeparam name="T">The type of the reference in the container.</typeparam>
-        /// <param name="reference">The reference container.</param>
-        /// <returns>The data pointer.</returns>
+        /// <remarks>Performs no job safety checks.</remarks>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="reference">The reference.</param>
+        /// <returns>A pointer to this reference's stored value.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static unsafe void* GetUnsafePtrWithoutChecks<T>(NativeReference<T> reference)
+        public static unsafe void* GetUnsafePtrWithoutChecks<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
             return reference.m_Data;

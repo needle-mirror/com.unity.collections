@@ -67,7 +67,7 @@ var ARGCOMBOS = AllCombinationsOf(ARGSETS);
 namespace Unity.Collections
 {
     /// <summary>
-    /// <undoc />
+    /// Provides formatting methods for FixedString*N*.
     /// </summary>
     [BurstCompatible]
     public static class FixedString
@@ -126,20 +126,30 @@ namespace Unity.Collections
         if (COMBO.Count > 3)
             RETURNTYPE = "FixedString512";
 
-        var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, COMBO.Count).Select(n => $"<param name=\"arg{n}\"><undoc /></param>"));
+        var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, COMBO.Count).Select(n => $"<param name=\"arg{n}\">Value to interpolate into the format string.</param>"));
 #>
 
         /// <summary>
-        /// Convenience function to Format into a <#=RETURNTYPE#>, with arguments
-        /// <#=WithCommas(COMBO)#>.
-        ///
-        /// If more control over the return type, or more complex formatting is required,
-        /// please manually create a FixedStringN and use its Append and AppendFormat methods.
+        /// Returns a new string produced by interpolating a format string.
         /// </summary>
-        /// <param name="formatString"><undoc /></param>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
 <#=TxDOCS#>
         /// <#=ARGxDOCS#>
-        /// <returns><undoc /></returns>
+        /// <returns>A new string produced by interpolating the format string.</returns>
         <#=BCOMPAT#>
         public static <#=RETURNTYPE#> Format<#=GENERICSPARAM#>(<#=RETURNTYPE#> formatString, <#=WithCommas(ARGS)#>)
 <#=GENERICSCONSTRAINT#>

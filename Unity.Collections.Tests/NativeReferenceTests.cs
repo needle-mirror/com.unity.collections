@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 
@@ -99,6 +100,28 @@ class NativeReferenceTests : CollectionsTestCommonBase
     }
 
     [Test]
+    public unsafe void NativeReference_UnsafePtr()
+    {
+        var reference = new NativeReference<int>(Allocator.TempJob);
+        var job = new TempNativeReferenceInJob() { Output = reference };
+        var jobHandle = job.Schedule();
+
+        Assert.Throws<InvalidOperationException>(() => reference.GetUnsafePtr());
+        Assert.Throws<InvalidOperationException>(() => reference.GetUnsafeReadOnlyPtr());
+        Assert.DoesNotThrow(() => reference.GetUnsafePtrWithoutChecks());
+
+        jobHandle.Complete();
+
+        Assert.AreEqual(*(int*)reference.GetUnsafePtr(), 42);
+        Assert.AreEqual(*(int*)reference.GetUnsafeReadOnlyPtr(), 42);
+        Assert.AreEqual(*(int*)reference.GetUnsafePtrWithoutChecks(), 42);
+
+        Assert.That(job.Output.Value, Is.EqualTo(42));
+
+        job.Output.Dispose();
+    }
+
+    [Test]
     public void NativeReference_DisposeJob()
     {
         var reference = new NativeReference<int>(Allocator.Persistent);
@@ -108,9 +131,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
         var disposeJob = reference.Dispose(default);
         Assert.That(reference.IsCreated, Is.False);
 
-        Assert.Throws<ObjectDisposedException>(
-            () => reference.Value = 3);
-
+        Assert.Throws<ObjectDisposedException>(() => reference.Value = 3);
 
         disposeJob.Complete();
     }
@@ -140,6 +161,19 @@ class NativeReferenceTests : CollectionsTestCommonBase
 
         referenceB.Value = 54321;
         Assert.AreNotEqual(referenceA, referenceB);
+
+        referenceA.Dispose();
+        referenceB.Dispose();
+    }
+
+    [Test]
+    public void NativeReference_ReadOnly()
+    {
+        var referenceA = new NativeReference<int>(12345, Allocator.Persistent);
+        var referenceB = new NativeReference<int>(Allocator.Persistent) { Value = 12345 };
+
+        var referenceARO = referenceA.AsReadOnly();
+        Assert.AreEqual(referenceARO.Value, referenceB.Value);
 
         referenceA.Dispose();
         referenceB.Dispose();

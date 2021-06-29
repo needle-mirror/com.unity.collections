@@ -1,4 +1,4 @@
-﻿#if !UNITY_DOTSRUNTIME
+#if !UNITY_DOTSRUNTIME
 using System;
 using System.Globalization;
 using System.Threading;
@@ -220,9 +220,9 @@ internal class FixedStringTests
     public void FixedStringNAppendString()
     {
         FixedStringN aa = default;
-        aa.Append("aa");
+        Assert.AreEqual(CopyError.None, aa.CopyFrom(new FixedString32("aa")));
         Assert.AreEqual("aa", aa.ToString());
-        aa.Append("bb");
+        Assert.AreEqual(FormatError.None, aa.Append("bb"));
         Assert.AreEqual("aabb", aa.ToString());
     }
 
@@ -233,8 +233,8 @@ internal class FixedStringTests
 
         FixedStringN a = new FixedStringN(rune, 3);
         FixedStringN b = default;
-        b.Append(rune);
-        b.Append(rune, 2);
+        Assert.AreEqual(FormatError.None, b.Append(rune));
+        Assert.AreEqual(FormatError.None, b.Append(rune, 2));
         Assert.AreEqual(a.ToString(), b.ToString());
     }
 
@@ -244,16 +244,13 @@ internal class FixedStringTests
     {
         FixedStringN aa = default;
         aa.Junk();
-        var utf8 = Encoding.UTF8.GetBytes(a);
-        unsafe
-        {
-            fixed(byte *b = utf8)
-                aa.Append(b, (ushort)utf8.Length);
-        }
+
+        Assert.AreEqual(CopyError.None, aa.CopyFrom(a));
+
         Assert.AreEqual(a, aa.ToString());
         aa.AssertNullTerminated();
 
-        aa.Append("tail");
+        Assert.AreEqual(FormatError.None, aa.Append("tail"));
         Assert.AreEqual(a + "tail", aa.ToString());
         aa.AssertNullTerminated();
     }
@@ -290,7 +287,7 @@ internal class FixedStringTests
     public void FixedStringNForEach()
     {
         FixedStringN actual = "A🌕Z🌑";
-        FixedListInt32 expected = default;
+        FixedList32<int> expected = default;
         expected.Add('A');
         expected.Add(0x1F315);
         expected.Add('Z');

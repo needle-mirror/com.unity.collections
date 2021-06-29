@@ -12,6 +12,7 @@ using UnityEngine.TestTools;
 #if !NET_DOTS
 using System.Text.RegularExpressions;
 #endif
+using Assert = FastAssert;
 
 internal class NativeBitArrayTests : CollectionsTestFixture
 {
@@ -481,7 +482,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
         for (var i = 0; i < 16; ++i)
         {
-            Assert.AreEqual(i, test0.GetBits(i * 4, 4));
+            NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
         test0.Dispose();
@@ -502,7 +503,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
         for (var i = 0; i < 16; ++i)
         {
-            Assert.AreEqual(i, test0.GetBits(i * 4, 4));
+            NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
         test0.Dispose();
@@ -522,7 +523,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
         for (var i = 0; i < 16; ++i)
         {
-            Assert.AreEqual(i, test0.GetBits(i * 4, 4));
+            NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
         test0.Dispose();
@@ -597,7 +598,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         var test = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         SetBitsTest(ref test, 0, 16, 5);
         test.Dispose();
-        Assert.That(() => test.IsSet(0),
+        NUnit.Framework.Assert.That(() => test.IsSet(0),
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test.GetType()} has been deallocated"));
     }
@@ -617,12 +618,12 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         SetBitsTest(ref test0, 0, 16, 5);
         test0.Dispose();
 
-        Assert.That(() => test0.IsSet(0),
+        NUnit.Framework.Assert.That(() => test0.IsSet(0),
             Throws.Exception.With.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test0.GetType()} has been deallocated"));
         SetBitsTest(ref test1, 0, 16, 5);
         test1.Dispose();
-        Assert.That(() => test1.IsSet(0),
+        NUnit.Framework.Assert.That(() => test1.IsSet(0),
             Throws.Exception.With.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test1.GetType()} has been deallocated"));
     }

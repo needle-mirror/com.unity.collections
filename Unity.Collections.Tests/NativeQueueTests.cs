@@ -9,6 +9,7 @@ using UnityEngine.TestTools;
 #if !UNITY_PORTABLE_TEST_RUNNER
 using System.Text.RegularExpressions;
 #endif
+using Assert = FastAssert;
 
 internal class NativeQueueTests : CollectionsTestCommonBase
 {
@@ -270,7 +271,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         var container = new NativeQueue<int>(Allocator.TempJob);
         container.Enqueue(123);
         container.Dispose();
-        Assert.That(() => container.Dequeue(),
+        NUnit.Framework.Assert.That(() => container.Dequeue(),
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }

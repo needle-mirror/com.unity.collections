@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEngine;
 using UnityEngine.TestTools;
 using Assembly = System.Reflection.Assembly;
 using Debug = UnityEngine.Debug;
@@ -52,6 +53,7 @@ namespace Unity.Collections.Tests
         private string m_GeneratedCodePath;
         private HashSet<string> m_AssembliesToVerify = new HashSet<string>();
         private string m_GeneratedCodeAssemblyName;
+        private readonly string m_TempBurstCompatibilityPath;
         private static readonly string s_GeneratedClassName = "_generated_burst_compat_tests";
 
         /// <summary>
@@ -61,10 +63,8 @@ namespace Unity.Collections.Tests
         /// <param name="generatedCodePath">Destination path for the generated Burst compatibility code.</param>
         /// <param name="generatedCodeAssemblyName">Name of the assembly that will contain the generated Burst compatibility code.</param>
         protected BurstCompatibilityTests(string assemblyNameToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName)
+        : this(new[] {assemblyNameToVerifyBurstCompatibility}, generatedCodePath, generatedCodeAssemblyName)
         {
-            m_GeneratedCodePath = generatedCodePath;
-            m_AssembliesToVerify.Add(assemblyNameToVerifyBurstCompatibility);
-            m_GeneratedCodeAssemblyName = generatedCodeAssemblyName;
         }
 
         /// <summary>
@@ -88,6 +88,7 @@ namespace Unity.Collections.Tests
             }
 
             m_GeneratedCodeAssemblyName = generatedCodeAssemblyName;
+            m_TempBurstCompatibilityPath = Path.Combine("Temp", "BurstCompatibility", GetType().Name);
         }
 
         struct MethodData : IComparable<MethodData>
@@ -170,10 +171,22 @@ namespace Unity.Collections.Tests
             }
         }
 
-        private int UpdateGeneratedFile(string path)
+        /// <summary>
+        /// Generates the code for the Burst compatibility tests.
+        /// </summary>
+        /// <param name="path">Path of the generated file.</param>
+        /// <param name="methodsTestedCount">Number of methods being tested.</param>
+        /// <returns>True if the file was generated successfully; false otherwise.</returns>
+        private bool UpdateGeneratedFile(string path, out int methodsTestedCount)
         {
             var buf = new StringBuilder();
-            var methods = GetTestMethods();
+            var success = GetTestMethods(out MethodData[] methods);
+
+            if (!success)
+            {
+                methodsTestedCount = 0;
+                return false;
+            }
 
             buf.AppendLine(
 @"// auto-generated
@@ -444,7 +457,8 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             buf.AppendLine("#endif");
 
             File.WriteAllText(path, buf.ToString());
-            return methods.Length;
+            methodsTestedCount = methods.Length;
+            return true;
         }
 
         private static void TypeToString(Type t, StringBuilder buf, in MethodData methodData)
@@ -586,15 +600,36 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
         private static readonly Type[] EmptyGenericTypeArguments = { };
 
-        MethodData[] GetTestMethods()
+        private bool GetTestMethods(out MethodData[] methods)
         {
             var seenMethods = new HashSet<MethodBase>();
             var result = new List<MethodData>();
+            int errorCount = 0;
+
+            void LogError(string message)
+            {
+                ++errorCount;
+                Debug.LogError(message);
+            }
 
             void MaybeAddMethod(MethodBase m, Type[] methodGenericTypeArguments, Type[] declaredTypeGenericTypeArguments, string requiredDefine, MemberInfo attributeHolder, BurstCompatibleAttribute.BurstCompatibleCompileTarget compileTarget)
             {
                 if (m.IsPrivate)
+                {
+                    // Private methods that were explicitly tagged as [BurstCompatible] should generate an error to
+                    // avoid users thinking the method is being tested when it actually isn't.
+                    if (m.GetCustomAttribute<BurstCompatibleAttribute>() != null)
+                    {
+                        // Just return and avoiding printing duplicate errors if we've already seen this method.
+                        if (seenMethods.Contains(m))
+                            return;
+
+                        seenMethods.Add(m);
+                        LogError($"BurstCompatibleAttribute cannot be used with private methods, but found on private method `{m.DeclaringType}.{m}`. Make method public, internal, or ensure that this method is called by another public/internal method that is tested.");
+                    }
+
                     return;
+                }
 
                 // Burst IL post processing might create a new method that contains $ to ensure it doesn't
                 // conflict with any real names (as an example, it can append $BurstManaged to the original method name).
@@ -619,7 +654,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 {
                     if (methodGenericTypeArguments == null)
                     {
-                        Debug.LogError($"Method `{m.DeclaringType}.{m}` is generic but doesn't have a type array in its BurstCompatible attribute");
+                        LogError($"Method `{m.DeclaringType}.{m}` is generic but doesn't have a type array in its BurstCompatible attribute");
                         return;
                     }
 
@@ -627,7 +662,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
                     if (genericArguments.Length != methodGenericTypeArguments.Length)
                     {
-                        Debug.LogError($"Method `{m.DeclaringType}.{m}` is generic with {genericArguments.Length} generic parameters but BurstCompatible attribute has {methodGenericTypeArguments.Length} types, they must be the same length!");
+                        LogError($"Method `{m.DeclaringType}.{m}` is generic with {genericArguments.Length} generic parameters but BurstCompatible attribute has {methodGenericTypeArguments.Length} types, they must be the same length!");
                         return;
                     }
 
@@ -637,7 +672,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"Could not instantiate method `{m.DeclaringType}.{m}` with type arguments `{methodGenericTypeArguments}`.");
+                        LogError($"Could not instantiate method `{m.DeclaringType}.{m}` with type arguments `{methodGenericTypeArguments}`.");
                         Debug.LogException(e);
                         return;
                     }
@@ -654,7 +689,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                         }
                         catch (Exception e)
                         {
-                            Debug.LogError($"For method `{m.DeclaringType}.{m}`, could not add ({name}, {type}).");
+                            LogError($"For method `{m.DeclaringType}.{m}`, could not add ({name}, {type}).");
                             Debug.LogException(e);
                             return;
                         }
@@ -670,13 +705,13 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
                     if (declaredTypeGenericTypeArguments == null)
                     {
-                        Debug.LogError($"Type `{m.DeclaringType}` is generic but doesn't have a type array in its BurstCompatible attribute");
+                        LogError($"Type `{m.DeclaringType}` is generic but doesn't have a type array in its BurstCompatible attribute");
                         return;
                     }
 
                     if (instanceGenericArguments.Length != declaredTypeGenericTypeArguments.Length)
                     {
-                        Debug.LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but BurstCompatible attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
+                        LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but BurstCompatible attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
                         return;
                     }
 
@@ -686,7 +721,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"Could not instantiate type `{instanceType}` with type arguments `{declaredTypeGenericTypeArguments}`.");
+                        LogError($"Could not instantiate type `{instanceType}` with type arguments `{declaredTypeGenericTypeArguments}`.");
                         Debug.LogException(e);
                         return;
                     }
@@ -703,7 +738,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                         }
                         catch (Exception e)
                         {
-                            Debug.LogError($"For type `{instanceType}`, could not add ({name}, {type}).");
+                            LogError($"For type `{instanceType}`, could not add ({name}, {type}).");
                             Debug.LogException(e);
                             return;
                         }
@@ -816,9 +851,15 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 }
             }
 
-            var array = result.ToArray();
-            Array.Sort(array);
-            return array;
+            if (errorCount > 0)
+            {
+                methods = new MethodData[] {};
+                return false;
+            }
+
+            methods = result.ToArray();
+            Array.Sort(methods);
+            return true;
         }
 
         private static string GetSafeName(in MethodData methodData)
@@ -843,6 +884,15 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             return assemblies.SingleOrDefault(assembly => assembly.GetName().Name == name);
         }
 
+        private StreamWriter m_BurstCompileLogs;
+
+        // This is a log handler to save all the logs during burst compilation and eventually write to a file
+        // so it is easier to see all the logs without truncation in the test runner.
+        void LogHandler(string logString, string stackTrace, LogType type)
+        {
+            m_BurstCompileLogs.WriteLine(logString);
+        }
+
         [UnityTest]
         public IEnumerator CompatibilityTests()
         {
@@ -854,16 +904,19 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
             try
             {
-                var generatedCount = UpdateGeneratedFile(m_GeneratedCodePath);
+                if (!UpdateGeneratedFile(m_GeneratedCodePath, out var generatedCount))
+                {
+                    yield break;
+                }
 
                 // Make another copy of the generated code and put it in Temp so it's easier to inspect.
-                var debugCodeGenTempDirectory = Path.Combine("Temp/BurstCompatibility/", GetType().Name);
-                var debugCodeGenTempDest = Path.Combine(debugCodeGenTempDirectory, "generated.cs");
-                Directory.CreateDirectory(debugCodeGenTempDirectory);
+                var debugCodeGenTempDest = Path.Combine(m_TempBurstCompatibilityPath, "generated.cs");
+                Directory.CreateDirectory(m_TempBurstCompatibilityPath);
                 File.Copy(m_GeneratedCodePath, debugCodeGenTempDest, true);
                 Debug.Log($"Generated {generatedCount} Burst compatibility tests.");
                 Debug.Log($"You can inspect a copy of the generated code at: {Path.GetFullPath(debugCodeGenTempDest)}");
 
+                // BEWARE: this causes a domain reload and can cause variables to go null.
                 yield return new RecompileScripts();
 
                 var t = GetAssemblyByName(m_GeneratedCodeAssemblyName).GetType(s_GeneratedClassName);
@@ -872,6 +925,10 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                     throw new ApplicationException($"could not find generated type {s_GeneratedClassName} in assembly {m_GeneratedCodeAssemblyName}");
                 }
 
+                var logPath = Path.Combine(m_TempBurstCompatibilityPath, "BurstCompileLog.txt");
+                m_BurstCompileLogs = File.CreateText(logPath);
+                Debug.Log($"Logs from Burst compilation written to: {Path.GetFullPath(logPath)}\n");
+                Application.logMessageReceived += LogHandler;
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.Static))
@@ -904,6 +961,8 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             }
             finally
             {
+                Application.logMessageReceived -= LogHandler;
+                m_BurstCompileLogs?.Close();
                 Debug.Log($"Player build duration: {playerBuildTime.TotalSeconds} s.");
 
                 if (playerBuildSucceeded)

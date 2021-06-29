@@ -2,13 +2,1012 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine.Assertions;
+using Unity.Burst;
+using UnityEngine;
+using static Unity.Baselib.LowLevel.Binding;
 
 #pragma warning disable 618 // disable obsolete warnings
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    /// <summary>
+    /// An unmanaged, untyped, resizable list, without any thread safety check features.
+    /// </summary>
+    [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
+    [StructLayout(LayoutKind.Sequential)]
+//    [Obsolete("Untyped UnsafeList is deprecated, please use UnsafeList<T> instead. (RemovedAfter 2021-05-18)", false)]
+    public unsafe struct UnsafeList
+        : INativeDisposable
+    {
+        /// <summary>
+        /// </summary>
+        [NativeDisableUnsafePtrRestriction]
+        public void* Ptr;
+
+        /// <summary>
+        /// </summary>
+        public int Length;
+
+        /// <summary>
+        /// </summary>
+        public int Capacity;
+
+        /// <summary>
+        /// </summary>
+        public AllocatorManager.AllocatorHandle Allocator;
+
+        /// <summary>
+        /// Constructs a new container with type of memory allocation.
+        /// </summary>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
+        /// sufficient capacity up front.</remarks>
+        public UnsafeList(Allocator allocator)
+        {
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+            Allocator = allocator;
+        }
+
+        /// <summary>
+        /// Constructs container as view into memory.
+        /// </summary>
+        /// <param name="ptr">Pointer to data.</param>
+        /// <param name="length">Lenght of data in bytes.</param>
+        public UnsafeList(void* ptr, int length)
+        {
+            Ptr = ptr;
+            Length = length;
+            Capacity = length;
+            Allocator = Collections.Allocator.None;
+        }
+
+        internal void Initialize<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            Allocator = allocator.Handle;
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+
+            if (initialCapacity != 0)
+            {
+                SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && Ptr != null)
+            {
+                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
+            }
+        }
+
+        internal static UnsafeList New<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var temp = new UnsafeList();
+            temp.Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
+            return temp;
+        }
+
+        /// <summary>
+        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// </summary>
+        /// <param name="sizeOf">Size of element.</param>
+        /// <param name="alignOf">Alignment of element.</param>
+        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
+        /// the internal array is copied to a new, larger array.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            this = default;
+            Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
+        }
+
+        /// <summary>
+        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// </summary>
+        /// <param name="sizeOf">Size of element.</param>
+        /// <param name="alignOf">Alignment of element.</param>
+        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
+        /// the internal array is copied to a new, larger array.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            Allocator = allocator;
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+
+            if (initialCapacity != 0)
+            {
+                SetCapacity(sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && Ptr != null)
+            {
+                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new container with the specified initial capacity and type of memory allocation.
+        /// </summary>
+        /// <param name="sizeOf">Size of element.</param>
+        /// <param name="alignOf">Alignment of element.</param>
+        /// <param name="initialCapacity">The initial capacity of the list. If the list grows larger than its capacity,
+        /// the internal array is copied to a new, larger array.</param>
+        /// <param name="allocator">A member of the
+        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        /// <returns>New initialized container.</returns>
+        public static UnsafeList* Create(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            var handle = (AllocatorManager.AllocatorHandle)allocator;
+            UnsafeList* listData = AllocatorManager.Allocate<UnsafeList>(handle);
+            UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
+
+            listData->Allocator = allocator;
+
+            if (initialCapacity != 0)
+            {
+                listData->SetCapacity(sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && listData->Ptr != null)
+            {
+                UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
+            }
+
+            return listData;
+        }
+
+        internal static UnsafeList* Create<U>(int sizeOf, int alignOf, int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            UnsafeList* listData = allocator.Allocate(default(UnsafeList), 1);
+            UnsafeUtility.MemClear(listData, UnsafeUtility.SizeOf<UnsafeList>());
+
+            listData->Allocator = allocator.Handle;
+
+            if (initialCapacity != 0)
+            {
+                listData->SetCapacity(ref allocator, sizeOf, alignOf, initialCapacity);
+            }
+
+            if (options == NativeArrayOptions.ClearMemory
+                && listData->Ptr != null)
+            {
+                UnsafeUtility.MemClear(listData->Ptr, listData->Capacity * sizeOf);
+            }
+
+            return listData;
+        }
+
+        internal static void Destroy<U>(UnsafeList* listData, ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            CheckNull(listData);
+            listData->Dispose(ref allocator, sizeOf, alignOf);
+            allocator.Free(listData, UnsafeUtility.SizeOf<UnsafeList>(), UnsafeUtility.AlignOf<UnsafeList>(), 1);
+        }
+
+        /// <summary>
+        /// Destroys container.
+        /// </summary>
+        /// <param name="listData">Container to destroy.</param>
+        public static void Destroy(UnsafeList* listData)
+        {
+            CheckNull(listData);
+            var allocator = listData->Allocator;
+            listData->Dispose();
+            AllocatorManager.Free(allocator, listData);
+        }
+
+        /// <summary>
+        /// Reports whether container is empty.
+        /// </summary>
+        /// <value>True if this container empty.</value>
+        public bool IsEmpty => !IsCreated || Length == 0;
+
+        /// <summary>
+        /// Reports whether memory for the container is allocated.
+        /// </summary>
+        /// <value>True if this container object's internal storage has been allocated.</value>
+        /// <remarks>
+        /// Note that the container storage is not created if you use the default constructor. You must specify
+        /// at least an allocation type to construct a usable container.
+        ///
+        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
+        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
+        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
+        /// of the copies still return `true` even though the container storage has been deallocated.
+        /// </remarks>
+        public bool IsCreated => Ptr != null;
+
+        /// <summary>
+        /// Disposes of this container and deallocates its memory immediately.
+        /// </summary>
+        public void Dispose()
+        {
+            if (CollectionHelper.ShouldDeallocate(Allocator))
+            {
+                AllocatorManager.Free(Allocator, Ptr);
+                Allocator = AllocatorManager.Invalid;
+            }
+
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+        }
+
+        internal void Dispose<U>(ref U allocator, int sizeOf, int alignOf) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            allocator.Free(Ptr, sizeOf, alignOf, Length);
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+        }
+
+        /// <summary>
+        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// </summary>
+        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
+        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
+        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
+        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
+        /// using it have run.</remarks>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
+        /// the container.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+            if (CollectionHelper.ShouldDeallocate(Allocator))
+            {
+                var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = (Allocator)Allocator.Value }.Schedule(inputDeps);
+
+                Ptr = null;
+                Allocator = AllocatorManager.Invalid;
+
+                return jobHandle;
+            }
+
+            Ptr = null;
+
+            return inputDeps;
+        }
+
+        /// <summary>
+        /// Clears the container.
+        /// </summary>
+        /// <remarks>The container capacity remains unchanged.</remarks>
+        public void Clear()
+        {
+            Length = 0;
+        }
+
+        /// <summary>
+        /// Changes the list length, resizing if necessary.
+        /// </summary>
+        /// <param name="sizeOf">Size of element.</param>
+        /// <param name="alignOf">Alignment of element.</param>
+        /// <param name="length">The new length of the list.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        public void Resize(int sizeOf, int alignOf, int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            var oldLength = Length;
+
+            if (length > Capacity)
+            {
+                SetCapacity(sizeOf, alignOf, length);
+            }
+
+            Length = length;
+
+            if (options == NativeArrayOptions.ClearMemory
+                && oldLength < length)
+            {
+                var num = length - oldLength;
+                byte* ptr = (byte*)Ptr;
+                UnsafeUtility.MemClear(ptr + oldLength * sizeOf, num * sizeOf);
+            }
+        }
+
+        /// <summary>
+        /// Changes the list length, resizing if necessary.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="length">The new length of the list.</param>
+        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
+        public void Resize<T>(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where T : struct
+        {
+            Resize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), length, options);
+        }
+
+        void Realloc<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            void* newPointer = null;
+
+            if (capacity > 0)
+            {
+                newPointer = allocator.Allocate(sizeOf, alignOf, capacity);
+
+                if (Capacity > 0)
+                {
+                    var itemsToCopy = math.min(capacity, Capacity);
+                    var bytesToCopy = itemsToCopy * sizeOf;
+                    UnsafeUtility.MemCpy(newPointer, Ptr, bytesToCopy);
+                }
+            }
+
+            allocator.Free(Ptr, sizeOf, alignOf, Capacity);
+
+            Ptr = newPointer;
+            Capacity = capacity;
+            Length = math.min(Length, capacity);
+        }
+
+        void Realloc(int sizeOf, int alignOf, int capacity)
+        {
+            Realloc(ref Allocator, sizeOf, alignOf, capacity);
+        }
+
+        void SetCapacity<U>(ref U allocator, int sizeOf, int alignOf, int capacity) where U : unmanaged, AllocatorManager.IAllocator
+        {
+            var newCapacity = math.max(capacity, 64 / sizeOf);
+            newCapacity = math.ceilpow2(newCapacity);
+
+            if (newCapacity == Capacity)
+            {
+                return;
+            }
+
+            Realloc(ref allocator, sizeOf, alignOf, newCapacity);
+        }
+
+        void SetCapacity(int sizeOf, int alignOf, int capacity)
+        {
+            SetCapacity(ref Allocator, sizeOf, alignOf, capacity);
+        }
+
+        /// <summary>
+        /// Set the number of items that can fit in the container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="capacity">The number of items that the container can hold before it resizes its internal storage.</param>
+        public void SetCapacity<T>(int capacity) where T : struct
+        {
+            SetCapacity(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), capacity);
+        }
+
+        /// <summary>
+        /// Sets the capacity to the actual number of elements in the container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        public void TrimExcess<T>() where T : struct
+        {
+            if (Capacity != Length)
+            {
+                Realloc(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), Length);
+            }
+        }
+
+        /// <summary>
+        /// Searches for the specified element in list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="value"></param>
+        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        public int IndexOf<T>(T value) where T : struct, IEquatable<T>
+        {
+            return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
+        }
+
+        /// <summary>
+        /// Determines whether an element is in the list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="value"></param>
+        /// <returns>True, if element is found.</returns>
+        public bool Contains<T>(T value) where T : struct, IEquatable<T>
+        {
+            return IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="value">The value to be added at the end of the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddNoResize<T>(T value) where T : struct
+        {
+            CheckNoResizeHasEnoughCapacity(1);
+            UnsafeUtility.WriteArrayElement(Ptr, Length, value);
+            Length += 1;
+        }
+
+        void AddRangeNoResize(int sizeOf, void* ptr, int length)
+        {
+            CheckNoResizeHasEnoughCapacity(length);
+            void* dst = (byte*)Ptr + Length * sizeOf;
+            UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
+            Length += length;
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
+        {
+            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), ptr, length);
+        }
+
+        /// <summary>
+        /// Adds elements from a list to this list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">Other container to copy elements from.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+        /// </remarks>
+        public void AddRangeNoResize<T>(UnsafeList list) where T : struct
+        {
+            AddRangeNoResize(UnsafeUtility.SizeOf<T>(), list.Ptr, CollectionHelper.AssumePositive(list.Length));
+        }
+
+        /// <summary>
+        /// Adds an element to the list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="value">The value to be added at the end of the list.</param>
+        /// <remarks>
+        /// If the list has reached its current capacity, it copies the original, internal array to
+        /// a new, larger array, and then deallocates the original.
+        /// </remarks>
+        public void Add<T>(T value) where T : struct
+        {
+            var idx = Length;
+
+            if (Length + 1 > Capacity)
+            {
+                Resize<T>(idx + 1);
+            }
+            else
+            {
+                Length += 1;
+            }
+
+            UnsafeUtility.WriteArrayElement(Ptr, idx, value);
+        }
+
+        void AddRange(int sizeOf, int alignOf, void* ptr, int length)
+        {
+            var idx = Length;
+
+            if (Length + length > Capacity)
+            {
+                Resize(sizeOf, alignOf, Length + length);
+            }
+            else
+            {
+                Length += length;
+            }
+
+            void* dst = (byte*)Ptr + idx * sizeOf;
+            UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
+        }
+
+        /// <summary>
+        /// Adds elements from a buffer to this list.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="ptr">A pointer to the buffer.</param>
+        /// <param name="length">The number of elements to add to the list.</param>
+        public void AddRange<T>(void* ptr, int length) where T : struct
+        {
+            AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+        }
+
+        /// <summary>
+        /// Adds elements from a list to this list.
+        /// </summary>
+        /// <remarks>
+        /// If the list has reached its current capacity, it copies the original, internal array to
+        /// a new, larger array, and then deallocates the original.
+        /// </remarks>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">Other container to copy elements from.</param>
+        public void AddRange<T>(UnsafeList list) where T : struct
+        {
+            AddRange(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
+        }
+
+        void InsertRangeWithBeginEnd(int sizeOf, int alignOf, int begin, int end)
+        {
+            CheckBeginEnd(begin, end);
+
+            int items = end - begin;
+            if (items < 1)
+            {
+                return;
+            }
+
+            var oldLength = Length;
+
+            if (Length + items > Capacity)
+            {
+                Resize(sizeOf, alignOf, Length + items);
+            }
+            else
+            {
+                Length += items;
+            }
+
+            var itemsToCopy = oldLength - begin;
+
+            if (itemsToCopy < 1)
+            {
+                return;
+            }
+
+            var bytesToCopy = itemsToCopy * sizeOf;
+            unsafe
+            {
+                byte* ptr = (byte*)Ptr;
+                byte* dest = ptr + end * sizeOf;
+                byte* src = ptr + begin * sizeOf;
+                UnsafeUtility.MemMove(dest, src, bytesToCopy);
+            }
+        }
+
+        /// <summary>
+        /// Inserts a number of items into a container at a specified zero-based index.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
+        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void InsertRangeWithBeginEnd<T>(int begin, int end) where T : struct
+        {
+            InsertRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), begin, end);
+        }
+
+        void RemoveRangeSwapBackWithBeginEnd(int sizeOf, int begin, int end)
+        {
+            CheckBeginEnd(begin, end);
+
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
+            {
+                int copyFrom = math.max(Length - itemsToRemove, end);
+                void* dst = (byte*)Ptr + begin * sizeOf;
+                void* src = (byte*)Ptr + copyFrom * sizeOf;
+                UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                Length -= itemsToRemove;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveAtSwapBack<T>(int index) where T : struct
+        {
+            RemoveRangeSwapBackWithBeginEnd<T>(index, index + 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeSwapBackWithBeginEnd<T>(int begin, int end) where T : struct
+        {
+            RemoveRangeSwapBackWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
+        }
+
+        void RemoveRangeWithBeginEnd(int sizeOf, int begin, int end)
+        {
+            CheckBeginEnd(begin, end);
+
+            int itemsToRemove = end - begin;
+            if (itemsToRemove > 0)
+            {
+                int copyFrom = math.min(begin + itemsToRemove, Length);
+                void* dst = (byte*)Ptr + begin * sizeOf;
+                void* src = (byte*)Ptr + copyFrom * sizeOf;
+                UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
+                Length -= itemsToRemove;
+            }
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the item at the specified index, and shifting all remaining items to replace removed item. The list
+        /// is shortened by one.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="index">The index of the item to delete.</param>
+        /// <remarks>
+        /// This method of removing item is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveAtSwapBack`.
+        /// </remarks>
+        public void RemoveAt<T>(int index) where T : struct
+        {
+            RemoveRangeWithBeginEnd<T>(index, index + 1);
+        }
+
+        /// <summary>
+        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
+        /// is shortened by number of elements in range.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="begin">The first index of the item to remove.</param>
+        /// <param name="end">The index past-the-last item to remove.</param>
+        /// <remarks>
+        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
+        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
+        /// </remarks>
+        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
+        public void RemoveRangeWithBeginEnd<T>(int begin, int end) where T : struct
+        {
+            RemoveRangeWithBeginEnd(UnsafeUtility.SizeOf<T>(), begin, end);
+        }
+
+        /// <summary>
+        /// Returns parallel reader instance.
+        /// </summary>
+        /// <returns>Parallel reader instance.</returns>
+        public ParallelReader AsParallelReader()
+        {
+            return new ParallelReader(Ptr, Length);
+        }
+
+        /// <summary>
+        /// Implements parallel reader. Use AsParallelReader to obtain it from container.
+        /// </summary>
+        public unsafe struct ParallelReader
+        {
+            /// <summary>
+            ///
+            /// </summary>
+            [NativeDisableUnsafePtrRestriction]
+            public readonly void* Ptr;
+
+            /// <summary>
+            ///
+            /// </summary>
+            public readonly int Length;
+
+            internal ParallelReader(void* ptr, int length)
+            {
+                Ptr = ptr;
+                Length = length;
+            }
+
+            /// <summary>
+            ///
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public int IndexOf<T>(T value) where T : struct, IEquatable<T>
+            {
+                return NativeArrayExtensions.IndexOf<T, T>(Ptr, Length, value);
+            }
+
+            /// <summary>
+            ///
+            /// </summary>
+            /// <typeparam name="T"></typeparam>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            public bool Contains<T>(T value) where T : struct, IEquatable<T>
+            {
+                return IndexOf(value) != -1;
+            }
+        }
+
+        /// <summary>
+        /// Returns parallel writer instance.
+        /// </summary>
+        /// <returns>Parallel writer instance.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            return new ParallelWriter(Ptr, (UnsafeList*)UnsafeUtility.AddressOf(ref this));
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public unsafe struct ParallelWriter
+        {
+            /// <summary>
+            ///
+            /// </summary>
+            [NativeDisableUnsafePtrRestriction]
+            public readonly void* Ptr;
+
+            /// <summary>
+            ///
+            /// </summary>
+            [NativeDisableUnsafePtrRestriction]
+            public UnsafeList* ListData;
+
+            internal unsafe ParallelWriter(void* ptr, UnsafeList* listData)
+            {
+                Ptr = ptr;
+                ListData = listData;
+            }
+
+            /// <summary>
+            /// Adds an element to the list.
+            /// </summary>
+            /// <typeparam name="T">Source type of elements</typeparam>
+            /// <param name="value">The value to be added at the end of the list.</param>
+            /// <remarks>
+            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// </remarks>
+            public void AddNoResize<T>(T value) where T : struct
+            {
+                var idx = Interlocked.Increment(ref ListData->Length) - 1;
+                ListData->CheckNoResizeHasEnoughCapacity(idx, 1);
+                UnsafeUtility.WriteArrayElement(Ptr, idx, value);
+            }
+
+            void AddRangeNoResize(int sizeOf, int alignOf, void* ptr, int length)
+            {
+                var idx = Interlocked.Add(ref ListData->Length, length) - length;
+                ListData->CheckNoResizeHasEnoughCapacity(idx, length);
+                void* dst = (byte*)Ptr + idx * sizeOf;
+                UnsafeUtility.MemCpy(dst, ptr, length * sizeOf);
+            }
+
+            /// <summary>
+            /// Adds elements from a buffer to this list.
+            /// </summary>
+            /// <typeparam name="T">Source type of elements</typeparam>
+            /// <param name="ptr">A pointer to the buffer.</param>
+            /// <param name="length">The number of elements to add to the list.</param>
+            /// <remarks>
+            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// </remarks>
+            public void AddRangeNoResize<T>(void* ptr, int length) where T : struct
+            {
+                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), ptr, length);
+            }
+
+            /// <summary>
+            /// Adds elements from a list to this list.
+            /// </summary>
+            /// <typeparam name="T">Source type of elements</typeparam>
+            /// <param name="list">Other container to copy elements from.</param>
+            /// <remarks>
+            /// If the list has reached its current capacity, internal array won't be resized, and exception will be thrown.
+            /// </remarks>
+            public void AddRangeNoResize<T>(UnsafeList list) where T : struct
+            {
+                AddRangeNoResize(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), list.Ptr, list.Length);
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckNull(void* listData)
+        {
+            if (listData == null)
+            {
+                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckAllocator(Allocator a)
+        {
+            if (!CollectionHelper.ShouldDeallocate(a))
+            {
+                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckAllocator(AllocatorManager.AllocatorHandle a)
+        {
+            if (!CollectionHelper.ShouldDeallocate(a))
+            {
+                throw new Exception("UnsafeList is not initialized, it must be initialized with allocator before use.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckBeginEnd(int begin, int end)
+        {
+            if (begin > end)
+            {
+                throw new ArgumentException($"Value for begin {begin} index must less or equal to end {end}.");
+            }
+
+            if (begin < 0)
+            {
+                throw new ArgumentOutOfRangeException($"Value for begin {begin} must be positive.");
+            }
+
+            if (begin > Length)
+            {
+                throw new ArgumentOutOfRangeException($"Value for begin {begin} is out of bounds.");
+            }
+
+            if (end > Length)
+            {
+                throw new ArgumentOutOfRangeException($"Value for end {end} is out of bounds.");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckNoResizeHasEnoughCapacity(int length)
+        {
+            CheckNoResizeHasEnoughCapacity(length, Length);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckNoResizeHasEnoughCapacity(int length, int index)
+        {
+            if (Capacity < index + length)
+            {
+                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Provides extension methods for UnsafeList.
+    /// </summary>
+    public static class UnsafeListExtension
+    {
+        /// <summary>
+        /// Sorts a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        public unsafe static void Sort<T>(this UnsafeList list) where T : unmanaged, IComparable<T>
+        {
+            list.Sort<T, NativeSortExtension.DefaultComparer<T>>(new NativeSortExtension.DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Sorts a list using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="list">List to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        public unsafe static void Sort<T, U>(this UnsafeList list, U comp) where T : unmanaged where U : IComparer<T>
+        {
+            NativeSortExtension.IntroSort<T, U>(list.Ptr, list.Length, comp);
+        }
+
+        /// <summary>
+        /// Sorts the container in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
+        public unsafe static JobHandle Sort<T>(this UnsafeList container, JobHandle inputDeps)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.Sort<T, NativeSortExtension.DefaultComparer<T>>(new NativeSortExtension.DefaultComparer<T>(), inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list in ascending order.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        public unsafe static SortJob<T, NativeSortExtension.DefaultComparer<T>> SortJob<T>(this UnsafeList list)
+            where T : unmanaged, IComparable<T>
+        {
+            return NativeSortExtension.SortJob((T*)list.Ptr, list.Length, new NativeSortExtension.DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Sorts the container using a custom comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
+        /// <returns>A new job handle containing the prior handles as well as the handle for the job that sorts
+        /// the container.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [Obsolete("Instead call SortJob(this UnsafeList, U).Schedule(JobHandle). (RemovedAfter 2021-06-20)", false)]
+        public unsafe static JobHandle Sort<T, U>(this UnsafeList container, U comp, JobHandle inputDeps)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return NativeSortExtension.Sort((T*)container.Ptr, container.Length, comp, inputDeps);
+        }
+
+        /// <summary>
+        /// Creates a job that will sort a list using a comparison function.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="list">List to sort.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>The job that will sort the list. Scheduling the job is left to the user.</returns>
+        public unsafe static SortJob<T, U> SortJob<T, U>(this UnsafeList list, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return NativeSortExtension.SortJob((T*)list.Ptr, list.Length, comp);
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public static int BinarySearch<T>(this UnsafeList container, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return container.BinarySearch(value, new NativeSortExtension.DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Binary search for the value in the sorted container.
+        /// </summary>
+        /// <typeparam name="T">Source type of elements</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="container">The container to perform search.</param>
+        /// <param name="value">The value to search for.</param>
+        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
+        /// <returns>Positive index of the specified value if value is found. Otherwise bitwise complement of index of first greater value.</returns>
+        /// <remarks>Array must be sorted, otherwise value searched might not be found even when it is in array. IComparer corresponds to IComparer used by sort.</remarks>
+        public unsafe static int BinarySearch<T, U>(this UnsafeList container, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return NativeSortExtension.BinarySearch((T*)container.Ptr, container.Length, value, comp);
+        }
+
+    }
+
 
     /// <summary>
     /// An unmanaged, resizable list, without any thread safety check features.
@@ -653,9 +1652,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         int entries; // number of strings allocated so far
 
         /// <summary>
-        ///
+        /// For internal use only.
         /// </summary>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public static ref WordStorage Instance
         {
             get
@@ -678,7 +1677,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public int Entries => entries;
 
-        [NotBurstCompatible]
+        /// <summary>
+        ///
+        /// </summary>
+        [NotBurstCompatible /* Deprecated */]
         public static void Initialize()
         {
             if (WordStorageStatic.Ref.Data.buffer.IsCreated)
@@ -696,7 +1698,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         ///
         /// </summary>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public static void Shutdown()
         {
             if (!WordStorageStatic.Ref.Data.buffer.IsCreated)
@@ -707,7 +1709,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             WordStorageStatic.Ref.Data = default;
         }
 
-        [NotBurstCompatible]
+        /// <summary>
+        ///
+        /// </summary>
+        [NotBurstCompatible /* Deprecated */]
         public static void Clear()
         {
             Initialize();
@@ -721,7 +1726,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         ///
         /// </summary>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public static void Setup()
         {
             Clear();
@@ -731,7 +1736,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         ///
         /// </summary>
         /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="temp"></param>
+        /// <typeparam name="T"></typeparam>
         public unsafe void GetFixedString<T>(int index, ref T temp)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -742,6 +1748,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             UnsafeUtility.MemCpy(temp.GetUnsafePtr(), (byte*)buffer.GetUnsafePtr() + e.offset, temp.Length);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="h"></param>
+        /// <param name="temp"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public int GetIndexFromHashAndFixedString<T>(int h, ref T temp)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -768,6 +1781,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return -1;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public bool Contains<T>(ref T value)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -780,13 +1799,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public unsafe bool Contains(string value)
         {
             FixedString512 temp = value;
             return Contains(ref temp);
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public int GetOrCreateIndex<T>(ref T value)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -825,6 +1850,11 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         int Index;
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
         public void ToFixedString<T>(ref T value)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -842,6 +1872,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             return temp.ToString();
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
         public void SetFixedString<T>(ref T value)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -909,7 +1944,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         bool HasPositiveNumericSuffix => PositiveNumericSuffix != 0;
 
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         string NewString(char c, int count)
         {
             char[] temp = new char[count];
@@ -918,7 +1953,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             return new string(temp, 0, count);
         }
 
-        [NotBurstCompatible]
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="result"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        [NotBurstCompatible /* Deprecated */]
         public int ToFixedString<T>(ref T result)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -956,7 +1997,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         ///
         /// </summary>
         /// <returns></returns>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public override string ToString()
         {
             FixedString512 temp = default;
@@ -969,7 +2010,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return b >= '0' && b <= '9';
         }
 
-        [NotBurstCompatible]
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="value"></param>
+        /// <typeparam name="T"></typeparam>
+        [NotBurstCompatible /* Deprecated */]
         public void SetString<T>(ref T value)
         where T : IUTF8Bytes, INativeList<byte>
         {
@@ -1043,11 +2089,319 @@ namespace Unity.Collections.LowLevel.Unsafe
         ///
         /// </summary>
         /// <param name="value"></param>
-        [NotBurstCompatible]
+        [NotBurstCompatible /* Deprecated */]
         public void SetString(string value)
         {
             FixedString512 temp = value;
             SetString(ref temp);
+        }
+    }
+
+    /// <summary>
+    /// A range of virtual memory with a pointer to the beginning of a range of bytes, log2 of the page size in bytes, and number of pages in this allocation.
+    /// </summary>
+    [Obsolete("VMRange is obsolete. (RemovedAfter 2021-07-05)")]
+    public struct VMRange
+    {
+        /// <summary>
+        /// Pointer to the beginning of an address range.
+        /// </summary>
+        public IntPtr ptr;
+
+        /// <summary>
+        /// 2 ^ log2PageSize = virtual memory page size in bytes
+        /// </summary>
+        public byte log2PageSize;
+
+        /// <summary>
+        /// Number of pages in this address range.
+        /// </summary>
+        public uint pageCount;
+
+        /// <summary>
+        /// Virtual memory page size in bytes for this address range.
+        /// </summary>
+        public uint PageSizeInBytes
+        {
+            get => (uint)(1 << log2PageSize);
+            set => log2PageSize = (byte)(32 - math.lzcnt(math.max(1, (int)value) - 1));
+        }
+
+        /// <summary>
+        /// Number of bytes contained in this range.
+        /// </summary>
+        public ulong SizeInBytes => (ulong)PageSizeInBytes * (ulong)pageCount;
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="rangePtr"></param>
+        /// <param name="rangeLog2PageSize"></param>
+        /// <param name="rangePageCount"></param>
+        public VMRange(IntPtr rangePtr, byte rangeLog2PageSize, uint rangePageCount)
+        {
+            ptr = rangePtr;
+            log2PageSize = rangeLog2PageSize;
+            pageCount = rangePageCount;
+        }
+
+        /// <summary>
+        /// Constructs a VMRange from a pointer, range size in bytes, and page size in bytes.
+        /// </summary>
+        /// <param name="rangePtr">Pointer to beginning of address range.</param>
+        /// <param name="rangeBytes">Size of address range in bytes.</param>
+        /// <param name="pageSizeInBytes">Size of pages in bytes.</param>
+        public VMRange(IntPtr rangePtr, uint rangeBytes, uint pageSizeInBytes)
+        {
+            this = new VMRange { ptr = rangePtr, pageCount = VirtualMemoryUtility.BytesToPageCount(rangeBytes, pageSizeInBytes), PageSizeInBytes = pageSizeInBytes };
+        }
+    }
+
+    /// <summary>
+    /// File name, function name, and line number in source code for where a Baselib_ErrorState came from.
+    /// </summary>
+    [Obsolete("BaselibSourceLocation is obsolete. (RemovedAfter 2021-07-05)")]
+    public unsafe struct BaselibSourceLocation
+    {
+        /// <summary>
+        /// File name. A const char* in native code.
+        /// </summary>
+        public byte* file;
+
+        /// <summary>
+        /// Function name. A const char* in native code.
+        /// </summary>
+        public byte* function;
+
+        /// <summary>
+        /// Line number in source code file where the error appeared.
+        /// </summary>
+        public uint lineNumber;
+    }
+
+    /// <summary>
+    /// C# analog of Baselib_ErrorState.
+    /// </summary>
+    [Obsolete("BaselibErrorState is obsolete. (RemovedAfter 2021-07-05)")]
+    public struct BaselibErrorState
+    {
+        /// <summary>
+        /// Error code
+        /// </summary>
+        public uint code;
+
+        /// <summary>
+        /// Type of error code
+        /// </summary>
+        public byte nativeErrorCodeType;
+
+        /// <summary>
+        /// Platform-specific error code.
+        /// </summary>
+        public ulong nativeErrorCode;
+
+        /// <summary>
+        /// Where in the source code this error came from.
+        /// </summary>
+        public BaselibSourceLocation sourceLocation;
+
+        /// <summary>
+        /// Returns true if result of recorded operation was success.
+        /// </summary>
+        public bool Success => code == (uint)Baselib_ErrorCode.Success;
+
+        /// <summary>
+        /// Returns true when the recorded error state shows failure due to running out of memory.
+        /// </summary>
+        public bool OutOfMemory => code == (uint)Baselib_ErrorCode.OutOfMemory;
+
+        /// <summary>
+        /// Returns true when the recorded error state shows failure due to accessing an invalid address range.
+        /// </summary>
+        public bool InvalidAddressRange => code == (uint)Baselib_ErrorCode.InvalidAddressRange;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    [Obsolete("VirtualMemoryUtility is obsolete. (RemovedAfter 2021-07-05)")]
+    public unsafe struct VirtualMemoryUtility
+    {
+        unsafe internal struct PageSizeInfo
+        {
+            byte log2DefaultPageSize;
+            public uint DefaultPageSizeInBytes
+            {
+                get => (uint)(1 << log2DefaultPageSize);
+            }
+
+            // Bitfield where a 1 means that place is a log2 of a page size.
+            // Example bit pattern: 0001 0000 0000 0000
+            // The 12th bit in the pattern is a 1, 2^12 is 4096, which is the default page size on Windows.
+            public int availableLog2PageSizes;
+            public int AvailablePageSizeCount => math.countbits(availableLog2PageSizes); // popcnt
+
+            public PageSizeInfo(ulong defaultPageSize, ulong* availablePageSizes, ulong numAvailablePageSizes)
+            {
+                log2DefaultPageSize = (byte)(64 - math.lzcnt(math.max(1, defaultPageSize) - 1));
+                availableLog2PageSizes = 1 << log2DefaultPageSize;
+                for (int i = 1; i < (int)numAvailablePageSizes; i++)
+                {
+                    availableLog2PageSizes |= 1 << (int)availablePageSizes[i];
+                }
+            }
+        }
+
+        internal sealed class StaticPageSizeInfo
+        {
+            StaticPageSizeInfo() { }
+            public static readonly SharedStatic<PageSizeInfo> Ref = SharedStatic<PageSizeInfo>.GetOrCreate<PageSizeInfo>();
+        }
+
+        internal static PageSizeInfo GetPageSizeInfo()
+        {
+            return StaticPageSizeInfo.Ref.Data;
+        }
+
+        /// <summary>
+        /// Gets the default virtual memory page size in bytes for this platform.
+        /// </summary>
+        public static uint DefaultPageSizeInBytes
+        {
+            get
+            {
+                if (GetPageSizeInfo().DefaultPageSizeInBytes == 1)
+                {
+                    Baselib_Memory_PageSizeInfo pageSizeInfo = default;
+                    Baselib_Memory_GetPageSizeInfo(&pageSizeInfo);
+                    StaticPageSizeInfo.Ref.Data = new PageSizeInfo(pageSizeInfo.defaultPageSize, &pageSizeInfo.pageSizes0, pageSizeInfo.pageSizesLen);
+                }
+                return StaticPageSizeInfo.Ref.Data.DefaultPageSizeInBytes;
+            }
+        }
+
+        /// <summary>
+        /// Logs baselib errors to the console.
+        /// </summary>
+        /// <param name="wrappedErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        public static void ReportWrappedBaselibError(BaselibErrorState wrappedErrorState)
+        {
+            if ((Baselib_ErrorCode)wrappedErrorState.code == Baselib_ErrorCode.Success)
+                return;
+
+            Baselib_ErrorState errorState = default;
+            errorState.code = (Baselib_ErrorCode)wrappedErrorState.code;
+            errorState.nativeErrorCodeType = (Baselib_ErrorState_NativeErrorCodeType)wrappedErrorState.nativeErrorCodeType;
+            errorState.nativeErrorCode = wrappedErrorState.nativeErrorCode;
+
+            errorState.sourceLocation.file = wrappedErrorState.sourceLocation.file;
+            errorState.sourceLocation.function = wrappedErrorState.sourceLocation.function;
+            errorState.sourceLocation.lineNumber = wrappedErrorState.sourceLocation.lineNumber;
+
+            FixedString512 errorString = "Baselib error: ";
+            byte* errorStringNext = errorString.GetUnsafePtr() + errorString.Length;
+            int errorStringRemainingCap = errorString.Capacity - errorString.Length;
+
+            var bytesReturned = Baselib_ErrorState_Explain(&errorState, errorStringNext, (uint)errorStringRemainingCap, Baselib_ErrorState_ExplainVerbosity.ErrorType_SourceLocation_Explanation);
+            if (bytesReturned > errorStringRemainingCap)
+            {
+                byte* bytes = stackalloc byte[(int)bytesReturned];
+                Baselib_ErrorState_Explain(&errorState, bytes, bytesReturned, Baselib_ErrorState_ExplainVerbosity.ErrorType_SourceLocation_Explanation);
+                errorString.Append(bytes, errorStringRemainingCap);
+            }
+            else
+            {
+                errorString.Length += (int)bytesReturned;
+            }
+
+            UnityEngine.Debug.LogError(errorString);
+        }
+
+        static BaselibErrorState CreateWrappedBaselibErrorState(Baselib_ErrorState errorState)
+        {
+            BaselibSourceLocation baselibSourceLocation = default;
+            baselibSourceLocation.file = errorState.sourceLocation.file;
+            baselibSourceLocation.function = errorState.sourceLocation.function;
+            baselibSourceLocation.lineNumber = errorState.sourceLocation.lineNumber;
+
+            BaselibErrorState baselibErrorState = default;
+            baselibErrorState.code = (uint)errorState.code;
+            baselibErrorState.nativeErrorCodeType = (byte)errorState.nativeErrorCodeType;
+            baselibErrorState.nativeErrorCode = errorState.nativeErrorCode;
+            baselibErrorState.sourceLocation = baselibSourceLocation;
+
+            return baselibErrorState;
+        }
+
+        /// <summary>
+        /// Reserves a contiguous range of address space.
+        /// </summary>
+        /// <param name="sizeOfAddressRangeInPages">Size of a virtual address range to reserve, in pages.</param>
+        /// <param name="pageSizeInBytes">Size of a page of virtual memory, in bytes.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        /// <returns>A VMRange. Upon failure, the returned VMRange will have a null pointer, 0 sized pages, and 0 page count.</returns>
+        public static VMRange ReserveAddressSpace(ulong sizeOfAddressRangeInPages, ulong pageSizeInBytes, out BaselibErrorState outErrorState)
+        {
+            ulong alignmentInMultipleOfPageSize = 1;
+            Baselib_Memory_PageState pageState = Baselib_Memory_PageState.Reserved;
+            Baselib_ErrorState errorState = default;
+
+            // Returns an allocation with null pointer and 0 for page size and page count when it fails.
+            var reservedAddressRange = Baselib_Memory_AllocatePages(pageSizeInBytes, sizeOfAddressRangeInPages, alignmentInMultipleOfPageSize, pageState, &errorState);
+
+            outErrorState = CreateWrappedBaselibErrorState(errorState);
+
+            return new VMRange { ptr = reservedAddressRange.ptr, PageSizeInBytes = (uint)reservedAddressRange.pageSize, pageCount = (uint)reservedAddressRange.pageCount };
+        }
+
+        /// <summary>
+        /// Commits memory from reserved address space.
+        /// </summary>
+        /// <param name="rangeToCommit">Reserved virtual address range from which to allocate memory.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        public static void CommitMemory(VMRange rangeToCommit, out BaselibErrorState outErrorState)
+        {
+            Baselib_ErrorState errorState = default;
+            Baselib_Memory_SetPageState(rangeToCommit.ptr, rangeToCommit.PageSizeInBytes, rangeToCommit.pageCount, Baselib_Memory_PageState.ReadWrite, &errorState);
+
+            outErrorState = CreateWrappedBaselibErrorState(errorState);
+        }
+
+        /// <summary>
+        /// Decommits committed memory from reserved address space.
+        /// </summary>
+        /// <param name="rangeToFree">Virtual address range from which to free allocated memory.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        public static void DecommitMemory(VMRange rangeToFree, out BaselibErrorState outErrorState)
+        {
+            Baselib_ErrorState errorState = default;
+            Baselib_Memory_SetPageState(rangeToFree.ptr, rangeToFree.PageSizeInBytes, rangeToFree.pageCount, Baselib_Memory_PageState.Reserved, &errorState);
+
+            outErrorState = CreateWrappedBaselibErrorState(errorState);
+        }
+
+        /// <summary>
+        /// Frees reserved address space.
+        /// </summary>
+        /// <param name="reservedAddressRange">Virtual address range to release.</param>
+        /// <param name="outErrorState">Wrapped copy of Baselib_ErrorState.</param>
+        public static void FreeAddressSpace(VMRange reservedAddressRange, out BaselibErrorState outErrorState)
+        {
+            var pages = new Baselib_Memory_PageAllocation { ptr = reservedAddressRange.ptr, pageSize = reservedAddressRange.PageSizeInBytes, pageCount = reservedAddressRange.pageCount };
+            Baselib_ErrorState errorState = default;
+            Baselib_Memory_ReleasePages(pages, &errorState);
+            outErrorState = CreateWrappedBaselibErrorState(errorState);
+        }
+
+        /// <summary>
+        /// Computes the number of pages required to cover a contiguous area of memory.
+        /// </summary>
+        /// <param name="bytes">Bytes of the contiguous area of memory.</param>
+        /// <param name="pageSizeInBytes">Size of the virtual memory page in bytes.</param>
+        /// <returns>The page count required to cover the contiguous area of memory.</returns>
+        public static uint BytesToPageCount(uint bytes, uint pageSizeInBytes)
+        {
+            return (bytes + pageSizeInBytes - 1) / pageSizeInBytes;
         }
     }
 }

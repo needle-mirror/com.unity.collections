@@ -4,16 +4,16 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// <undoc />
+    /// Provides extension methods for sets.
     /// </summary>
     public unsafe static class HashSetExtensions
     {
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this NativeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -24,11 +24,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this NativeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -49,11 +49,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this NativeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -63,11 +63,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this NativeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -78,11 +78,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this NativeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -103,11 +103,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this NativeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -118,11 +118,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, FixedList128<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -133,11 +133,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, FixedList128<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -158,11 +158,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, FixedList128<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -172,11 +172,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, FixedList32<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -187,11 +187,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, FixedList32<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -212,11 +212,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, FixedList32<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -226,11 +226,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, FixedList4096<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -241,11 +241,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, FixedList4096<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -266,11 +266,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, FixedList4096<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -280,11 +280,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, FixedList512<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -295,11 +295,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, FixedList512<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -320,11 +320,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, FixedList512<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -334,11 +334,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, FixedList64<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -349,11 +349,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, FixedList64<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -374,11 +374,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, FixedList64<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -388,11 +388,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, NativeArray<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -403,11 +403,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, NativeArray<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -428,11 +428,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, NativeArray<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -442,11 +442,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, NativeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -457,11 +457,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, NativeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -482,11 +482,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, NativeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -496,11 +496,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, NativeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -511,11 +511,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, NativeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -536,11 +536,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, NativeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -550,11 +550,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -565,11 +565,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -590,11 +590,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, UnsafeHashSet<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -604,11 +604,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
         /// <summary>
-        /// Modifies this container to remove all values that are present in the other container.
+        /// Removes the values from this set which are also present in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void ExceptWith<T>(this UnsafeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -619,11 +619,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to keep only values that are present in both containers.
+        /// Removes the values from this set which are absent in another collection.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to remove values from.</param>
+        /// <param name="other">The collection to compare with.</param>
         public static void IntersectWith<T>(this UnsafeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {
@@ -644,11 +644,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Modifies this container to contain values from both containers.
+        /// Adds all values from a collection to this set.
         /// </summary>
-        /// <typeparam name="T">Source type of elements</typeparam>
-        /// <param name="container">Container to modify.</param>
-        /// <param name="other">The container to compare to this container.</param>
+        /// <typeparam name="T">The type of values.</typeparam>
+        /// <param name="container">The set to add values to.</param>
+        /// <param name="other">The collection to copy values from.</param>
         public static void UnionWith<T>(this UnsafeHashSet<T> container, UnsafeList<T> other)
             where T : unmanaged, IEquatable<T>
         {

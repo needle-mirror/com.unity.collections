@@ -6,8 +6,11 @@ using Unity.Mathematics;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    /// Arbitrary sized array of bits.
+    /// An arbitrarily-sized array of bits.
     /// </summary>
+    /// <remarks>
+    /// The number of allocated bytes is always a multiple of 8. For example, a 65-bit array could fit in 9 bytes, but its allocation is actually 16 bytes.
+    /// </remarks>
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
     [BurstCompatible]
@@ -15,27 +18,30 @@ namespace Unity.Collections.LowLevel.Unsafe
         : INativeDisposable
     {
         /// <summary>
-        /// Pointer to data.
+        /// Pointer to the data.
         /// </summary>
+        /// <value>Pointer to the data.</value>
         [NativeDisableUnsafePtrRestriction]
         public ulong* Ptr;
 
         /// <summary>
-        /// Number of bits.
+        /// The number of bits.
         /// </summary>
+        /// <value>The number of bits.</value>
         public int Length;
 
         /// <summary>
+        /// The allocator to use.
         /// </summary>
+        /// <value>The allocator to use.</value>
         public Allocator Allocator;
 
         /// <summary>
-        /// Constructs container as view into memory.
+        /// Initializes and returns an instance of UnsafeBitArray which aliases an existing buffer.
         /// </summary>
-        /// <param name="ptr">Pointer to data.</param>
-        /// <param name="sizeInBytes">Size of data in bytes. Must be multiple of 8-bytes.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
+        /// <param name="ptr">An existing buffer.</param>
+        /// <param name="allocator">The allocator that was used to allocate the bytes. Needed to dispose this array.</param>
+        /// <param name="sizeInBytes">The number of bytes. The length will be `sizeInBytes * 8`.</param>
         public unsafe UnsafeBitArray(void* ptr, int sizeInBytes, Allocator allocator = Allocator.None)
         {
             CheckAllocator(allocator);
@@ -46,14 +52,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Constructs a new container with the specified initial capacity and type of memory allocation.
+        /// Initializes and returns an instance of UnsafeBitArray.
         /// </summary>
         /// <param name="numBits">Number of bits.</param>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        /// <note>Allocated number of bits will be aligned-up to closest 64-bits. For example, passing 1 as numBits will create BitArray that's
-        /// 64-bit (8 bytes) long.</note>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             CheckAllocator(allocator);
@@ -69,22 +72,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Reports whether memory for the container is allocated.
+        /// Whether this array has been allocated (and not yet deallocated).
         /// </summary>
-        /// <value>True if this container object's internal storage has been allocated.</value>
-        /// <remarks>
-        /// Note that the container storage is not created if you use the default constructor. You must specify
-        /// at least an allocation type to construct a usable container.
-        ///
-        /// *Warning:* the `IsCreated` property can't be used to determine whether a copy of a container is still valid.
-        /// If you dispose any copy of the container, the container storage is deallocated. However, the properties of
-        /// the other copies of the container (including the original) are not updated. As a result the `IsCreated` property
-        /// of the copies still return `true` even though the container storage has been deallocated.
-        /// </remarks>
+        /// <value>True if this array has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
 
         /// <summary>
-        /// Disposes of this container and deallocates its memory immediately.
+        /// Releases all resources (memory and safety handles).
         /// </summary>
         public void Dispose()
         {
@@ -99,16 +93,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Safely disposes of this container and deallocates its memory when the jobs that use it have completed.
+        /// Creates and schedules a job that will dispose this array.
         /// </summary>
-        /// <remarks>You can call this function dispose of the container immediately after scheduling the job. Pass
-        /// the [JobHandle](https://docs.unity3d.com/ScriptReference/Unity.Jobs.JobHandle.html) returned by
-        /// the [Job.Schedule](https://docs.unity3d.com/ScriptReference/Unity.Jobs.IJobExtensions.Schedule.html)
-        /// method using the `jobHandle` parameter so the job scheduler can dispose the container after all jobs
-        /// using it have run.</remarks>
-        /// <param name="inputDeps">The job handle or handles for any scheduled jobs that use this container.</param>
-        /// <returns>A new job handle containing the prior handles as well as the handle for the job that deletes
-        /// the container.</returns>
+        /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
+        /// <returns>The handle of a new job that will dispose this array. The new job depends upon inputDeps.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
@@ -128,7 +116,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Clear all bits to 0.
+        /// Sets all the bits to 0.
         /// </summary>
         public void Clear()
         {
@@ -137,10 +125,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Set single bit to desired boolean value.
+        /// Sets the bit at an index to 0 or 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="value">Value of bits to set.</param>
+        /// <param name="pos">Index of the bit to set.</param>
+        /// <param name="value">True for 1, false for 0.</param>
         public void Set(int pos, bool value)
         {
             CheckArgs(pos, 1);
@@ -153,11 +141,16 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Set bits to desired boolean value.
+        /// Sets a range of bits to 0 or 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="value">Value of bits to set.</param>
+        /// <remarks>
+        /// The range runs from index `pos` up to (but not including) `pos + numBits`.
+        /// No exception is thrown if `pos + numBits` exceeds the length.
+        /// </remarks>
+        /// <param name="pos">Index of the first bit to set.</param>
+        /// <param name="value">True for 1, false for 0.</param>
         /// <param name="numBits">Number of bits to set.</param>
+        /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is less than 1.</exception>
         public void SetBits(int pos, bool value, int numBits)
         {
             CheckArgs(pos, numBits);
@@ -195,11 +188,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Sets bits in range as ulong.
+        /// Copies bits of a ulong to bits in this array.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="value">Value of bits to set.</param>
-        /// <param name="numBits">Number of bits to set (must be 1-64).</param>
+        /// <remarks>
+        /// The destination bits in this array run from index `pos` up to (but not including) `pos + numBits`.
+        /// No exception is thrown if `pos + numBits` exceeds the length.
+        ///
+        /// The lowest bit of the ulong is copied to the first destination bit; the second-lowest bit of the ulong is
+        /// copied to the second destination bit; and so forth.
+        /// </remarks>
+        /// <param name="pos">Index of the first bit to set.</param>
+        /// <param name="value">Unsigned long from which to copy bits.</param>
+        /// <param name="numBits">Number of bits to set (must be between 1 and 64).</param>
+        /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
         public void SetBits(int pos, ulong value, int numBits = 1)
         {
             CheckArgsUlong(pos, numBits);
@@ -228,11 +229,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns all bits in range as ulong.
+        /// Returns a ulong which has bits copied from this array.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="numBits">Number of bits to get (must be 1-64).</param>
-        /// <returns>Returns requested range of bits.</returns>
+        /// <remarks>
+        /// The source bits in this array run from index `pos` up to (but not including) `pos + numBits`.
+        /// No exception is thrown if `pos + numBits` exceeds the length.
+        ///
+        /// The first source bit is copied to the lowest bit of the ulong; the second source bit is copied to the second-lowest bit of the ulong; and so forth. Any remaining bits in the ulong will be 0.
+        /// </remarks>
+        /// <param name="pos">Index of the first bit to get.</param>
+        /// <param name="numBits">Number of bits to get (must be between 1 and 64).</param>
+        /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
+        /// <returns>A ulong which has bits copied from this array.</returns>
         public ulong GetBits(int pos, int numBits = 1)
         {
             CheckArgsUlong(pos, numBits);
@@ -260,10 +268,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns true is bit at position is set.
+        /// Returns true if the bit at an index is 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <returns>Returns true if bit is set.</returns>
+        /// <param name="pos">Index of the bit to test.</param>
+        /// <returns>True if the bit at the index is 1.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds.</exception>
         public bool IsSet(int pos)
         {
             CheckArgs(pos, 1);
@@ -277,11 +286,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal void CopyUlong(int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits) => SetBits(dstPos, srcBitArray.GetBits(srcPos, numBits), numBits);
 
         /// <summary>
-        /// Copy block of bits from source to destination.
+        /// Copies a range of bits from this array to another range in this array.
         /// </summary>
-        /// <param name="dstPos">Destination position in bit array.</param>
-        /// <param name="srcPos">Source position in bit array.</param>
+        /// <remarks>
+        /// The bits to copy run from index `srcPos` up to (but not including) `srcPos + numBits`.
+        /// The bits to set run from index `dstPos` up to (but not including) `dstPos + numBits`.
+        ///
+        /// The ranges may overlap, but the result in the overlapping region is undefined.
+        /// </remarks>
+        /// <param name="dstPos">Index of the first bit to set.</param>
+        /// <param name="srcPos">Index of the first bit to copy.</param>
         /// <param name="numBits">Number of bits to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if either `dstPos + numBits` or `srcPos + numBits` exceed the length of this array.</exception>
         public void Copy(int dstPos, int srcPos, int numBits)
         {
             if (dstPos == srcPos)
@@ -293,12 +309,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Copy block of bits from source to destination.
+        /// Copies a range of bits from an array to a range of bits in this array.
         /// </summary>
-        /// <param name="dstPos">Destination position in bit array.</param>
-        /// <param name="srcBitArray">Source bit array from which bits will be copied.</param>
-        /// <param name="srcPos">Source position in bit array.</param>
-        /// <param name="numBits">Number of bits to copy.</param>
+        /// <remarks>
+        /// The bits to copy in the source array run from index srcPos up to (but not including) `srcPos + numBits`.
+        /// The bits to set in the destination array run from index dstPos up to (but not including) `dstPos + numBits`.
+        ///
+        /// It's fine if source and destination array are one and the same, even if the ranges overlap, but the result in the overlapping region is undefined.
+        /// </remarks>
+        /// <param name="dstPos">Index of the first bit to set.</param>
+        /// <param name="srcBitArray">The source array.</param>
+        /// <param name="srcPos">Index of the first bit to copy.</param>
+        /// <param name="numBits">The number of bits to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if either `dstPos + numBits` or `srcBitArray + numBits` exceed the length of this array.</exception>
         public void Copy(int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
         {
             if (numBits == 0)
@@ -377,17 +400,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// Returns the index of the first occurrence in this array of *N* contiguous 0 bits.
         /// </summary>
-        /// <param name="pos">Position to start search in bit array.</param>
-        /// <param name="numBits">Number of 0-bits to find.</param>
-        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
-        /// <exception cref="ArgumentException">
-        /// Thrown if:
-        ///  - Number of bits is less than 1.
-        ///  - Range searched has less than `numBits`.
-        ///  - `pos` is not within accepted range [0 - Length].
-        /// </exception>
+        /// <remarks>The search is linear.</remarks>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns -1 if no occurrence is found.</returns>
         public int Find(int pos, int numBits)
         {
             var count = Length - pos;
@@ -396,18 +414,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Performs a linear search for a consecutive sequence of 0s of a given length in the bit array.
+        /// Returns the index of the first occurrence in this array of a given number of contiguous 0 bits.
         /// </summary>
-        /// <param name="pos">Position to start search in bit array.</param>
-        /// <param name="count">Number of bits to search.</param>
-        /// <param name="numBits">Number of 0-bits to find.</param>
-        /// <returns>Returns index of first bit of 0-bit range, or int.MaxValue if 0-bit range is not found.</returns>
-        /// <exception cref="ArgumentException">
-        /// Thrown if:
-        ///  - Number of bits is less than 1.
-        ///  - Range searched has less than `numBits`.
-        ///  - `pos` or `count` are not within accepted range [0 - Length].
-        /// </exception>
+        /// <remarks>The search is linear.</remarks>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+        /// <param name="count">Number of indexes to consider as the return value.</param>
+        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns -1 if no occurrence is found.</returns>
         public int Find(int pos, int count, int numBits)
         {
             CheckArgsPosCount(pos, count, numBits);
@@ -415,11 +428,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns true if none of bits in range are set.
+        /// Returns true if none of the bits in a range are 1 (*i.e.* all bits in the range are 0).
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="numBits">Number of bits to test.</param>
-        /// <returns>Returns true if none of bits are set.</returns>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+        /// <returns>Returns true if none of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
         public bool TestNone(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -455,11 +469,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns true if any of bits in range are set.
+        /// Returns true if at least one of the bits in a range is 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="numBits">Number of bits to test.</param>
-        /// <returns>Returns true if at least one bit is set.</returns>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+        /// <returns>True if one or more of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
         public bool TestAny(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -495,11 +510,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns true if all of bits in range are set.
+        /// Returns true if all of the bits in a range are 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="numBits">Number of bits to test.</param>
-        /// <returns>Returns true if all bits are set.</returns>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+        /// <returns>True if all of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -535,11 +551,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Calculate number of set bits.
+        /// Returns the number of bits in a range that are 1.
         /// </summary>
-        /// <param name="pos">Position in bit array.</param>
-        /// <param name="numBits">Number of bits to perform count.</param>
-        /// <returns>Number of set bits.</returns>
+        /// <param name="pos">Index of the bit at which to start searching.</param>
+        /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+        /// <returns>The number of bits in a range of bits that are 1.</returns>
+        /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
         public int CountBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
@@ -633,7 +650,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         static void CheckArgsCopy(ref UnsafeBitArray dstBitArray, int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
         {
-            if (dstPos + numBits > srcBitArray.Length)
+            if (srcPos + numBits > srcBitArray.Length)
             {
                 throw new ArgumentException($"BitArray invalid arguments: Out of bounds - source position {srcPos}, numBits {numBits}, source bit array Length {srcBitArray.Length}.");
             }

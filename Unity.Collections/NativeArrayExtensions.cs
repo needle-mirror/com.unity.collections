@@ -1,23 +1,24 @@
 using System;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
+using static Unity.Collections.AllocatorManager;
 
 namespace Unity.Collections
 {
     /// <summary>
-    /// NativeArray extension methods.
+    /// Extension methods for NativeArray.
     /// </summary>
     [BurstCompatible]
     public unsafe static class NativeArrayExtensions
     {
         /// <summary>
-        /// Determines whether an element is in the native array.
+        /// Returns true if a particular value is present in this array.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="T">The type of elements in this array.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="array">Array to perform search.</param>
+        /// <param name="array">The array to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in this array.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeArray<T> array, U value) where T : struct, IEquatable<U>
         {
@@ -25,13 +26,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified element in native array.
+        /// Finds the index of the first occurrence of a particular value in this array.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="T">The type of elements in this array.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="array">Array to perform search.</param>
+        /// <param name="array">The array to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <returns>The index of the first occurrence of the value in this array. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeArray<T> array, U value) where T : struct, IEquatable<U>
         {
@@ -39,13 +40,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Determines whether an element is in the native array.
+        /// Returns true if a particular value is present in this array.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="T">The type of elements in this array.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="array">Array to perform search.</param>
+        /// <param name="array">The array to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in this array.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
         {
@@ -53,13 +54,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified element in native array.
+        /// Finds the index of the first occurrence of a particular value in this array.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="array">Array to perform search.</param>
+        /// <typeparam name="T">The type of elements in this array.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="array">The array to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <returns>The index of the first occurrence of the value in this array. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : struct, IEquatable<U>
         {
@@ -67,42 +68,42 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Determines whether an element is in the native list.
+        /// Returns true if a particular value is present in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this NativeList<T> list, U value) where T : struct, IEquatable<U>
+        public static bool Contains<T, U>(this NativeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value) != -1;
         }
 
         /// <summary>
-        /// Searches for the specified element in native list.
+        /// Finds the index of the first occurrence of a particular value in this list.
         /// </summary>
-        /// <typeparam name="T">The type of values in the list.</typeparam>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">List to perform search.</param>
+        /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <returns>The index of the first occurrence of the value in this list. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this NativeList<T> list, U value) where T : struct, IEquatable<U>
+        public static int IndexOf<T, U>(this NativeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value);
         }
 
         /// <summary>
-        /// Determines whether an element is in the array.
+        /// Returns true if a particular value is present in a buffer.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="T">The type of elements in the buffer.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="ptr">Pointer to first element to perform search.</param>
-        /// <param name="length">Number of elements to perform search.</param>
+        /// <param name="ptr">The buffer.</param>
+        /// <param name="length">Number of elements in the buffer.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>True, if element is found.</returns>
+        /// <returns>True if the value is present in the buffer.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
         {
@@ -110,32 +111,14 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Searches for the specified element in array.
+        /// Finds the index of the first occurrence of a particular value in a buffer.
         /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
-        /// <param name="array">Array to perform search.</param>
-        /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static int IndexOf<T>(this NativeArray<T> array, T value) where T : struct, IComparable<T>
-        {
-            for (int i = 0; i != array.Length; i++)
-            {
-                if (array[i].CompareTo(value) == 0)
-                    return i;
-            }
-            return -1;
-        }
-
-        /// <summary>
-        /// Searches for the specified element in array.
-        /// </summary>
-        /// <typeparam name="T">The type of values in the array.</typeparam>
+        /// <typeparam name="T">The type of elements in the buffer.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="ptr">Pointer to first element to perform search.</param>
-        /// <param name="length">Number of elements to perform search.</param>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">Number of elements in the buffer.</param>
         /// <param name="value">The value to locate.</param>
-        /// <returns>The zero-based index of the first occurrence element if found, otherwise returns -1.</returns>
+        /// <returns>The index of the first occurrence of the value in the buffer. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(void* ptr, int length, U value) where T : struct, IEquatable<U>
         {
@@ -148,12 +131,14 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Reinterpret a native array as being of another type, aliasing its contents via type punning.
+        /// Returns the reinterpretation of this array into another kind of NativeArray.
+        /// See [Array reinterpretation](https://docs.unity3d.com/Packages/com.unity.collections@latest?subfolder=/manual/allocation.html#array-reinterpretation).
         /// </summary>
-        /// <param name="array">The array to alias</param>
-        /// <typeparam name="T">Source type of array elements</typeparam>
-        /// <typeparam name="U">Target type of array elements</typeparam>
-        /// <returns>The same array, with a different type of element</returns>
+        /// <param name="array">The array to reinterpret.</param>
+        /// <typeparam name="T">Type of elements in the array.</typeparam>
+        /// <typeparam name="U">Type of elements in the reinterpreted array.</typeparam>
+        /// <returns>The reinterpretation of this array into another kind of NativeArray.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if this array's capacity cannot be evenly divided by `sizeof(U)`.</exception>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static NativeArray<U> Reinterpret<T, U>(this NativeArray<T> array) where U : struct where T : struct
         {
@@ -177,12 +162,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if the Length and the content of the two NativeArray's are the same.
+        /// Returns true if this array and another have equal length and content.
         /// </summary>
-        /// <typeparam name="T">Source type of array elements</typeparam>
-        /// <param name="array"></param>
-        /// <param name="other"></param>
-        /// <returns>Returns true if both array are equal.</returns>
+        /// <typeparam name="T">The type of the source array's elements.</typeparam>
+        /// <param name="array">The array to compare for equality.</param>
+        /// <param name="other">The other array to compare for equality.</param>
+        /// <returns>True if the arrays have equal length and content.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public static bool ArraysEqual<T>(this NativeArray<T> array, NativeArray<T> other) where T : struct, IEquatable<T>
         {
@@ -211,6 +196,56 @@ namespace Unity.Collections
             {
                 throw new InvalidOperationException($"Types {typeof(T)} (array length {array.Length}) and {typeof(U)} cannot be aliased due to size constraints. The size of the types and lengths involved must line up.");
             }
+        }
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        internal static void Initialize<T>(ref this NativeArray<T> array,
+                                            int length,
+                                            Allocator allocator,
+                                            NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+            where T : struct
+        {
+            AllocatorHandle handle = (AllocatorHandle)allocator;
+            array.m_Buffer = handle.AllocateStruct(default(T), length);
+            array.m_Length = length;
+            array.m_AllocatorLabel = Allocator.None;
+            if (options == NativeArrayOptions.ClearMemory)
+            {
+                UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            array.m_MinIndex = 0;
+            array.m_MaxIndex = length - 1;
+            DisposeSentinel.Create(out array.m_Safety, out array.m_DisposeSentinel, 1, handle.ToAllocator);
+            DisposeSentinel.Clear(ref array.m_DisposeSentinel);
+            handle.AddSafetyHandle(array.m_Safety);
+#endif
+        }
+
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        internal static void Initialize<T, U>(ref this NativeArray<T> array,
+                                                int length,
+                                                ref U allocator,
+                                                NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+            where T : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            array.m_Buffer = allocator.AllocateStruct(default(T), length);
+            array.m_Length = length;
+            array.m_AllocatorLabel = Allocator.None;
+            if (options == NativeArrayOptions.ClearMemory)
+            {
+                UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            array.m_MinIndex = 0;
+            array.m_MaxIndex = length - 1;
+            DisposeSentinel.Create(out array.m_Safety, out array.m_DisposeSentinel, 1, allocator.ToAllocator);
+            DisposeSentinel.Clear(ref array.m_DisposeSentinel);
+            allocator.Handle.AddSafetyHandle(array.m_Safety);
+#endif
         }
     }
 }

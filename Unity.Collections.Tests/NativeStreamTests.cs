@@ -2,9 +2,11 @@ using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
+using Assert = FastAssert;
 
 internal class NativeStreamTests : CollectionsTestFixture
 {
@@ -147,13 +149,13 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ScheduleCreateThrows()
+    public void ScheduleCreateThrows_NativeList()
     {
-        var list = new NativeList<int>(Allocator.Persistent);
-        list.Add(2);
+        var container = new NativeList<int>(Allocator.Persistent);
+        container.Add(2);
 
         NativeStream stream;
-        var jobHandle = NativeStream.ScheduleConstruct(out stream, list, default, Allocator.TempJob);
+        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
 
         Assert.Throws<InvalidOperationException>(() => { int val = stream.ForEachCount; });
 
@@ -162,7 +164,26 @@ internal class NativeStreamTests : CollectionsTestFixture
         Assert.AreEqual(1, stream.ForEachCount);
 
         stream.Dispose();
-        list.Dispose();
+        container.Dispose();
+    }
+
+    [Test]
+    public void ScheduleCreateThrows_NativeArray()
+    {
+        var container = new NativeArray<int>(1, Allocator.Persistent);
+        container[0] = 1;
+
+        NativeStream stream;
+        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+
+        Assert.Throws<InvalidOperationException>(() => { int val = stream.ForEachCount; });
+
+        jobHandle.Complete();
+
+        Assert.AreEqual(1, stream.ForEachCount);
+
+        stream.Dispose();
+        container.Dispose();
     }
 
     [Test]
@@ -203,8 +224,10 @@ internal class NativeStreamTests : CollectionsTestFixture
         var writer = stream.AsWriter();
         writer.BeginForEachIndex(0);
         writer.Write(2);
+        Assert.AreEqual(1, writer.ForEachCount);
         writer.EndForEachIndex();
 
+        Assert.AreEqual(1, writer.ForEachCount);
         Assert.Throws<ArgumentException>(() => writer.Write(5));
 
         stream.Dispose();
@@ -361,4 +384,39 @@ internal class NativeStreamTests : CollectionsTestFixture
 #endif
 
 #endif
+
+    [Test]
+    public void UnsafeStream_ScheduleCreate_NativeList()
+    {
+        var container = new NativeList<int>(Allocator.Persistent);
+        container.Add(13);
+        container.Add(13);
+        container.Add(13);
+        container.Add(13);
+
+        UnsafeStream stream;
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        jobHandle.Complete();
+
+        Assert.AreEqual(4, stream.ForEachCount);
+
+        stream.Dispose();
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeStream_ScheduleCreate_NativeArray()
+    {
+        var container = new NativeArray<int>(1, Allocator.Persistent);
+        container[0] = 4;
+
+        UnsafeStream stream;
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        jobHandle.Complete();
+
+        Assert.AreEqual(4, stream.ForEachCount);
+
+        stream.Dispose();
+        container.Dispose();
+    }
 }

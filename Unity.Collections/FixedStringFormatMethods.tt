@@ -21,7 +21,7 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections
 {
     /// <summary>
-    /// <undoc />
+    /// Provides extension methods for FixedString*N*.
     /// </summary>
     public unsafe static partial class FixedStringMethods
     {
@@ -31,22 +31,26 @@ namespace Unity.Collections
         var TYPES    = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"T{n}"));
         var PARAMS   = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"in T{n} arg{n}"));
         var ARGNAMES = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"arg{n}"));
-        var TxDOCS   = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<typeparam name=\"T{n}\"><undoc /></typeparam>"));
-        var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<param name=\"arg{n}\"><undoc /></param>"));
+        var TxDOCS   = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<typeparam name=\"T{n}\">The type of value to interpolate into the format string.</typeparam>"));
+        var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, ARGS).Select(n => $"<param name=\"arg{n}\">A FixedString*N* to interpolate into the format string.</param>"));
         var BCOMPAT  = String.Join(", ", Enumerable.Range(0, ARGS).Select(n => $"typeof(FixedString128 /*T{n}*/)"));
 #>
         /// <summary>
-        /// Convenience function to append a formatted string into the given FixedString.
-        /// Similar to StringBuilder.AppendFormat, with significant limitations:
-        ///   - only supports FixedStringN arguments (convert arguments to FixedString first)
-        ///   - only supports numeric format placeholders of the form "{0}" .. "{N}"
-        ///   - no format modifiers (e.g. "{0:x}") are supported
+        /// Interpolates strings into a format string and appends the result to this string.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="U"></typeparam>
+        /// <remarks>
+        /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
+        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The overloads of this method take up to ten strings to interpolate into the format string.
+        /// </remarks>
+        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="U">A FixedString*N* type.</typeparam>
         /// <#=TxDOCS#>
-        /// <param name="dest"></param>
-        /// <param name="format"></param>
+        /// <param name="dest">The string to append to.</param>d
+        /// <param name="format">A string to be interpolated and appended.</param>
         /// <#=ARGxDOCS#>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), <#=BCOMPAT#> })]
         public static unsafe void AppendFormat<T, U, <#=TYPES#>>(ref this T dest, in U format, <#=PARAMS#>)

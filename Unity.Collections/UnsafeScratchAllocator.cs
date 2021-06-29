@@ -4,8 +4,10 @@ using System.Diagnostics;
 namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
-    ///
+    /// A fixed-size buffer from which you can make allocations.
     /// </summary>
+    /// <remarks>Allocations from a scratch allocator are not individually deallocated.
+    /// Instead, when you're done using all the allocations from a scratch allocator, you dispose the allocator as a whole.</remarks>
     [BurstCompatible]
     public unsafe struct UnsafeScratchAllocator
     {
@@ -14,13 +16,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         readonly int m_CapacityInBytes;
 
         /// <summary>
-        ///
+        /// Initializes and returns an instance of UnsafeScratchAllocator.
         /// </summary>
-        /// <param name="pointer"></param>
-        /// <param name="capacityInBytes"></param>
-        public UnsafeScratchAllocator(void* pointer, int capacityInBytes)
+        /// <param name="ptr">An existing buffer to use as the allocator's internal buffer.</param>
+        /// <param name="capacityInBytes">The size in bytes of the internal buffer.</param>
+        public UnsafeScratchAllocator(void* ptr, int capacityInBytes)
         {
-            m_Pointer = pointer;
+            m_Pointer = ptr;
             m_LengthInBytes = 0;
             m_CapacityInBytes = capacityInBytes;
         }
@@ -33,11 +35,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// Returns an allocation from the allocator's internal buffer.
         /// </summary>
-        /// <param name="sizeInBytes"></param>
-        /// <param name="alignmentInBytes"></param>
-        /// <returns></returns>
+        /// <param name="sizeInBytes">The size of the new allocation.</param>
+        /// <param name="alignmentInBytes">The alignment of the new allocation.</param>
+        /// <returns>A pointer to the new allocation.</returns>
+        /// <exception cref="ArgumentException">Thrown if the new allocation would exceed the capacity of the allocator.</exception>
         public void* Allocate(int sizeInBytes, int alignmentInBytes)
         {
             if (sizeInBytes == 0)
@@ -53,11 +56,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        ///
+        /// Returns an allocation from the allocator's internal buffer.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="count"></param>
-        /// <returns></returns>
+        /// <remarks>The allocation size in bytes is at least `count * sizeof(T)`. The space consumed by the allocation may be a little larger than this size due to alignment.</remarks>
+        /// <typeparam name="T">The type of element to allocate space for.</typeparam>
+        /// <param name="count">The number of elements to allocate space for. Defaults to 1.</param>
+        /// <returns>A pointer to the new allocation.</returns>
+        /// <exception cref="ArgumentException">Thrown if the new allocation would exceed the capacity of the allocator.</exception>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public void* Allocate<T>(int count = 1) where T : struct
         {

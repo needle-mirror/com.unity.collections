@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.NotBurstCompatible;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
@@ -143,7 +144,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         });
 
         list.Sort();
-        Assert.AreEqual(list.ToArray(), new int[] { 0, 1, 2 });
+        Assert.AreEqual(list.ToArrayNBC(), new int[] { 0, 1, 2 });
 
         foreach (var value in hashMap.GetValuesForKey(6))
             Assert.Fail();
@@ -246,7 +247,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
             list.Add(value);
 
         list.Sort();
-        Assert.AreEqual(list.ToArray(), expectedValues);
+        Assert.AreEqual(list.ToArrayNBC(), expectedValues);
         list.Dispose();
     }
 
@@ -261,7 +262,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         }
         var keys = container.GetKeyArray(Allocator.Temp);
 #if !NET_DOTS // Tuple is not supported by TinyBCL
-        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
+        var (unique, uniqueLength) = container.GetUniqueKeyArrayNBC(Allocator.Temp);
         Assert.AreEqual(30, uniqueLength);
 #endif
 
@@ -282,7 +283,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     public void NativeMultiHashMap_GetUniqueKeysEmpty()
     {
         var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
-        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
+        var keys = hashMap.GetUniqueKeyArrayNBC(Allocator.Temp);
 
         Assert.AreEqual(0, keys.Item1.Length);
         Assert.AreEqual(0, keys.Item2);
@@ -297,7 +298,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
             hashMap.Add(i, 2 * i);
             hashMap.Add(i, 3 * i);
         }
-        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
+        var keys = hashMap.GetUniqueKeyArrayNBC(Allocator.Temp);
         hashMap.Dispose();
         Assert.AreEqual(30, keys.Item2);
         for (int i = 0; i < 30; ++i)

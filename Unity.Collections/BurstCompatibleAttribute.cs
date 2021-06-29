@@ -5,6 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// Documents and enforces (via generated tests) that the tagged method or property has to stay burst compatible.
     /// </summary>
+    /// <remarks>This attribute cannot be used with private methods or properties.</remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Constructor, AllowMultiple = true)]
     public class BurstCompatibleAttribute : Attribute
     {
