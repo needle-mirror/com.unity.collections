@@ -34,7 +34,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The allocator to use.
         /// </summary>
         /// <value>The allocator to use.</value>
-        public Allocator Allocator;
+        public AllocatorManager.AllocatorHandle Allocator;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeBitArray which aliases an existing buffer.
@@ -42,9 +42,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="ptr">An existing buffer.</param>
         /// <param name="allocator">The allocator that was used to allocate the bytes. Needed to dispose this array.</param>
         /// <param name="sizeInBytes">The number of bytes. The length will be `sizeInBytes * 8`.</param>
-        public unsafe UnsafeBitArray(void* ptr, int sizeInBytes, Allocator allocator = Allocator.None)
+        public unsafe UnsafeBitArray(void* ptr, int sizeInBytes, AllocatorManager.AllocatorHandle allocator = new AllocatorManager.AllocatorHandle())
         {
-            CheckAllocator(allocator);
             CheckSizeMultipleOf8(sizeInBytes);
             Ptr = (ulong*)ptr;
             Length = sizeInBytes * 8;
@@ -57,9 +56,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="numBits">Number of bits.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public UnsafeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public UnsafeBitArray(int numBits, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
-            CheckAllocator(allocator);
+            CollectionHelper.CheckAllocator(allocator);
             Allocator = allocator;
             var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
             Ptr = (ulong*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
@@ -85,7 +84,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 Memory.Unmanaged.Free(Ptr, Allocator);
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
             }
 
             Ptr = null;
@@ -105,7 +104,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
                 Ptr = null;
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
 
                 return jobHandle;
             }
@@ -585,13 +584,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             count += math.countbits(Ptr[idxE] & maskE);
 
             return count;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            if (allocator < Allocator.None)
-                throw new ArgumentException("Allocator cannot be Allocator.Invalid");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

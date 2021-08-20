@@ -39,14 +39,14 @@ namespace Unity.Collections
         DisposeSentinel m_DisposeSentinel;
 #endif
 
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
         /// Initializes and returns an instance of NativeReference.
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public NativeReference(Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public NativeReference(AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             Allocate(allocator, out this);
             if (options == NativeArrayOptions.ClearMemory)
@@ -60,22 +60,30 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="value">The initial value.</param>
-        public NativeReference(T value, Allocator allocator)
+        public NativeReference(T value, AllocatorManager.AllocatorHandle allocator)
         {
             Allocate(allocator, out this);
             *(T*)m_Data = value;
         }
 
-        static void Allocate(Allocator allocator, out NativeReference<T> reference)
+        static void Allocate(AllocatorManager.AllocatorHandle allocator, out NativeReference<T> reference)
         {
-            CheckAllocator(allocator);
+            CollectionHelper.CheckAllocator(allocator);
 
             reference = default;
             reference.m_Data = Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>(), allocator);
             reference.m_AllocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out reference.m_Safety, out reference.m_DisposeSentinel, 1, allocator);
+            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+            {
+                reference.m_Safety = AtomicSafetyHandle.Create();
+                reference.m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out reference.m_Safety, out reference.m_DisposeSentinel, 1, allocator.ToAllocator);
+            }
 
             if (s_SafetyId.Data == 0)
             {
@@ -329,14 +337,6 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            // Native allocation is only valid for Temp, Job and Persistent.
-            if (allocator <= Allocator.None)
-                throw new ArgumentException($"Allocator must be {Allocator.Temp}, {Allocator.TempJob} or {Allocator.Persistent}", nameof(allocator));
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckNotDisposed()
         {
             if (m_Data == null)
@@ -350,7 +350,7 @@ namespace Unity.Collections
         [NativeDisableUnsafePtrRestriction]
         internal void* m_Data;
 
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;

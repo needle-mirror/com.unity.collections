@@ -28,7 +28,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashSet(int capacity, Allocator allocator)
+        public NativeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = new NativeHashMap<T, bool>(capacity, allocator);
         }
@@ -104,7 +104,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of the set's values.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator) => m_Data.GetKeyArray(allocator);
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyArray(allocator);
 
         /// <summary>
         /// Returns a parallel writer.

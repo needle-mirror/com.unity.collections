@@ -9,7 +9,7 @@ using System.Text;
 using UnityEditor.VersionControl;
 
 // change this to change the core type under test
-using FixedStringN = Unity.Collections.FixedString128;
+using FixedStringN = Unity.Collections.FixedString128Bytes;
 
 namespace FixedStringTests
 {
@@ -48,7 +48,7 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0}";
-        FixedString32 arg0 = "a";
+        FixedString32Bytes arg0 = "a";
         aa.AppendFormat(format, arg0);
         Assert.AreEqual("a", aa);
         aa.AssertNullTerminated();
@@ -61,8 +61,8 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
         aa.AppendFormat(format, arg0, arg1);
         Assert.AreEqual("a b", aa);
         aa.AssertNullTerminated();
@@ -75,9 +75,9 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
         aa.AppendFormat(format, arg0, arg1, arg2);
         Assert.AreEqual("a b c", aa);
         aa.AssertNullTerminated();
@@ -90,10 +90,10 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3);
         Assert.AreEqual("a b c d", aa);
         aa.AssertNullTerminated();
@@ -106,11 +106,11 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
         Assert.AreEqual("a b c d e", aa);
         aa.AssertNullTerminated();
@@ -123,12 +123,12 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4} {5}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
-        FixedString32 arg5 = "f";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
+        FixedString32Bytes arg5 = "f";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
         Assert.AreEqual("a b c d e f", aa);
         aa.AssertNullTerminated();
@@ -141,13 +141,13 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4} {5} {6}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
-        FixedString32 arg5 = "f";
-        FixedString32 arg6 = "g";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
+        FixedString32Bytes arg5 = "f";
+        FixedString32Bytes arg6 = "g";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
         Assert.AreEqual("a b c d e f g", aa);
         aa.AssertNullTerminated();
@@ -160,14 +160,14 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4} {5} {6} {7}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
-        FixedString32 arg5 = "f";
-        FixedString32 arg6 = "g";
-        FixedString32 arg7 = "h";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
+        FixedString32Bytes arg5 = "f";
+        FixedString32Bytes arg6 = "g";
+        FixedString32Bytes arg7 = "h";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         Assert.AreEqual("a b c d e f g h", aa);
         aa.AssertNullTerminated();
@@ -180,15 +180,15 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
-        FixedString32 arg5 = "f";
-        FixedString32 arg6 = "g";
-        FixedString32 arg7 = "h";
-        FixedString32 arg8 = "i";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
+        FixedString32Bytes arg5 = "f";
+        FixedString32Bytes arg6 = "g";
+        FixedString32Bytes arg7 = "h";
+        FixedString32Bytes arg8 = "i";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         Assert.AreEqual("a b c d e f g h i", aa);
         aa.AssertNullTerminated();
@@ -201,16 +201,16 @@ internal class FixedStringTests
         FixedStringN aa = default;
         aa.Junk();
         FixedStringN format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
-        FixedString32 arg0 = "a";
-        FixedString32 arg1 = "b";
-        FixedString32 arg2 = "c";
-        FixedString32 arg3 = "d";
-        FixedString32 arg4 = "e";
-        FixedString32 arg5 = "f";
-        FixedString32 arg6 = "g";
-        FixedString32 arg7 = "h";
-        FixedString32 arg8 = "i";
-        FixedString32 arg9 = "j";
+        FixedString32Bytes arg0 = "a";
+        FixedString32Bytes arg1 = "b";
+        FixedString32Bytes arg2 = "c";
+        FixedString32Bytes arg3 = "d";
+        FixedString32Bytes arg4 = "e";
+        FixedString32Bytes arg5 = "f";
+        FixedString32Bytes arg6 = "g";
+        FixedString32Bytes arg7 = "h";
+        FixedString32Bytes arg8 = "i";
+        FixedString32Bytes arg9 = "j";
         aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         Assert.AreEqual("a b c d e f g h i j", aa);
         aa.AssertNullTerminated();
@@ -220,7 +220,7 @@ internal class FixedStringTests
     public void FixedStringNAppendString()
     {
         FixedStringN aa = default;
-        Assert.AreEqual(CopyError.None, aa.CopyFrom(new FixedString32("aa")));
+        Assert.AreEqual(CopyError.None, aa.CopyFrom(new FixedString32Bytes("aa")));
         Assert.AreEqual("aa", aa.ToString());
         Assert.AreEqual(FormatError.None, aa.Append("bb"));
         Assert.AreEqual("aabb", aa.ToString());
@@ -287,7 +287,7 @@ internal class FixedStringTests
     public void FixedStringNForEach()
     {
         FixedStringN actual = "A🌕Z🌑";
-        FixedList32<int> expected = default;
+        FixedList32Bytes<int> expected = default;
         expected.Add('A');
         expected.Add(0x1F315);
         expected.Add('Z');

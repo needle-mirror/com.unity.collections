@@ -391,10 +391,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
 
 
     [Test]
-    public void NativeHashSet_FixedList32_EIU_ExceptWith_Empty()
+    public void NativeHashSet_FixedList32Bytes_EIU_ExceptWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -403,96 +403,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList32_EIU_ExceptWith_AxB()
+    public void NativeHashSet_FixedList32Bytes_EIU_ExceptWith_AxB()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList32_EIU_IntersectWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList32_EIU_IntersectWith()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList32_EIU_UnionWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList32_EIU_UnionWith()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 9);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-        Assert.True(container.Contains(6));
-        Assert.True(container.Contains(7));
-        Assert.True(container.Contains(8));
-
-        container.Dispose();
-    }
-    [Test]
-    public void NativeHashSet_FixedList64_EIU_ExceptWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList64_EIU_ExceptWith_AxB()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -504,10 +418,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList64_EIU_IntersectWith_Empty()
+    public void NativeHashSet_FixedList32Bytes_EIU_IntersectWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -516,10 +430,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList64_EIU_IntersectWith()
+    public void NativeHashSet_FixedList32Bytes_EIU_IntersectWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -531,10 +445,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList64_EIU_UnionWith_Empty()
+    public void NativeHashSet_FixedList32Bytes_EIU_UnionWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -543,10 +457,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList64_EIU_UnionWith()
+    public void NativeHashSet_FixedList32Bytes_EIU_UnionWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -563,10 +477,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
         container.Dispose();
     }
     [Test]
-    public void NativeHashSet_FixedList128_EIU_ExceptWith_Empty()
+    public void NativeHashSet_FixedList64Bytes_EIU_ExceptWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -575,96 +489,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList128_EIU_ExceptWith_AxB()
+    public void NativeHashSet_FixedList64Bytes_EIU_ExceptWith_AxB()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList128_EIU_IntersectWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList128_EIU_IntersectWith()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList128_EIU_UnionWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList128_EIU_UnionWith()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 9);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-        Assert.True(container.Contains(6));
-        Assert.True(container.Contains(7));
-        Assert.True(container.Contains(8));
-
-        container.Dispose();
-    }
-    [Test]
-    public void NativeHashSet_FixedList512_EIU_ExceptWith_Empty()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_FixedList512_EIU_ExceptWith_AxB()
-    {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -676,10 +504,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList512_EIU_IntersectWith_Empty()
+    public void NativeHashSet_FixedList64Bytes_EIU_IntersectWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -688,10 +516,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList512_EIU_IntersectWith()
+    public void NativeHashSet_FixedList64Bytes_EIU_IntersectWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -703,10 +531,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList512_EIU_UnionWith_Empty()
+    public void NativeHashSet_FixedList64Bytes_EIU_UnionWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -715,10 +543,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList512_EIU_UnionWith()
+    public void NativeHashSet_FixedList64Bytes_EIU_UnionWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -735,10 +563,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
         container.Dispose();
     }
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_ExceptWith_Empty()
+    public void NativeHashSet_FixedList128Bytes_EIU_ExceptWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -747,10 +575,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_ExceptWith_AxB()
+    public void NativeHashSet_FixedList128Bytes_EIU_ExceptWith_AxB()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -762,10 +590,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_IntersectWith_Empty()
+    public void NativeHashSet_FixedList128Bytes_EIU_IntersectWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -774,10 +602,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_IntersectWith()
+    public void NativeHashSet_FixedList128Bytes_EIU_IntersectWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -789,10 +617,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_UnionWith_Empty()
+    public void NativeHashSet_FixedList128Bytes_EIU_UnionWith_Empty()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -801,10 +629,182 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_FixedList4096_EIU_UnionWith()
+    public void NativeHashSet_FixedList128Bytes_EIU_UnionWith()
     {
         var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 9);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+        Assert.True(container.Contains(6));
+        Assert.True(container.Contains(7));
+        Assert.True(container.Contains(8));
+
+        container.Dispose();
+    }
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_ExceptWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_ExceptWith_AxB()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_IntersectWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_IntersectWith()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_UnionWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList512Bytes_EIU_UnionWith()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 9);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+        Assert.True(container.Contains(6));
+        Assert.True(container.Contains(7));
+        Assert.True(container.Contains(8));
+
+        container.Dispose();
+    }
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_ExceptWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_ExceptWith_AxB()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_IntersectWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_IntersectWith()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_UnionWith_Empty()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeHashSet_FixedList4096Bytes_EIU_UnionWith()
+    {
+        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1205,10 +1205,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
 
 
     [Test]
-    public void UnsafeHashSet_FixedList32_EIU_ExceptWith_Empty()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_ExceptWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1217,96 +1217,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList32_EIU_ExceptWith_AxB()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_ExceptWith_AxB()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList32_EIU_IntersectWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList32_EIU_IntersectWith()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList32_EIU_UnionWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList32<int>() { };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList32_EIU_UnionWith()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList32<int>() { 3, 4, 5, 6, 7, 8 };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 9);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-        Assert.True(container.Contains(6));
-        Assert.True(container.Contains(7));
-        Assert.True(container.Contains(8));
-
-        container.Dispose();
-    }
-    [Test]
-    public void UnsafeHashSet_FixedList64_EIU_ExceptWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList64_EIU_ExceptWith_AxB()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1318,10 +1232,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList64_EIU_IntersectWith_Empty()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_IntersectWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1330,10 +1244,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList64_EIU_IntersectWith()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_IntersectWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1345,10 +1259,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList64_EIU_UnionWith_Empty()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_UnionWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList64<int>() { };
+        var other = new FixedList32Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1357,10 +1271,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList64_EIU_UnionWith()
+    public void UnsafeHashSet_FixedList32Bytes_EIU_UnionWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList64<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1377,10 +1291,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
         container.Dispose();
     }
     [Test]
-    public void UnsafeHashSet_FixedList128_EIU_ExceptWith_Empty()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_ExceptWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1389,96 +1303,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList128_EIU_ExceptWith_AxB()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_ExceptWith_AxB()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList128_EIU_IntersectWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList128_EIU_IntersectWith()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.IntersectWith(other);
-
-        ExpectedCount(ref container, 3);
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList128_EIU_UnionWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList128<int>() { };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList128_EIU_UnionWith()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList128<int>() { 3, 4, 5, 6, 7, 8 };
-        container.UnionWith(other);
-
-        ExpectedCount(ref container, 9);
-        Assert.True(container.Contains(0));
-        Assert.True(container.Contains(1));
-        Assert.True(container.Contains(2));
-        Assert.True(container.Contains(3));
-        Assert.True(container.Contains(4));
-        Assert.True(container.Contains(5));
-        Assert.True(container.Contains(6));
-        Assert.True(container.Contains(7));
-        Assert.True(container.Contains(8));
-
-        container.Dispose();
-    }
-    [Test]
-    public void UnsafeHashSet_FixedList512_EIU_ExceptWith_Empty()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
-        container.ExceptWith(other);
-
-        ExpectedCount(ref container, 0);
-
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeHashSet_FixedList512_EIU_ExceptWith_AxB()
-    {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1490,10 +1318,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList512_EIU_IntersectWith_Empty()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_IntersectWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1502,10 +1330,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList512_EIU_IntersectWith()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_IntersectWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1517,10 +1345,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList512_EIU_UnionWith_Empty()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_UnionWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList512<int>() { };
+        var other = new FixedList64Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1529,10 +1357,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList512_EIU_UnionWith()
+    public void UnsafeHashSet_FixedList64Bytes_EIU_UnionWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList512<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1549,10 +1377,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
         container.Dispose();
     }
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_ExceptWith_Empty()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_ExceptWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1561,10 +1389,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_ExceptWith_AxB()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_ExceptWith_AxB()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1576,10 +1404,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_IntersectWith_Empty()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_IntersectWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1588,10 +1416,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_IntersectWith()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_IntersectWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1603,10 +1431,10 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_UnionWith_Empty()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_UnionWith_Empty()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new FixedList4096<int>() { };
+        var other = new FixedList128Bytes<int>() { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1615,10 +1443,182 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_FixedList4096_EIU_UnionWith()
+    public void UnsafeHashSet_FixedList128Bytes_EIU_UnionWith()
     {
         var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new FixedList4096<int>() { 3, 4, 5, 6, 7, 8 };
+        var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 9);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+        Assert.True(container.Contains(6));
+        Assert.True(container.Contains(7));
+        Assert.True(container.Contains(8));
+
+        container.Dispose();
+    }
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_ExceptWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_ExceptWith_AxB()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_IntersectWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_IntersectWith()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_UnionWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList512Bytes<int>() { };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList512Bytes_EIU_UnionWith()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 9);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+        Assert.True(container.Contains(6));
+        Assert.True(container.Contains(7));
+        Assert.True(container.Contains(8));
+
+        container.Dispose();
+    }
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_ExceptWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_ExceptWith_AxB()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.ExceptWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(0));
+        Assert.True(container.Contains(1));
+        Assert.True(container.Contains(2));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_IntersectWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_IntersectWith()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
+        container.IntersectWith(other);
+
+        ExpectedCount(ref container, 3);
+        Assert.True(container.Contains(3));
+        Assert.True(container.Contains(4));
+        Assert.True(container.Contains(5));
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_UnionWith_Empty()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var other = new FixedList4096Bytes<int>() { };
+        container.UnionWith(other);
+
+        ExpectedCount(ref container, 0);
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeHashSet_FixedList4096Bytes_EIU_UnionWith()
+    {
+        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);

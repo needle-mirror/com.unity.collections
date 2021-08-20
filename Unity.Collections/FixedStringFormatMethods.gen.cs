@@ -25,19 +25,19 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/) })]
         public static unsafe void AppendFormat<T, U, T0>(ref this T dest, in U format, in T0 arg0)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -72,21 +72,21 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -123,23 +123,23 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -178,25 +178,25 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T3">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -237,14 +237,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -252,12 +252,12 @@ namespace Unity.Collections
         /// <typeparam name="T4">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -300,14 +300,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -316,13 +316,13 @@ namespace Unity.Collections
         /// <typeparam name="T5">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg5">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -367,14 +367,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -384,14 +384,14 @@ namespace Unity.Collections
         /// <typeparam name="T6">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg5">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg6">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -438,14 +438,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -456,15 +456,15 @@ namespace Unity.Collections
         /// <typeparam name="T7">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg5">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg6">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg7">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -513,14 +513,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -532,16 +532,16 @@ namespace Unity.Collections
         /// <typeparam name="T8">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg5">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg6">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg7">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg8">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/), typeof(FixedString128 /*T8*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes
@@ -592,14 +592,14 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>
         /// Similar to `StringBuilder.AppendFormat` but with significant limitations:
-        /// - Only supports FixedString*N* arguments. To use other string types, convert them to FixedString*N* first.
+        /// - Only supports FixedString*N*Bytes arguments. To use other string types, convert them to FixedString*N*Bytes first.
         /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The overloads of this method take up to ten strings to interpolate into the format string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="U">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
+        /// <typeparam name="U">A FixedString*N*Bytes type.</typeparam>
         /// <typeparam name="T0">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T1">The type of value to interpolate into the format string.</typeparam>
         /// <typeparam name="T2">The type of value to interpolate into the format string.</typeparam>
@@ -612,17 +612,17 @@ namespace Unity.Collections
         /// <typeparam name="T9">The type of value to interpolate into the format string.</typeparam>
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
-        /// <param name="arg0">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg1">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg2">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg3">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg4">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg5">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg6">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg7">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg8">A FixedString*N* to interpolate into the format string.</param>
-        /// <param name="arg9">A FixedString*N* to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128 /*T*/), typeof(FixedString128 /*U*/), typeof(FixedString128 /*T0*/), typeof(FixedString128 /*T1*/), typeof(FixedString128 /*T2*/), typeof(FixedString128 /*T3*/), typeof(FixedString128 /*T4*/), typeof(FixedString128 /*T5*/), typeof(FixedString128 /*T6*/), typeof(FixedString128 /*T7*/), typeof(FixedString128 /*T8*/), typeof(FixedString128 /*T9*/) })]
+        /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <param name="arg9">A FixedString*N*Bytes to interpolate into the format string.</param>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/), typeof(FixedString128Bytes /*T9*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where U : struct, INativeList<byte>, IUTF8Bytes

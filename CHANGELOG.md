@@ -1,5 +1,27 @@
 # Change log
 
+## [1.0.0-pre.5] - 2021-08-20
+
+### Changed
+
+* Renamed FixedListN to FixedListNBytes, for all N, and same for FixedString
+
+## [1.0.0-pre.4] - 2021-08-11
+
+### Added
+
+* `FixedList*` overflow checks when `UNITY_DOTS_DEBUG` is enabled.
+* Disposed NativeArray related tests and updated some invalidated native array from native list tests to confirm that exceptions are thrown when accessing an object's Length and indexer following its disposal
+
+### Changed
+
+* Updated internal dependencies
+* InvalidArrayAccessFromListJob check in the InvalidatedArrayAccessFromListThrowsInsideJob unit test to expect an ObjectDisposedException due to a change in the type thrown for AtomicSafetyHandle.CheckAndThrow
+
+### Fixed
+
+* Setting UnsafeList.Length will now resize the storage properly. 
+	
 ## [1.0.0-pre.3] - 2021-06-29
 
 ### Added

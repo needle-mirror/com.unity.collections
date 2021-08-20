@@ -48,10 +48,10 @@ namespace Unity.Collections
         /// <param name="length">The number of keys-value pairs.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public NativeKeyValueArrays(int length, Allocator allocator, NativeArrayOptions options)
+        public NativeKeyValueArrays(int length, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options)
         {
-            Keys = new NativeArray<TKey>(length, allocator, options);
-            Values = new NativeArray<TValue>(length, allocator, options);
+            Keys = CollectionHelper.CreateNativeArray<TKey>(length, allocator, options);
+            Values = CollectionHelper.CreateNativeArray<TValue>(length, allocator, options);
         }
 
         /// <summary>
@@ -112,17 +112,26 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashMap(int capacity, Allocator allocator)
+        public NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
             : this(capacity, allocator, 2)
         {
         }
 
-        NativeHashMap(int capacity, Allocator allocator, int disposeSentinelStackDepth)
+        NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
             m_HashMapData = new UnsafeHashMap<TKey, TValue>(capacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+
+            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+            {
+                m_Safety = AtomicSafetyHandle.Create();
+                m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+            }
 
             if (s_staticSafetyId.Data == 0)
             {
@@ -336,7 +345,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(Allocator allocator)
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_HashMapData.GetKeyArray(allocator);
@@ -347,7 +356,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_HashMapData.GetValueArray(allocator);
@@ -359,7 +368,7 @@ namespace Unity.Collections
         /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_HashMapData.GetKeyValueArrays(allocator);

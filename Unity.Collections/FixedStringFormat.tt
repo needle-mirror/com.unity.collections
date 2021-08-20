@@ -98,7 +98,7 @@ namespace Unity.Collections
             GENERICSPARAM = $"<{string.Join(",", Enumerable.Range(1, numFixedStringN).Select((n) => $"T{n}"))}>";
             if (!COMBO.Contains("string"))
             {
-                BCOMPAT = $"[BurstCompatible(GenericTypeArguments = new[] {{ {string.Join(", ", Enumerable.Range(1, numFixedStringN).Select((n) => $"typeof(FixedString32 /*$T{n}*/)"))} }} )]";
+                BCOMPAT = $"[BurstCompatible(GenericTypeArguments = new[] {{ {string.Join(", ", Enumerable.Range(1, numFixedStringN).Select((n) => $"typeof(FixedString32Bytes /*$T{n}*/)"))} }} )]";
             }
 
             for (int i = 0; i < numFixedStringN; ++i)
@@ -118,13 +118,13 @@ namespace Unity.Collections
         {
             if (COMBO[i].StartsWith("T"))
                 continue;
-            CONVERSIONS.Append($"            FixedString32 carg{i} = default; carg{i}.Append(arg{i});\n");
+            CONVERSIONS.Append($"            FixedString32Bytes carg{i} = default; carg{i}.Append(arg{i});\n");
             ARGNAMES[i] = $"carg{i}";
         }
 
-        var RETURNTYPE = "FixedString128";
+        var RETURNTYPE = "FixedString128Bytes";
         if (COMBO.Count > 3)
-            RETURNTYPE = "FixedString512";
+            RETURNTYPE = "FixedString512Bytes";
 
         var ARGxDOCS = String.Join("\r\n        /// ", Enumerable.Range(0, COMBO.Count).Select(n => $"<param name=\"arg{n}\">Value to interpolate into the format string.</param>"));
 #>

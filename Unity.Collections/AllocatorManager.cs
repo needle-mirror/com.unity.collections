@@ -284,6 +284,7 @@ namespace Unity.Collections
                     return false;
                 return true;
             }
+
             /// <summary>
             /// For internal use only.
             /// </summary>
@@ -298,6 +299,7 @@ namespace Unity.Collections
                 ChildSafetyHandles.Add(handle);
                 return result;
             }
+
             internal bool TryRemoveSafetyHandle(AtomicSafetyHandle handle, int safetyHandleIndex)
             {
                 if(!NeedsUseAfterFreeTracking())
@@ -398,7 +400,11 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="a">The Allocator to copy.</param>
             /// <returns>The AllocatorHandle of an allocator.</returns>
-            public static implicit operator AllocatorHandle(Allocator a) => new AllocatorHandle { Index = (ushort)a };
+            public static implicit operator AllocatorHandle(Allocator a) => new AllocatorHandle
+            {
+                Index = (ushort)((uint)a & 0xFFFF),
+                Version = (ushort)((uint)a >> 16)
+            };
 
             /// <summary>
             /// This allocator's index into the global table of allocator functions.
@@ -489,7 +495,21 @@ namespace Unity.Collections
             /// <summary>
             /// Cast the Index to Allocator.
             /// </summary>
-            public Allocator ToAllocator { get { return (Allocator)this.Index; } }
+            public Allocator ToAllocator
+            {
+                get
+                {
+                    uint lo = Index;
+                    uint hi = Version;
+                    uint value = (hi << 16) | lo;
+                    return (Allocator)value;
+                }
+            }
+
+            /// <summary>
+            /// Check whether this allocator is a custom allocator.
+            /// </summary>
+            public bool IsCustomAllocator { get { return this.Index >= FirstUserIndex; } }
 
             /// <summary>
             /// Unregister the allocator.
@@ -727,7 +747,62 @@ namespace Unity.Collections
             /// Cast the Allocator index into Allocator
             /// </summary>
             Allocator ToAllocator { get; }
+
+            /// <summary>
+            /// Check whether an allocator is a custom allocator
+            /// </summary>
+            bool IsCustomAllocator { get; }
         }
+
+
+        /// <summary>
+        /// Memory allocation status
+        /// </summary>
+        public const int kErrorNone = 0;
+        public const int kErrorBufferOverflow = -1;
+
+#if !UNITY_IOS
+
+        [BurstDiscard]
+        private static void CheckDelegate(ref bool useDelegate)
+        {
+            //@TODO: This should use BurstCompiler.IsEnabled once that is available as an efficient API.
+            useDelegate = true;
+        }
+
+        private static bool UseDelegate()
+        {
+            bool result = false;
+            CheckDelegate(ref result);
+            return result;
+        }
+#endif
+
+        private static int allocate_block(ref Block block)
+        {
+            TableEntry tableEntry = default;
+            tableEntry = block.Range.Allocator.TableEntry;
+            var function = new FunctionPointer<TryFunction>(tableEntry.function);
+            // this is a path for bursted caller, for non-Burst C#, it generates garbage each time we call Invoke
+            return function.Invoke(tableEntry.state, ref block);
+        }
+
+#if !UNITY_IOS
+        [BurstDiscard]
+        private static void forward_mono_allocate_block(ref Block block, ref int error)
+        {
+            TableEntry tableEntry = default;
+            tableEntry = block.Range.Allocator.TableEntry;
+
+            var index = block.Range.Allocator.Handle.Index;
+            if (index >= Managed.kMaxNumCustomAllocator)
+            {
+                throw new ArgumentException("Allocator index into TryFunction delegate table exceeds maximum.");
+            }
+            ref TryFunction function = ref Managed.TryFunctionDelegates[block.Range.Allocator.Handle.Index];
+            error = function(tableEntry.state, ref block);
+        }
+#endif
 
         internal static Allocator LegacyOf(AllocatorHandle handle)
         {
@@ -746,8 +821,10 @@ namespace Unity.Collections
             }
             if (block.Bytes == 0) // Free
             {
-                if(LegacyOf(block.Range.Allocator) != Allocator.None)
-                    Memory.Unmanaged.Free((void*) block.Range.Pointer, LegacyOf(block.Range.Allocator));
+                if (LegacyOf(block.Range.Allocator) != Allocator.None)
+                {
+                    Memory.Unmanaged.Free((void*)block.Range.Pointer, LegacyOf(block.Range.Allocator));
+                }
                 block.Range.Pointer = IntPtr.Zero;
                 block.AllocatedItems = 0;
                 return 0;
@@ -780,8 +857,16 @@ namespace Unity.Collections
             if(block.Range.Allocator.Version == 0)
                 block.Range.Allocator.Version = block.Range.Allocator.OfficialVersion;
 #endif
-            // this is really bad in non-Burst C#, it generates garbage each time we call Invoke
-            return function.Invoke(tableEntry.state, ref block);
+
+#if !UNITY_IOS
+            if (UseDelegate())
+            {
+                int error = kErrorNone;
+                forward_mono_allocate_block(ref block, ref error);
+                return error;
+            }
+#endif
+            return allocate_block(ref block);
         }
 
         /// <summary>
@@ -792,6 +877,7 @@ namespace Unity.Collections
         {
             public AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
             public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
+            public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
 
             internal AllocatorHandle m_handle;
 
@@ -866,11 +952,13 @@ namespace Unity.Collections
 
             public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
 
+            public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+
             internal AllocatorHandle m_handle;
 
             internal Block Storage;
             internal int Log2SlabSizeInBytes;
-            internal FixedList4096<int> Occupied;
+            internal FixedList4096Bytes<int> Occupied;
             internal long budgetInBytes;
             internal long allocatedBytes;
 
@@ -1008,6 +1096,49 @@ namespace Unity.Collections
 #endif
         }
 
+        internal static class Managed
+        {
+#if !UNITY_IOS
+            /// <summary>
+            /// Memory allocation status
+            /// </summary>
+            internal const int kMaxNumCustomAllocator = 32768;
+            internal static TryFunction[] TryFunctionDelegates = new TryFunction[kMaxNumCustomAllocator];
+#endif
+
+            /// <summary>
+            /// Register TryFunction delegates for managed caller to avoid garbage collections
+            /// </summary>
+            /// <param name="index">Index into the TryFunction delegates table.</param>
+            /// <param name="function">TryFunction delegate to be registered.</param>
+            public static void RegisterDelegate(int index, TryFunction function)
+            {
+#if !UNITY_IOS
+                if(index >= kMaxNumCustomAllocator)
+                {
+                    throw new ArgumentException("index to be registered in TryFunction delegate table exceeds maximum.");
+                }
+                // Register TryFunction delegates for managed caller to avoid garbage collections
+                Managed.TryFunctionDelegates[index] = function;
+#endif
+            }
+
+            /// <summary>
+            /// Unregister TryFunction delegate
+            /// </summary>
+            /// <param name="int">Index into the TryFunction delegates table.</param>
+            public static void UnregisterDelegate(int index)
+            {
+#if !UNITY_IOS
+                if (index >= kMaxNumCustomAllocator)
+                {
+                    throw new ArgumentException("index to be unregistered in TryFunction delegate table exceeds maximum.");
+                }
+                Managed.TryFunctionDelegates[index] = default;
+#endif
+            }
+        }
+
         /// <summary>
         /// For internal use only.
         /// </summary>
@@ -1021,15 +1152,22 @@ namespace Unity.Collections
         /// <param name="handle">The global function table index at which to install the allocator function.</param>
         /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
         /// <param name="functionPointer">The allocator function to install in the global function table.</param>
-        internal static void Install(AllocatorHandle handle, IntPtr allocatorState, FunctionPointer<TryFunction> functionPointer)
+        /// <param name="function">The allocator function to install in the global function table.</param>
+        internal static void Install(AllocatorHandle handle,
+                                        IntPtr allocatorState,
+                                        FunctionPointer<TryFunction> functionPointer,
+                                        TryFunction function)
         {
             if(functionPointer.Value == IntPtr.Zero)
                 handle.Unregister();
             else
             {
                 int error = ConcurrentMask.TryAllocate(ref SharedStatics.IsInstalled.Ref.Data, handle.Value, 1);
-                if(ConcurrentMask.Succeeded(error))
+                if (ConcurrentMask.Succeeded(error))
+                {
                     handle.Install(new TableEntry { state = allocatorState, function = functionPointer.Value });
+                    Managed.RegisterDelegate(handle.Index, function);
+                }
             }
         }
 
@@ -1044,7 +1182,7 @@ namespace Unity.Collections
             var functionPointer = (function == null)
                 ? new FunctionPointer<TryFunction>(IntPtr.Zero)
                 : BurstCompiler.CompileFunctionPointer(function);
-            Install(handle, allocatorState, functionPointer);
+            Install(handle, allocatorState, functionPointer, function);
         }
 
         /// <summary>
@@ -1080,6 +1218,9 @@ namespace Unity.Collections
                 ? new FunctionPointer<TryFunction>(IntPtr.Zero)
                 : BurstCompiler.CompileFunctionPointer(t.Function);
             t.Handle = Register((IntPtr)UnsafeUtility.AddressOf(ref t), functionPointer);
+
+            Managed.RegisterDelegate(t.Handle.Index, t.Function);
+
 #if ENABLE_UNITY_ALLOCATION_CHECKS
             if (!t.Handle.IsValid)
                 throw new InvalidOperationException("Allocator registration succeeded, but failed to produce valid handle.");
@@ -1097,6 +1238,7 @@ namespace Unity.Collections
             {
                 t.Handle.Install(default);
                 ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
+                Managed.UnregisterDelegate(t.Handle.Index);
             }
         }
 
@@ -1114,9 +1256,9 @@ namespace Unity.Collections
         /// <value>Index in the global function table of the first user-defined allocator.</value>
         public const ushort FirstUserIndex = 64;
 
-        internal static bool IsCustomAllocator(Allocator allocator)
+        internal static bool IsCustomAllocator(AllocatorHandle allocator)
         {
-            return (ushort)allocator >= FirstUserIndex;
+            return allocator.Index >= FirstUserIndex;
         }
 
         [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]

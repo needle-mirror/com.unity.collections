@@ -38,7 +38,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The allocator used to create the internal buffer.
         /// </summary>
         /// <value>The allocator used to create the internal buffer.</value>
-        public Allocator Allocator;
+        public AllocatorManager.AllocatorHandle Allocator;
 
         /// <summary>
         /// The byte alignment used when allocating the internal buffer.
@@ -52,7 +52,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="initialCapacity">The initial allocation size in bytes of the internal buffer.</param>
         /// <param name="alignment">The byte alignment of the allocation. Must be a non-zero power of 2.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeAppendBuffer(int initialCapacity, int alignment, Allocator allocator)
+        public UnsafeAppendBuffer(int initialCapacity, int alignment, AllocatorManager.AllocatorHandle allocator)
         {
             CheckAlignment(alignment);
 
@@ -75,7 +75,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeAppendBuffer(void* ptr, int length)
         {
             Alignment = 0;
-            Allocator = Allocator.None;
+            Allocator = AllocatorManager.None;
             Ptr = (byte*)ptr;
             Length = 0;
             Capacity = length;
@@ -101,7 +101,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 Memory.Unmanaged.Free(Ptr, Allocator);
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
             }
 
             Ptr = null;
@@ -122,7 +122,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
                 Ptr = null;
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
 
                 return jobHandle;
             }
@@ -408,10 +408,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="value">Outputs a new array with length of 1. The read element is copied to the single index of this array.</param>
             /// <param name="allocator">The allocator to use.</param>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void ReadNext<T>(out NativeArray<T> value, Allocator allocator) where T : struct
+            public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : struct
             {
                 var length = ReadNext<int>();
-                value = new NativeArray<T>(length, allocator);
+                value = CollectionHelper.CreateNativeArray<T>(length, allocator);
                 var size = length * UnsafeUtility.SizeOf<T>();
                 if (size > 0)
                 {

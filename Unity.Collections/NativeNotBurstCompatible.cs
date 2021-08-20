@@ -65,7 +65,7 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
         [NotBurstCompatible]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashmap, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
         where TKey : struct, IEquatable<TKey>, IComparable<TKey>
         where TValue : struct
         {
@@ -84,7 +84,7 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
         [NotBurstCompatible]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashmap, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
         {

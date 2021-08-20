@@ -9,7 +9,7 @@ using System.Text;
 using Unity.Burst;
 
 // change this to change the core type under test
-using FixedStringN = Unity.Collections.FixedString128;
+using FixedStringN = Unity.Collections.FixedString128Bytes;
 
 namespace FixedStringTests
 {
@@ -17,13 +17,13 @@ namespace FixedStringTests
     internal class FixedStringBurstTests
     {
         [BurstCompile]
-        static int BurstAppendFn(ref FixedStringN fs, in FixedString32 other)
+        static int BurstAppendFn(ref FixedStringN fs, in FixedString32Bytes other)
         {
             fs.Append(in other);
             return fs.Length;
         }
 
-        delegate int BurstAppendDelegate(ref FixedStringN a, in FixedString32 b);
+        delegate int BurstAppendDelegate(ref FixedStringN a, in FixedString32Bytes b);
 
         [Test]
         public void TestBurstAppend()
@@ -32,7 +32,7 @@ namespace FixedStringTests
             var invoke = fp.Invoke;
 
             FixedStringN a = new FixedStringN("Hello ");
-            FixedString32 b = new FixedString32("World");
+            FixedString32Bytes b = new FixedString32Bytes("World");
 
             var len = invoke(ref a, b);
             Assert.AreEqual(11, len);

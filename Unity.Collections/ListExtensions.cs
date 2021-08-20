@@ -71,7 +71,7 @@ namespace Unity.Collections
         /// <param name="list">The list to copy.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A copy of this list.</returns>
-        public static NativeList<T> ToNativeList<T>(this List<T> list, Allocator allocator) where T : unmanaged
+        public static NativeList<T> ToNativeList<T>(this List<T> list, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
         {
             var container = new NativeList<T>(list.Count, allocator);
             for (int i = 0; i < list.Count; i++)
@@ -88,9 +88,9 @@ namespace Unity.Collections
         /// <param name="list">The list to copy.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public unsafe static NativeArray<T> ToNativeArray<T>(this List<T> list, Allocator allocator) where T : unmanaged
+        public unsafe static NativeArray<T> ToNativeArray<T>(this List<T> list, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
         {
-            var container = new NativeArray<T>(list.Count, allocator);
+            var container = CollectionHelper.CreateNativeArray<T>(list.Count, allocator);
             for (int i = 0; i < list.Count; i++)
             {
                 container[i] = list[i];

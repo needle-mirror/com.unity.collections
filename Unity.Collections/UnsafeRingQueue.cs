@@ -98,7 +98,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The allocator used to create the internal buffer.
         /// </summary>
         /// <value>The allocator used to create the internal buffer.</value>
-        public Allocator Allocator;
+        public AllocatorManager.AllocatorHandle Allocator;
 
         internal RingControl Control;
 
@@ -128,7 +128,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeRingQueue(T* ptr, int capacity)
         {
             Ptr = ptr;
-            Allocator = Allocator.None;
+            Allocator = AllocatorManager.None;
             Control = new RingControl(capacity);
         }
 
@@ -138,7 +138,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="capacity">The capacity.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public UnsafeRingQueue(int capacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public UnsafeRingQueue(int capacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
             capacity += 1;
 
@@ -167,7 +167,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 Memory.Unmanaged.Free(Ptr, Allocator);
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
             }
 
             Ptr = null;
@@ -186,7 +186,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
 
                 Ptr = null;
-                Allocator = Allocator.Invalid;
+                Allocator = AllocatorManager.Invalid;
 
                 return jobHandle;
             }

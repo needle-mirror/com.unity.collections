@@ -29,7 +29,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     internal unsafe struct UnsafeStreamBlockData
     {
         internal const int AllocationSize = 4 * 1024;
-        internal Allocator Allocator;
+        internal AllocatorManager.AllocatorHandle Allocator;
 
         internal UnsafeStreamBlock** Blocks;
         internal int BlockCount;
@@ -89,7 +89,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeStreamBlockData* m_Block;
-        internal Allocator m_Allocator;
+        internal AllocatorManager.AllocatorHandle m_Allocator;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeStream.
@@ -97,7 +97,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="bufferCount">The number of buffers to give the stream. You usually want
         /// one buffer for each thread that will read or write the stream.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeStream(int bufferCount, Allocator allocator)
+        public UnsafeStream(int bufferCount, AllocatorManager.AllocatorHandle allocator)
         {
             AllocateBlock(out this, allocator);
             AllocateForEach(bufferCount);
@@ -117,7 +117,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct<T>(out UnsafeStream stream, NativeList<T> bufferCount, JobHandle dependency, Allocator allocator)
+        public static JobHandle ScheduleConstruct<T>(out UnsafeStream stream, NativeList<T> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
             where T : unmanaged
         {
             AllocateBlock(out stream, allocator);
@@ -138,14 +138,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct(out UnsafeStream stream, NativeArray<int> bufferCount, JobHandle dependency, Allocator allocator)
+        public static JobHandle ScheduleConstruct(out UnsafeStream stream, NativeArray<int> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
         {
             AllocateBlock(out stream, allocator);
             var jobData = new ConstructJob { Length = bufferCount, Container = stream };
             return jobData.Schedule(dependency);
         }
 
-        internal static void AllocateBlock(out UnsafeStream stream, Allocator allocator)
+        internal static void AllocateBlock(out UnsafeStream stream, AllocatorManager.AllocatorHandle allocator)
         {
             int blockCount = JobsUtility.MaxJobThreadCount;
 
@@ -255,9 +255,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A new NativeArray copy of this stream's data.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
+        public NativeArray<T> ToNativeArray<T>(AllocatorManager.AllocatorHandle allocator) where T : struct
         {
-            var array = new NativeArray<T>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            var array = CollectionHelper.CreateNativeArray<T>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             var reader = AsReader();
 
             int offset = 0;

@@ -110,7 +110,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, Allocator label,
+        internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label,
             out UnsafeHashMapData* outBuf)
             where TKey : struct
             where TValue : struct
@@ -137,7 +137,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void ReallocateHashMap<TKey, TValue>(UnsafeHashMapData* data, int newCapacity, int newBucketCapacity, Allocator label)
+        internal static void ReallocateHashMap<TKey, TValue>(UnsafeHashMapData* data, int newCapacity, int newBucketCapacity, AllocatorManager.AllocatorHandle label)
             where TKey : struct
             where TValue : struct
         {
@@ -202,7 +202,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             data->bucketCapacityMask = newBucketCapacity - 1;
         }
 
-        internal static void DeallocateHashMap(UnsafeHashMapData* data, Allocator allocator)
+        internal static void DeallocateHashMap(UnsafeHashMapData* data, AllocatorManager.AllocatorHandle allocator)
         {
             Memory.Unmanaged.Free(data->values, allocator);
             Memory.Unmanaged.Free(data, allocator);
@@ -396,7 +396,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeHashMapData* m_Buffer;
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
@@ -646,7 +646,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             while (Interlocked.CompareExchange(ref buckets[bucket], idx, nextPtr) != nextPtr);
         }
 
-        internal static unsafe bool TryAdd(UnsafeHashMapData* data, TKey key, TValue item, bool isMultiHashMap, Allocator allocation)
+        internal static unsafe bool TryAdd(UnsafeHashMapData* data, TKey key, TValue item, bool isMultiHashMap, AllocatorManager.AllocatorHandle allocation)
         {
             TValue tempItem;
             NativeMultiHashMapIterator<TKey> tempIt;
@@ -1068,14 +1068,14 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeHashMapData* m_Buffer;
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeHashMap.
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeHashMap(int capacity, Allocator allocator)
+        public UnsafeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             CollectionHelper.CheckIsUnmanaged<TKey>();
             CollectionHelper.CheckIsUnmanaged<TValue>();
@@ -1247,9 +1247,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(Allocator allocator)
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = new NativeArray<TKey>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TKey>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
@@ -1259,9 +1259,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = new NativeArray<TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
@@ -1272,7 +1272,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyValueArrays(m_Buffer, result);
@@ -1405,7 +1405,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         public UnsafeHashMapData* Data;
-        public Allocator Allocator;
+        public AllocatorManager.AllocatorHandle Allocator;
 
         public void Execute()
         {
@@ -1451,7 +1451,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 #pragma warning disable 169
         [NativeDisableUnsafePtrRestriction]
         UnsafeHashMapData* m_Buffer;
-        Allocator m_AllocatorLabel;
+        AllocatorManager.AllocatorHandle m_AllocatorLabel;
 #pragma warning restore 169
     }
 }

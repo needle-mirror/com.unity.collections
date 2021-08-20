@@ -13,12 +13,12 @@ namespace Unity.Collections
         [BurstCompatible]
         internal struct Unmanaged
         {
-            internal static void* Allocate(long size, int align, Allocator allocator)
+            internal static void* Allocate(long size, int align, AllocatorManager.AllocatorHandle allocator)
             {
                 return Array.Resize(null, 0, 1, allocator, size, align);
             }
 
-            internal static void Free(void* pointer, Allocator allocator)
+            internal static void Free(void* pointer, AllocatorManager.AllocatorHandle allocator)
             {
                 if (pointer == null)
                     return;
@@ -26,13 +26,13 @@ namespace Unity.Collections
             }
 
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            internal static T* Allocate<T>(Allocator allocator) where T : unmanaged
+            internal static T* Allocate<T>(AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 return Array.Resize<T>(null, 0, 1, allocator);
             }
 
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            internal static void Free<T>(T* pointer, Allocator allocator) where T : unmanaged
+            internal static void Free<T>(T* pointer, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 if (pointer == null)
                     return;
@@ -42,12 +42,12 @@ namespace Unity.Collections
             [BurstCompatible]
             internal struct Array
             {
-                static bool IsCustom(Allocator allocator)
+                static bool IsCustom(AllocatorManager.AllocatorHandle allocator)
                 {
-                    return (int) allocator >= AllocatorManager.FirstUserIndex;
+                    return (int) allocator.Index >= AllocatorManager.FirstUserIndex;
                 }
 
-                static void* CustomResize(void* oldPointer, long oldCount, long newCount, Allocator allocator, long size, int align)
+                static void* CustomResize(void* oldPointer, long oldCount, long newCount, AllocatorManager.AllocatorHandle allocator, long size, int align)
                 {
                     AllocatorManager.Block block = default;
                     block.Range.Allocator = allocator;
@@ -61,7 +61,7 @@ namespace Unity.Collections
                     return (void*)block.Range.Pointer;
                 }
 
-                internal static void* Resize(void* oldPointer, long oldCount, long newCount, Allocator allocator,
+                internal static void* Resize(void* oldPointer, long oldCount, long newCount, AllocatorManager.AllocatorHandle allocator,
                     long size, int align)
                 {
                     if (IsCustom(allocator))
@@ -71,7 +71,7 @@ namespace Unity.Collections
                     {
                         long bytesToAllocate = newCount * size;
                         CheckByteCountIsReasonable(bytesToAllocate);
-                        newPointer = UnsafeUtility.Malloc(bytesToAllocate, align, allocator);
+                        newPointer = UnsafeUtility.Malloc(bytesToAllocate, align, allocator.ToAllocator);
                         if (oldCount > 0)
                         {
                             long count = math.min(oldCount, newCount);
@@ -81,25 +81,25 @@ namespace Unity.Collections
                         }
                     }
                     if (oldCount > 0)
-                        UnsafeUtility.Free(oldPointer, allocator);
+                        UnsafeUtility.Free(oldPointer, allocator.ToAllocator);
                     return newPointer;
                 }
 
                 [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-                internal static T* Resize<T>(T* oldPointer, long oldCount, long newCount, Allocator allocator) where T : unmanaged
+                internal static T* Resize<T>(T* oldPointer, long oldCount, long newCount, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
                 {
                     return (T*)Resize((byte*)oldPointer, oldCount, newCount, allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>());
                 }
 
                 [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-                internal static T* Allocate<T>(long count, Allocator allocator)
+                internal static T* Allocate<T>(long count, AllocatorManager.AllocatorHandle allocator)
                     where T : unmanaged
                 {
                     return Resize<T>(null, 0, count, allocator);
                 }
 
                 [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-                internal static void Free<T>(T* pointer, long count, Allocator allocator)
+                internal static void Free<T>(T* pointer, long count, AllocatorManager.AllocatorHandle allocator)
                     where T : unmanaged
                 {
                     if (pointer == null)

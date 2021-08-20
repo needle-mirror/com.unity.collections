@@ -29,14 +29,14 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeHashMapData* m_Buffer;
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeMultiHashMap.
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeMultiHashMap(int capacity, Allocator allocator)
+        public UnsafeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_AllocatorLabel = allocator;
             // Bucket size if bigger to reduce collisions
@@ -244,9 +244,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(Allocator allocator)
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = new NativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
@@ -258,9 +258,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// you can use <see cref="Unity.Collections.NativeHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = new NativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
@@ -272,7 +272,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all the keys and values (in no particular order).</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeHashMapData.GetKeyValueArrays(m_Buffer, result);
@@ -487,7 +487,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             m_Target = target;
         }
 
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray(ref UnsafeMultiHashMap<TKey, TValue> hashMap, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray(ref UnsafeMultiHashMap<TKey, TValue> hashMap, AllocatorManager.AllocatorHandle allocator)
         {
             var withDuplicates = hashMap.GetKeyArray(allocator);
             withDuplicates.Sort();

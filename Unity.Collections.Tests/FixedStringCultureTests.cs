@@ -8,7 +8,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using System.Text;
 
 // change this to change the core type under test
-using FixedStringN = Unity.Collections.FixedString128;
+using FixedStringN = Unity.Collections.FixedString128Bytes;
 
 namespace FixedStringTests
 {

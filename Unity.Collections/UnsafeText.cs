@@ -28,7 +28,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="capacity">The initial capacity, in bytes.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeText(int capacity, Allocator allocator)
+        public UnsafeText(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_ListData = new UnsafeList<byte>(capacity + 1, allocator);
             Length = 0;

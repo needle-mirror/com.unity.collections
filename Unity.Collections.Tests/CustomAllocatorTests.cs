@@ -10,6 +10,26 @@ using Unity.Jobs;
 internal class CustomAllocatorTests
 {
 
+#if !NET_DOTS
+    [TestCase(1337,   1337)]
+    [TestCase(0xFFFF, 0x0000)]
+    [TestCase(0x0000, 0xFFFF)]
+    [TestCase(0xFFFF, 0xFFFF)]
+    [TestCase(0x0000, 0x0000)]
+    public void AllocatorHandleToAllocatorRoundTripWorks(int i, int v)
+    {
+        var Index = (ushort)i;
+        var Version = (ushort)v;
+        AllocatorManager.AllocatorHandle srcHandle = new AllocatorManager.AllocatorHandle{ Index = Index, Version = Version };
+        Allocator srcAllocator = srcHandle.ToAllocator;
+        AllocatorManager.AllocatorHandle destHandle = srcAllocator;
+        Assert.AreEqual(srcHandle.Index, destHandle.Index);
+        Assert.AreEqual(srcHandle.Version, destHandle.Version);
+        Allocator destAllocator = destHandle.ToAllocator;
+        Assert.AreEqual(srcAllocator, destAllocator);
+    }
+#endif
+
     [Test]
     public void AllocatorVersioningWorks()
     {
@@ -167,6 +187,8 @@ internal class CustomAllocatorTests
         public AllocatorManager.AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
 
         public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
+
+        public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
 
         internal AllocatorManager.AllocatorHandle m_handle;
         internal AllocatorManager.AllocatorHandle m_parent;

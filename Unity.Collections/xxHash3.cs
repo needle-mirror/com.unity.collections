@@ -4,8 +4,11 @@ using Unity.Burst;
 using Unity.Burst.Intrinsics;
 #endif
 using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Unity.Collections
 {
@@ -227,6 +230,9 @@ namespace Unity.Collections
 
 #if !UNITY_DOTSRUNTIME
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+#if UNITY_EDITOR
+        [InitializeOnLoadMethod]
+#endif
         static unsafe void Initialize()
 #else
         static unsafe xxHash3()

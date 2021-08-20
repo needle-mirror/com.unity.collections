@@ -375,17 +375,17 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -414,7 +414,7 @@ namespace Unity.Collections
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckElementAccess(int index, int Length)
         {
             if (index < 0 || index >= Length)
@@ -422,7 +422,7 @@ namespace Unity.Collections
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckResize<BUFFER,T>(int newLength) where BUFFER : struct where T : struct
         {
             var Capacity = Capacity<BUFFER,T>();
@@ -431,26 +431,29 @@ namespace Unity.Collections
         }
     }
 
+    [Obsolete("Renamed to FixedList32Bytes<T> (UnityUpgradable) -> FixedList32Bytes<T>", true)]
+    public struct FixedList32<T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 32-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
-    [DebuggerTypeProxy(typeof(FixedList32DebugView<>))]
+    [DebuggerTypeProxy(typeof(FixedList32BytesDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct FixedList32<T>
+    public struct FixedList32Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
-    , IEquatable<FixedList32<T>>
-    , IComparable<FixedList32<T>>
-    , IEquatable<FixedList64<T>>
-    , IComparable<FixedList64<T>>
-    , IEquatable<FixedList128<T>>
-    , IComparable<FixedList128<T>>
-    , IEquatable<FixedList512<T>>
-    , IComparable<FixedList512<T>>
-    , IEquatable<FixedList4096<T>>
-    , IComparable<FixedList4096<T>>
+    , IEquatable<FixedList32Bytes<T>>
+    , IComparable<FixedList32Bytes<T>>
+    , IEquatable<FixedList64Bytes<T>>
+    , IComparable<FixedList64Bytes<T>>
+    , IEquatable<FixedList128Bytes<T>>
+    , IComparable<FixedList128Bytes<T>>
+    , IEquatable<FixedList512Bytes<T>>
+    , IComparable<FixedList512Bytes<T>>
+    , IEquatable<FixedList4096Bytes<T>>
+    , IComparable<FixedList4096Bytes<T>>
     where T : unmanaged
     {
         [SerializeField] internal ushort length;
@@ -793,11 +796,11 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -811,7 +814,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList32<T> a, in FixedList32<T> b)
+        public static bool operator ==(in FixedList32Bytes<T> a, in FixedList32Bytes<T> b)
         {
             unsafe
             {
@@ -828,7 +831,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList32<T> a, in FixedList32<T> b)
+        public static bool operator !=(in FixedList32Bytes<T> a, in FixedList32Bytes<T> b)
         {
             return !(a == b);
         }
@@ -843,7 +846,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList32<T> other)
+        public int CompareTo(FixedList32Bytes<T> other)
         {
             unsafe
             {
@@ -870,7 +873,7 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList32<T> other)
+        public bool Equals(FixedList32Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
@@ -883,7 +886,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList32<T> a, in FixedList64<T> b)
+        public static bool operator ==(in FixedList32Bytes<T> a, in FixedList64Bytes<T> b)
         {
             unsafe
             {
@@ -900,7 +903,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList32<T> a, in FixedList64<T> b)
+        public static bool operator !=(in FixedList32Bytes<T> a, in FixedList64Bytes<T> b)
         {
             return !(a == b);
         }
@@ -915,7 +918,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList64<T> other)
+        public int CompareTo(FixedList64Bytes<T> other)
         {
             unsafe
             {
@@ -942,18 +945,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList64<T> other)
+        public bool Equals(FixedList64Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList32 with content copied from another list.
+        /// Initializes and returns an instance of FixedList32Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public FixedList32(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public FixedList32Bytes(in FixedList64Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes30,T>(other.length);
             length = other.length;
@@ -969,10 +972,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public static implicit operator FixedList32<T>(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList32Bytes<T>(in FixedList64Bytes<T> other)
         {
-            return new FixedList32<T>(other);
+            return new FixedList32Bytes<T>(other);
         }
 
         /// <summary>
@@ -982,7 +985,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList32<T> a, in FixedList128<T> b)
+        public static bool operator ==(in FixedList32Bytes<T> a, in FixedList128Bytes<T> b)
         {
             unsafe
             {
@@ -999,7 +1002,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList32<T> a, in FixedList128<T> b)
+        public static bool operator !=(in FixedList32Bytes<T> a, in FixedList128Bytes<T> b)
         {
             return !(a == b);
         }
@@ -1014,7 +1017,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList128<T> other)
+        public int CompareTo(FixedList128Bytes<T> other)
         {
             unsafe
             {
@@ -1041,18 +1044,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList128<T> other)
+        public bool Equals(FixedList128Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList32 with content copied from another list.
+        /// Initializes and returns an instance of FixedList32Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public FixedList32(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public FixedList32Bytes(in FixedList128Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes30,T>(other.length);
             length = other.length;
@@ -1068,10 +1071,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public static implicit operator FixedList32<T>(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList32Bytes<T>(in FixedList128Bytes<T> other)
         {
-            return new FixedList32<T>(other);
+            return new FixedList32Bytes<T>(other);
         }
 
         /// <summary>
@@ -1081,7 +1084,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList32<T> a, in FixedList512<T> b)
+        public static bool operator ==(in FixedList32Bytes<T> a, in FixedList512Bytes<T> b)
         {
             unsafe
             {
@@ -1098,7 +1101,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList32<T> a, in FixedList512<T> b)
+        public static bool operator !=(in FixedList32Bytes<T> a, in FixedList512Bytes<T> b)
         {
             return !(a == b);
         }
@@ -1113,7 +1116,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList512<T> other)
+        public int CompareTo(FixedList512Bytes<T> other)
         {
             unsafe
             {
@@ -1140,18 +1143,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList512<T> other)
+        public bool Equals(FixedList512Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList32 with content copied from another list.
+        /// Initializes and returns an instance of FixedList32Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public FixedList32(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public FixedList32Bytes(in FixedList512Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes30,T>(other.length);
             length = other.length;
@@ -1167,10 +1170,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public static implicit operator FixedList32<T>(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList32Bytes<T>(in FixedList512Bytes<T> other)
         {
-            return new FixedList32<T>(other);
+            return new FixedList32Bytes<T>(other);
         }
 
         /// <summary>
@@ -1180,7 +1183,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList32<T> a, in FixedList4096<T> b)
+        public static bool operator ==(in FixedList32Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             unsafe
             {
@@ -1197,7 +1200,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList32<T> a, in FixedList4096<T> b)
+        public static bool operator !=(in FixedList32Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             return !(a == b);
         }
@@ -1212,7 +1215,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList4096<T> other)
+        public int CompareTo(FixedList4096Bytes<T> other)
         {
             unsafe
             {
@@ -1239,18 +1242,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList4096<T> other)
+        public bool Equals(FixedList4096Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList32 with content copied from another list.
+        /// Initializes and returns an instance of FixedList32Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public FixedList32(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public FixedList32Bytes(in FixedList4096Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes30,T>(other.length);
             length = other.length;
@@ -1266,10 +1269,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32&lt;T&gt;.</exception>
-        public static implicit operator FixedList32<T>(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList32Bytes<T>(in FixedList4096Bytes<T> other)
         {
-            return new FixedList32<T>(other);
+            return new FixedList32Bytes<T>(other);
         }
 
         /// <summary>
@@ -1284,30 +1287,30 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
-            if(obj is FixedList32<T> aFixedList32) return Equals(aFixedList32);
-            if(obj is FixedList64<T> aFixedList64) return Equals(aFixedList64);
-            if(obj is FixedList128<T> aFixedList128) return Equals(aFixedList128);
-            if(obj is FixedList512<T> aFixedList512) return Equals(aFixedList512);
-            if(obj is FixedList4096<T> aFixedList4096) return Equals(aFixedList4096);
+            if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
+            if(obj is FixedList64Bytes<T> aFixedList64Bytes) return Equals(aFixedList64Bytes);
+            if(obj is FixedList128Bytes<T> aFixedList128Bytes) return Equals(aFixedList128Bytes);
+            if(obj is FixedList512Bytes<T> aFixedList512Bytes) return Equals(aFixedList512Bytes);
+            if(obj is FixedList4096Bytes<T> aFixedList4096Bytes) return Equals(aFixedList4096Bytes);
             return false;
         }
 
         /// <summary>
-        /// An enumerator over the elements of a FixedList32&lt;T&gt;.
+        /// An enumerator over the elements of a FixedList32Bytes&lt;T&gt;.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            FixedList32<T> m_List;
+            FixedList32Bytes<T> m_List;
             int m_Index;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedList32&lt;T&gt;.
+            /// Initializes and returns an instance of FixedList32Bytes&lt;T&gt;.
             /// </summary>
             /// <param name="list">The list for which to create an enumerator.</param>
-            public Enumerator(ref FixedList32<T> list)
+            public Enumerator(ref FixedList32Bytes<T> list)
             {
                 m_List = list;
                 m_Index = -1;
@@ -1342,7 +1345,7 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList32<T> indexer check for out of range.
+            public T Current => m_List[m_Index]; // Let FixedList32Bytes<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -1376,7 +1379,7 @@ namespace Unity.Collections
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -1385,10 +1388,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Provides extension methods for FixedList32.
+    /// Provides extension methods for FixedList32Bytes.
     /// </summary>
     [BurstCompatible]
-    public unsafe static class FixedList32Extensions
+    public unsafe static class FixedList32BytesExtensions
     {
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
@@ -1399,7 +1402,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -1413,7 +1416,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -1424,7 +1427,7 @@ namespace Unity.Collections
         /// <remarks>
         /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
         ///
-        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList32Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList32BytesExtensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
         /// </remarks>
         /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
@@ -1432,7 +1435,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Remove<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -1459,7 +1462,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool RemoveSwapBack<T, U>(this ref FixedList32<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -1473,35 +1476,38 @@ namespace Unity.Collections
         }
     }
 
-    sealed class FixedList32DebugView<T> where T : unmanaged
+    sealed class FixedList32BytesDebugView<T> where T : unmanaged
     {
-        FixedList32<T> m_List;
-        public FixedList32DebugView(FixedList32<T> list)
+        FixedList32Bytes<T> m_List;
+        public FixedList32BytesDebugView(FixedList32Bytes<T> list)
         {
             m_List = list;
         }
         public T[] Items => m_List.ToArray();
     }
+    [Obsolete("Renamed to FixedList64Bytes<T> (UnityUpgradable) -> FixedList64Bytes<T>", true)]
+    public struct FixedList64<T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 64-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
-    [DebuggerTypeProxy(typeof(FixedList64DebugView<>))]
+    [DebuggerTypeProxy(typeof(FixedList64BytesDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct FixedList64<T>
+    public struct FixedList64Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
-    , IEquatable<FixedList32<T>>
-    , IComparable<FixedList32<T>>
-    , IEquatable<FixedList64<T>>
-    , IComparable<FixedList64<T>>
-    , IEquatable<FixedList128<T>>
-    , IComparable<FixedList128<T>>
-    , IEquatable<FixedList512<T>>
-    , IComparable<FixedList512<T>>
-    , IEquatable<FixedList4096<T>>
-    , IComparable<FixedList4096<T>>
+    , IEquatable<FixedList32Bytes<T>>
+    , IComparable<FixedList32Bytes<T>>
+    , IEquatable<FixedList64Bytes<T>>
+    , IComparable<FixedList64Bytes<T>>
+    , IEquatable<FixedList128Bytes<T>>
+    , IComparable<FixedList128Bytes<T>>
+    , IEquatable<FixedList512Bytes<T>>
+    , IComparable<FixedList512Bytes<T>>
+    , IEquatable<FixedList4096Bytes<T>>
+    , IComparable<FixedList4096Bytes<T>>
     where T : unmanaged
     {
         [SerializeField] internal ushort length;
@@ -1844,11 +1850,11 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -1862,7 +1868,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList64<T> a, in FixedList32<T> b)
+        public static bool operator ==(in FixedList64Bytes<T> a, in FixedList32Bytes<T> b)
         {
             unsafe
             {
@@ -1879,7 +1885,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList64<T> a, in FixedList32<T> b)
+        public static bool operator !=(in FixedList64Bytes<T> a, in FixedList32Bytes<T> b)
         {
             return !(a == b);
         }
@@ -1894,7 +1900,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList32<T> other)
+        public int CompareTo(FixedList32Bytes<T> other)
         {
             unsafe
             {
@@ -1921,18 +1927,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList32<T> other)
+        public bool Equals(FixedList32Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList64 with content copied from another list.
+        /// Initializes and returns an instance of FixedList64Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public FixedList64(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public FixedList64Bytes(in FixedList32Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes62,T>(other.length);
             length = other.length;
@@ -1948,10 +1954,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public static implicit operator FixedList64<T>(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList64Bytes<T>(in FixedList32Bytes<T> other)
         {
-            return new FixedList64<T>(other);
+            return new FixedList64Bytes<T>(other);
         }
 
         /// <summary>
@@ -1961,7 +1967,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList64<T> a, in FixedList64<T> b)
+        public static bool operator ==(in FixedList64Bytes<T> a, in FixedList64Bytes<T> b)
         {
             unsafe
             {
@@ -1978,7 +1984,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList64<T> a, in FixedList64<T> b)
+        public static bool operator !=(in FixedList64Bytes<T> a, in FixedList64Bytes<T> b)
         {
             return !(a == b);
         }
@@ -1993,7 +1999,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList64<T> other)
+        public int CompareTo(FixedList64Bytes<T> other)
         {
             unsafe
             {
@@ -2020,7 +2026,7 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList64<T> other)
+        public bool Equals(FixedList64Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
@@ -2033,7 +2039,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList64<T> a, in FixedList128<T> b)
+        public static bool operator ==(in FixedList64Bytes<T> a, in FixedList128Bytes<T> b)
         {
             unsafe
             {
@@ -2050,7 +2056,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList64<T> a, in FixedList128<T> b)
+        public static bool operator !=(in FixedList64Bytes<T> a, in FixedList128Bytes<T> b)
         {
             return !(a == b);
         }
@@ -2065,7 +2071,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList128<T> other)
+        public int CompareTo(FixedList128Bytes<T> other)
         {
             unsafe
             {
@@ -2092,18 +2098,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList128<T> other)
+        public bool Equals(FixedList128Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList64 with content copied from another list.
+        /// Initializes and returns an instance of FixedList64Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public FixedList64(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public FixedList64Bytes(in FixedList128Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes62,T>(other.length);
             length = other.length;
@@ -2119,10 +2125,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public static implicit operator FixedList64<T>(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList64Bytes<T>(in FixedList128Bytes<T> other)
         {
-            return new FixedList64<T>(other);
+            return new FixedList64Bytes<T>(other);
         }
 
         /// <summary>
@@ -2132,7 +2138,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList64<T> a, in FixedList512<T> b)
+        public static bool operator ==(in FixedList64Bytes<T> a, in FixedList512Bytes<T> b)
         {
             unsafe
             {
@@ -2149,7 +2155,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList64<T> a, in FixedList512<T> b)
+        public static bool operator !=(in FixedList64Bytes<T> a, in FixedList512Bytes<T> b)
         {
             return !(a == b);
         }
@@ -2164,7 +2170,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList512<T> other)
+        public int CompareTo(FixedList512Bytes<T> other)
         {
             unsafe
             {
@@ -2191,18 +2197,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList512<T> other)
+        public bool Equals(FixedList512Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList64 with content copied from another list.
+        /// Initializes and returns an instance of FixedList64Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public FixedList64(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public FixedList64Bytes(in FixedList512Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes62,T>(other.length);
             length = other.length;
@@ -2218,10 +2224,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public static implicit operator FixedList64<T>(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList64Bytes<T>(in FixedList512Bytes<T> other)
         {
-            return new FixedList64<T>(other);
+            return new FixedList64Bytes<T>(other);
         }
 
         /// <summary>
@@ -2231,7 +2237,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList64<T> a, in FixedList4096<T> b)
+        public static bool operator ==(in FixedList64Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             unsafe
             {
@@ -2248,7 +2254,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList64<T> a, in FixedList4096<T> b)
+        public static bool operator !=(in FixedList64Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             return !(a == b);
         }
@@ -2263,7 +2269,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList4096<T> other)
+        public int CompareTo(FixedList4096Bytes<T> other)
         {
             unsafe
             {
@@ -2290,18 +2296,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList4096<T> other)
+        public bool Equals(FixedList4096Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList64 with content copied from another list.
+        /// Initializes and returns an instance of FixedList64Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public FixedList64(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public FixedList64Bytes(in FixedList4096Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes62,T>(other.length);
             length = other.length;
@@ -2317,10 +2323,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64&lt;T&gt;.</exception>
-        public static implicit operator FixedList64<T>(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList64Bytes<T>(in FixedList4096Bytes<T> other)
         {
-            return new FixedList64<T>(other);
+            return new FixedList64Bytes<T>(other);
         }
 
         /// <summary>
@@ -2335,30 +2341,30 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
-            if(obj is FixedList32<T> aFixedList32) return Equals(aFixedList32);
-            if(obj is FixedList64<T> aFixedList64) return Equals(aFixedList64);
-            if(obj is FixedList128<T> aFixedList128) return Equals(aFixedList128);
-            if(obj is FixedList512<T> aFixedList512) return Equals(aFixedList512);
-            if(obj is FixedList4096<T> aFixedList4096) return Equals(aFixedList4096);
+            if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
+            if(obj is FixedList64Bytes<T> aFixedList64Bytes) return Equals(aFixedList64Bytes);
+            if(obj is FixedList128Bytes<T> aFixedList128Bytes) return Equals(aFixedList128Bytes);
+            if(obj is FixedList512Bytes<T> aFixedList512Bytes) return Equals(aFixedList512Bytes);
+            if(obj is FixedList4096Bytes<T> aFixedList4096Bytes) return Equals(aFixedList4096Bytes);
             return false;
         }
 
         /// <summary>
-        /// An enumerator over the elements of a FixedList64&lt;T&gt;.
+        /// An enumerator over the elements of a FixedList64Bytes&lt;T&gt;.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            FixedList64<T> m_List;
+            FixedList64Bytes<T> m_List;
             int m_Index;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedList64&lt;T&gt;.
+            /// Initializes and returns an instance of FixedList64Bytes&lt;T&gt;.
             /// </summary>
             /// <param name="list">The list for which to create an enumerator.</param>
-            public Enumerator(ref FixedList64<T> list)
+            public Enumerator(ref FixedList64Bytes<T> list)
             {
                 m_List = list;
                 m_Index = -1;
@@ -2393,7 +2399,7 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList64<T> indexer check for out of range.
+            public T Current => m_List[m_Index]; // Let FixedList64Bytes<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -2427,7 +2433,7 @@ namespace Unity.Collections
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -2436,10 +2442,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Provides extension methods for FixedList64.
+    /// Provides extension methods for FixedList64Bytes.
     /// </summary>
     [BurstCompatible]
-    public unsafe static class FixedList64Extensions
+    public unsafe static class FixedList64BytesExtensions
     {
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
@@ -2450,7 +2456,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -2464,7 +2470,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -2475,7 +2481,7 @@ namespace Unity.Collections
         /// <remarks>
         /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
         ///
-        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList64Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList64BytesExtensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
         /// </remarks>
         /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
@@ -2483,7 +2489,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Remove<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -2510,7 +2516,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool RemoveSwapBack<T, U>(this ref FixedList64<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -2524,35 +2530,38 @@ namespace Unity.Collections
         }
     }
 
-    sealed class FixedList64DebugView<T> where T : unmanaged
+    sealed class FixedList64BytesDebugView<T> where T : unmanaged
     {
-        FixedList64<T> m_List;
-        public FixedList64DebugView(FixedList64<T> list)
+        FixedList64Bytes<T> m_List;
+        public FixedList64BytesDebugView(FixedList64Bytes<T> list)
         {
             m_List = list;
         }
         public T[] Items => m_List.ToArray();
     }
+    [Obsolete("Renamed to FixedList128Bytes<T> (UnityUpgradable) -> FixedList128Bytes<T>", true)]
+    public struct FixedList128<T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 128-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
-    [DebuggerTypeProxy(typeof(FixedList128DebugView<>))]
+    [DebuggerTypeProxy(typeof(FixedList128BytesDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct FixedList128<T>
+    public struct FixedList128Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
-    , IEquatable<FixedList32<T>>
-    , IComparable<FixedList32<T>>
-    , IEquatable<FixedList64<T>>
-    , IComparable<FixedList64<T>>
-    , IEquatable<FixedList128<T>>
-    , IComparable<FixedList128<T>>
-    , IEquatable<FixedList512<T>>
-    , IComparable<FixedList512<T>>
-    , IEquatable<FixedList4096<T>>
-    , IComparable<FixedList4096<T>>
+    , IEquatable<FixedList32Bytes<T>>
+    , IComparable<FixedList32Bytes<T>>
+    , IEquatable<FixedList64Bytes<T>>
+    , IComparable<FixedList64Bytes<T>>
+    , IEquatable<FixedList128Bytes<T>>
+    , IComparable<FixedList128Bytes<T>>
+    , IEquatable<FixedList512Bytes<T>>
+    , IComparable<FixedList512Bytes<T>>
+    , IEquatable<FixedList4096Bytes<T>>
+    , IComparable<FixedList4096Bytes<T>>
     where T : unmanaged
     {
         [SerializeField] internal ushort length;
@@ -2895,11 +2904,11 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -2913,7 +2922,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList128<T> a, in FixedList32<T> b)
+        public static bool operator ==(in FixedList128Bytes<T> a, in FixedList32Bytes<T> b)
         {
             unsafe
             {
@@ -2930,7 +2939,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList128<T> a, in FixedList32<T> b)
+        public static bool operator !=(in FixedList128Bytes<T> a, in FixedList32Bytes<T> b)
         {
             return !(a == b);
         }
@@ -2945,7 +2954,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList32<T> other)
+        public int CompareTo(FixedList32Bytes<T> other)
         {
             unsafe
             {
@@ -2972,18 +2981,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList32<T> other)
+        public bool Equals(FixedList32Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList128 with content copied from another list.
+        /// Initializes and returns an instance of FixedList128Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public FixedList128(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public FixedList128Bytes(in FixedList32Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes126,T>(other.length);
             length = other.length;
@@ -2999,10 +3008,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public static implicit operator FixedList128<T>(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList128Bytes<T>(in FixedList32Bytes<T> other)
         {
-            return new FixedList128<T>(other);
+            return new FixedList128Bytes<T>(other);
         }
 
         /// <summary>
@@ -3012,7 +3021,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList128<T> a, in FixedList64<T> b)
+        public static bool operator ==(in FixedList128Bytes<T> a, in FixedList64Bytes<T> b)
         {
             unsafe
             {
@@ -3029,7 +3038,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList128<T> a, in FixedList64<T> b)
+        public static bool operator !=(in FixedList128Bytes<T> a, in FixedList64Bytes<T> b)
         {
             return !(a == b);
         }
@@ -3044,7 +3053,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList64<T> other)
+        public int CompareTo(FixedList64Bytes<T> other)
         {
             unsafe
             {
@@ -3071,18 +3080,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList64<T> other)
+        public bool Equals(FixedList64Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList128 with content copied from another list.
+        /// Initializes and returns an instance of FixedList128Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public FixedList128(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public FixedList128Bytes(in FixedList64Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes126,T>(other.length);
             length = other.length;
@@ -3098,10 +3107,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public static implicit operator FixedList128<T>(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList128Bytes<T>(in FixedList64Bytes<T> other)
         {
-            return new FixedList128<T>(other);
+            return new FixedList128Bytes<T>(other);
         }
 
         /// <summary>
@@ -3111,7 +3120,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList128<T> a, in FixedList128<T> b)
+        public static bool operator ==(in FixedList128Bytes<T> a, in FixedList128Bytes<T> b)
         {
             unsafe
             {
@@ -3128,7 +3137,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList128<T> a, in FixedList128<T> b)
+        public static bool operator !=(in FixedList128Bytes<T> a, in FixedList128Bytes<T> b)
         {
             return !(a == b);
         }
@@ -3143,7 +3152,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList128<T> other)
+        public int CompareTo(FixedList128Bytes<T> other)
         {
             unsafe
             {
@@ -3170,7 +3179,7 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList128<T> other)
+        public bool Equals(FixedList128Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
@@ -3183,7 +3192,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList128<T> a, in FixedList512<T> b)
+        public static bool operator ==(in FixedList128Bytes<T> a, in FixedList512Bytes<T> b)
         {
             unsafe
             {
@@ -3200,7 +3209,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList128<T> a, in FixedList512<T> b)
+        public static bool operator !=(in FixedList128Bytes<T> a, in FixedList512Bytes<T> b)
         {
             return !(a == b);
         }
@@ -3215,7 +3224,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList512<T> other)
+        public int CompareTo(FixedList512Bytes<T> other)
         {
             unsafe
             {
@@ -3242,18 +3251,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList512<T> other)
+        public bool Equals(FixedList512Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList128 with content copied from another list.
+        /// Initializes and returns an instance of FixedList128Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public FixedList128(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public FixedList128Bytes(in FixedList512Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes126,T>(other.length);
             length = other.length;
@@ -3269,10 +3278,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public static implicit operator FixedList128<T>(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList128Bytes<T>(in FixedList512Bytes<T> other)
         {
-            return new FixedList128<T>(other);
+            return new FixedList128Bytes<T>(other);
         }
 
         /// <summary>
@@ -3282,7 +3291,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList128<T> a, in FixedList4096<T> b)
+        public static bool operator ==(in FixedList128Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             unsafe
             {
@@ -3299,7 +3308,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList128<T> a, in FixedList4096<T> b)
+        public static bool operator !=(in FixedList128Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             return !(a == b);
         }
@@ -3314,7 +3323,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList4096<T> other)
+        public int CompareTo(FixedList4096Bytes<T> other)
         {
             unsafe
             {
@@ -3341,18 +3350,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList4096<T> other)
+        public bool Equals(FixedList4096Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList128 with content copied from another list.
+        /// Initializes and returns an instance of FixedList128Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public FixedList128(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public FixedList128Bytes(in FixedList4096Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes126,T>(other.length);
             length = other.length;
@@ -3368,10 +3377,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128&lt;T&gt;.</exception>
-        public static implicit operator FixedList128<T>(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList128Bytes<T>(in FixedList4096Bytes<T> other)
         {
-            return new FixedList128<T>(other);
+            return new FixedList128Bytes<T>(other);
         }
 
         /// <summary>
@@ -3386,30 +3395,30 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
-            if(obj is FixedList32<T> aFixedList32) return Equals(aFixedList32);
-            if(obj is FixedList64<T> aFixedList64) return Equals(aFixedList64);
-            if(obj is FixedList128<T> aFixedList128) return Equals(aFixedList128);
-            if(obj is FixedList512<T> aFixedList512) return Equals(aFixedList512);
-            if(obj is FixedList4096<T> aFixedList4096) return Equals(aFixedList4096);
+            if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
+            if(obj is FixedList64Bytes<T> aFixedList64Bytes) return Equals(aFixedList64Bytes);
+            if(obj is FixedList128Bytes<T> aFixedList128Bytes) return Equals(aFixedList128Bytes);
+            if(obj is FixedList512Bytes<T> aFixedList512Bytes) return Equals(aFixedList512Bytes);
+            if(obj is FixedList4096Bytes<T> aFixedList4096Bytes) return Equals(aFixedList4096Bytes);
             return false;
         }
 
         /// <summary>
-        /// An enumerator over the elements of a FixedList128&lt;T&gt;.
+        /// An enumerator over the elements of a FixedList128Bytes&lt;T&gt;.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            FixedList128<T> m_List;
+            FixedList128Bytes<T> m_List;
             int m_Index;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedList128&lt;T&gt;.
+            /// Initializes and returns an instance of FixedList128Bytes&lt;T&gt;.
             /// </summary>
             /// <param name="list">The list for which to create an enumerator.</param>
-            public Enumerator(ref FixedList128<T> list)
+            public Enumerator(ref FixedList128Bytes<T> list)
             {
                 m_List = list;
                 m_Index = -1;
@@ -3444,7 +3453,7 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList128<T> indexer check for out of range.
+            public T Current => m_List[m_Index]; // Let FixedList128Bytes<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -3478,7 +3487,7 @@ namespace Unity.Collections
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -3487,10 +3496,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Provides extension methods for FixedList128.
+    /// Provides extension methods for FixedList128Bytes.
     /// </summary>
     [BurstCompatible]
-    public unsafe static class FixedList128Extensions
+    public unsafe static class FixedList128BytesExtensions
     {
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
@@ -3501,7 +3510,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -3515,7 +3524,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -3526,7 +3535,7 @@ namespace Unity.Collections
         /// <remarks>
         /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
         ///
-        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList128Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList128BytesExtensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
         /// </remarks>
         /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
@@ -3534,7 +3543,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Remove<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -3561,7 +3570,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool RemoveSwapBack<T, U>(this ref FixedList128<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -3575,35 +3584,38 @@ namespace Unity.Collections
         }
     }
 
-    sealed class FixedList128DebugView<T> where T : unmanaged
+    sealed class FixedList128BytesDebugView<T> where T : unmanaged
     {
-        FixedList128<T> m_List;
-        public FixedList128DebugView(FixedList128<T> list)
+        FixedList128Bytes<T> m_List;
+        public FixedList128BytesDebugView(FixedList128Bytes<T> list)
         {
             m_List = list;
         }
         public T[] Items => m_List.ToArray();
     }
+    [Obsolete("Renamed to FixedList512Bytes<T> (UnityUpgradable) -> FixedList512Bytes<T>", true)]
+    public struct FixedList512<T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 512-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
-    [DebuggerTypeProxy(typeof(FixedList512DebugView<>))]
+    [DebuggerTypeProxy(typeof(FixedList512BytesDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct FixedList512<T>
+    public struct FixedList512Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
-    , IEquatable<FixedList32<T>>
-    , IComparable<FixedList32<T>>
-    , IEquatable<FixedList64<T>>
-    , IComparable<FixedList64<T>>
-    , IEquatable<FixedList128<T>>
-    , IComparable<FixedList128<T>>
-    , IEquatable<FixedList512<T>>
-    , IComparable<FixedList512<T>>
-    , IEquatable<FixedList4096<T>>
-    , IComparable<FixedList4096<T>>
+    , IEquatable<FixedList32Bytes<T>>
+    , IComparable<FixedList32Bytes<T>>
+    , IEquatable<FixedList64Bytes<T>>
+    , IComparable<FixedList64Bytes<T>>
+    , IEquatable<FixedList128Bytes<T>>
+    , IComparable<FixedList128Bytes<T>>
+    , IEquatable<FixedList512Bytes<T>>
+    , IComparable<FixedList512Bytes<T>>
+    , IEquatable<FixedList4096Bytes<T>>
+    , IComparable<FixedList4096Bytes<T>>
     where T : unmanaged
     {
         [SerializeField] internal ushort length;
@@ -3946,11 +3958,11 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -3964,7 +3976,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList512<T> a, in FixedList32<T> b)
+        public static bool operator ==(in FixedList512Bytes<T> a, in FixedList32Bytes<T> b)
         {
             unsafe
             {
@@ -3981,7 +3993,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList512<T> a, in FixedList32<T> b)
+        public static bool operator !=(in FixedList512Bytes<T> a, in FixedList32Bytes<T> b)
         {
             return !(a == b);
         }
@@ -3996,7 +4008,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList32<T> other)
+        public int CompareTo(FixedList32Bytes<T> other)
         {
             unsafe
             {
@@ -4023,18 +4035,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList32<T> other)
+        public bool Equals(FixedList32Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList512 with content copied from another list.
+        /// Initializes and returns an instance of FixedList512Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public FixedList512(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public FixedList512Bytes(in FixedList32Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes510,T>(other.length);
             length = other.length;
@@ -4050,10 +4062,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public static implicit operator FixedList512<T>(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList512Bytes<T>(in FixedList32Bytes<T> other)
         {
-            return new FixedList512<T>(other);
+            return new FixedList512Bytes<T>(other);
         }
 
         /// <summary>
@@ -4063,7 +4075,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList512<T> a, in FixedList64<T> b)
+        public static bool operator ==(in FixedList512Bytes<T> a, in FixedList64Bytes<T> b)
         {
             unsafe
             {
@@ -4080,7 +4092,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList512<T> a, in FixedList64<T> b)
+        public static bool operator !=(in FixedList512Bytes<T> a, in FixedList64Bytes<T> b)
         {
             return !(a == b);
         }
@@ -4095,7 +4107,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList64<T> other)
+        public int CompareTo(FixedList64Bytes<T> other)
         {
             unsafe
             {
@@ -4122,18 +4134,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList64<T> other)
+        public bool Equals(FixedList64Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList512 with content copied from another list.
+        /// Initializes and returns an instance of FixedList512Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public FixedList512(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public FixedList512Bytes(in FixedList64Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes510,T>(other.length);
             length = other.length;
@@ -4149,10 +4161,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public static implicit operator FixedList512<T>(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList512Bytes<T>(in FixedList64Bytes<T> other)
         {
-            return new FixedList512<T>(other);
+            return new FixedList512Bytes<T>(other);
         }
 
         /// <summary>
@@ -4162,7 +4174,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList512<T> a, in FixedList128<T> b)
+        public static bool operator ==(in FixedList512Bytes<T> a, in FixedList128Bytes<T> b)
         {
             unsafe
             {
@@ -4179,7 +4191,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList512<T> a, in FixedList128<T> b)
+        public static bool operator !=(in FixedList512Bytes<T> a, in FixedList128Bytes<T> b)
         {
             return !(a == b);
         }
@@ -4194,7 +4206,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList128<T> other)
+        public int CompareTo(FixedList128Bytes<T> other)
         {
             unsafe
             {
@@ -4221,18 +4233,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList128<T> other)
+        public bool Equals(FixedList128Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList512 with content copied from another list.
+        /// Initializes and returns an instance of FixedList512Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public FixedList512(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public FixedList512Bytes(in FixedList128Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes510,T>(other.length);
             length = other.length;
@@ -4248,10 +4260,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public static implicit operator FixedList512<T>(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList512Bytes<T>(in FixedList128Bytes<T> other)
         {
-            return new FixedList512<T>(other);
+            return new FixedList512Bytes<T>(other);
         }
 
         /// <summary>
@@ -4261,7 +4273,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList512<T> a, in FixedList512<T> b)
+        public static bool operator ==(in FixedList512Bytes<T> a, in FixedList512Bytes<T> b)
         {
             unsafe
             {
@@ -4278,7 +4290,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList512<T> a, in FixedList512<T> b)
+        public static bool operator !=(in FixedList512Bytes<T> a, in FixedList512Bytes<T> b)
         {
             return !(a == b);
         }
@@ -4293,7 +4305,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList512<T> other)
+        public int CompareTo(FixedList512Bytes<T> other)
         {
             unsafe
             {
@@ -4320,7 +4332,7 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList512<T> other)
+        public bool Equals(FixedList512Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
@@ -4333,7 +4345,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList512<T> a, in FixedList4096<T> b)
+        public static bool operator ==(in FixedList512Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             unsafe
             {
@@ -4350,7 +4362,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList512<T> a, in FixedList4096<T> b)
+        public static bool operator !=(in FixedList512Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             return !(a == b);
         }
@@ -4365,7 +4377,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList4096<T> other)
+        public int CompareTo(FixedList4096Bytes<T> other)
         {
             unsafe
             {
@@ -4392,18 +4404,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList4096<T> other)
+        public bool Equals(FixedList4096Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList512 with content copied from another list.
+        /// Initializes and returns an instance of FixedList512Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public FixedList512(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public FixedList512Bytes(in FixedList4096Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes510,T>(other.length);
             length = other.length;
@@ -4419,10 +4431,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512&lt;T&gt;.</exception>
-        public static implicit operator FixedList512<T>(in FixedList4096<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList512Bytes<T>(in FixedList4096Bytes<T> other)
         {
-            return new FixedList512<T>(other);
+            return new FixedList512Bytes<T>(other);
         }
 
         /// <summary>
@@ -4437,30 +4449,30 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
-            if(obj is FixedList32<T> aFixedList32) return Equals(aFixedList32);
-            if(obj is FixedList64<T> aFixedList64) return Equals(aFixedList64);
-            if(obj is FixedList128<T> aFixedList128) return Equals(aFixedList128);
-            if(obj is FixedList512<T> aFixedList512) return Equals(aFixedList512);
-            if(obj is FixedList4096<T> aFixedList4096) return Equals(aFixedList4096);
+            if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
+            if(obj is FixedList64Bytes<T> aFixedList64Bytes) return Equals(aFixedList64Bytes);
+            if(obj is FixedList128Bytes<T> aFixedList128Bytes) return Equals(aFixedList128Bytes);
+            if(obj is FixedList512Bytes<T> aFixedList512Bytes) return Equals(aFixedList512Bytes);
+            if(obj is FixedList4096Bytes<T> aFixedList4096Bytes) return Equals(aFixedList4096Bytes);
             return false;
         }
 
         /// <summary>
-        /// An enumerator over the elements of a FixedList512&lt;T&gt;.
+        /// An enumerator over the elements of a FixedList512Bytes&lt;T&gt;.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            FixedList512<T> m_List;
+            FixedList512Bytes<T> m_List;
             int m_Index;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedList512&lt;T&gt;.
+            /// Initializes and returns an instance of FixedList512Bytes&lt;T&gt;.
             /// </summary>
             /// <param name="list">The list for which to create an enumerator.</param>
-            public Enumerator(ref FixedList512<T> list)
+            public Enumerator(ref FixedList512Bytes<T> list)
             {
                 m_List = list;
                 m_Index = -1;
@@ -4495,7 +4507,7 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList512<T> indexer check for out of range.
+            public T Current => m_List[m_Index]; // Let FixedList512Bytes<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -4529,7 +4541,7 @@ namespace Unity.Collections
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -4538,10 +4550,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Provides extension methods for FixedList512.
+    /// Provides extension methods for FixedList512Bytes.
     /// </summary>
     [BurstCompatible]
-    public unsafe static class FixedList512Extensions
+    public unsafe static class FixedList512BytesExtensions
     {
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
@@ -4552,7 +4564,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -4566,7 +4578,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -4577,7 +4589,7 @@ namespace Unity.Collections
         /// <remarks>
         /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
         ///
-        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList512Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList512BytesExtensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
         /// </remarks>
         /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
@@ -4585,7 +4597,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Remove<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -4612,7 +4624,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool RemoveSwapBack<T, U>(this ref FixedList512<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -4626,35 +4638,38 @@ namespace Unity.Collections
         }
     }
 
-    sealed class FixedList512DebugView<T> where T : unmanaged
+    sealed class FixedList512BytesDebugView<T> where T : unmanaged
     {
-        FixedList512<T> m_List;
-        public FixedList512DebugView(FixedList512<T> list)
+        FixedList512Bytes<T> m_List;
+        public FixedList512BytesDebugView(FixedList512Bytes<T> list)
         {
             m_List = list;
         }
         public T[] Items => m_List.ToArray();
     }
+    [Obsolete("Renamed to FixedList4096Bytes<T> (UnityUpgradable) -> FixedList4096Bytes<T>", true)]
+    public struct FixedList4096<T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 4096-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
-    [DebuggerTypeProxy(typeof(FixedList4096DebugView<>))]
+    [DebuggerTypeProxy(typeof(FixedList4096BytesDebugView<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct FixedList4096<T>
+    public struct FixedList4096Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
-    , IEquatable<FixedList32<T>>
-    , IComparable<FixedList32<T>>
-    , IEquatable<FixedList64<T>>
-    , IComparable<FixedList64<T>>
-    , IEquatable<FixedList128<T>>
-    , IComparable<FixedList128<T>>
-    , IEquatable<FixedList512<T>>
-    , IComparable<FixedList512<T>>
-    , IEquatable<FixedList4096<T>>
-    , IComparable<FixedList4096<T>>
+    , IEquatable<FixedList32Bytes<T>>
+    , IComparable<FixedList32Bytes<T>>
+    , IEquatable<FixedList64Bytes<T>>
+    , IComparable<FixedList64Bytes<T>>
+    , IEquatable<FixedList128Bytes<T>>
+    , IComparable<FixedList128Bytes<T>>
+    , IEquatable<FixedList512Bytes<T>>
+    , IComparable<FixedList512Bytes<T>>
+    , IEquatable<FixedList4096Bytes<T>>
+    , IComparable<FixedList4096Bytes<T>>
     where T : unmanaged
     {
         [SerializeField] internal ushort length;
@@ -4997,11 +5012,11 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -5015,7 +5030,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList4096<T> a, in FixedList32<T> b)
+        public static bool operator ==(in FixedList4096Bytes<T> a, in FixedList32Bytes<T> b)
         {
             unsafe
             {
@@ -5032,7 +5047,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList4096<T> a, in FixedList32<T> b)
+        public static bool operator !=(in FixedList4096Bytes<T> a, in FixedList32Bytes<T> b)
         {
             return !(a == b);
         }
@@ -5047,7 +5062,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList32<T> other)
+        public int CompareTo(FixedList32Bytes<T> other)
         {
             unsafe
             {
@@ -5074,18 +5089,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList32<T> other)
+        public bool Equals(FixedList32Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList4096 with content copied from another list.
+        /// Initializes and returns an instance of FixedList4096Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public FixedList4096(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public FixedList4096Bytes(in FixedList32Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes4094,T>(other.length);
             length = other.length;
@@ -5101,10 +5116,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public static implicit operator FixedList4096<T>(in FixedList32<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList4096Bytes<T>(in FixedList32Bytes<T> other)
         {
-            return new FixedList4096<T>(other);
+            return new FixedList4096Bytes<T>(other);
         }
 
         /// <summary>
@@ -5114,7 +5129,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList4096<T> a, in FixedList64<T> b)
+        public static bool operator ==(in FixedList4096Bytes<T> a, in FixedList64Bytes<T> b)
         {
             unsafe
             {
@@ -5131,7 +5146,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList4096<T> a, in FixedList64<T> b)
+        public static bool operator !=(in FixedList4096Bytes<T> a, in FixedList64Bytes<T> b)
         {
             return !(a == b);
         }
@@ -5146,7 +5161,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList64<T> other)
+        public int CompareTo(FixedList64Bytes<T> other)
         {
             unsafe
             {
@@ -5173,18 +5188,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList64<T> other)
+        public bool Equals(FixedList64Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList4096 with content copied from another list.
+        /// Initializes and returns an instance of FixedList4096Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public FixedList4096(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public FixedList4096Bytes(in FixedList64Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes4094,T>(other.length);
             length = other.length;
@@ -5200,10 +5215,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public static implicit operator FixedList4096<T>(in FixedList64<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList4096Bytes<T>(in FixedList64Bytes<T> other)
         {
-            return new FixedList4096<T>(other);
+            return new FixedList4096Bytes<T>(other);
         }
 
         /// <summary>
@@ -5213,7 +5228,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList4096<T> a, in FixedList128<T> b)
+        public static bool operator ==(in FixedList4096Bytes<T> a, in FixedList128Bytes<T> b)
         {
             unsafe
             {
@@ -5230,7 +5245,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList4096<T> a, in FixedList128<T> b)
+        public static bool operator !=(in FixedList4096Bytes<T> a, in FixedList128Bytes<T> b)
         {
             return !(a == b);
         }
@@ -5245,7 +5260,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList128<T> other)
+        public int CompareTo(FixedList128Bytes<T> other)
         {
             unsafe
             {
@@ -5272,18 +5287,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList128<T> other)
+        public bool Equals(FixedList128Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList4096 with content copied from another list.
+        /// Initializes and returns an instance of FixedList4096Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public FixedList4096(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public FixedList4096Bytes(in FixedList128Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes4094,T>(other.length);
             length = other.length;
@@ -5299,10 +5314,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public static implicit operator FixedList4096<T>(in FixedList128<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList4096Bytes<T>(in FixedList128Bytes<T> other)
         {
-            return new FixedList4096<T>(other);
+            return new FixedList4096Bytes<T>(other);
         }
 
         /// <summary>
@@ -5312,7 +5327,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList4096<T> a, in FixedList512<T> b)
+        public static bool operator ==(in FixedList4096Bytes<T> a, in FixedList512Bytes<T> b)
         {
             unsafe
             {
@@ -5329,7 +5344,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList4096<T> a, in FixedList512<T> b)
+        public static bool operator !=(in FixedList4096Bytes<T> a, in FixedList512Bytes<T> b)
         {
             return !(a == b);
         }
@@ -5344,7 +5359,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList512<T> other)
+        public int CompareTo(FixedList512Bytes<T> other)
         {
             unsafe
             {
@@ -5371,18 +5386,18 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList512<T> other)
+        public bool Equals(FixedList512Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
 
 
         /// <summary>
-        /// Initializes and returns an instance of FixedList4096 with content copied from another list.
+        /// Initializes and returns an instance of FixedList4096Bytes with content copied from another list.
         /// </summary>
         /// <param name="other">The list to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public FixedList4096(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public FixedList4096Bytes(in FixedList512Bytes<T> other)
         {
             FixedList.CheckResize<FixedBytes4094,T>(other.length);
             length = other.length;
@@ -5398,10 +5413,10 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">The list to copy.</param>
         /// <returns>A new list that is a copy of the other.</returns>
-        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096&lt;T&gt;.</exception>
-        public static implicit operator FixedList4096<T>(in FixedList512<T> other)
+        /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
+        public static implicit operator FixedList4096Bytes<T>(in FixedList512Bytes<T> other)
         {
-            return new FixedList4096<T>(other);
+            return new FixedList4096Bytes<T>(other);
         }
 
         /// <summary>
@@ -5411,7 +5426,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for equality.</param>
         /// <param name="b">The second list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public static bool operator ==(in FixedList4096<T> a, in FixedList4096<T> b)
+        public static bool operator ==(in FixedList4096Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             unsafe
             {
@@ -5428,7 +5443,7 @@ namespace Unity.Collections
         /// <param name="a">The first list to compare for inequality.</param>
         /// <param name="b">The second list to compare for inequality.</param>
         /// <returns>True if the two lists are unequal.</returns>
-        public static bool operator !=(in FixedList4096<T> a, in FixedList4096<T> b)
+        public static bool operator !=(in FixedList4096Bytes<T> a, in FixedList4096Bytes<T> b)
         {
             return !(a == b);
         }
@@ -5443,7 +5458,7 @@ namespace Unity.Collections
         /// -1 denotes that this list should precede the other list in a sort.
         /// +1 denotes that this list should follow the other list in a sort.
         /// </returns>
-        public int CompareTo(FixedList4096<T> other)
+        public int CompareTo(FixedList4096Bytes<T> other)
         {
             unsafe
             {
@@ -5470,7 +5485,7 @@ namespace Unity.Collections
         /// <remarks>Two lists are equal if their length and bytes are equal.</remarks>
         /// <param name="other">The list to compare for equality.</param>
         /// <returns>True if the two lists are equal.</returns>
-        public bool Equals(FixedList4096<T> other)
+        public bool Equals(FixedList4096Bytes<T> other)
         {
             return CompareTo(other) == 0;
         }
@@ -5488,30 +5503,30 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public override bool Equals(object obj)
         {
-            if(obj is FixedList32<T> aFixedList32) return Equals(aFixedList32);
-            if(obj is FixedList64<T> aFixedList64) return Equals(aFixedList64);
-            if(obj is FixedList128<T> aFixedList128) return Equals(aFixedList128);
-            if(obj is FixedList512<T> aFixedList512) return Equals(aFixedList512);
-            if(obj is FixedList4096<T> aFixedList4096) return Equals(aFixedList4096);
+            if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
+            if(obj is FixedList64Bytes<T> aFixedList64Bytes) return Equals(aFixedList64Bytes);
+            if(obj is FixedList128Bytes<T> aFixedList128Bytes) return Equals(aFixedList128Bytes);
+            if(obj is FixedList512Bytes<T> aFixedList512Bytes) return Equals(aFixedList512Bytes);
+            if(obj is FixedList4096Bytes<T> aFixedList4096Bytes) return Equals(aFixedList4096Bytes);
             return false;
         }
 
         /// <summary>
-        /// An enumerator over the elements of a FixedList4096&lt;T&gt;.
+        /// An enumerator over the elements of a FixedList4096Bytes&lt;T&gt;.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, `Current` cannot be read. The first <see cref="MoveNext"/> call advances the enumerator to the first element.
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            FixedList4096<T> m_List;
+            FixedList4096Bytes<T> m_List;
             int m_Index;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedList4096&lt;T&gt;.
+            /// Initializes and returns an instance of FixedList4096Bytes&lt;T&gt;.
             /// </summary>
             /// <param name="list">The list for which to create an enumerator.</param>
-            public Enumerator(ref FixedList4096<T> list)
+            public Enumerator(ref FixedList4096Bytes<T> list)
             {
                 m_List = list;
                 m_Index = -1;
@@ -5546,7 +5561,7 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList4096<T> indexer check for out of range.
+            public T Current => m_List[m_Index]; // Let FixedList4096Bytes<T> indexer check for out of range.
 
             object IEnumerator.Current => Current;
         }
@@ -5580,7 +5595,7 @@ namespace Unity.Collections
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -5589,10 +5604,10 @@ namespace Unity.Collections
     }
 
     /// <summary>
-    /// Provides extension methods for FixedList4096.
+    /// Provides extension methods for FixedList4096Bytes.
     /// </summary>
     [BurstCompatible]
-    public unsafe static class FixedList4096Extensions
+    public unsafe static class FixedList4096BytesExtensions
     {
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
@@ -5603,7 +5618,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static int IndexOf<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
         }
@@ -5617,7 +5632,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Contains<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
         }
@@ -5628,7 +5643,7 @@ namespace Unity.Collections
         /// <remarks>
         /// If a value is removed, all elements after it are shifted down by one, and the list's length is decremented by one.
         ///
-        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList4096Extensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
+        /// If you don't need to preserve the order of the remaining elements, <see cref="Unity.Collections.FixedList4096BytesExtensions.RemoveSwapBack{T, U}"/> is a cheaper alternative.
         /// </remarks>
         /// <typeparam name="T">The type of elements in this list.</typeparam>
         /// <typeparam name="U">The value type.</typeparam>
@@ -5636,7 +5651,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Remove<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool Remove<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
             if (index < 0)
@@ -5663,7 +5678,7 @@ namespace Unity.Collections
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool RemoveSwapBack<T, U>(this ref FixedList4096<T> list, U value) where T : unmanaged, IEquatable<U>
+        public static bool RemoveSwapBack<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
             if (index == -1)
@@ -5677,10 +5692,10 @@ namespace Unity.Collections
         }
     }
 
-    sealed class FixedList4096DebugView<T> where T : unmanaged
+    sealed class FixedList4096BytesDebugView<T> where T : unmanaged
     {
-        FixedList4096<T> m_List;
-        public FixedList4096DebugView(FixedList4096<T> list)
+        FixedList4096Bytes<T> m_List;
+        public FixedList4096BytesDebugView(FixedList4096Bytes<T> list)
         {
             m_List = list;
         }
@@ -5694,966 +5709,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=32)]
-    [DebuggerTypeProxy(typeof(FixedListByte32DebugView))]
-    [Obsolete("FixedListByte32 is deprecated, please use FixedList32<byte> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListByte32
-    : INativeList<byte>
-    , IEnumerable<byte> // Used by collection initializers.
-    , IEquatable<FixedListByte32>
-    , IComparable<FixedListByte32>
-    , IEquatable<FixedListByte64>
-    , IComparable<FixedListByte64>
-    , IEquatable<FixedListByte128>
-    , IComparable<FixedListByte128>
-    , IEquatable<FixedListByte512>
-    , IComparable<FixedListByte512>
-    , IEquatable<FixedListByte4096>
-    , IComparable<FixedListByte4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes30 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes30,byte>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(byte);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<byte>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes30, byte>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public byte this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<byte>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<byte>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref byte ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListByte32.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in byte item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            byte* data = (byte*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(byte value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(byte value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte32 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(byte);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(byte);
-                byte *src = b + begin * sizeof(byte);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListByte32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, byte item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListByte32 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListByte32.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(byte item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the byte</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified byte from the begining of the FixedListByte32 forward, removes it if possible,
-        /// and returns true if the byte was successfully removed.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte32</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(byte item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of byte that is a copy of this FixedListByte32.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public byte[] ToArray()
-        {
-            var result = new byte[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(byte* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArraybyte that is a copy of this FixedListByte32.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<byte> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(s, Length, Allocator.None);
-                return new NativeArray<byte>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte32 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte32 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<byte>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for equality</param>
-        /// <param name="b">The FixedListByte32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte32 a, in FixedListByte32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for inequality</param>
-        /// <param name="b">The FixedListByte32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte32 a, in FixedListByte32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// is equal to the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for equality</param>
-        /// <param name="b">The FixedListByte64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte32 a, in FixedListByte64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for inequality</param>
-        /// <param name="b">The FixedListByte64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte32 a, in FixedListByte64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// is equal to the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy.</param>
-        public FixedListByte32(in FixedListByte64 other)
-        {
-            FixedList.CheckResize<FixedBytes30,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte64 to a FixedListByte32.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte32(in FixedListByte64 other)
-        {
-            return new FixedListByte32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for equality</param>
-        /// <param name="b">The FixedListByte128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte32 a, in FixedListByte128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for inequality</param>
-        /// <param name="b">The FixedListByte128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte32 a, in FixedListByte128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// is equal to the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy.</param>
-        public FixedListByte32(in FixedListByte128 other)
-        {
-            FixedList.CheckResize<FixedBytes30,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte128 to a FixedListByte32.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte32(in FixedListByte128 other)
-        {
-            return new FixedListByte32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for equality</param>
-        /// <param name="b">The FixedListByte512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte32 a, in FixedListByte512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for inequality</param>
-        /// <param name="b">The FixedListByte512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte32 a, in FixedListByte512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// is equal to the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy.</param>
-        public FixedListByte32(in FixedListByte512 other)
-        {
-            FixedList.CheckResize<FixedBytes30,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte512 to a FixedListByte32.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte32(in FixedListByte512 other)
-        {
-            return new FixedListByte32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for equality</param>
-        /// <param name="b">The FixedListByte4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte32 a, in FixedListByte4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte32 and FixedListByte4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte32 to compare for inequality</param>
-        /// <param name="b">The FixedListByte4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte32 a, in FixedListByte4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// is equal to the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy.</param>
-        public FixedListByte32(in FixedListByte4096 other)
-        {
-            FixedList.CheckResize<FixedBytes30,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte4096 to a FixedListByte32.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte32(in FixedListByte4096 other)
-        {
-            return new FixedListByte32(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListByte32 aFixedListByte32) return Equals(aFixedListByte32);
-            if(obj is FixedListByte64 aFixedListByte64) return Equals(aFixedListByte64);
-            if(obj is FixedListByte128 aFixedListByte128) return Equals(aFixedListByte128);
-            if(obj is FixedListByte512 aFixedListByte512) return Equals(aFixedListByte512);
-            if(obj is FixedListByte4096 aFixedListByte4096) return Equals(aFixedListByte4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<byte>
-        {
-            FixedListByte32 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListByte32 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public byte Current => m_List[m_Index]; // Let FixedListByte32 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListByte32DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListByte32 is deprecated, please use FixedList32Bytes<byte> instead. (UnityUpgradable) -> FixedList32Bytes<byte>", true)]
+    public struct FixedListByte32 {}
+    
+
+    [Obsolete("FixedListByte32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<byte>", true)]
     sealed class FixedListByte32DebugView
     {
-        FixedListByte32 m_List;
-        public FixedListByte32DebugView(FixedListByte32 list)
+        FixedList32Bytes<byte> m_List;
+        public FixedListByte32DebugView(FixedList32Bytes<byte> list)
         {
             m_List = list;
         }
         public byte[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of byte that does not allocate memory.
@@ -6661,966 +5730,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=64)]
-    [DebuggerTypeProxy(typeof(FixedListByte64DebugView))]
-    [Obsolete("FixedListByte64 is deprecated, please use FixedList64<byte> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListByte64
-    : INativeList<byte>
-    , IEnumerable<byte> // Used by collection initializers.
-    , IEquatable<FixedListByte32>
-    , IComparable<FixedListByte32>
-    , IEquatable<FixedListByte64>
-    , IComparable<FixedListByte64>
-    , IEquatable<FixedListByte128>
-    , IComparable<FixedListByte128>
-    , IEquatable<FixedListByte512>
-    , IComparable<FixedListByte512>
-    , IEquatable<FixedListByte4096>
-    , IComparable<FixedListByte4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes62 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes62,byte>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(byte);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<byte>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes62, byte>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public byte this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<byte>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<byte>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref byte ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListByte64.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in byte item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            byte* data = (byte*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(byte value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(byte value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte64 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(byte);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(byte);
-                byte *src = b + begin * sizeof(byte);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListByte64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, byte item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListByte64 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListByte64.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(byte item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the byte</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified byte from the begining of the FixedListByte64 forward, removes it if possible,
-        /// and returns true if the byte was successfully removed.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte64</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(byte item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of byte that is a copy of this FixedListByte64.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public byte[] ToArray()
-        {
-            var result = new byte[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(byte* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArraybyte that is a copy of this FixedListByte64.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<byte> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(s, Length, Allocator.None);
-                return new NativeArray<byte>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte64 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte64 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<byte>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for equality</param>
-        /// <param name="b">The FixedListByte32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte64 a, in FixedListByte32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for inequality</param>
-        /// <param name="b">The FixedListByte32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte64 a, in FixedListByte32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// is equal to the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy.</param>
-        public FixedListByte64(in FixedListByte32 other)
-        {
-            FixedList.CheckResize<FixedBytes62,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte32 to a FixedListByte64.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte64(in FixedListByte32 other)
-        {
-            return new FixedListByte64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for equality</param>
-        /// <param name="b">The FixedListByte64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte64 a, in FixedListByte64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for inequality</param>
-        /// <param name="b">The FixedListByte64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte64 a, in FixedListByte64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// is equal to the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for equality</param>
-        /// <param name="b">The FixedListByte128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte64 a, in FixedListByte128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for inequality</param>
-        /// <param name="b">The FixedListByte128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte64 a, in FixedListByte128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// is equal to the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy.</param>
-        public FixedListByte64(in FixedListByte128 other)
-        {
-            FixedList.CheckResize<FixedBytes62,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte128 to a FixedListByte64.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte64(in FixedListByte128 other)
-        {
-            return new FixedListByte64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for equality</param>
-        /// <param name="b">The FixedListByte512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte64 a, in FixedListByte512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for inequality</param>
-        /// <param name="b">The FixedListByte512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte64 a, in FixedListByte512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// is equal to the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy.</param>
-        public FixedListByte64(in FixedListByte512 other)
-        {
-            FixedList.CheckResize<FixedBytes62,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte512 to a FixedListByte64.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte64(in FixedListByte512 other)
-        {
-            return new FixedListByte64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for equality</param>
-        /// <param name="b">The FixedListByte4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte64 a, in FixedListByte4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte64 and FixedListByte4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte64 to compare for inequality</param>
-        /// <param name="b">The FixedListByte4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte64 a, in FixedListByte4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// is equal to the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy.</param>
-        public FixedListByte64(in FixedListByte4096 other)
-        {
-            FixedList.CheckResize<FixedBytes62,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte4096 to a FixedListByte64.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte64(in FixedListByte4096 other)
-        {
-            return new FixedListByte64(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListByte32 aFixedListByte32) return Equals(aFixedListByte32);
-            if(obj is FixedListByte64 aFixedListByte64) return Equals(aFixedListByte64);
-            if(obj is FixedListByte128 aFixedListByte128) return Equals(aFixedListByte128);
-            if(obj is FixedListByte512 aFixedListByte512) return Equals(aFixedListByte512);
-            if(obj is FixedListByte4096 aFixedListByte4096) return Equals(aFixedListByte4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<byte>
-        {
-            FixedListByte64 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListByte64 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public byte Current => m_List[m_Index]; // Let FixedListByte64 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListByte64DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListByte64 is deprecated, please use FixedList64Bytes<byte> instead. (UnityUpgradable) -> FixedList64Bytes<byte>", true)]
+    public struct FixedListByte64 {}
+    
+
+    [Obsolete("FixedListByte64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<byte>", true)]
     sealed class FixedListByte64DebugView
     {
-        FixedListByte64 m_List;
-        public FixedListByte64DebugView(FixedListByte64 list)
+        FixedList64Bytes<byte> m_List;
+        public FixedListByte64DebugView(FixedList64Bytes<byte> list)
         {
             m_List = list;
         }
         public byte[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of byte that does not allocate memory.
@@ -7628,966 +5751,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=128)]
-    [DebuggerTypeProxy(typeof(FixedListByte128DebugView))]
-    [Obsolete("FixedListByte128 is deprecated, please use FixedList128<byte> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListByte128
-    : INativeList<byte>
-    , IEnumerable<byte> // Used by collection initializers.
-    , IEquatable<FixedListByte32>
-    , IComparable<FixedListByte32>
-    , IEquatable<FixedListByte64>
-    , IComparable<FixedListByte64>
-    , IEquatable<FixedListByte128>
-    , IComparable<FixedListByte128>
-    , IEquatable<FixedListByte512>
-    , IComparable<FixedListByte512>
-    , IEquatable<FixedListByte4096>
-    , IComparable<FixedListByte4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes126 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes126,byte>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(byte);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<byte>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes126, byte>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public byte this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<byte>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<byte>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref byte ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListByte128.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in byte item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            byte* data = (byte*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(byte value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(byte value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte128 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(byte);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(byte);
-                byte *src = b + begin * sizeof(byte);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListByte128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, byte item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListByte128 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListByte128.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(byte item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the byte</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified byte from the begining of the FixedListByte128 forward, removes it if possible,
-        /// and returns true if the byte was successfully removed.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte128</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(byte item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of byte that is a copy of this FixedListByte128.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public byte[] ToArray()
-        {
-            var result = new byte[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(byte* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArraybyte that is a copy of this FixedListByte128.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<byte> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(s, Length, Allocator.None);
-                return new NativeArray<byte>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte128 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte128 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<byte>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for equality</param>
-        /// <param name="b">The FixedListByte32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte128 a, in FixedListByte32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for inequality</param>
-        /// <param name="b">The FixedListByte32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte128 a, in FixedListByte32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// is equal to the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy.</param>
-        public FixedListByte128(in FixedListByte32 other)
-        {
-            FixedList.CheckResize<FixedBytes126,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte32 to a FixedListByte128.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte128(in FixedListByte32 other)
-        {
-            return new FixedListByte128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for equality</param>
-        /// <param name="b">The FixedListByte64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte128 a, in FixedListByte64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for inequality</param>
-        /// <param name="b">The FixedListByte64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte128 a, in FixedListByte64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// is equal to the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy.</param>
-        public FixedListByte128(in FixedListByte64 other)
-        {
-            FixedList.CheckResize<FixedBytes126,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte64 to a FixedListByte128.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte128(in FixedListByte64 other)
-        {
-            return new FixedListByte128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for equality</param>
-        /// <param name="b">The FixedListByte128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte128 a, in FixedListByte128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for inequality</param>
-        /// <param name="b">The FixedListByte128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte128 a, in FixedListByte128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// is equal to the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for equality</param>
-        /// <param name="b">The FixedListByte512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte128 a, in FixedListByte512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for inequality</param>
-        /// <param name="b">The FixedListByte512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte128 a, in FixedListByte512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// is equal to the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy.</param>
-        public FixedListByte128(in FixedListByte512 other)
-        {
-            FixedList.CheckResize<FixedBytes126,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte512 to a FixedListByte128.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte128(in FixedListByte512 other)
-        {
-            return new FixedListByte128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for equality</param>
-        /// <param name="b">The FixedListByte4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte128 a, in FixedListByte4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte128 and FixedListByte4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte128 to compare for inequality</param>
-        /// <param name="b">The FixedListByte4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte128 a, in FixedListByte4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// is equal to the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy.</param>
-        public FixedListByte128(in FixedListByte4096 other)
-        {
-            FixedList.CheckResize<FixedBytes126,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte4096 to a FixedListByte128.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte128(in FixedListByte4096 other)
-        {
-            return new FixedListByte128(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListByte32 aFixedListByte32) return Equals(aFixedListByte32);
-            if(obj is FixedListByte64 aFixedListByte64) return Equals(aFixedListByte64);
-            if(obj is FixedListByte128 aFixedListByte128) return Equals(aFixedListByte128);
-            if(obj is FixedListByte512 aFixedListByte512) return Equals(aFixedListByte512);
-            if(obj is FixedListByte4096 aFixedListByte4096) return Equals(aFixedListByte4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<byte>
-        {
-            FixedListByte128 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListByte128 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public byte Current => m_List[m_Index]; // Let FixedListByte128 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListByte128DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListByte128 is deprecated, please use FixedList128Bytes<byte> instead. (UnityUpgradable) -> FixedList128Bytes<byte>", true)]
+    public struct FixedListByte128 {}
+    
+
+    [Obsolete("FixedListByte128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<byte>", true)]
     sealed class FixedListByte128DebugView
     {
-        FixedListByte128 m_List;
-        public FixedListByte128DebugView(FixedListByte128 list)
+        FixedList128Bytes<byte> m_List;
+        public FixedListByte128DebugView(FixedList128Bytes<byte> list)
         {
             m_List = list;
         }
         public byte[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of byte that does not allocate memory.
@@ -8595,966 +5772,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=512)]
-    [DebuggerTypeProxy(typeof(FixedListByte512DebugView))]
-    [Obsolete("FixedListByte512 is deprecated, please use FixedList512<byte> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListByte512
-    : INativeList<byte>
-    , IEnumerable<byte> // Used by collection initializers.
-    , IEquatable<FixedListByte32>
-    , IComparable<FixedListByte32>
-    , IEquatable<FixedListByte64>
-    , IComparable<FixedListByte64>
-    , IEquatable<FixedListByte128>
-    , IComparable<FixedListByte128>
-    , IEquatable<FixedListByte512>
-    , IComparable<FixedListByte512>
-    , IEquatable<FixedListByte4096>
-    , IComparable<FixedListByte4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes510 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes510,byte>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(byte);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<byte>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes510, byte>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public byte this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<byte>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<byte>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref byte ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListByte512.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in byte item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            byte* data = (byte*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(byte value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(byte value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte512 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(byte);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(byte);
-                byte *src = b + begin * sizeof(byte);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListByte512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, byte item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListByte512 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListByte512.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(byte item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the byte</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified byte from the begining of the FixedListByte512 forward, removes it if possible,
-        /// and returns true if the byte was successfully removed.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte512</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(byte item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of byte that is a copy of this FixedListByte512.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public byte[] ToArray()
-        {
-            var result = new byte[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(byte* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArraybyte that is a copy of this FixedListByte512.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<byte> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(s, Length, Allocator.None);
-                return new NativeArray<byte>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte512 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte512 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<byte>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for equality</param>
-        /// <param name="b">The FixedListByte32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte512 a, in FixedListByte32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for inequality</param>
-        /// <param name="b">The FixedListByte32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte512 a, in FixedListByte32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// is equal to the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy.</param>
-        public FixedListByte512(in FixedListByte32 other)
-        {
-            FixedList.CheckResize<FixedBytes510,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte32 to a FixedListByte512.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte512(in FixedListByte32 other)
-        {
-            return new FixedListByte512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for equality</param>
-        /// <param name="b">The FixedListByte64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte512 a, in FixedListByte64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for inequality</param>
-        /// <param name="b">The FixedListByte64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte512 a, in FixedListByte64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// is equal to the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy.</param>
-        public FixedListByte512(in FixedListByte64 other)
-        {
-            FixedList.CheckResize<FixedBytes510,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte64 to a FixedListByte512.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte512(in FixedListByte64 other)
-        {
-            return new FixedListByte512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for equality</param>
-        /// <param name="b">The FixedListByte128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte512 a, in FixedListByte128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for inequality</param>
-        /// <param name="b">The FixedListByte128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte512 a, in FixedListByte128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// is equal to the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy.</param>
-        public FixedListByte512(in FixedListByte128 other)
-        {
-            FixedList.CheckResize<FixedBytes510,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte128 to a FixedListByte512.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte512(in FixedListByte128 other)
-        {
-            return new FixedListByte512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for equality</param>
-        /// <param name="b">The FixedListByte512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte512 a, in FixedListByte512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for inequality</param>
-        /// <param name="b">The FixedListByte512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte512 a, in FixedListByte512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// is equal to the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for equality</param>
-        /// <param name="b">The FixedListByte4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte512 a, in FixedListByte4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte512 and FixedListByte4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte512 to compare for inequality</param>
-        /// <param name="b">The FixedListByte4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte512 a, in FixedListByte4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// is equal to the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy.</param>
-        public FixedListByte512(in FixedListByte4096 other)
-        {
-            FixedList.CheckResize<FixedBytes510,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *d = *(FixedBytes510*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte4096 to a FixedListByte512.
-        /// </summary>
-        /// <param name="other">The FixedListByte4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte512(in FixedListByte4096 other)
-        {
-            return new FixedListByte512(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListByte32 aFixedListByte32) return Equals(aFixedListByte32);
-            if(obj is FixedListByte64 aFixedListByte64) return Equals(aFixedListByte64);
-            if(obj is FixedListByte128 aFixedListByte128) return Equals(aFixedListByte128);
-            if(obj is FixedListByte512 aFixedListByte512) return Equals(aFixedListByte512);
-            if(obj is FixedListByte4096 aFixedListByte4096) return Equals(aFixedListByte4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<byte>
-        {
-            FixedListByte512 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListByte512 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public byte Current => m_List[m_Index]; // Let FixedListByte512 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListByte512DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListByte512 is deprecated, please use FixedList512Bytes<byte> instead. (UnityUpgradable) -> FixedList512Bytes<byte>", true)]
+    public struct FixedListByte512 {}
+    
+
+    [Obsolete("FixedListByte512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<byte>", true)]
     sealed class FixedListByte512DebugView
     {
-        FixedListByte512 m_List;
-        public FixedListByte512DebugView(FixedListByte512 list)
+        FixedList512Bytes<byte> m_List;
+        public FixedListByte512DebugView(FixedList512Bytes<byte> list)
         {
             m_List = list;
         }
         public byte[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of byte that does not allocate memory.
@@ -9562,1933 +5793,41 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [DebuggerTypeProxy(typeof(FixedListByte4096DebugView))]
-    [Obsolete("FixedListByte4096 is deprecated, please use FixedList4096<byte> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListByte4096
-    : INativeList<byte>
-    , IEnumerable<byte> // Used by collection initializers.
-    , IEquatable<FixedListByte32>
-    , IComparable<FixedListByte32>
-    , IEquatable<FixedListByte64>
-    , IComparable<FixedListByte64>
-    , IEquatable<FixedListByte128>
-    , IComparable<FixedListByte128>
-    , IEquatable<FixedListByte512>
-    , IComparable<FixedListByte512>
-    , IEquatable<FixedListByte4096>
-    , IComparable<FixedListByte4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes4094 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes4094,byte>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<byte> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(byte);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<byte>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes4094, byte>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public byte this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<byte>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<byte>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref byte ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<byte>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListByte4096.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in byte item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            byte* data = (byte*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The byte to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(byte item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(byte value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(byte value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListByte4096 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(byte);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(byte);
-                byte *src = b + begin * sizeof(byte);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListByte4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, byte item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListByte4096 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListByte4096.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(byte item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the byte at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the byte</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified byte from the begining of the FixedListByte4096 forward, removes it if possible,
-        /// and returns true if the byte was successfully removed.
-        /// </summary>
-        /// <param name="item">The byte to locate in the FixedListByte4096</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(byte item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(byte);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of byte that is a copy of this FixedListByte4096.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public byte[] ToArray()
-        {
-            var result = new byte[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(byte* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArraybyte that is a copy of this FixedListByte4096.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<byte> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<byte>(s, Length, Allocator.None);
-                return new NativeArray<byte>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte4096 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListByte4096 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<byte>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((byte*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for equality</param>
-        /// <param name="b">The FixedListByte32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte4096 a, in FixedListByte32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for inequality</param>
-        /// <param name="b">The FixedListByte32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte4096 a, in FixedListByte32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte32 and indicates whether this instance
-        /// is equal to the specified FixedListByte32.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy.</param>
-        public FixedListByte4096(in FixedListByte32 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte32 to a FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The FixedListByte32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte4096(in FixedListByte32 other)
-        {
-            return new FixedListByte4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for equality</param>
-        /// <param name="b">The FixedListByte64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte4096 a, in FixedListByte64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for inequality</param>
-        /// <param name="b">The FixedListByte64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte4096 a, in FixedListByte64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte64 and indicates whether this instance
-        /// is equal to the specified FixedListByte64.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy.</param>
-        public FixedListByte4096(in FixedListByte64 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte64 to a FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The FixedListByte64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte4096(in FixedListByte64 other)
-        {
-            return new FixedListByte4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for equality</param>
-        /// <param name="b">The FixedListByte128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte4096 a, in FixedListByte128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for inequality</param>
-        /// <param name="b">The FixedListByte128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte4096 a, in FixedListByte128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte128 and indicates whether this instance
-        /// is equal to the specified FixedListByte128.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy.</param>
-        public FixedListByte4096(in FixedListByte128 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte128 to a FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The FixedListByte128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte4096(in FixedListByte128 other)
-        {
-            return new FixedListByte4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for equality</param>
-        /// <param name="b">The FixedListByte512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte4096 a, in FixedListByte512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for inequality</param>
-        /// <param name="b">The FixedListByte512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte4096 a, in FixedListByte512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte512 and indicates whether this instance
-        /// is equal to the specified FixedListByte512.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListByte4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy.</param>
-        public FixedListByte4096(in FixedListByte512 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,byte>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes510*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListByte512 to a FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The FixedListByte512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListByte4096(in FixedListByte512 other)
-        {
-            return new FixedListByte4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for equality</param>
-        /// <param name="b">The FixedListByte4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListByte4096 a, in FixedListByte4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListByte4096 and FixedListByte4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListByte4096 to compare for inequality</param>
-        /// <param name="b">The FixedListByte4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListByte4096 a, in FixedListByte4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListByte4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListByte4096 and indicates whether this instance
-        /// is equal to the specified FixedListByte4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListByte4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListByte4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListByte32 aFixedListByte32) return Equals(aFixedListByte32);
-            if(obj is FixedListByte64 aFixedListByte64) return Equals(aFixedListByte64);
-            if(obj is FixedListByte128 aFixedListByte128) return Equals(aFixedListByte128);
-            if(obj is FixedListByte512 aFixedListByte512) return Equals(aFixedListByte512);
-            if(obj is FixedListByte4096 aFixedListByte4096) return Equals(aFixedListByte4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<byte>
-        {
-            FixedListByte4096 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListByte4096 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public byte Current => m_List[m_Index]; // Let FixedListByte4096 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<byte> IEnumerable<byte>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListByte4096DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListByte4096 is deprecated, please use FixedList4096Bytes<byte> instead. (UnityUpgradable) -> FixedList4096Bytes<byte>", true)]
+    public struct FixedListByte4096 {}
+    
+
+    [Obsolete("FixedListByte4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<byte>", true)]
     sealed class FixedListByte4096DebugView
     {
-        FixedListByte4096 m_List;
-        public FixedListByte4096DebugView(FixedListByte4096 list)
+        FixedList4096Bytes<byte> m_List;
+        public FixedListByte4096DebugView(FixedList4096Bytes<byte> list)
         {
             m_List = list;
         }
         public byte[] Items => m_List.ToArray();
     }
 
-
     /// <summary>
     /// An unmanaged, resizable list of int that does not allocate memory.
     /// It is 32 bytes in size, and contains all the memory it needs.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=32)]
-    [DebuggerTypeProxy(typeof(FixedListInt32DebugView))]
-    [Obsolete("FixedListInt32 is deprecated, please use FixedList32<int> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListInt32
-    : INativeList<int>
-    , IEnumerable<int> // Used by collection initializers.
-    , IEquatable<FixedListInt32>
-    , IComparable<FixedListInt32>
-    , IEquatable<FixedListInt64>
-    , IComparable<FixedListInt64>
-    , IEquatable<FixedListInt128>
-    , IComparable<FixedListInt128>
-    , IEquatable<FixedListInt512>
-    , IComparable<FixedListInt512>
-    , IEquatable<FixedListInt4096>
-    , IComparable<FixedListInt4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes30 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes30,int>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(int);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<int>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes30, int>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public int this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<int>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<int>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref int ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListInt32.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in int item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            int* data = (int*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(int value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(int value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt32 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(int);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(int);
-                byte *src = b + begin * sizeof(int);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListInt32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, int item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListInt32 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListInt32.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(int item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the int</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified int from the begining of the FixedListInt32 forward, removes it if possible,
-        /// and returns true if the int was successfully removed.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt32</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(int item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of int that is a copy of this FixedListInt32.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public int[] ToArray()
-        {
-            var result = new int[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(int* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayint that is a copy of this FixedListInt32.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<int> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<int>(s, Length, Allocator.None);
-                return new NativeArray<int>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt32 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt32 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<int>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for equality</param>
-        /// <param name="b">The FixedListInt32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt32 a, in FixedListInt32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for inequality</param>
-        /// <param name="b">The FixedListInt32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt32 a, in FixedListInt32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// is equal to the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for equality</param>
-        /// <param name="b">The FixedListInt64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt32 a, in FixedListInt64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for inequality</param>
-        /// <param name="b">The FixedListInt64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt32 a, in FixedListInt64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// is equal to the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy.</param>
-        public FixedListInt32(in FixedListInt64 other)
-        {
-            FixedList.CheckResize<FixedBytes30,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt64 to a FixedListInt32.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt32(in FixedListInt64 other)
-        {
-            return new FixedListInt32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for equality</param>
-        /// <param name="b">The FixedListInt128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt32 a, in FixedListInt128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for inequality</param>
-        /// <param name="b">The FixedListInt128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt32 a, in FixedListInt128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// is equal to the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy.</param>
-        public FixedListInt32(in FixedListInt128 other)
-        {
-            FixedList.CheckResize<FixedBytes30,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt128 to a FixedListInt32.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt32(in FixedListInt128 other)
-        {
-            return new FixedListInt32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for equality</param>
-        /// <param name="b">The FixedListInt512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt32 a, in FixedListInt512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for inequality</param>
-        /// <param name="b">The FixedListInt512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt32 a, in FixedListInt512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// is equal to the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy.</param>
-        public FixedListInt32(in FixedListInt512 other)
-        {
-            FixedList.CheckResize<FixedBytes30,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt512 to a FixedListInt32.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt32(in FixedListInt512 other)
-        {
-            return new FixedListInt32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for equality</param>
-        /// <param name="b">The FixedListInt4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt32 a, in FixedListInt4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt32 and FixedListInt4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt32 to compare for inequality</param>
-        /// <param name="b">The FixedListInt4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt32 a, in FixedListInt4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// is equal to the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy.</param>
-        public FixedListInt32(in FixedListInt4096 other)
-        {
-            FixedList.CheckResize<FixedBytes30,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt4096 to a FixedListInt32.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt32(in FixedListInt4096 other)
-        {
-            return new FixedListInt32(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListInt32 aFixedListInt32) return Equals(aFixedListInt32);
-            if(obj is FixedListInt64 aFixedListInt64) return Equals(aFixedListInt64);
-            if(obj is FixedListInt128 aFixedListInt128) return Equals(aFixedListInt128);
-            if(obj is FixedListInt512 aFixedListInt512) return Equals(aFixedListInt512);
-            if(obj is FixedListInt4096 aFixedListInt4096) return Equals(aFixedListInt4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<int>
-        {
-            FixedListInt32 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListInt32 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public int Current => m_List[m_Index]; // Let FixedListInt32 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListInt32DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListInt32 is deprecated, please use FixedList32Bytes<int> instead. (UnityUpgradable) -> FixedList32Bytes<int>", true)]
+    public struct FixedListInt32 {}
+    
+
+    [Obsolete("FixedListInt32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<int>", true)]
     sealed class FixedListInt32DebugView
     {
-        FixedListInt32 m_List;
-        public FixedListInt32DebugView(FixedListInt32 list)
+        FixedList32Bytes<int> m_List;
+        public FixedListInt32DebugView(FixedList32Bytes<int> list)
         {
             m_List = list;
         }
         public int[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of int that does not allocate memory.
@@ -11496,966 +5835,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=64)]
-    [DebuggerTypeProxy(typeof(FixedListInt64DebugView))]
-    [Obsolete("FixedListInt64 is deprecated, please use FixedList64<int> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListInt64
-    : INativeList<int>
-    , IEnumerable<int> // Used by collection initializers.
-    , IEquatable<FixedListInt32>
-    , IComparable<FixedListInt32>
-    , IEquatable<FixedListInt64>
-    , IComparable<FixedListInt64>
-    , IEquatable<FixedListInt128>
-    , IComparable<FixedListInt128>
-    , IEquatable<FixedListInt512>
-    , IComparable<FixedListInt512>
-    , IEquatable<FixedListInt4096>
-    , IComparable<FixedListInt4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes62 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes62,int>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(int);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<int>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes62, int>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public int this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<int>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<int>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref int ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListInt64.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in int item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            int* data = (int*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(int value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(int value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt64 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(int);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(int);
-                byte *src = b + begin * sizeof(int);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListInt64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, int item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListInt64 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListInt64.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(int item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the int</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified int from the begining of the FixedListInt64 forward, removes it if possible,
-        /// and returns true if the int was successfully removed.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt64</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(int item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of int that is a copy of this FixedListInt64.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public int[] ToArray()
-        {
-            var result = new int[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(int* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayint that is a copy of this FixedListInt64.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<int> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<int>(s, Length, Allocator.None);
-                return new NativeArray<int>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt64 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt64 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<int>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for equality</param>
-        /// <param name="b">The FixedListInt32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt64 a, in FixedListInt32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for inequality</param>
-        /// <param name="b">The FixedListInt32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt64 a, in FixedListInt32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// is equal to the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy.</param>
-        public FixedListInt64(in FixedListInt32 other)
-        {
-            FixedList.CheckResize<FixedBytes62,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt32 to a FixedListInt64.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt64(in FixedListInt32 other)
-        {
-            return new FixedListInt64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for equality</param>
-        /// <param name="b">The FixedListInt64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt64 a, in FixedListInt64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for inequality</param>
-        /// <param name="b">The FixedListInt64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt64 a, in FixedListInt64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// is equal to the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for equality</param>
-        /// <param name="b">The FixedListInt128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt64 a, in FixedListInt128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for inequality</param>
-        /// <param name="b">The FixedListInt128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt64 a, in FixedListInt128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// is equal to the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy.</param>
-        public FixedListInt64(in FixedListInt128 other)
-        {
-            FixedList.CheckResize<FixedBytes62,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt128 to a FixedListInt64.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt64(in FixedListInt128 other)
-        {
-            return new FixedListInt64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for equality</param>
-        /// <param name="b">The FixedListInt512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt64 a, in FixedListInt512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for inequality</param>
-        /// <param name="b">The FixedListInt512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt64 a, in FixedListInt512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// is equal to the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy.</param>
-        public FixedListInt64(in FixedListInt512 other)
-        {
-            FixedList.CheckResize<FixedBytes62,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt512 to a FixedListInt64.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt64(in FixedListInt512 other)
-        {
-            return new FixedListInt64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for equality</param>
-        /// <param name="b">The FixedListInt4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt64 a, in FixedListInt4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt64 and FixedListInt4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt64 to compare for inequality</param>
-        /// <param name="b">The FixedListInt4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt64 a, in FixedListInt4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// is equal to the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy.</param>
-        public FixedListInt64(in FixedListInt4096 other)
-        {
-            FixedList.CheckResize<FixedBytes62,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt4096 to a FixedListInt64.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt64(in FixedListInt4096 other)
-        {
-            return new FixedListInt64(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListInt32 aFixedListInt32) return Equals(aFixedListInt32);
-            if(obj is FixedListInt64 aFixedListInt64) return Equals(aFixedListInt64);
-            if(obj is FixedListInt128 aFixedListInt128) return Equals(aFixedListInt128);
-            if(obj is FixedListInt512 aFixedListInt512) return Equals(aFixedListInt512);
-            if(obj is FixedListInt4096 aFixedListInt4096) return Equals(aFixedListInt4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<int>
-        {
-            FixedListInt64 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListInt64 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public int Current => m_List[m_Index]; // Let FixedListInt64 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListInt64DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListInt64 is deprecated, please use FixedList64Bytes<int> instead. (UnityUpgradable) -> FixedList64Bytes<int>", true)]
+    public struct FixedListInt64 {}
+    
+
+    [Obsolete("FixedListInt64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<int>", true)]
     sealed class FixedListInt64DebugView
     {
-        FixedListInt64 m_List;
-        public FixedListInt64DebugView(FixedListInt64 list)
+        FixedList64Bytes<int> m_List;
+        public FixedListInt64DebugView(FixedList64Bytes<int> list)
         {
             m_List = list;
         }
         public int[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of int that does not allocate memory.
@@ -12463,966 +5856,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=128)]
-    [DebuggerTypeProxy(typeof(FixedListInt128DebugView))]
-    [Obsolete("FixedListInt128 is deprecated, please use FixedList128<int> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListInt128
-    : INativeList<int>
-    , IEnumerable<int> // Used by collection initializers.
-    , IEquatable<FixedListInt32>
-    , IComparable<FixedListInt32>
-    , IEquatable<FixedListInt64>
-    , IComparable<FixedListInt64>
-    , IEquatable<FixedListInt128>
-    , IComparable<FixedListInt128>
-    , IEquatable<FixedListInt512>
-    , IComparable<FixedListInt512>
-    , IEquatable<FixedListInt4096>
-    , IComparable<FixedListInt4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes126 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes126,int>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(int);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<int>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes126, int>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public int this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<int>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<int>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref int ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListInt128.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in int item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            int* data = (int*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(int value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(int value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt128 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(int);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(int);
-                byte *src = b + begin * sizeof(int);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListInt128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, int item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListInt128 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListInt128.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(int item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the int</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified int from the begining of the FixedListInt128 forward, removes it if possible,
-        /// and returns true if the int was successfully removed.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt128</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(int item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of int that is a copy of this FixedListInt128.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public int[] ToArray()
-        {
-            var result = new int[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(int* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayint that is a copy of this FixedListInt128.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<int> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<int>(s, Length, Allocator.None);
-                return new NativeArray<int>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt128 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt128 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<int>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for equality</param>
-        /// <param name="b">The FixedListInt32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt128 a, in FixedListInt32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for inequality</param>
-        /// <param name="b">The FixedListInt32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt128 a, in FixedListInt32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// is equal to the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy.</param>
-        public FixedListInt128(in FixedListInt32 other)
-        {
-            FixedList.CheckResize<FixedBytes126,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt32 to a FixedListInt128.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt128(in FixedListInt32 other)
-        {
-            return new FixedListInt128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for equality</param>
-        /// <param name="b">The FixedListInt64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt128 a, in FixedListInt64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for inequality</param>
-        /// <param name="b">The FixedListInt64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt128 a, in FixedListInt64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// is equal to the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy.</param>
-        public FixedListInt128(in FixedListInt64 other)
-        {
-            FixedList.CheckResize<FixedBytes126,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt64 to a FixedListInt128.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt128(in FixedListInt64 other)
-        {
-            return new FixedListInt128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for equality</param>
-        /// <param name="b">The FixedListInt128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt128 a, in FixedListInt128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for inequality</param>
-        /// <param name="b">The FixedListInt128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt128 a, in FixedListInt128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// is equal to the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for equality</param>
-        /// <param name="b">The FixedListInt512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt128 a, in FixedListInt512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for inequality</param>
-        /// <param name="b">The FixedListInt512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt128 a, in FixedListInt512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// is equal to the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy.</param>
-        public FixedListInt128(in FixedListInt512 other)
-        {
-            FixedList.CheckResize<FixedBytes126,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt512 to a FixedListInt128.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt128(in FixedListInt512 other)
-        {
-            return new FixedListInt128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for equality</param>
-        /// <param name="b">The FixedListInt4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt128 a, in FixedListInt4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt128 and FixedListInt4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt128 to compare for inequality</param>
-        /// <param name="b">The FixedListInt4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt128 a, in FixedListInt4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// is equal to the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy.</param>
-        public FixedListInt128(in FixedListInt4096 other)
-        {
-            FixedList.CheckResize<FixedBytes126,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt4096 to a FixedListInt128.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt128(in FixedListInt4096 other)
-        {
-            return new FixedListInt128(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListInt32 aFixedListInt32) return Equals(aFixedListInt32);
-            if(obj is FixedListInt64 aFixedListInt64) return Equals(aFixedListInt64);
-            if(obj is FixedListInt128 aFixedListInt128) return Equals(aFixedListInt128);
-            if(obj is FixedListInt512 aFixedListInt512) return Equals(aFixedListInt512);
-            if(obj is FixedListInt4096 aFixedListInt4096) return Equals(aFixedListInt4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<int>
-        {
-            FixedListInt128 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListInt128 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public int Current => m_List[m_Index]; // Let FixedListInt128 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListInt128DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListInt128 is deprecated, please use FixedList128Bytes<int> instead. (UnityUpgradable) -> FixedList128Bytes<int>", true)]
+    public struct FixedListInt128 {}
+    
+
+    [Obsolete("FixedListInt128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<int>", true)]
     sealed class FixedListInt128DebugView
     {
-        FixedListInt128 m_List;
-        public FixedListInt128DebugView(FixedListInt128 list)
+        FixedList128Bytes<int> m_List;
+        public FixedListInt128DebugView(FixedList128Bytes<int> list)
         {
             m_List = list;
         }
         public int[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of int that does not allocate memory.
@@ -13430,966 +5877,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=512)]
-    [DebuggerTypeProxy(typeof(FixedListInt512DebugView))]
-    [Obsolete("FixedListInt512 is deprecated, please use FixedList512<int> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListInt512
-    : INativeList<int>
-    , IEnumerable<int> // Used by collection initializers.
-    , IEquatable<FixedListInt32>
-    , IComparable<FixedListInt32>
-    , IEquatable<FixedListInt64>
-    , IComparable<FixedListInt64>
-    , IEquatable<FixedListInt128>
-    , IComparable<FixedListInt128>
-    , IEquatable<FixedListInt512>
-    , IComparable<FixedListInt512>
-    , IEquatable<FixedListInt4096>
-    , IComparable<FixedListInt4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes510 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes510,int>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(int);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<int>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes510, int>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public int this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<int>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<int>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref int ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListInt512.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in int item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            int* data = (int*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(int value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(int value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt512 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(int);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(int);
-                byte *src = b + begin * sizeof(int);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListInt512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, int item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListInt512 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListInt512.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(int item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the int</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified int from the begining of the FixedListInt512 forward, removes it if possible,
-        /// and returns true if the int was successfully removed.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt512</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(int item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of int that is a copy of this FixedListInt512.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public int[] ToArray()
-        {
-            var result = new int[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(int* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayint that is a copy of this FixedListInt512.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<int> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<int>(s, Length, Allocator.None);
-                return new NativeArray<int>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt512 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt512 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<int>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for equality</param>
-        /// <param name="b">The FixedListInt32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt512 a, in FixedListInt32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for inequality</param>
-        /// <param name="b">The FixedListInt32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt512 a, in FixedListInt32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// is equal to the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy.</param>
-        public FixedListInt512(in FixedListInt32 other)
-        {
-            FixedList.CheckResize<FixedBytes510,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt32 to a FixedListInt512.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt512(in FixedListInt32 other)
-        {
-            return new FixedListInt512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for equality</param>
-        /// <param name="b">The FixedListInt64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt512 a, in FixedListInt64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for inequality</param>
-        /// <param name="b">The FixedListInt64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt512 a, in FixedListInt64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// is equal to the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy.</param>
-        public FixedListInt512(in FixedListInt64 other)
-        {
-            FixedList.CheckResize<FixedBytes510,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt64 to a FixedListInt512.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt512(in FixedListInt64 other)
-        {
-            return new FixedListInt512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for equality</param>
-        /// <param name="b">The FixedListInt128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt512 a, in FixedListInt128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for inequality</param>
-        /// <param name="b">The FixedListInt128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt512 a, in FixedListInt128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// is equal to the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy.</param>
-        public FixedListInt512(in FixedListInt128 other)
-        {
-            FixedList.CheckResize<FixedBytes510,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt128 to a FixedListInt512.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt512(in FixedListInt128 other)
-        {
-            return new FixedListInt512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for equality</param>
-        /// <param name="b">The FixedListInt512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt512 a, in FixedListInt512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for inequality</param>
-        /// <param name="b">The FixedListInt512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt512 a, in FixedListInt512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// is equal to the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for equality</param>
-        /// <param name="b">The FixedListInt4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt512 a, in FixedListInt4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt512 and FixedListInt4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt512 to compare for inequality</param>
-        /// <param name="b">The FixedListInt4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt512 a, in FixedListInt4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// is equal to the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy.</param>
-        public FixedListInt512(in FixedListInt4096 other)
-        {
-            FixedList.CheckResize<FixedBytes510,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *d = *(FixedBytes510*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt4096 to a FixedListInt512.
-        /// </summary>
-        /// <param name="other">The FixedListInt4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt512(in FixedListInt4096 other)
-        {
-            return new FixedListInt512(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListInt32 aFixedListInt32) return Equals(aFixedListInt32);
-            if(obj is FixedListInt64 aFixedListInt64) return Equals(aFixedListInt64);
-            if(obj is FixedListInt128 aFixedListInt128) return Equals(aFixedListInt128);
-            if(obj is FixedListInt512 aFixedListInt512) return Equals(aFixedListInt512);
-            if(obj is FixedListInt4096 aFixedListInt4096) return Equals(aFixedListInt4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<int>
-        {
-            FixedListInt512 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListInt512 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public int Current => m_List[m_Index]; // Let FixedListInt512 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListInt512DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListInt512 is deprecated, please use FixedList512Bytes<int> instead. (UnityUpgradable) -> FixedList512Bytes<int>", true)]
+    public struct FixedListInt512 {}
+    
+
+    [Obsolete("FixedListInt512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<int>", true)]
     sealed class FixedListInt512DebugView
     {
-        FixedListInt512 m_List;
-        public FixedListInt512DebugView(FixedListInt512 list)
+        FixedList512Bytes<int> m_List;
+        public FixedListInt512DebugView(FixedList512Bytes<int> list)
         {
             m_List = list;
         }
         public int[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of int that does not allocate memory.
@@ -14397,966 +5898,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [DebuggerTypeProxy(typeof(FixedListInt4096DebugView))]
-    [Obsolete("FixedListInt4096 is deprecated, please use FixedList4096<int> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListInt4096
-    : INativeList<int>
-    , IEnumerable<int> // Used by collection initializers.
-    , IEquatable<FixedListInt32>
-    , IComparable<FixedListInt32>
-    , IEquatable<FixedListInt64>
-    , IComparable<FixedListInt64>
-    , IEquatable<FixedListInt128>
-    , IComparable<FixedListInt128>
-    , IEquatable<FixedListInt512>
-    , IComparable<FixedListInt512>
-    , IEquatable<FixedListInt4096>
-    , IComparable<FixedListInt4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes4094 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes4094,int>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<int> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(int);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<int>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes4094, int>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public int this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<int>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<int>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref int ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<int>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListInt4096.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in int item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            int* data = (int*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The int to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(int item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(int value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(int value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListInt4096 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(int);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(int);
-                byte *src = b + begin * sizeof(int);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListInt4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, int item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListInt4096 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListInt4096.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(int item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the int at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the int</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified int from the begining of the FixedListInt4096 forward, removes it if possible,
-        /// and returns true if the int was successfully removed.
-        /// </summary>
-        /// <param name="item">The int to locate in the FixedListInt4096</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(int item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(int);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of int that is a copy of this FixedListInt4096.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public int[] ToArray()
-        {
-            var result = new int[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(int* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayint that is a copy of this FixedListInt4096.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<int> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<int>(s, Length, Allocator.None);
-                return new NativeArray<int>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt4096 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListInt4096 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<int>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((int*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for equality</param>
-        /// <param name="b">The FixedListInt32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt4096 a, in FixedListInt32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for inequality</param>
-        /// <param name="b">The FixedListInt32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt4096 a, in FixedListInt32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt32 and indicates whether this instance
-        /// is equal to the specified FixedListInt32.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy.</param>
-        public FixedListInt4096(in FixedListInt32 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt32 to a FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The FixedListInt32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt4096(in FixedListInt32 other)
-        {
-            return new FixedListInt4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for equality</param>
-        /// <param name="b">The FixedListInt64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt4096 a, in FixedListInt64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for inequality</param>
-        /// <param name="b">The FixedListInt64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt4096 a, in FixedListInt64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt64 and indicates whether this instance
-        /// is equal to the specified FixedListInt64.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy.</param>
-        public FixedListInt4096(in FixedListInt64 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt64 to a FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The FixedListInt64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt4096(in FixedListInt64 other)
-        {
-            return new FixedListInt4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for equality</param>
-        /// <param name="b">The FixedListInt128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt4096 a, in FixedListInt128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for inequality</param>
-        /// <param name="b">The FixedListInt128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt4096 a, in FixedListInt128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt128 and indicates whether this instance
-        /// is equal to the specified FixedListInt128.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy.</param>
-        public FixedListInt4096(in FixedListInt128 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt128 to a FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The FixedListInt128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt4096(in FixedListInt128 other)
-        {
-            return new FixedListInt4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for equality</param>
-        /// <param name="b">The FixedListInt512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt4096 a, in FixedListInt512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for inequality</param>
-        /// <param name="b">The FixedListInt512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt4096 a, in FixedListInt512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt512 and indicates whether this instance
-        /// is equal to the specified FixedListInt512.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListInt4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy.</param>
-        public FixedListInt4096(in FixedListInt512 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,int>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes510*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListInt512 to a FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The FixedListInt512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListInt4096(in FixedListInt512 other)
-        {
-            return new FixedListInt4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for equality</param>
-        /// <param name="b">The FixedListInt4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListInt4096 a, in FixedListInt4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListInt4096 and FixedListInt4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListInt4096 to compare for inequality</param>
-        /// <param name="b">The FixedListInt4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListInt4096 a, in FixedListInt4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListInt4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListInt4096 and indicates whether this instance
-        /// is equal to the specified FixedListInt4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListInt4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListInt4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListInt32 aFixedListInt32) return Equals(aFixedListInt32);
-            if(obj is FixedListInt64 aFixedListInt64) return Equals(aFixedListInt64);
-            if(obj is FixedListInt128 aFixedListInt128) return Equals(aFixedListInt128);
-            if(obj is FixedListInt512 aFixedListInt512) return Equals(aFixedListInt512);
-            if(obj is FixedListInt4096 aFixedListInt4096) return Equals(aFixedListInt4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<int>
-        {
-            FixedListInt4096 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListInt4096 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public int Current => m_List[m_Index]; // Let FixedListInt4096 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<int> IEnumerable<int>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListInt4096DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListInt4096 is deprecated, please use FixedList4096Bytes<int> instead. (UnityUpgradable) -> FixedList4096Bytes<int>", true)]
+    public struct FixedListInt4096 {}
+    
+
+    [Obsolete("FixedListInt4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<int>", true)]
     sealed class FixedListInt4096DebugView
     {
-        FixedListInt4096 m_List;
-        public FixedListInt4096DebugView(FixedListInt4096 list)
+        FixedList4096Bytes<int> m_List;
+        public FixedListInt4096DebugView(FixedList4096Bytes<int> list)
         {
             m_List = list;
         }
         public int[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of float that does not allocate memory.
@@ -15364,966 +5919,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=32)]
-    [DebuggerTypeProxy(typeof(FixedListFloat32DebugView))]
-    [Obsolete("FixedListFloat32 is deprecated, please use FixedList32<float> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListFloat32
-    : INativeList<float>
-    , IEnumerable<float> // Used by collection initializers.
-    , IEquatable<FixedListFloat32>
-    , IComparable<FixedListFloat32>
-    , IEquatable<FixedListFloat64>
-    , IComparable<FixedListFloat64>
-    , IEquatable<FixedListFloat128>
-    , IComparable<FixedListFloat128>
-    , IEquatable<FixedListFloat512>
-    , IComparable<FixedListFloat512>
-    , IEquatable<FixedListFloat4096>
-    , IComparable<FixedListFloat4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes30 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes30,float>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(float);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<float>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes30, float>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public float this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<float>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<float>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref float ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListFloat32.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in float item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            float* data = (float*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(float value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(float value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat32 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(float);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(float);
-                byte *src = b + begin * sizeof(float);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListFloat32 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, float item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListFloat32 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListFloat32.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(float item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the float</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified float from the begining of the FixedListFloat32 forward, removes it if possible,
-        /// and returns true if the float was successfully removed.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat32</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(float item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of float that is a copy of this FixedListFloat32.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public float[] ToArray()
-        {
-            var result = new float[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(float* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayfloat that is a copy of this FixedListFloat32.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<float> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float>(s, Length, Allocator.None);
-                return new NativeArray<float>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat32 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat32 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<float>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for equality</param>
-        /// <param name="b">The FixedListFloat32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat32 a, in FixedListFloat32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat32 a, in FixedListFloat32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// is equal to the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for equality</param>
-        /// <param name="b">The FixedListFloat64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat32 a, in FixedListFloat64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat32 a, in FixedListFloat64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// is equal to the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy.</param>
-        public FixedListFloat32(in FixedListFloat64 other)
-        {
-            FixedList.CheckResize<FixedBytes30,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat64 to a FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat32(in FixedListFloat64 other)
-        {
-            return new FixedListFloat32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for equality</param>
-        /// <param name="b">The FixedListFloat128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat32 a, in FixedListFloat128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat32 a, in FixedListFloat128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// is equal to the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy.</param>
-        public FixedListFloat32(in FixedListFloat128 other)
-        {
-            FixedList.CheckResize<FixedBytes30,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat128 to a FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat32(in FixedListFloat128 other)
-        {
-            return new FixedListFloat32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for equality</param>
-        /// <param name="b">The FixedListFloat512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat32 a, in FixedListFloat512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat32 a, in FixedListFloat512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// is equal to the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy.</param>
-        public FixedListFloat32(in FixedListFloat512 other)
-        {
-            FixedList.CheckResize<FixedBytes30,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat512 to a FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat32(in FixedListFloat512 other)
-        {
-            return new FixedListFloat32(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for equality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat32 a, in FixedListFloat4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat32 and FixedListFloat4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat32 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat32 a, in FixedListFloat4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// is equal to the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat32 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy.</param>
-        public FixedListFloat32(in FixedListFloat4096 other)
-        {
-            FixedList.CheckResize<FixedBytes30,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes30();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes30* d = &this.buffer)
-                    *d = *(FixedBytes30*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat4096 to a FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat32(in FixedListFloat4096 other)
-        {
-            return new FixedListFloat32(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListFloat32 aFixedListFloat32) return Equals(aFixedListFloat32);
-            if(obj is FixedListFloat64 aFixedListFloat64) return Equals(aFixedListFloat64);
-            if(obj is FixedListFloat128 aFixedListFloat128) return Equals(aFixedListFloat128);
-            if(obj is FixedListFloat512 aFixedListFloat512) return Equals(aFixedListFloat512);
-            if(obj is FixedListFloat4096 aFixedListFloat4096) return Equals(aFixedListFloat4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<float>
-        {
-            FixedListFloat32 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListFloat32 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public float Current => m_List[m_Index]; // Let FixedListFloat32 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<float> IEnumerable<float>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListFloat32DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListFloat32 is deprecated, please use FixedList32Bytes<float> instead. (UnityUpgradable) -> FixedList32Bytes<float>", true)]
+    public struct FixedListFloat32 {}
+    
+
+    [Obsolete("FixedListFloat32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<float>", true)]
     sealed class FixedListFloat32DebugView
     {
-        FixedListFloat32 m_List;
-        public FixedListFloat32DebugView(FixedListFloat32 list)
+        FixedList32Bytes<float> m_List;
+        public FixedListFloat32DebugView(FixedList32Bytes<float> list)
         {
             m_List = list;
         }
         public float[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of float that does not allocate memory.
@@ -16331,966 +5940,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=64)]
-    [DebuggerTypeProxy(typeof(FixedListFloat64DebugView))]
-    [Obsolete("FixedListFloat64 is deprecated, please use FixedList64<float> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListFloat64
-    : INativeList<float>
-    , IEnumerable<float> // Used by collection initializers.
-    , IEquatable<FixedListFloat32>
-    , IComparable<FixedListFloat32>
-    , IEquatable<FixedListFloat64>
-    , IComparable<FixedListFloat64>
-    , IEquatable<FixedListFloat128>
-    , IComparable<FixedListFloat128>
-    , IEquatable<FixedListFloat512>
-    , IComparable<FixedListFloat512>
-    , IEquatable<FixedListFloat4096>
-    , IComparable<FixedListFloat4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes62 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes62,float>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(float);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<float>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes62, float>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public float this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<float>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<float>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref float ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListFloat64.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in float item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            float* data = (float*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(float value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(float value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat64 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(float);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(float);
-                byte *src = b + begin * sizeof(float);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListFloat64 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, float item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListFloat64 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListFloat64.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(float item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the float</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified float from the begining of the FixedListFloat64 forward, removes it if possible,
-        /// and returns true if the float was successfully removed.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat64</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(float item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of float that is a copy of this FixedListFloat64.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public float[] ToArray()
-        {
-            var result = new float[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(float* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayfloat that is a copy of this FixedListFloat64.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<float> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float>(s, Length, Allocator.None);
-                return new NativeArray<float>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat64 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat64 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<float>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for equality</param>
-        /// <param name="b">The FixedListFloat32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat64 a, in FixedListFloat32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat64 a, in FixedListFloat32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// is equal to the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy.</param>
-        public FixedListFloat64(in FixedListFloat32 other)
-        {
-            FixedList.CheckResize<FixedBytes62,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat32 to a FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat64(in FixedListFloat32 other)
-        {
-            return new FixedListFloat64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for equality</param>
-        /// <param name="b">The FixedListFloat64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat64 a, in FixedListFloat64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat64 a, in FixedListFloat64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// is equal to the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for equality</param>
-        /// <param name="b">The FixedListFloat128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat64 a, in FixedListFloat128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat64 a, in FixedListFloat128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// is equal to the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy.</param>
-        public FixedListFloat64(in FixedListFloat128 other)
-        {
-            FixedList.CheckResize<FixedBytes62,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat128 to a FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat64(in FixedListFloat128 other)
-        {
-            return new FixedListFloat64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for equality</param>
-        /// <param name="b">The FixedListFloat512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat64 a, in FixedListFloat512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat64 a, in FixedListFloat512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// is equal to the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy.</param>
-        public FixedListFloat64(in FixedListFloat512 other)
-        {
-            FixedList.CheckResize<FixedBytes62,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat512 to a FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat64(in FixedListFloat512 other)
-        {
-            return new FixedListFloat64(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for equality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat64 a, in FixedListFloat4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat64 and FixedListFloat4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat64 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat64 a, in FixedListFloat4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// is equal to the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat64 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy.</param>
-        public FixedListFloat64(in FixedListFloat4096 other)
-        {
-            FixedList.CheckResize<FixedBytes62,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes62();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes62* d = &this.buffer)
-                    *d = *(FixedBytes62*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat4096 to a FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat64(in FixedListFloat4096 other)
-        {
-            return new FixedListFloat64(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListFloat32 aFixedListFloat32) return Equals(aFixedListFloat32);
-            if(obj is FixedListFloat64 aFixedListFloat64) return Equals(aFixedListFloat64);
-            if(obj is FixedListFloat128 aFixedListFloat128) return Equals(aFixedListFloat128);
-            if(obj is FixedListFloat512 aFixedListFloat512) return Equals(aFixedListFloat512);
-            if(obj is FixedListFloat4096 aFixedListFloat4096) return Equals(aFixedListFloat4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<float>
-        {
-            FixedListFloat64 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListFloat64 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public float Current => m_List[m_Index]; // Let FixedListFloat64 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<float> IEnumerable<float>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListFloat64DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListFloat64 is deprecated, please use FixedList64Bytes<float> instead. (UnityUpgradable) -> FixedList64Bytes<float>", true)]
+    public struct FixedListFloat64 {}
+    
+
+    [Obsolete("FixedListFloat64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<float>", true)]
     sealed class FixedListFloat64DebugView
     {
-        FixedListFloat64 m_List;
-        public FixedListFloat64DebugView(FixedListFloat64 list)
+        FixedList64Bytes<float> m_List;
+        public FixedListFloat64DebugView(FixedList64Bytes<float> list)
         {
             m_List = list;
         }
         public float[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of float that does not allocate memory.
@@ -17298,966 +5961,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=128)]
-    [DebuggerTypeProxy(typeof(FixedListFloat128DebugView))]
-    [Obsolete("FixedListFloat128 is deprecated, please use FixedList128<float> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListFloat128
-    : INativeList<float>
-    , IEnumerable<float> // Used by collection initializers.
-    , IEquatable<FixedListFloat32>
-    , IComparable<FixedListFloat32>
-    , IEquatable<FixedListFloat64>
-    , IComparable<FixedListFloat64>
-    , IEquatable<FixedListFloat128>
-    , IComparable<FixedListFloat128>
-    , IEquatable<FixedListFloat512>
-    , IComparable<FixedListFloat512>
-    , IEquatable<FixedListFloat4096>
-    , IComparable<FixedListFloat4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes126 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes126,float>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(float);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<float>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes126, float>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public float this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<float>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<float>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref float ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListFloat128.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in float item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            float* data = (float*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(float value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(float value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat128 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(float);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(float);
-                byte *src = b + begin * sizeof(float);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListFloat128 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, float item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListFloat128 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListFloat128.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(float item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the float</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified float from the begining of the FixedListFloat128 forward, removes it if possible,
-        /// and returns true if the float was successfully removed.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat128</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(float item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of float that is a copy of this FixedListFloat128.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public float[] ToArray()
-        {
-            var result = new float[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(float* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayfloat that is a copy of this FixedListFloat128.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<float> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float>(s, Length, Allocator.None);
-                return new NativeArray<float>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat128 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat128 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<float>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for equality</param>
-        /// <param name="b">The FixedListFloat32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat128 a, in FixedListFloat32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat128 a, in FixedListFloat32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// is equal to the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy.</param>
-        public FixedListFloat128(in FixedListFloat32 other)
-        {
-            FixedList.CheckResize<FixedBytes126,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat32 to a FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat128(in FixedListFloat32 other)
-        {
-            return new FixedListFloat128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for equality</param>
-        /// <param name="b">The FixedListFloat64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat128 a, in FixedListFloat64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat128 a, in FixedListFloat64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// is equal to the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy.</param>
-        public FixedListFloat128(in FixedListFloat64 other)
-        {
-            FixedList.CheckResize<FixedBytes126,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat64 to a FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat128(in FixedListFloat64 other)
-        {
-            return new FixedListFloat128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for equality</param>
-        /// <param name="b">The FixedListFloat128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat128 a, in FixedListFloat128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat128 a, in FixedListFloat128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// is equal to the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for equality</param>
-        /// <param name="b">The FixedListFloat512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat128 a, in FixedListFloat512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat128 a, in FixedListFloat512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// is equal to the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy.</param>
-        public FixedListFloat128(in FixedListFloat512 other)
-        {
-            FixedList.CheckResize<FixedBytes126,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat512 to a FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat128(in FixedListFloat512 other)
-        {
-            return new FixedListFloat128(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for equality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat128 a, in FixedListFloat4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat128 and FixedListFloat4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat128 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat128 a, in FixedListFloat4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// is equal to the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat128 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy.</param>
-        public FixedListFloat128(in FixedListFloat4096 other)
-        {
-            FixedList.CheckResize<FixedBytes126,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes126();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes126* d = &this.buffer)
-                    *d = *(FixedBytes126*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat4096 to a FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat128(in FixedListFloat4096 other)
-        {
-            return new FixedListFloat128(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListFloat32 aFixedListFloat32) return Equals(aFixedListFloat32);
-            if(obj is FixedListFloat64 aFixedListFloat64) return Equals(aFixedListFloat64);
-            if(obj is FixedListFloat128 aFixedListFloat128) return Equals(aFixedListFloat128);
-            if(obj is FixedListFloat512 aFixedListFloat512) return Equals(aFixedListFloat512);
-            if(obj is FixedListFloat4096 aFixedListFloat4096) return Equals(aFixedListFloat4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<float>
-        {
-            FixedListFloat128 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListFloat128 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public float Current => m_List[m_Index]; // Let FixedListFloat128 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<float> IEnumerable<float>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListFloat128DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListFloat128 is deprecated, please use FixedList128Bytes<float> instead. (UnityUpgradable) -> FixedList128Bytes<float>", true)]
+    public struct FixedListFloat128 {}
+    
+
+    [Obsolete("FixedListFloat128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<float>", true)]
     sealed class FixedListFloat128DebugView
     {
-        FixedListFloat128 m_List;
-        public FixedListFloat128DebugView(FixedListFloat128 list)
+        FixedList128Bytes<float> m_List;
+        public FixedListFloat128DebugView(FixedList128Bytes<float> list)
         {
             m_List = list;
         }
         public float[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of float that does not allocate memory.
@@ -18265,966 +5982,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=512)]
-    [DebuggerTypeProxy(typeof(FixedListFloat512DebugView))]
-    [Obsolete("FixedListFloat512 is deprecated, please use FixedList512<float> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListFloat512
-    : INativeList<float>
-    , IEnumerable<float> // Used by collection initializers.
-    , IEquatable<FixedListFloat32>
-    , IComparable<FixedListFloat32>
-    , IEquatable<FixedListFloat64>
-    , IComparable<FixedListFloat64>
-    , IEquatable<FixedListFloat128>
-    , IComparable<FixedListFloat128>
-    , IEquatable<FixedListFloat512>
-    , IComparable<FixedListFloat512>
-    , IEquatable<FixedListFloat4096>
-    , IComparable<FixedListFloat4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes510 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes510,float>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(float);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<float>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes510, float>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public float this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<float>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<float>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref float ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListFloat512.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in float item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            float* data = (float*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(float value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(float value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat512 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(float);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(float);
-                byte *src = b + begin * sizeof(float);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListFloat512 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, float item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListFloat512 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListFloat512.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(float item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the float</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified float from the begining of the FixedListFloat512 forward, removes it if possible,
-        /// and returns true if the float was successfully removed.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat512</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(float item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of float that is a copy of this FixedListFloat512.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public float[] ToArray()
-        {
-            var result = new float[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(float* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayfloat that is a copy of this FixedListFloat512.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<float> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float>(s, Length, Allocator.None);
-                return new NativeArray<float>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat512 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat512 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<float>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for equality</param>
-        /// <param name="b">The FixedListFloat32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat512 a, in FixedListFloat32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat512 a, in FixedListFloat32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// is equal to the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy.</param>
-        public FixedListFloat512(in FixedListFloat32 other)
-        {
-            FixedList.CheckResize<FixedBytes510,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat32 to a FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat512(in FixedListFloat32 other)
-        {
-            return new FixedListFloat512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for equality</param>
-        /// <param name="b">The FixedListFloat64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat512 a, in FixedListFloat64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat512 a, in FixedListFloat64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// is equal to the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy.</param>
-        public FixedListFloat512(in FixedListFloat64 other)
-        {
-            FixedList.CheckResize<FixedBytes510,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat64 to a FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat512(in FixedListFloat64 other)
-        {
-            return new FixedListFloat512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for equality</param>
-        /// <param name="b">The FixedListFloat128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat512 a, in FixedListFloat128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat512 a, in FixedListFloat128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// is equal to the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy.</param>
-        public FixedListFloat512(in FixedListFloat128 other)
-        {
-            FixedList.CheckResize<FixedBytes510,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat128 to a FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat512(in FixedListFloat128 other)
-        {
-            return new FixedListFloat512(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for equality</param>
-        /// <param name="b">The FixedListFloat512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat512 a, in FixedListFloat512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat512 a, in FixedListFloat512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// is equal to the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for equality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat512 a, in FixedListFloat4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat512 and FixedListFloat4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat512 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat512 a, in FixedListFloat4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// is equal to the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat512 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy.</param>
-        public FixedListFloat512(in FixedListFloat4096 other)
-        {
-            FixedList.CheckResize<FixedBytes510,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes510();
-            unsafe
-            {
-                fixed(FixedBytes4094* s = &other.buffer)
-                fixed(FixedBytes510* d = &this.buffer)
-                    *d = *(FixedBytes510*)s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat4096 to a FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The FixedListFloat4096 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat512(in FixedListFloat4096 other)
-        {
-            return new FixedListFloat512(other);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListFloat32 aFixedListFloat32) return Equals(aFixedListFloat32);
-            if(obj is FixedListFloat64 aFixedListFloat64) return Equals(aFixedListFloat64);
-            if(obj is FixedListFloat128 aFixedListFloat128) return Equals(aFixedListFloat128);
-            if(obj is FixedListFloat512 aFixedListFloat512) return Equals(aFixedListFloat512);
-            if(obj is FixedListFloat4096 aFixedListFloat4096) return Equals(aFixedListFloat4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<float>
-        {
-            FixedListFloat512 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListFloat512 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public float Current => m_List[m_Index]; // Let FixedListFloat512 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<float> IEnumerable<float>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListFloat512DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListFloat512 is deprecated, please use FixedList512Bytes<float> instead. (UnityUpgradable) -> FixedList512Bytes<float>", true)]
+    public struct FixedListFloat512 {}
+    
+
+    [Obsolete("FixedListFloat512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<float>", true)]
     sealed class FixedListFloat512DebugView
     {
-        FixedListFloat512 m_List;
-        public FixedListFloat512DebugView(FixedListFloat512 list)
+        FixedList512Bytes<float> m_List;
+        public FixedListFloat512DebugView(FixedList512Bytes<float> list)
         {
             m_List = list;
         }
         public float[] Items => m_List.ToArray();
     }
-
 
     /// <summary>
     /// An unmanaged, resizable list of float that does not allocate memory.
@@ -19232,966 +6003,20 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [DebuggerTypeProxy(typeof(FixedListFloat4096DebugView))]
-    [Obsolete("FixedListFloat4096 is deprecated, please use FixedList4096<float> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct FixedListFloat4096
-    : INativeList<float>
-    , IEnumerable<float> // Used by collection initializers.
-    , IEquatable<FixedListFloat32>
-    , IComparable<FixedListFloat32>
-    , IEquatable<FixedListFloat64>
-    , IComparable<FixedListFloat64>
-    , IEquatable<FixedListFloat128>
-    , IComparable<FixedListFloat128>
-    , IEquatable<FixedListFloat512>
-    , IComparable<FixedListFloat512>
-    , IEquatable<FixedListFloat4096>
-    , IComparable<FixedListFloat4096>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes4094 buffer;
-
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes4094,float>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<float> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(float);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<float>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes4094, float>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public float this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<float>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<float>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref float ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<float>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the FixedListFloat4096.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in float item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            float* data = (float*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The float to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(float item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(float value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(float value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a FixedListFloat4096 at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(float);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(float);
-                byte *src = b + begin * sizeof(float);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a FixedListFloat4096 at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, float item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the FixedListFloat4096 and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the FixedListFloat4096.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(float item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the float at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the float</param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified float from the begining of the FixedListFloat4096 forward, removes it if possible,
-        /// and returns true if the float was successfully removed.
-        /// </summary>
-        /// <param name="item">The float to locate in the FixedListFloat4096</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(float item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(float);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of float that is a copy of this FixedListFloat4096.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public float[] ToArray()
-        {
-            var result = new float[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(float* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArrayfloat that is a copy of this FixedListFloat4096.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<float> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<float>(s, Length, Allocator.None);
-                return new NativeArray<float>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat4096 in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this FixedListFloat4096 using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<float>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((float*)Buffer, length, comp);
-            }
-        }
-
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat32 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for equality</param>
-        /// <param name="b">The FixedListFloat32 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat4096 a, in FixedListFloat32 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat32 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat32 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat4096 a, in FixedListFloat32 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat32 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat32 and indicates whether this instance
-        /// is equal to the specified FixedListFloat32.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat32 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat32 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy.</param>
-        public FixedListFloat4096(in FixedListFloat32 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes30* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes30*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat32 to a FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The FixedListFloat32 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat4096(in FixedListFloat32 other)
-        {
-            return new FixedListFloat4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat64 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for equality</param>
-        /// <param name="b">The FixedListFloat64 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat4096 a, in FixedListFloat64 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat64 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat64 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat4096 a, in FixedListFloat64 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat64 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat64 and indicates whether this instance
-        /// is equal to the specified FixedListFloat64.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat64 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat64 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy.</param>
-        public FixedListFloat4096(in FixedListFloat64 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes62* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes62*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat64 to a FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The FixedListFloat64 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat4096(in FixedListFloat64 other)
-        {
-            return new FixedListFloat4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat128 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for equality</param>
-        /// <param name="b">The FixedListFloat128 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat4096 a, in FixedListFloat128 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat128 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat128 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat4096 a, in FixedListFloat128 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat128 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat128 and indicates whether this instance
-        /// is equal to the specified FixedListFloat128.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat128 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat128 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy.</param>
-        public FixedListFloat4096(in FixedListFloat128 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes126* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes126*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat128 to a FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The FixedListFloat128 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat4096(in FixedListFloat128 other)
-        {
-            return new FixedListFloat4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat512 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for equality</param>
-        /// <param name="b">The FixedListFloat512 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat4096 a, in FixedListFloat512 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat512 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat512 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat4096 a, in FixedListFloat512 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat512 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat512 and indicates whether this instance
-        /// is equal to the specified FixedListFloat512.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat512 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat512 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Initializes and returns an instance of FixedListFloat4096 with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy.</param>
-        public FixedListFloat4096(in FixedListFloat512 other)
-        {
-            FixedList.CheckResize<FixedBytes4094,float>(other.length);
-            length = other.length;
-            buffer = new FixedBytes4094();
-            unsafe
-            {
-                fixed(FixedBytes510* s = &other.buffer)
-                fixed(FixedBytes4094* d = &this.buffer)
-                    *(FixedBytes510*)d = *s;
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a FixedListFloat512 to a FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The FixedListFloat512 to copy</param>
-        /// <returns></returns>
-        public static implicit operator FixedListFloat4096(in FixedListFloat512 other)
-        {
-            return new FixedListFloat4096(other);
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat4096 have the same value.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for equality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in FixedListFloat4096 a, in FixedListFloat4096 b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a FixedListFloat4096 and FixedListFloat4096 have different values.
-        /// </summary>
-        /// <param name="a">The FixedListFloat4096 to compare for inequality</param>
-        /// <param name="b">The FixedListFloat4096 to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in FixedListFloat4096 a, in FixedListFloat4096 b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(FixedListFloat4096 other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified FixedListFloat4096 and indicates whether this instance
-        /// is equal to the specified FixedListFloat4096.
-        /// </summary>
-        /// <param name="other">The specified FixedListFloat4096 to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(FixedListFloat4096 other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-            if(obj is FixedListFloat32 aFixedListFloat32) return Equals(aFixedListFloat32);
-            if(obj is FixedListFloat64 aFixedListFloat64) return Equals(aFixedListFloat64);
-            if(obj is FixedListFloat128 aFixedListFloat128) return Equals(aFixedListFloat128);
-            if(obj is FixedListFloat512 aFixedListFloat512) return Equals(aFixedListFloat512);
-            if(obj is FixedListFloat4096 aFixedListFloat4096) return Equals(aFixedListFloat4096);
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<float>
-        {
-            FixedListFloat4096 m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref FixedListFloat4096 list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public float Current => m_List[m_Index]; // Let FixedListFloat4096 indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<float> IEnumerable<float>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("FixedListFloat4096DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("FixedListFloat4096 is deprecated, please use FixedList4096Bytes<float> instead. (UnityUpgradable) -> FixedList4096Bytes<float>", true)]
+    public struct FixedListFloat4096 {}
+    
+
+    [Obsolete("FixedListFloat4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<float>", true)]
     sealed class FixedListFloat4096DebugView
     {
-        FixedListFloat4096 m_List;
-        public FixedListFloat4096DebugView(FixedListFloat4096 list)
+        FixedList4096Bytes<float> m_List;
+        public FixedListFloat4096DebugView(FixedList4096Bytes<float> list)
         {
             m_List = list;
         }
         public float[] Items => m_List.ToArray();
     }
-
     /// <summary>
     /// Provides extension methods for FixedList*N*.
     /// </summary>
@@ -20204,7 +6029,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref FixedList32<T> list)
+        public static void Sort<T>(this ref FixedList32Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
@@ -20225,7 +6050,7 @@ namespace Unity.Collections
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref FixedList32<T> list, U comp)
+        public static void Sort<T, U>(this ref FixedList32Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {
@@ -20246,7 +6071,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref FixedList64<T> list)
+        public static void Sort<T>(this ref FixedList64Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
@@ -20267,7 +6092,7 @@ namespace Unity.Collections
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref FixedList64<T> list, U comp)
+        public static void Sort<T, U>(this ref FixedList64Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {
@@ -20288,7 +6113,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref FixedList128<T> list)
+        public static void Sort<T>(this ref FixedList128Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
@@ -20309,7 +6134,7 @@ namespace Unity.Collections
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref FixedList128<T> list, U comp)
+        public static void Sort<T, U>(this ref FixedList128Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {
@@ -20330,7 +6155,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref FixedList512<T> list)
+        public static void Sort<T>(this ref FixedList512Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
@@ -20351,7 +6176,7 @@ namespace Unity.Collections
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref FixedList512<T> list, U comp)
+        public static void Sort<T, U>(this ref FixedList512Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {
@@ -20372,7 +6197,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static void Sort<T>(this ref FixedList4096<T> list)
+        public static void Sort<T>(this ref FixedList4096Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
             unsafe
@@ -20393,7 +6218,7 @@ namespace Unity.Collections
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
-        public static void Sort<T, U>(this ref FixedList4096<T> list, U comp)
+        public static void Sort<T, U>(this ref FixedList4096Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
         {

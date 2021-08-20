@@ -86,11 +86,11 @@ namespace Unity.Collections.LowLevel.Unsafe
     }) {
 
     foreach (var OtherContainerType in new[] {
-        ( "FixedList128" ),
-        ( "FixedList32" ),
-        ( "FixedList4096" ),
-        ( "FixedList512" ),
-        ( "FixedList64" ),
+        ( "FixedList128Bytes" ),
+        ( "FixedList32Bytes" ),
+        ( "FixedList4096Bytes" ),
+        ( "FixedList512Bytes" ),
+        ( "FixedList64Bytes" ),
         ( "NativeArray" ),
         ( "NativeHashSet" ),
         ( "NativeList" ),

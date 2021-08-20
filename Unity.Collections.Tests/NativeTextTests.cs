@@ -13,37 +13,37 @@ namespace FixedStringTests
         [Test]
         public void NativeTextFixedStringCtors()
         {
-            using (NativeText aa = new NativeText(new FixedString32("test32"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString32Bytes("test32"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString32("test"));
+                Assert.True(aa != new FixedString32Bytes("test"));
                 Assert.True(aa.Value == "test32");
                 Assert.AreEqual("test32", aa);
             }
 
-            using (NativeText aa = new NativeText(new FixedString64("test64"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString64Bytes("test64"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString64("test"));
+                Assert.True(aa != new FixedString64Bytes("test"));
                 Assert.True(aa.Value == "test64");
                 Assert.AreEqual("test64", aa);
             }
 
-            using (NativeText aa = new NativeText(new FixedString128("test128"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString128Bytes("test128"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString128("test"));
+                Assert.True(aa != new FixedString128Bytes("test"));
                 Assert.True(aa.Value == "test128");
                 Assert.AreEqual("test128", aa);
             }
 
-            using (NativeText aa = new NativeText(new FixedString512("test512"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString512Bytes("test512"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString512("test"));
+                Assert.True(aa != new FixedString512Bytes("test"));
                 Assert.True(aa.Value == "test512");
                 Assert.AreEqual("test512", aa);
             }
 
-            using (NativeText aa = new NativeText(new FixedString4096("test4096"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString4096Bytes("test4096"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString4096("test"));
+                Assert.True(aa != new FixedString4096Bytes("test"));
                 Assert.True(aa.Value == "test4096");
                 Assert.AreEqual("test4096", aa);
             }
@@ -72,8 +72,8 @@ namespace FixedStringTests
             NativeText aa = new NativeText(4, Allocator.Temp);
             Assert.True(aa.IsCreated);
             aa.Junk();
-            FixedString32 format = "{0}";
-            FixedString32 arg0 = "a";
+            FixedString32Bytes format = "{0}";
+            FixedString32Bytes arg0 = "a";
             aa.AppendFormat(format, arg0);
             aa.Add(0x61);
             Assert.AreEqual("aa", aa);
@@ -87,9 +87,9 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
+            FixedString32Bytes format = "{0} {1}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
             aa.AppendFormat(format, arg0, arg1);
             Assert.AreEqual("a b", aa);
             aa.AssertNullTerminated();
@@ -102,10 +102,10 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
+            FixedString32Bytes format = "{0} {1} {2}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
             aa.AppendFormat(format, arg0, arg1, arg2);
             Assert.AreEqual("a b c", aa);
             aa.AssertNullTerminated();
@@ -118,11 +118,11 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
+            FixedString32Bytes format = "{0} {1} {2} {3}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3);
             Assert.AreEqual("a b c d", aa);
             aa.AssertNullTerminated();
@@ -135,12 +135,12 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
             Assert.AreEqual("a b c d e", aa);
             aa.AssertNullTerminated();
@@ -153,13 +153,13 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
             Assert.AreEqual("a b c d e f", aa);
             aa.AssertNullTerminated();
@@ -172,14 +172,14 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5} {6}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5} {6}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
             Assert.AreEqual("a b c d e f g", aa);
             aa.AssertNullTerminated();
@@ -192,15 +192,15 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             Assert.AreEqual("a b c d e f g h", aa);
             aa.AssertNullTerminated();
@@ -213,16 +213,16 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             Assert.AreEqual("a b c d e f g h i", aa);
             aa.AssertNullTerminated();
@@ -235,17 +235,17 @@ namespace FixedStringTests
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
-            FixedString32 arg9 = "j";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
+            FixedString32Bytes arg9 = "j";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
             Assert.AreEqual("a b c d e f g h i j", aa);
             aa.AssertNullTerminated();
@@ -308,7 +308,7 @@ namespace FixedStringTests
         public void NativeTextToStringWorks(String a)
         {
             NativeText aa = new NativeText(4, Allocator.Temp);
-            aa.Append(new FixedString128(a));
+            aa.Append(new FixedString128Bytes(a));
             Assert.AreEqual(a, aa.ToString());
             aa.AssertNullTerminated();
             aa.Dispose();
@@ -324,8 +324,8 @@ namespace FixedStringTests
         [TestCase("三島 由紀夫", "吉本ばなな", TestName = "{m}(MishimaYukio-YoshimotoBanana")]
         public void NativeTextEqualsWorks(String a, String b)
         {
-            NativeText aa = new NativeText(new FixedString128(a), Allocator.Temp);
-            NativeText bb = new NativeText(new FixedString128(b), Allocator.Temp);
+            NativeText aa = new NativeText(new FixedString128Bytes(a), Allocator.Temp);
+            NativeText bb = new NativeText(new FixedString128Bytes(b), Allocator.Temp);
             Assert.AreEqual(aa.Equals(bb), a.Equals(b));
             aa.AssertNullTerminated();
             bb.AssertNullTerminated();
@@ -337,7 +337,7 @@ namespace FixedStringTests
         public void NativeTextForEach()
         {
             NativeText actual = new NativeText("A🌕Z🌑D𒁃 𒁃𒁃𒁃𒁃𒁃", Allocator.Temp);
-            FixedList128<uint> expected = default;
+            FixedList128Bytes<uint> expected = default;
             expected.Add('A');
             expected.Add(0x1F315);
             expected.Add('Z');

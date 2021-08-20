@@ -33,6 +33,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public int Length;
 
+        public readonly int unused;
+
         /// <summary>
         /// </summary>
         public int Capacity;
@@ -48,7 +50,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public UnsafeList(Allocator allocator)
+        public UnsafeList(Allocator allocator) : this()
         {
             Ptr = null;
             Length = 0;
@@ -61,7 +63,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr">Pointer to data.</param>
         /// <param name="length">Lenght of data in bytes.</param>
-        public UnsafeList(void* ptr, int length)
+        public UnsafeList(void* ptr, int length) : this()
         {
             Ptr = ptr;
             Length = length;
@@ -105,7 +107,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) : this()
         {
             this = default;
             Initialize(sizeOf, alignOf, initialCapacity, ref allocator, options);
@@ -121,7 +123,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">A member of the
         /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
-        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public UnsafeList(int sizeOf, int alignOf, int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) : this()
         {
             Allocator = allocator;
             Ptr = null;
@@ -1030,12 +1032,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         ///
         /// </summary>
         public readonly int length;
+        
+        public readonly int unused;
 
         /// <summary>
         ///
         /// </summary>
         public readonly int capacity;
-
+        
         /// <summary>
         ///
         /// </summary>
@@ -1077,7 +1081,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr"></param>
         /// <param name="length"></param>
-        public unsafe UnsafePtrList(void** ptr, int length)
+        public unsafe UnsafePtrList(void** ptr, int length) : this()
         {
             Ptr = ptr;
             this.length = length;
@@ -1095,7 +1099,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) : this()
         {
             Ptr = null;
             length = 0;
@@ -1116,7 +1120,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Memory should be cleared on allocation or left uninitialized.</param>
         /// <remarks>The list initially has a capacity of one. To avoid reallocating memory for the list, specify
         /// sufficient capacity up front.</remarks>
-        public unsafe UnsafePtrList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        public unsafe UnsafePtrList(int initialCapacity, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) : this()
         {
             Ptr = null;
             length = 0;
@@ -1607,11 +1611,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             m_wordStorage = wordStorage;
         }
 
-        public FixedString128[] Table
+        public FixedString128Bytes[] Table
         {
             get
             {
-                var table = new FixedString128[m_wordStorage.Entries];
+                var table = new FixedString128Bytes[m_wordStorage.Entries];
                 for (var i = 0; i < m_wordStorage.Entries; ++i)
                     m_wordStorage.GetFixedString(i, ref table[i]);
                 return table;
@@ -1719,7 +1723,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             WordStorageStatic.Ref.Data.chars = 0;
             WordStorageStatic.Ref.Data.entries = 0;
             WordStorageStatic.Ref.Data.hash.Clear();
-            var temp = new FixedString32();
+            var temp = new FixedString32Bytes();
             WordStorageStatic.Ref.Data.GetOrCreateIndex(ref temp); // make sure that Index=0 means empty string
         }
 
@@ -1802,7 +1806,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NotBurstCompatible /* Deprecated */]
         public unsafe bool Contains(string value)
         {
-            FixedString512 temp = value;
+            FixedString512Bytes temp = value;
             return Contains(ref temp);
         }
 
@@ -1867,7 +1871,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns></returns>
         public override string ToString()
         {
-            FixedString512 temp = default;
+            FixedString512Bytes temp = default;
             ToFixedString(ref temp);
             return temp.ToString();
         }
@@ -1889,7 +1893,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="value"></param>
         public unsafe void SetString(string value)
         {
-            FixedString512 temp = value;
+            FixedString512Bytes temp = value;
             SetFixedString(ref temp);
         }
     }
@@ -2000,7 +2004,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NotBurstCompatible /* Deprecated */]
         public override string ToString()
         {
-            FixedString512 temp = default;
+            FixedString512Bytes temp = default;
             ToFixedString(ref temp);
             return temp.ToString();
         }
@@ -2092,7 +2096,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NotBurstCompatible /* Deprecated */]
         public void SetString(string value)
         {
-            FixedString512 temp = value;
+            FixedString512Bytes temp = value;
             SetString(ref temp);
         }
     }
@@ -2298,7 +2302,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             errorState.sourceLocation.function = wrappedErrorState.sourceLocation.function;
             errorState.sourceLocation.lineNumber = wrappedErrorState.sourceLocation.lineNumber;
 
-            FixedString512 errorString = "Baselib error: ";
+            FixedString512Bytes errorString = "Baselib error: ";
             byte* errorStringNext = errorString.GetUnsafePtr() + errorString.Length;
             int errorStringRemainingCap = errorString.Capacity - errorString.Length;
 

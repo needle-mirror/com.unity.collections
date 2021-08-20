@@ -136,9 +136,9 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_ForEach_FixedStringInHashMap()
     {
-        using (var stringList = new NativeList<FixedString32>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+        using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new NativeHashSet<FixedString128>(50, Allocator.Temp);
+            var container = new NativeHashSet<FixedString128Bytes>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {

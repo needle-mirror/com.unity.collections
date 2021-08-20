@@ -49,7 +49,7 @@ namespace Unity.Collections
         /// <param name="bufferCount">The number of buffers to give the stream. You usually want
         /// one buffer for each thread that will read or write the stream.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeStream(int bufferCount, Allocator allocator)
+        public NativeStream(int bufferCount, AllocatorManager.AllocatorHandle allocator)
         {
             AllocateBlock(out this, allocator);
             m_Stream.AllocateForEach(bufferCount);
@@ -69,7 +69,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> bufferCount, JobHandle dependency, Allocator allocator)
+        public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
             where T : unmanaged
         {
             AllocateBlock(out stream, allocator);
@@ -92,7 +92,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> bufferCount, JobHandle dependency, Allocator allocator)
+        public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
         {
             AllocateBlock(out stream, allocator);
             var jobData = new ConstructJob { Length = bufferCount, Container = stream };
@@ -169,7 +169,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A new NativeArray copy of this stream's data.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public NativeArray<T> ToNativeArray<T>(Allocator allocator) where T : struct
+        public NativeArray<T> ToNativeArray<T>(AllocatorManager.AllocatorHandle allocator) where T : struct
         {
             CheckReadAccess();
             return m_Stream.ToNativeArray<T>(allocator);
@@ -238,14 +238,14 @@ namespace Unity.Collections
             }
         }
 
-        static void AllocateBlock(out NativeStream stream, Allocator allocator)
+        static void AllocateBlock(out NativeStream stream, AllocatorManager.AllocatorHandle allocator)
         {
-            CheckAllocator(allocator);
+            CollectionHelper.CheckAllocator(allocator);
 
             UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator);
+            DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
 #endif
         }
 
@@ -705,14 +705,6 @@ namespace Unity.Collections
                     throw new System.ArgumentException("Not all data (Data Size) has been read. If this is intentional, simply skip calling EndForEachIndex();");
                 }
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            // Native allocation is only valid for Temp, Job and Persistent.
-            if (allocator <= Allocator.None)
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

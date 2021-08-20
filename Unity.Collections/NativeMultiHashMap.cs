@@ -72,7 +72,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeMultiHashMap(int capacity, Allocator allocator)
+        public NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
             : this(capacity, allocator, 2)
         {
         }
@@ -81,10 +81,10 @@ namespace Unity.Collections
         internal void Initialize<U>(int capacity, ref U allocator, int disposeSentinelStackDepth)
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.ToAllocator);
+            m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+            if(allocator.IsCustomAllocator)
             {
                 m_Safety = AtomicSafetyHandle.Create();
                 m_DisposeSentinel = null;
@@ -102,11 +102,10 @@ namespace Unity.Collections
 #endif
         }
 
-        NativeMultiHashMap(int capacity, Allocator allocator, int disposeSentinelStackDepth)
+        NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
             this = default;
-            AllocatorManager.AllocatorHandle temp = allocator;
-            Initialize(capacity, ref temp, disposeSentinelStackDepth);
+            Initialize(capacity, ref allocator, disposeSentinelStackDepth);
         }
 
         /// <summary>
@@ -319,7 +318,7 @@ namespace Unity.Collections
         /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(Allocator allocator)
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_MultiHashMapData.GetKeyArray(allocator);
@@ -332,7 +331,7 @@ namespace Unity.Collections
         /// you can use <see cref="Unity.Collections.NativeHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(Allocator allocator)
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_MultiHashMapData.GetValueArray(allocator);
@@ -345,7 +344,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all the keys and values (in no particular order).</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(Allocator allocator)
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
             return m_MultiHashMapData.GetKeyValueArrays(allocator);
@@ -668,11 +667,11 @@ namespace Unity.Collections
             where TValue : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            nativeMultiHashMap.m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.ToAllocator);
+            nativeMultiHashMap.m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 
-            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+            if(allocator.IsCustomAllocator)
             {
                 nativeMultiHashMap.m_Safety = AtomicSafetyHandle.Create();
                 nativeMultiHashMap.m_DisposeSentinel = null;

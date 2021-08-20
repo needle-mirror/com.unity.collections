@@ -201,11 +201,11 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         internal static void Initialize<T>(ref this NativeArray<T> array,
                                             int length,
-                                            Allocator allocator,
+                                            AllocatorManager.AllocatorHandle allocator,
                                             NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
             where T : struct
         {
-            AllocatorHandle handle = (AllocatorHandle)allocator;
+            AllocatorHandle handle = allocator;
             array.m_Buffer = handle.AllocateStruct(default(T), length);
             array.m_Length = length;
             array.m_AllocatorLabel = Allocator.None;

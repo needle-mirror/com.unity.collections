@@ -130,11 +130,11 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
 
 <#
     foreach (var OtherContainerType in new[] {
-        ( "FixedList32" ),
-        ( "FixedList64" ),
-        ( "FixedList128" ),
-        ( "FixedList512" ),
-        ( "FixedList4096" ),
+        ( "FixedList32Bytes" ),
+        ( "FixedList64Bytes" ),
+        ( "FixedList128Bytes" ),
+        ( "FixedList512Bytes" ),
+        ( "FixedList4096Bytes" ),
     }) {
 #>
     [Test]

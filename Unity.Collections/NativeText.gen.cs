@@ -46,16 +46,16 @@ namespace Unity.Collections
         , IEquatable<String>
         , IComparable<NativeText>
         , IEquatable<NativeText>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
@@ -81,7 +81,17 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         [NotBurstCompatible]
-        public NativeText(String source, Allocator allocator) : this(source.Length * 2, allocator)
+        public NativeText(String source, Allocator allocator) : this(source, (AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        [NotBurstCompatible]
+        public NativeText(String source, AllocatorManager.AllocatorHandle allocator) : this(source.Length * 2, allocator)
         {
             Length = source.Length * 2;
             unsafe
@@ -100,12 +110,12 @@ namespace Unity.Collections
             }
         }
 
-        private NativeText(int capacity, Allocator allocator, int disposeSentinelStackDepth)
+        private NativeText(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
             this = default;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CheckAllocator(allocator);
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+            CollectionHelper.CheckAllocator(allocator);
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
@@ -120,7 +130,16 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The initial capacity in bytes.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(int capacity, Allocator allocator) : this(capacity, allocator, 2)
+        public NativeText(int capacity, Allocator allocator) : this(capacity, (AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText.
+        /// </summary>
+        /// <param name="capacity">The initial capacity in bytes.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(int capacity, AllocatorManager.AllocatorHandle allocator) : this(capacity, allocator, 2)
         {
         }
 
@@ -128,7 +147,15 @@ namespace Unity.Collections
         /// Initializes and returns an instance of NativeText with an initial capacity of 512 bytes.
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(Allocator allocator) : this(512, allocator)
+        public NativeText(Allocator allocator) : this((AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with an initial capacity of 512 bytes.
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(AllocatorManager.AllocatorHandle allocator) : this(512, allocator)
         {
         }
 
@@ -137,7 +164,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(in FixedString32 source, Allocator allocator)
+        public NativeText(in FixedString32Bytes source, AllocatorManager.AllocatorHandle allocator)
             : this(source.utf8LengthInBytes, allocator)
         {
             Length = source.utf8LengthInBytes;
@@ -147,27 +174,23 @@ namespace Unity.Collections
                 UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
             }
         }
+
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(in FixedString64 source, Allocator allocator)
-            : this(source.utf8LengthInBytes, allocator)
+        public NativeText(in FixedString32Bytes source, Allocator allocator)
+        : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
-            Length = source.utf8LengthInBytes;
-            unsafe {
-                byte* sbytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                byte* dbytes = (byte*) m_Data.GetUnsafePtr();
-                UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
-            }
         }
+
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(in FixedString128 source, Allocator allocator)
+        public NativeText(in FixedString64Bytes source, AllocatorManager.AllocatorHandle allocator)
             : this(source.utf8LengthInBytes, allocator)
         {
             Length = source.utf8LengthInBytes;
@@ -177,27 +200,23 @@ namespace Unity.Collections
                 UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
             }
         }
+
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(in FixedString512 source, Allocator allocator)
-            : this(source.utf8LengthInBytes, allocator)
+        public NativeText(in FixedString64Bytes source, Allocator allocator)
+        : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
-            Length = source.utf8LengthInBytes;
-            unsafe {
-                byte* sbytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
-                byte* dbytes = (byte*) m_Data.GetUnsafePtr();
-                UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
-            }
         }
+
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(in FixedString4096 source, Allocator allocator)
+        public NativeText(in FixedString128Bytes source, AllocatorManager.AllocatorHandle allocator)
             : this(source.utf8LengthInBytes, allocator)
         {
             Length = source.utf8LengthInBytes;
@@ -207,6 +226,69 @@ namespace Unity.Collections
                 UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
             }
         }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(in FixedString128Bytes source, Allocator allocator)
+        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(in FixedString512Bytes source, AllocatorManager.AllocatorHandle allocator)
+            : this(source.utf8LengthInBytes, allocator)
+        {
+            Length = source.utf8LengthInBytes;
+            unsafe {
+                byte* sbytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
+                byte* dbytes = (byte*) m_Data.GetUnsafePtr();
+                UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
+            }
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(in FixedString512Bytes source, Allocator allocator)
+        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(in FixedString4096Bytes source, AllocatorManager.AllocatorHandle allocator)
+            : this(source.utf8LengthInBytes, allocator)
+        {
+            Length = source.utf8LengthInBytes;
+            unsafe {
+                byte* sbytes = (byte*) UnsafeUtilityExtensions.AddressOf(source.bytes);
+                byte* dbytes = (byte*) m_Data.GetUnsafePtr();
+                UnsafeUtility.MemCpy(dbytes, sbytes, source.utf8LengthInBytes);
+            }
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeText with the characters copied from another string.
+        /// </summary>
+        /// <param name="source">A string to copy characters from.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeText(in FixedString4096Bytes source, Allocator allocator)
+        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+        {
+        }
+
 
         /// <summary>
         /// The current length in bytes of this string.
@@ -547,7 +629,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -560,7 +642,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in NativeText a, in FixedString32 b)
+        public static bool operator ==(in NativeText a, in FixedString32Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -579,7 +661,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in NativeText a, in FixedString32 b)
+        public static bool operator !=(in NativeText a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -590,7 +672,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -605,7 +687,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -618,7 +700,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in NativeText a, in FixedString64 b)
+        public static bool operator ==(in NativeText a, in FixedString64Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -637,7 +719,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in NativeText a, in FixedString64 b)
+        public static bool operator !=(in NativeText a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -648,7 +730,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
@@ -663,7 +745,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -676,7 +758,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in NativeText a, in FixedString128 b)
+        public static bool operator ==(in NativeText a, in FixedString128Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -695,7 +777,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in NativeText a, in FixedString128 b)
+        public static bool operator !=(in NativeText a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -706,7 +788,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
@@ -721,7 +803,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -734,7 +816,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in NativeText a, in FixedString512 b)
+        public static bool operator ==(in NativeText a, in FixedString512Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -753,7 +835,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in NativeText a, in FixedString512 b)
+        public static bool operator !=(in NativeText a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -764,7 +846,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
@@ -779,7 +861,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -792,7 +874,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in NativeText a, in FixedString4096 b)
+        public static bool operator ==(in NativeText a, in FixedString4096Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -811,7 +893,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in NativeText a, in FixedString4096 b)
+        public static bool operator !=(in NativeText a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -822,7 +904,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
@@ -853,7 +935,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if this string and another object are equal.
         /// </summary>
-        /// <remarks>For the object to be equal, it must itself be a managed string, NativeText, or FixedString*N*.
+        /// <remarks>For the object to be equal, it must itself be a managed string, NativeText, or FixedString*N*Bytes.
         ///
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
@@ -864,19 +946,12 @@ namespace Unity.Collections
             if(ReferenceEquals(null, other)) return false;
             if(other is String aString) return Equals(aString);
             if(other is NativeText aNativeText) return Equals(aNativeText);
-            if(other is FixedString32 a32) return Equals(a32);
-            if(other is FixedString64 a64) return Equals(a64);
-            if(other is FixedString128 a128) return Equals(a128);
-            if(other is FixedString512 a512) return Equals(a512);
-            if(other is FixedString4096 a4096) return Equals(a4096);
+            if(other is FixedString32Bytes a32) return Equals(a32);
+            if(other is FixedString64Bytes a64) return Equals(a64);
+            if(other is FixedString128Bytes a128) return Equals(a128);
+            if(other is FixedString512Bytes a512) return Equals(a512);
+            if(other is FixedString4096Bytes a4096) return Equals(a4096);
             return false;
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            if (allocator <= Allocator.None)
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

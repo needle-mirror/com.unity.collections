@@ -32,6 +32,13 @@ namespace Unity.Collections
     [BurstCompatible]
     public static class CollectionHelper
     {
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        internal static void CheckAllocator(AllocatorManager.AllocatorHandle allocator)
+        {
+            if (!ShouldDeallocate(allocator))
+                throw new ArgumentException($"Allocator {allocator} must not be None or Invalid");
+        }
+
         /// <summary>
         /// The size in bytes of the current platform's L1 cache lines.
         /// </summary>
@@ -187,18 +194,11 @@ namespace Unity.Collections
 #endif
         }
 
-        internal static bool ShouldDeallocate(Allocator allocator)
-        {
-            // Allocator.Invalid == container is not initialized.
-            // Allocator.None    == container is initialized, but container doesn't own data.
-            return allocator > Allocator.None;
-        }
-
         internal static bool ShouldDeallocate(AllocatorManager.AllocatorHandle allocator)
         {
             // Allocator.Invalid == container is not initialized.
             // Allocator.None    == container is initialized, but container doesn't own data.
-            return allocator.Value > (int)Allocator.None;
+            return allocator.ToAllocator > Allocator.None;
         }
 
         /// <summary>
@@ -248,29 +248,89 @@ namespace Unity.Collections
             where T : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            var nativeArray = new NativeArray<T>();
-            nativeArray.Initialize(length, ref allocator, options);
+            NativeArray<T> nativeArray;
+            if (!allocator.IsCustomAllocator)
+            {
+                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
+            }
+            else
+            {
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(length, ref allocator, options);
+            }
             return nativeArray;
         }
 
 
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public static NativeArray<T> CreateNativeArray<T>(int length, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public static NativeArray<T> CreateNativeArray<T>(int length, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             where T : struct
         {
-            var nativeArray = new NativeArray<T>();
-            nativeArray.Initialize(length, allocator, options);
+            NativeArray<T> nativeArray;
+            if(!AllocatorManager.IsCustomAllocator(allocator))
+            {
+                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
+            }
+            else
+            {
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(length, allocator, options);
+            }
             return nativeArray;
         }
 
-
         [NotBurstCompatible]
-        public static NativeArray<T> CreateNativeArray<T>(T[] array, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public static NativeArray<T> CreateNativeArray<T>(NativeArray<T> array, AllocatorManager.AllocatorHandle allocator)
             where T : struct
         {
-            var nativeArray = new NativeArray<T>();
-            nativeArray.Initialize(array.Length, allocator, options);
-            nativeArray.CopyFrom(array);
+            NativeArray<T> nativeArray;
+            if (!AllocatorManager.IsCustomAllocator(allocator))
+            {
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+            }
+            else
+            {
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, allocator);
+                nativeArray.CopyFrom(array);
+            }
+            return nativeArray;
+        }
+
+        [NotBurstCompatible]
+        public static NativeArray<T> CreateNativeArray<T>(T[] array, AllocatorManager.AllocatorHandle allocator)
+            where T : struct
+        {
+            NativeArray<T> nativeArray;
+            if (!AllocatorManager.IsCustomAllocator(allocator))
+            {
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+            }
+            else
+            {
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, allocator);
+                nativeArray.CopyFrom(array);
+            }
+            return nativeArray;
+        }
+
+        [NotBurstCompatible]
+        public static NativeArray<T> CreateNativeArray<T, U>(T[] array, ref U allocator)
+            where T : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            NativeArray<T> nativeArray;
+            if (!allocator.IsCustomAllocator)
+            {
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+            }
+            else
+            {
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, ref allocator);
+                nativeArray.CopyFrom(array);
+            }
             return nativeArray;
         }
 
@@ -284,18 +344,6 @@ namespace Unity.Collections
             var nativeMultiHashMap = new NativeMultiHashMap<TKey, TValue>();
             nativeMultiHashMap.Initialize(length, ref allocator);
             return nativeMultiHashMap;
-        }
-
-
-        [NotBurstCompatible]
-        public static NativeArray<T> CreateNativeArray<T, U>(T[] array, ref U allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
-            where T : struct
-            where U : unmanaged, AllocatorManager.IAllocator
-        {
-            var nativeArray = new NativeArray<T>();
-            nativeArray.Initialize(array.Length, ref allocator, options);
-            nativeArray.CopyFrom(array);
-            return nativeArray;
         }
     }
 }

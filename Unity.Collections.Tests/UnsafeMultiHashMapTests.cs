@@ -62,9 +62,9 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeMultiHashMap_ForEach_FixedStringInHashMap()
     {
-        using (var stringList = new NativeList<FixedString32>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+        using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new UnsafeMultiHashMap<FixedString128, float>(50, Allocator.Temp);
+            var container = new UnsafeMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {

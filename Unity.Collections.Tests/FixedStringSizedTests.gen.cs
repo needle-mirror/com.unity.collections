@@ -27,7 +27,7 @@ internal class FixedStringSizedTests
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString32 : UnityEngine.ScriptableObject
     {
-        public FixedString32 String;
+        public FixedString32Bytes String;
     }
 
     [Test]
@@ -44,7 +44,7 @@ internal class FixedStringSizedTests
     [TestCase("oooooooooooooooooooooooooooooo", FormatError.Overflow, TestName="FixedString32AtMaximumSizeWorks_Over")]
     public void FixedString32AtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString32 aa = default;
+        FixedString32Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -57,7 +57,7 @@ internal class FixedStringSizedTests
     [Test]
     public unsafe void FixedString32ToFixedList()
     {
-        FixedString32 a = default;
+        FixedString32Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -81,8 +81,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString32ToFixedString64Works(String a)
     {
-        var b = new FixedString32(a);
-        var c = new FixedString64(b);
+        var b = new FixedString32Bytes(a);
+        var c = new FixedString64Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -93,8 +93,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString32ToFixedString128Works(String a)
     {
-        var b = new FixedString32(a);
-        var c = new FixedString128(b);
+        var b = new FixedString32Bytes(a);
+        var c = new FixedString128Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -105,8 +105,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString32ToFixedString512Works(String a)
     {
-        var b = new FixedString32(a);
-        var c = new FixedString512(b);
+        var b = new FixedString32Bytes(a);
+        var c = new FixedString512Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -117,8 +117,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString32ToFixedString4096Works(String a)
     {
-        var b = new FixedString32(a);
-        var c = new FixedString4096(b);
+        var b = new FixedString32Bytes(a);
+        var c = new FixedString4096Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -126,7 +126,7 @@ internal class FixedStringSizedTests
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString64 : UnityEngine.ScriptableObject
     {
-        public FixedString64 String;
+        public FixedString64Bytes String;
     }
 
     [Test]
@@ -143,7 +143,7 @@ internal class FixedStringSizedTests
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", FormatError.Overflow, TestName="FixedString64AtMaximumSizeWorks_Over")]
     public void FixedString64AtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString64 aa = default;
+        FixedString64Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -156,7 +156,7 @@ internal class FixedStringSizedTests
     [Test]
     public unsafe void FixedString64ToFixedList()
     {
-        FixedString64 a = default;
+        FixedString64Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -180,8 +180,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString64ToFixedString32Works(String a)
     {
-        var b = new FixedString64(a);
-        var c = new FixedString32(b);
+        var b = new FixedString64Bytes(a);
+        var c = new FixedString32Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -192,8 +192,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString64ToFixedString128Works(String a)
     {
-        var b = new FixedString64(a);
-        var c = new FixedString128(b);
+        var b = new FixedString64Bytes(a);
+        var c = new FixedString128Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -204,8 +204,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString64ToFixedString512Works(String a)
     {
-        var b = new FixedString64(a);
-        var c = new FixedString512(b);
+        var b = new FixedString64Bytes(a);
+        var c = new FixedString512Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -216,8 +216,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString64ToFixedString4096Works(String a)
     {
-        var b = new FixedString64(a);
-        var c = new FixedString4096(b);
+        var b = new FixedString64Bytes(a);
+        var c = new FixedString4096Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -225,7 +225,7 @@ internal class FixedStringSizedTests
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString128 : UnityEngine.ScriptableObject
     {
-        public FixedString128 String;
+        public FixedString128Bytes String;
     }
 
     [Test]
@@ -242,7 +242,7 @@ internal class FixedStringSizedTests
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", FormatError.Overflow, TestName="FixedString128AtMaximumSizeWorks_Over")]
     public void FixedString128AtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString128 aa = default;
+        FixedString128Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -255,7 +255,7 @@ internal class FixedStringSizedTests
     [Test]
     public unsafe void FixedString128ToFixedList()
     {
-        FixedString128 a = default;
+        FixedString128Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -279,8 +279,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString128ToFixedString32Works(String a)
     {
-        var b = new FixedString128(a);
-        var c = new FixedString32(b);
+        var b = new FixedString128Bytes(a);
+        var c = new FixedString32Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -291,8 +291,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString128ToFixedString64Works(String a)
     {
-        var b = new FixedString128(a);
-        var c = new FixedString64(b);
+        var b = new FixedString128Bytes(a);
+        var c = new FixedString64Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -303,8 +303,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString128ToFixedString512Works(String a)
     {
-        var b = new FixedString128(a);
-        var c = new FixedString512(b);
+        var b = new FixedString128Bytes(a);
+        var c = new FixedString512Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -315,8 +315,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString128ToFixedString4096Works(String a)
     {
-        var b = new FixedString128(a);
-        var c = new FixedString4096(b);
+        var b = new FixedString128Bytes(a);
+        var c = new FixedString4096Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -324,7 +324,7 @@ internal class FixedStringSizedTests
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString512 : UnityEngine.ScriptableObject
     {
-        public FixedString512 String;
+        public FixedString512Bytes String;
     }
 
     [Test]
@@ -341,7 +341,7 @@ internal class FixedStringSizedTests
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", FormatError.Overflow, TestName="FixedString512AtMaximumSizeWorks_Over")]
     public void FixedString512AtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString512 aa = default;
+        FixedString512Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -354,7 +354,7 @@ internal class FixedStringSizedTests
     [Test]
     public unsafe void FixedString512ToFixedList()
     {
-        FixedString512 a = default;
+        FixedString512Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -378,8 +378,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString512ToFixedString32Works(String a)
     {
-        var b = new FixedString512(a);
-        var c = new FixedString32(b);
+        var b = new FixedString512Bytes(a);
+        var c = new FixedString32Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -390,8 +390,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString512ToFixedString64Works(String a)
     {
-        var b = new FixedString512(a);
-        var c = new FixedString64(b);
+        var b = new FixedString512Bytes(a);
+        var c = new FixedString64Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -402,8 +402,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString512ToFixedString128Works(String a)
     {
-        var b = new FixedString512(a);
-        var c = new FixedString128(b);
+        var b = new FixedString512Bytes(a);
+        var c = new FixedString128Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -414,8 +414,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString512ToFixedString4096Works(String a)
     {
-        var b = new FixedString512(a);
-        var c = new FixedString4096(b);
+        var b = new FixedString512Bytes(a);
+        var c = new FixedString4096Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -423,7 +423,7 @@ internal class FixedStringSizedTests
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString4096 : UnityEngine.ScriptableObject
     {
-        public FixedString4096 String;
+        public FixedString4096Bytes String;
     }
 
     [Test]
@@ -440,7 +440,7 @@ internal class FixedStringSizedTests
     [TestCase("oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", FormatError.Overflow, TestName="FixedString4096AtMaximumSizeWorks_Over")]
     public void FixedString4096AtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString4096 aa = default;
+        FixedString4096Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -453,7 +453,7 @@ internal class FixedStringSizedTests
     [Test]
     public unsafe void FixedString4096ToFixedList()
     {
-        FixedString4096 a = default;
+        FixedString4096Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -477,8 +477,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString4096ToFixedString32Works(String a)
     {
-        var b = new FixedString4096(a);
-        var c = new FixedString32(b);
+        var b = new FixedString4096Bytes(a);
+        var c = new FixedString32Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -489,8 +489,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString4096ToFixedString64Works(String a)
     {
-        var b = new FixedString4096(a);
-        var c = new FixedString64(b);
+        var b = new FixedString4096Bytes(a);
+        var c = new FixedString64Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -501,8 +501,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString4096ToFixedString128Works(String a)
     {
-        var b = new FixedString4096(a);
-        var c = new FixedString128(b);
+        var b = new FixedString4096Bytes(a);
+        var c = new FixedString128Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }
@@ -513,8 +513,8 @@ internal class FixedStringSizedTests
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
     public void FixedString4096ToFixedString512Works(String a)
     {
-        var b = new FixedString4096(a);
-        var c = new FixedString512(b);
+        var b = new FixedString4096Bytes(a);
+        var c = new FixedString512Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }

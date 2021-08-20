@@ -321,7 +321,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     {
         var numBits = 512;
 
-        var str = new FixedString128("aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ");
+        var str = new FixedString128Bytes("aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ");
 
         AtomicSafetyHandle ash;
         DisposeSentinel ds;

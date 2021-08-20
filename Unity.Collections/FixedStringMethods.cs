@@ -17,7 +17,7 @@ namespace Unity.Collections
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
         /// <returns>The index of the first occurrence of the byte sequence in this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int IndexOf<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -44,7 +44,7 @@ namespace Unity.Collections
         /// <param name="startIndex">The first index in this string to consider as the first byte of the byte sequence.</param>
         /// <param name="distance">The last index in this string to consider as the first byte of the byte sequence.</param>
         /// <returns>The index of the first occurrence of the byte sequence in this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int IndexOf<T>(ref this T fs, byte* bytes, int bytesLen, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -70,7 +70,7 @@ namespace Unity.Collections
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <returns>The index of the first occurrence of the second string within this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static int IndexOf<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -89,7 +89,7 @@ namespace Unity.Collections
         /// <param name="startIndex">The first index in this string to consider as an occurrence of the second string.</param>
         /// <param name="distance">The last index in this string to consider as an occurrence of the second string.</param>
         /// <returns>The index of the first occurrence of the substring within this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static int IndexOf<T,T2>(ref this T fs, in T2 other, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -106,7 +106,7 @@ namespace Unity.Collections
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <returns>True if the substring occurs within this string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static bool Contains<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -122,7 +122,7 @@ namespace Unity.Collections
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
         /// <returns>The index of the last occurrence of the byte sequence within this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int LastIndexOf<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -149,7 +149,7 @@ namespace Unity.Collections
         /// <param name="startIndex">The smallest index in this string to consider as the first byte of the byte sequence.</param>
         /// <param name="distance">The greatest index in this string to consider as the first byte of the byte sequence.</param>
         /// <returns>The index of the last occurrence of the byte sequence within this string. Returns -1 if no occurrences found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int LastIndexOf<T>(ref this T fs, byte* bytes, int bytesLen, int startIndex, int distance = int.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -176,7 +176,7 @@ namespace Unity.Collections
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for in the this string.</param>
         /// <returns>The index of the last occurrence of the substring within this string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static int LastIndexOf<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -195,7 +195,7 @@ namespace Unity.Collections
         /// <param name="startIndex">The greatest index in this string to consider as an occurrence of the substring.</param>
         /// <param name="distance">The smallest index in this string to consider as an occurrence of the substring.</param>
         /// <returns>the index of the last occurrence of the substring within the first string. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static int LastIndexOf<T,T2>(ref this T fs, in T2 other, int startIndex, int distance = Int32.MaxValue)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -217,7 +217,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the byte sequence.<br/>
         /// +1 denotes that this string should be sorted to follow the byte sequence.<br/>
         /// </returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int CompareTo<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -251,7 +251,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this first string should be sorted to follow the other.<br/>
         /// </returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static int CompareTo<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -268,7 +268,7 @@ namespace Unity.Collections
         /// <param name="bytes">A sequence of bytes to compare for equality.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
         /// <returns>True if this string and the byte sequence have the same length and if this string's character bytes match the byte sequence.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static bool Equals<T>(ref this T fs, byte* bytes, int bytesLen)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -289,7 +289,7 @@ namespace Unity.Collections
         /// <param name="fs">A string to compare for equality.</param>
         /// <param name="other">Another string to compare for equality.</param>
         /// <returns>true if the two strings have the same length and matching content.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128), typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static bool Equals<T,T2>(ref this T fs, in T2 other)
             where T : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
@@ -306,7 +306,7 @@ namespace Unity.Collections
         /// <param name="index">A reference to an index in bytes (not characters).</param>
         /// <returns>The Unicode.Rune (character) which starts at the byte index. Returns Unicode.BadRune
         /// if the byte(s) at the index do not form a valid UTF-8 encoded character.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static Unicode.Rune Peek<T>(ref this T fs, int index)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -324,7 +324,7 @@ namespace Unity.Collections
         /// <param name="index">A reference to an index in bytes (not characters). Incremented by 1 to 4 depending upon the UTF-8 encoded size of the character read.</param>
         /// <returns>The character (as a `Unicode.Rune`) which starts at the byte index. Returns `Unicode.BadRune`
         /// if the byte(s) at the index do not form a valid UTF-8 encoded character.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static Unicode.Rune Read<T>(ref this T fs, ref int index)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -342,7 +342,7 @@ namespace Unity.Collections
         /// <param name="index">A reference to an index in bytes (not characters). Incremented by 1 to 4 depending upon the UTF-8 encoded size of the character written.</param>
         /// <param name="rune">A rune to write to the string, encoded as UTF-8.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the index is invalid or if there is not enough space to store the encoded rune.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Write<T>(ref this T fs, ref int index, Unicode.Rune rune)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -374,7 +374,7 @@ namespace Unity.Collections
         /// <typeparam name="T">A FixedString*N* type.</typeparam>
         /// <param name="fs">A string to get a hash code of.</param>
         /// <returns>A hash code of this string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int ComputeHashCode<T>(ref this T fs)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -393,7 +393,7 @@ namespace Unity.Collections
         /// <typeparam name="T">A FixedString*N* type.</typeparam>
         /// <param name="fs">A string to get the effective size of.</param>
         /// <returns>The effective size in bytes of this string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static int EffectiveSizeOf<T>(ref this T fs)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

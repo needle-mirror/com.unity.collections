@@ -53,8 +53,8 @@ namespace Unity.Collections
       foreach (var OTHERBYTES in SIZES)
       {
 #>
-        , IComparable<FixedString<#=OTHERBYTES#>>
-        , IEquatable<FixedString<#=OTHERBYTES#>>
+        , IComparable<FixedString<#=OTHERBYTES#>Bytes>
+        , IEquatable<FixedString<#=OTHERBYTES#>Bytes>
 <#
       }
 #>
@@ -403,7 +403,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString<#=OTHERBYTES#> other)
+        public int CompareTo(FixedString<#=OTHERBYTES#>Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
@@ -414,7 +414,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public HeapString(in FixedString<#=OTHERBYTES#> source, Allocator allocator)
+        public HeapString(in FixedString<#=OTHERBYTES#>Bytes source, Allocator allocator)
         {
             m_Data = new NativeList<byte>(source.utf8LengthInBytes + 1, allocator);
             Length = source.utf8LengthInBytes;
@@ -433,7 +433,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in HeapString a, in FixedString<#=OTHERBYTES#> b)
+        public static bool operator ==(in HeapString a, in FixedString<#=OTHERBYTES#>Bytes b)
         {
             unsafe {
                 var aref = UnsafeUtilityExtensions.AsRef(a);
@@ -452,7 +452,7 @@ namespace Unity.Collections
         /// <param name="a">A string to compare.</param>
         /// <param name="b">Another string to compare.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in HeapString a, in FixedString<#=OTHERBYTES#> b)
+        public static bool operator !=(in HeapString a, in FixedString<#=OTHERBYTES#>Bytes b)
         {
             return !(a == b);
         }
@@ -463,7 +463,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString<#=OTHERBYTES#> other)
+        public bool Equals(FixedString<#=OTHERBYTES#>Bytes other)
         {
             return this == other;
         }
@@ -511,7 +511,7 @@ namespace Unity.Collections
     foreach(var OTHERBYTES in SIZES)
     {
 #>
-            if(other is FixedString<#=OTHERBYTES#> a<#=OTHERBYTES#>) return Equals(a<#=OTHERBYTES#>);
+            if(other is FixedString<#=OTHERBYTES#>Bytes a<#=OTHERBYTES#>) return Equals(a<#=OTHERBYTES#>);
 <#
     }
 #>

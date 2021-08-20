@@ -56,7 +56,7 @@ namespace Unity.Collections
         /// <returns>An array populated with the unique keys from this multi hash map.</returns>
         [NotBurstCompatible /* Deprecated */]
         [Obsolete("Please use `GetUniqueKeyArrayNBC` from `Unity.Collections.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct => NotBurstCompatible.Extensions.GetUniqueKeyArrayNBC(container, allocator);
 
@@ -70,7 +70,7 @@ namespace Unity.Collections
         /// <returns>An array populated with the unique keys from this multi hash map.</returns>
         [NotBurstCompatible /* Deprecated */]
         [Obsolete("Please use `GetUniqueKeyArrayNBC` from `Unity.Collections.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, Allocator allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct => NotBurstCompatible.Extensions.GetUniqueKeyArrayNBC(container, allocator);
 

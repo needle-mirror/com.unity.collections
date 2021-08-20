@@ -334,9 +334,9 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_ForEach_FixedStringInHashMap()
     {
-        using (var stringList = new NativeList<FixedString32>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+        using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new NativeMultiHashMap<FixedString128, float>(50, Allocator.Temp);
+            var container = new NativeMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {

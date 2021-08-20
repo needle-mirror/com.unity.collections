@@ -469,7 +469,7 @@ internal class NativeSortTests : CollectionsTestCommonBase
     [Test]
     public void FixedList32_GenericSort()
     {
-        var container = new FixedList32<int>();
+        var container = new FixedList32Bytes<int>();
 
         for (var i = 0; i < 5; ++i)
         {
@@ -488,7 +488,7 @@ internal class NativeSortTests : CollectionsTestCommonBase
     [Test]
     public void FixedList64_GenericSort()
     {
-        var container = new FixedList64<int>();
+        var container = new FixedList64Bytes<int>();
 
         for (var i = 0; i < 5; ++i)
         {
@@ -507,7 +507,7 @@ internal class NativeSortTests : CollectionsTestCommonBase
     [Test]
     public void FixedList128_GenericSort()
     {
-        var container = new FixedList128<int>();
+        var container = new FixedList128Bytes<int>();
 
         for (var i = 0; i < 5; ++i)
         {
@@ -526,7 +526,7 @@ internal class NativeSortTests : CollectionsTestCommonBase
     [Test]
     public void FixedList512_GenericSort()
     {
-        var container = new FixedList512<int>();
+        var container = new FixedList512Bytes<int>();
 
         for (var i = 0; i < 5; ++i)
         {
@@ -545,7 +545,7 @@ internal class NativeSortTests : CollectionsTestCommonBase
     [Test]
     public void FixedList4096_GenericSort()
     {
-        var container = new FixedList4096<int>();
+        var container = new FixedList4096Bytes<int>();
 
         for (var i = 0; i < 5; ++i)
         {

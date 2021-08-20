@@ -14,7 +14,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList128<T> other)
+        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList128Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -29,7 +29,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList128<T> other)
+        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList128Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
@@ -54,7 +54,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList128<T> other)
+        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList128Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -68,7 +68,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList32<T> other)
+        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList32Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -83,7 +83,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList32<T> other)
+        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList32Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
@@ -108,7 +108,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList32<T> other)
+        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList32Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -122,7 +122,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList4096<T> other)
+        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList4096Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -137,7 +137,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList4096<T> other)
+        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList4096Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
@@ -162,7 +162,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList4096<T> other)
+        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList4096Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -176,7 +176,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList512<T> other)
+        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList512Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -191,7 +191,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList512<T> other)
+        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList512Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
@@ -216,7 +216,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList512<T> other)
+        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList512Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -230,7 +230,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList64<T> other)
+        public static void ExceptWith<T>(this NativeHashSet<T> container, FixedList64Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -245,7 +245,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList64<T> other)
+        public static void IntersectWith<T>(this NativeHashSet<T> container, FixedList64Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
@@ -270,7 +270,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList64<T> other)
+        public static void UnionWith<T>(this NativeHashSet<T> container, FixedList64Bytes<T> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)

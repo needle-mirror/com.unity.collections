@@ -212,6 +212,8 @@ namespace Unity.Collections
         [FieldOffset(29)] public byte byte0029;
 
     }
+    [Obsolete("Renamed to FixedString32Bytes (UnityUpgradable) -> FixedString32Bytes", true)]
+    public partial struct FixedString32 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 32-byte struct.
@@ -221,7 +223,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than 32 (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList32{T}"/> of bytes, thus allowing reinterpretation between FixedString32 and FixedList32.
+    /// This layout is identical to a <see cref="FixedList32Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString32Bytes and FixedList32Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -229,21 +231,21 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=32)]
     [BurstCompatible]
-    public partial struct FixedString32
+    public partial struct FixedString32Bytes
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
         , IEquatable<String>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
         internal const ushort utf8MaxLengthInBytes = 29;
 
@@ -431,7 +433,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString32.
+        /// An enumerator over the characters (not bytes) of a FixedString32Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -439,15 +441,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString32 target;
+            FixedString32Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString32.Enumerator.
+            /// Initializes and returns an instance of FixedString32Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString32 for which to create an enumerator.</param>
-            public Enumerator(FixedString32 other)
+            public Enumerator(FixedString32Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -503,7 +505,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString32.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString32Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -540,21 +542,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte32 representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte32 is the very same bytes as the original FixedString32,
-        /// so it is only valid as long as the original FixedString32 is valid.
+        /// The referenced FixedListByte32 is the very same bytes as the original FixedString32Bytes,
+        /// so it is only valid as long as the original FixedString32Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte32 representation of the FixedString32.</returns>
-        public unsafe ref FixedList32<byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte32 representation of the FixedString32Bytes.</returns>
+        public unsafe ref FixedList32Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList32<byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList32Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString32Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString32(String source)
+        public FixedString32Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -570,11 +572,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString32Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString32(Unicode.Rune rune, int count = 1)
+        public FixedString32Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -592,17 +594,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
-        public FixedString32(in FixedString32 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        public FixedString32Bytes(in FixedString32Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -618,13 +620,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are equal.
+        /// Returns true if a FixedString32Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for equality.</param>
-        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString32 a, in FixedString32 b)
+        public static bool operator ==(in FixedString32Bytes a, in FixedString32Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -637,13 +639,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are unequal.
+        /// Returns true if a FixedString32Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for inequality.</param>
-        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString32 a, in FixedString32 b)
+        public static bool operator !=(in FixedString32Bytes a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -652,9 +654,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <param name="other">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -670,17 +672,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
-        public FixedString32(in FixedString64 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        public FixedString32Bytes(in FixedString64Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -696,13 +698,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are equal.
+        /// Returns true if a FixedString32Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for equality.</param>
-        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString32 a, in FixedString64 b)
+        public static bool operator ==(in FixedString32Bytes a, in FixedString64Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -715,13 +717,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are unequal.
+        /// Returns true if a FixedString32Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for inequality.</param>
-        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString32 a, in FixedString64 b)
+        public static bool operator !=(in FixedString32Bytes a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -730,20 +732,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <param name="other">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString64 that is a copy of another string.
+        /// Returns a new FixedString64Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString32 to copy.</param>
-        /// <returns>A new FixedString64 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public static implicit operator FixedString64(in FixedString32 fs) => new FixedString64(in fs);
+        /// <param name="fs">A FixedString32Bytes to copy.</param>
+        /// <returns>A new FixedString64Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public static implicit operator FixedString64Bytes(in FixedString32Bytes fs) => new FixedString64Bytes(in fs);
 
 
         /// <summary>
@@ -756,17 +758,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
-        public FixedString32(in FixedString128 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        public FixedString32Bytes(in FixedString128Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -782,13 +784,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are equal.
+        /// Returns true if a FixedString32Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for equality.</param>
-        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString32 a, in FixedString128 b)
+        public static bool operator ==(in FixedString32Bytes a, in FixedString128Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -801,13 +803,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are unequal.
+        /// Returns true if a FixedString32Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for inequality.</param>
-        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString32 a, in FixedString128 b)
+        public static bool operator !=(in FixedString32Bytes a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -816,20 +818,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <param name="other">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString128 that is a copy of another string.
+        /// Returns a new FixedString128Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString32 to copy.</param>
-        /// <returns>A new FixedString128 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public static implicit operator FixedString128(in FixedString32 fs) => new FixedString128(in fs);
+        /// <param name="fs">A FixedString32Bytes to copy.</param>
+        /// <returns>A new FixedString128Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public static implicit operator FixedString128Bytes(in FixedString32Bytes fs) => new FixedString128Bytes(in fs);
 
 
         /// <summary>
@@ -842,17 +844,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
-        public FixedString32(in FixedString512 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        public FixedString32Bytes(in FixedString512Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -868,13 +870,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are equal.
+        /// Returns true if a FixedString32Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for equality.</param>
-        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString32 a, in FixedString512 b)
+        public static bool operator ==(in FixedString32Bytes a, in FixedString512Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -887,13 +889,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are unequal.
+        /// Returns true if a FixedString32Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for inequality.</param>
-        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString32 a, in FixedString512 b)
+        public static bool operator !=(in FixedString32Bytes a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -902,20 +904,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <param name="other">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString512 that is a copy of another string.
+        /// Returns a new FixedString512Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString32 to copy.</param>
-        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public static implicit operator FixedString512(in FixedString32 fs) => new FixedString512(in fs);
+        /// <param name="fs">A FixedString32Bytes to copy.</param>
+        /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public static implicit operator FixedString512Bytes(in FixedString32Bytes fs) => new FixedString512Bytes(in fs);
 
 
         /// <summary>
@@ -928,17 +930,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString32 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
-        public FixedString32(in FixedString4096 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        public FixedString32Bytes(in FixedString4096Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -954,13 +956,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are equal.
+        /// Returns true if a FixedString32Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for equality.</param>
-        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString32 a, in FixedString4096 b)
+        public static bool operator ==(in FixedString32Bytes a, in FixedString4096Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -973,13 +975,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString32 and another string are unequal.
+        /// Returns true if a FixedString32Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString32 to compare for inequality.</param>
-        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <param name="a">A FixedString32Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString32 a, in FixedString4096 b)
+        public static bool operator !=(in FixedString32Bytes a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -988,29 +990,29 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <param name="other">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString4096 that is a copy of another string.
+        /// Returns a new FixedString4096Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString32 to copy.</param>
-        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public static implicit operator FixedString4096(in FixedString32 fs) => new FixedString4096(in fs);
+        /// <param name="fs">A FixedString32Bytes to copy.</param>
+        /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public static implicit operator FixedString4096Bytes(in FixedString32Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
-        /// Returns a new FixedString32 that is a copy of another string.
+        /// Returns a new FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString32 that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32.</exception>
+        /// <returns>A new FixedString32Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString32(string b) => new FixedString32(b);
+        public static implicit operator FixedString32Bytes(string b) => new FixedString32Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -1046,11 +1048,11 @@ namespace Unity.Collections
         {
             if(ReferenceEquals(null, obj)) return false;
             if(obj is String aString) return Equals(aString);
-            if(obj is FixedString32 aFixedString32) return Equals(aFixedString32);
-            if(obj is FixedString64 aFixedString64) return Equals(aFixedString64);
-            if(obj is FixedString128 aFixedString128) return Equals(aFixedString128);
-            if(obj is FixedString512 aFixedString512) return Equals(aFixedString512);
-            if(obj is FixedString4096 aFixedString4096) return Equals(aFixedString4096);
+            if(obj is FixedString32Bytes aFixedString32Bytes) return Equals(aFixedString32Bytes);
+            if(obj is FixedString64Bytes aFixedString64Bytes) return Equals(aFixedString64Bytes);
+            if(obj is FixedString128Bytes aFixedString128Bytes) return Equals(aFixedString128Bytes);
+            if(obj is FixedString512Bytes aFixedString512Bytes) return Equals(aFixedString512Bytes);
+            if(obj is FixedString4096Bytes aFixedString4096Bytes) return Equals(aFixedString4096Bytes);
             return false;
         }
 
@@ -1060,7 +1062,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32 of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -1069,7 +1071,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString32 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString32Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -1083,7 +1085,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString32: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString32Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -1193,6 +1195,8 @@ namespace Unity.Collections
         [FieldOffset(61)] public byte byte0061;
 
     }
+    [Obsolete("Renamed to FixedString64Bytes (UnityUpgradable) -> FixedString64Bytes", true)]
+    public partial struct FixedString64 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 64-byte struct.
@@ -1202,7 +1206,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than 64 (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList64{T}"/> of bytes, thus allowing reinterpretation between FixedString64 and FixedList64.
+    /// This layout is identical to a <see cref="FixedList64Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString64Bytes and FixedList64Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -1210,21 +1214,21 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=64)]
     [BurstCompatible]
-    public partial struct FixedString64
+    public partial struct FixedString64Bytes
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
         , IEquatable<String>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
         internal const ushort utf8MaxLengthInBytes = 61;
 
@@ -1412,7 +1416,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString64.
+        /// An enumerator over the characters (not bytes) of a FixedString64Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -1420,15 +1424,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString64 target;
+            FixedString64Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString64.Enumerator.
+            /// Initializes and returns an instance of FixedString64Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString64 for which to create an enumerator.</param>
-            public Enumerator(FixedString64 other)
+            public Enumerator(FixedString64Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -1484,7 +1488,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString64.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString64Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -1521,21 +1525,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte64 representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte64 is the very same bytes as the original FixedString64,
-        /// so it is only valid as long as the original FixedString64 is valid.
+        /// The referenced FixedListByte64 is the very same bytes as the original FixedString64Bytes,
+        /// so it is only valid as long as the original FixedString64Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte64 representation of the FixedString64.</returns>
-        public unsafe ref FixedList64<byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte64 representation of the FixedString64Bytes.</returns>
+        public unsafe ref FixedList64Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList64<byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList64Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString64Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString64(String source)
+        public FixedString64Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1551,11 +1555,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString64Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString64(Unicode.Rune rune, int count = 1)
+        public FixedString64Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1573,17 +1577,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public FixedString64(in FixedString32 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public FixedString64Bytes(in FixedString32Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1599,13 +1603,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are equal.
+        /// Returns true if a FixedString64Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for equality.</param>
-        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString64 a, in FixedString32 b)
+        public static bool operator ==(in FixedString64Bytes a, in FixedString32Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -1618,13 +1622,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are unequal.
+        /// Returns true if a FixedString64Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for inequality.</param>
-        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString64 a, in FixedString32 b)
+        public static bool operator !=(in FixedString64Bytes a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -1633,9 +1637,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <param name="other">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -1651,17 +1655,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public FixedString64(in FixedString64 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public FixedString64Bytes(in FixedString64Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1677,13 +1681,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are equal.
+        /// Returns true if a FixedString64Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for equality.</param>
-        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString64 a, in FixedString64 b)
+        public static bool operator ==(in FixedString64Bytes a, in FixedString64Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -1696,13 +1700,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are unequal.
+        /// Returns true if a FixedString64Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for inequality.</param>
-        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString64 a, in FixedString64 b)
+        public static bool operator !=(in FixedString64Bytes a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -1711,9 +1715,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <param name="other">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
@@ -1729,17 +1733,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public FixedString64(in FixedString128 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public FixedString64Bytes(in FixedString128Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1755,13 +1759,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are equal.
+        /// Returns true if a FixedString64Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for equality.</param>
-        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString64 a, in FixedString128 b)
+        public static bool operator ==(in FixedString64Bytes a, in FixedString128Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -1774,13 +1778,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are unequal.
+        /// Returns true if a FixedString64Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for inequality.</param>
-        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString64 a, in FixedString128 b)
+        public static bool operator !=(in FixedString64Bytes a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -1789,20 +1793,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <param name="other">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString128 that is a copy of another string.
+        /// Returns a new FixedString128Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString64 to copy.</param>
-        /// <returns>A new FixedString128 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public static implicit operator FixedString128(in FixedString64 fs) => new FixedString128(in fs);
+        /// <param name="fs">A FixedString64Bytes to copy.</param>
+        /// <returns>A new FixedString128Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public static implicit operator FixedString128Bytes(in FixedString64Bytes fs) => new FixedString128Bytes(in fs);
 
 
         /// <summary>
@@ -1815,17 +1819,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public FixedString64(in FixedString512 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public FixedString64Bytes(in FixedString512Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1841,13 +1845,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are equal.
+        /// Returns true if a FixedString64Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for equality.</param>
-        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString64 a, in FixedString512 b)
+        public static bool operator ==(in FixedString64Bytes a, in FixedString512Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -1860,13 +1864,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are unequal.
+        /// Returns true if a FixedString64Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for inequality.</param>
-        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString64 a, in FixedString512 b)
+        public static bool operator !=(in FixedString64Bytes a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -1875,20 +1879,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <param name="other">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString512 that is a copy of another string.
+        /// Returns a new FixedString512Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString64 to copy.</param>
-        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public static implicit operator FixedString512(in FixedString64 fs) => new FixedString512(in fs);
+        /// <param name="fs">A FixedString64Bytes to copy.</param>
+        /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public static implicit operator FixedString512Bytes(in FixedString64Bytes fs) => new FixedString512Bytes(in fs);
 
 
         /// <summary>
@@ -1901,17 +1905,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString64 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
-        public FixedString64(in FixedString4096 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        public FixedString64Bytes(in FixedString4096Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -1927,13 +1931,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are equal.
+        /// Returns true if a FixedString64Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for equality.</param>
-        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString64 a, in FixedString4096 b)
+        public static bool operator ==(in FixedString64Bytes a, in FixedString4096Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -1946,13 +1950,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString64 and another string are unequal.
+        /// Returns true if a FixedString64Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString64 to compare for inequality.</param>
-        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <param name="a">A FixedString64Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString64 a, in FixedString4096 b)
+        public static bool operator !=(in FixedString64Bytes a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -1961,29 +1965,29 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <param name="other">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString4096 that is a copy of another string.
+        /// Returns a new FixedString4096Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString64 to copy.</param>
-        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public static implicit operator FixedString4096(in FixedString64 fs) => new FixedString4096(in fs);
+        /// <param name="fs">A FixedString64Bytes to copy.</param>
+        /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public static implicit operator FixedString4096Bytes(in FixedString64Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
-        /// Returns a new FixedString64 that is a copy of another string.
+        /// Returns a new FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString64 that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64.</exception>
+        /// <returns>A new FixedString64Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString64(string b) => new FixedString64(b);
+        public static implicit operator FixedString64Bytes(string b) => new FixedString64Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -2019,11 +2023,11 @@ namespace Unity.Collections
         {
             if(ReferenceEquals(null, obj)) return false;
             if(obj is String aString) return Equals(aString);
-            if(obj is FixedString32 aFixedString32) return Equals(aFixedString32);
-            if(obj is FixedString64 aFixedString64) return Equals(aFixedString64);
-            if(obj is FixedString128 aFixedString128) return Equals(aFixedString128);
-            if(obj is FixedString512 aFixedString512) return Equals(aFixedString512);
-            if(obj is FixedString4096 aFixedString4096) return Equals(aFixedString4096);
+            if(obj is FixedString32Bytes aFixedString32Bytes) return Equals(aFixedString32Bytes);
+            if(obj is FixedString64Bytes aFixedString64Bytes) return Equals(aFixedString64Bytes);
+            if(obj is FixedString128Bytes aFixedString128Bytes) return Equals(aFixedString128Bytes);
+            if(obj is FixedString512Bytes aFixedString512Bytes) return Equals(aFixedString512Bytes);
+            if(obj is FixedString4096Bytes aFixedString4096Bytes) return Equals(aFixedString4096Bytes);
             return false;
         }
 
@@ -2033,7 +2037,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString64 of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString64Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -2042,7 +2046,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString64 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString64Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -2056,7 +2060,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString64: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString64Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -2186,6 +2190,8 @@ namespace Unity.Collections
         [FieldOffset(125)] public byte byte0125;
 
     }
+    [Obsolete("Renamed to FixedString128Bytes (UnityUpgradable) -> FixedString128Bytes", true)]
+    public partial struct FixedString128 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 128-byte struct.
@@ -2195,7 +2201,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than 128 (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList128{T}"/> of bytes, thus allowing reinterpretation between FixedString128 and FixedList128.
+    /// This layout is identical to a <see cref="FixedList128Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString128Bytes and FixedList128Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -2203,21 +2209,21 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=128)]
     [BurstCompatible]
-    public partial struct FixedString128
+    public partial struct FixedString128Bytes
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
         , IEquatable<String>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
         internal const ushort utf8MaxLengthInBytes = 125;
 
@@ -2405,7 +2411,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString128.
+        /// An enumerator over the characters (not bytes) of a FixedString128Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -2413,15 +2419,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString128 target;
+            FixedString128Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString128.Enumerator.
+            /// Initializes and returns an instance of FixedString128Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString128 for which to create an enumerator.</param>
-            public Enumerator(FixedString128 other)
+            public Enumerator(FixedString128Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -2477,7 +2483,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString128.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString128Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -2514,21 +2520,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte128 representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte128 is the very same bytes as the original FixedString128,
-        /// so it is only valid as long as the original FixedString128 is valid.
+        /// The referenced FixedListByte128 is the very same bytes as the original FixedString128Bytes,
+        /// so it is only valid as long as the original FixedString128Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte128 representation of the FixedString128.</returns>
-        public unsafe ref FixedList128<byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte128 representation of the FixedString128Bytes.</returns>
+        public unsafe ref FixedList128Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList128<byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList128Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString128Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString128(String source)
+        public FixedString128Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2544,11 +2550,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString128Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString128(Unicode.Rune rune, int count = 1)
+        public FixedString128Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2566,17 +2572,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public FixedString128(in FixedString32 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public FixedString128Bytes(in FixedString32Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2592,13 +2598,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are equal.
+        /// Returns true if a FixedString128Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for equality.</param>
-        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString128 a, in FixedString32 b)
+        public static bool operator ==(in FixedString128Bytes a, in FixedString32Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -2611,13 +2617,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are unequal.
+        /// Returns true if a FixedString128Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for inequality.</param>
-        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString128 a, in FixedString32 b)
+        public static bool operator !=(in FixedString128Bytes a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -2626,9 +2632,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <param name="other">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -2644,17 +2650,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public FixedString128(in FixedString64 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public FixedString128Bytes(in FixedString64Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2670,13 +2676,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are equal.
+        /// Returns true if a FixedString128Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for equality.</param>
-        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString128 a, in FixedString64 b)
+        public static bool operator ==(in FixedString128Bytes a, in FixedString64Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -2689,13 +2695,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are unequal.
+        /// Returns true if a FixedString128Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for inequality.</param>
-        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString128 a, in FixedString64 b)
+        public static bool operator !=(in FixedString128Bytes a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -2704,9 +2710,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <param name="other">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
@@ -2722,17 +2728,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public FixedString128(in FixedString128 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public FixedString128Bytes(in FixedString128Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2748,13 +2754,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are equal.
+        /// Returns true if a FixedString128Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for equality.</param>
-        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString128 a, in FixedString128 b)
+        public static bool operator ==(in FixedString128Bytes a, in FixedString128Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -2767,13 +2773,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are unequal.
+        /// Returns true if a FixedString128Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for inequality.</param>
-        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString128 a, in FixedString128 b)
+        public static bool operator !=(in FixedString128Bytes a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -2782,9 +2788,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <param name="other">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
@@ -2800,17 +2806,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public FixedString128(in FixedString512 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public FixedString128Bytes(in FixedString512Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2826,13 +2832,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are equal.
+        /// Returns true if a FixedString128Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for equality.</param>
-        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString128 a, in FixedString512 b)
+        public static bool operator ==(in FixedString128Bytes a, in FixedString512Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -2845,13 +2851,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are unequal.
+        /// Returns true if a FixedString128Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for inequality.</param>
-        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString128 a, in FixedString512 b)
+        public static bool operator !=(in FixedString128Bytes a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -2860,20 +2866,20 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <param name="other">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString512 that is a copy of another string.
+        /// Returns a new FixedString512Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString128 to copy.</param>
-        /// <returns>A new FixedString512 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public static implicit operator FixedString512(in FixedString128 fs) => new FixedString512(in fs);
+        /// <param name="fs">A FixedString128Bytes to copy.</param>
+        /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public static implicit operator FixedString512Bytes(in FixedString128Bytes fs) => new FixedString512Bytes(in fs);
 
 
         /// <summary>
@@ -2886,17 +2892,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString128 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
-        public FixedString128(in FixedString4096 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        public FixedString128Bytes(in FixedString4096Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -2912,13 +2918,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are equal.
+        /// Returns true if a FixedString128Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for equality.</param>
-        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString128 a, in FixedString4096 b)
+        public static bool operator ==(in FixedString128Bytes a, in FixedString4096Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -2931,13 +2937,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString128 and another string are unequal.
+        /// Returns true if a FixedString128Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString128 to compare for inequality.</param>
-        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <param name="a">A FixedString128Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString128 a, in FixedString4096 b)
+        public static bool operator !=(in FixedString128Bytes a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -2946,29 +2952,29 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <param name="other">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString4096 that is a copy of another string.
+        /// Returns a new FixedString4096Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString128 to copy.</param>
-        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public static implicit operator FixedString4096(in FixedString128 fs) => new FixedString4096(in fs);
+        /// <param name="fs">A FixedString128Bytes to copy.</param>
+        /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public static implicit operator FixedString4096Bytes(in FixedString128Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
-        /// Returns a new FixedString128 that is a copy of another string.
+        /// Returns a new FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString128 that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128.</exception>
+        /// <returns>A new FixedString128Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString128(string b) => new FixedString128(b);
+        public static implicit operator FixedString128Bytes(string b) => new FixedString128Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -3004,11 +3010,11 @@ namespace Unity.Collections
         {
             if(ReferenceEquals(null, obj)) return false;
             if(obj is String aString) return Equals(aString);
-            if(obj is FixedString32 aFixedString32) return Equals(aFixedString32);
-            if(obj is FixedString64 aFixedString64) return Equals(aFixedString64);
-            if(obj is FixedString128 aFixedString128) return Equals(aFixedString128);
-            if(obj is FixedString512 aFixedString512) return Equals(aFixedString512);
-            if(obj is FixedString4096 aFixedString4096) return Equals(aFixedString4096);
+            if(obj is FixedString32Bytes aFixedString32Bytes) return Equals(aFixedString32Bytes);
+            if(obj is FixedString64Bytes aFixedString64Bytes) return Equals(aFixedString64Bytes);
+            if(obj is FixedString128Bytes aFixedString128Bytes) return Equals(aFixedString128Bytes);
+            if(obj is FixedString512Bytes aFixedString512Bytes) return Equals(aFixedString512Bytes);
+            if(obj is FixedString4096Bytes aFixedString4096Bytes) return Equals(aFixedString4096Bytes);
             return false;
         }
 
@@ -3018,7 +3024,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString128 of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString128Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -3027,7 +3033,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString128 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString128Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -3041,7 +3047,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString128: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString128Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -3291,6 +3297,8 @@ namespace Unity.Collections
         [FieldOffset(509)] public byte byte0509;
 
     }
+    [Obsolete("Renamed to FixedString512Bytes (UnityUpgradable) -> FixedString512Bytes", true)]
+    public partial struct FixedString512 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 512-byte struct.
@@ -3300,7 +3308,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than 512 (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList512{T}"/> of bytes, thus allowing reinterpretation between FixedString512 and FixedList512.
+    /// This layout is identical to a <see cref="FixedList512Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString512Bytes and FixedList512Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -3308,21 +3316,21 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=512)]
     [BurstCompatible]
-    public partial struct FixedString512
+    public partial struct FixedString512Bytes
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
         , IEquatable<String>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
         internal const ushort utf8MaxLengthInBytes = 509;
 
@@ -3510,7 +3518,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString512.
+        /// An enumerator over the characters (not bytes) of a FixedString512Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -3518,15 +3526,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString512 target;
+            FixedString512Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString512.Enumerator.
+            /// Initializes and returns an instance of FixedString512Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString512 for which to create an enumerator.</param>
-            public Enumerator(FixedString512 other)
+            public Enumerator(FixedString512Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -3582,7 +3590,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString512.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString512Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -3619,21 +3627,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte512 representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte512 is the very same bytes as the original FixedString512,
-        /// so it is only valid as long as the original FixedString512 is valid.
+        /// The referenced FixedListByte512 is the very same bytes as the original FixedString512Bytes,
+        /// so it is only valid as long as the original FixedString512Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte512 representation of the FixedString512.</returns>
-        public unsafe ref FixedList512<byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte512 representation of the FixedString512Bytes.</returns>
+        public unsafe ref FixedList512Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList512<byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList512Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString512Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString512(String source)
+        public FixedString512Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3649,11 +3657,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString512Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString512(Unicode.Rune rune, int count = 1)
+        public FixedString512Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3671,17 +3679,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public FixedString512(in FixedString32 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public FixedString512Bytes(in FixedString32Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3697,13 +3705,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are equal.
+        /// Returns true if a FixedString512Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for equality.</param>
-        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString512 a, in FixedString32 b)
+        public static bool operator ==(in FixedString512Bytes a, in FixedString32Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -3716,13 +3724,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are unequal.
+        /// Returns true if a FixedString512Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for inequality.</param>
-        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString512 a, in FixedString32 b)
+        public static bool operator !=(in FixedString512Bytes a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -3731,9 +3739,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <param name="other">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -3749,17 +3757,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public FixedString512(in FixedString64 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public FixedString512Bytes(in FixedString64Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3775,13 +3783,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are equal.
+        /// Returns true if a FixedString512Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for equality.</param>
-        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString512 a, in FixedString64 b)
+        public static bool operator ==(in FixedString512Bytes a, in FixedString64Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -3794,13 +3802,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are unequal.
+        /// Returns true if a FixedString512Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for inequality.</param>
-        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString512 a, in FixedString64 b)
+        public static bool operator !=(in FixedString512Bytes a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -3809,9 +3817,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <param name="other">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
@@ -3827,17 +3835,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public FixedString512(in FixedString128 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public FixedString512Bytes(in FixedString128Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3853,13 +3861,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are equal.
+        /// Returns true if a FixedString512Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for equality.</param>
-        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString512 a, in FixedString128 b)
+        public static bool operator ==(in FixedString512Bytes a, in FixedString128Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -3872,13 +3880,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are unequal.
+        /// Returns true if a FixedString512Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for inequality.</param>
-        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString512 a, in FixedString128 b)
+        public static bool operator !=(in FixedString512Bytes a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -3887,9 +3895,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <param name="other">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
@@ -3905,17 +3913,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public FixedString512(in FixedString512 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public FixedString512Bytes(in FixedString512Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -3931,13 +3939,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are equal.
+        /// Returns true if a FixedString512Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for equality.</param>
-        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString512 a, in FixedString512 b)
+        public static bool operator ==(in FixedString512Bytes a, in FixedString512Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -3950,13 +3958,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are unequal.
+        /// Returns true if a FixedString512Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for inequality.</param>
-        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString512 a, in FixedString512 b)
+        public static bool operator !=(in FixedString512Bytes a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -3965,9 +3973,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <param name="other">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
@@ -3983,17 +3991,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString512 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
-        public FixedString512(in FixedString4096 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        public FixedString512Bytes(in FixedString4096Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -4009,13 +4017,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are equal.
+        /// Returns true if a FixedString512Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for equality.</param>
-        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString512 a, in FixedString4096 b)
+        public static bool operator ==(in FixedString512Bytes a, in FixedString4096Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -4028,13 +4036,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString512 and another string are unequal.
+        /// Returns true if a FixedString512Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString512 to compare for inequality.</param>
-        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <param name="a">A FixedString512Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString512 a, in FixedString4096 b)
+        public static bool operator !=(in FixedString512Bytes a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -4043,29 +4051,29 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <param name="other">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString4096 that is a copy of another string.
+        /// Returns a new FixedString4096Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString512 to copy.</param>
-        /// <returns>A new FixedString4096 that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public static implicit operator FixedString4096(in FixedString512 fs) => new FixedString4096(in fs);
+        /// <param name="fs">A FixedString512Bytes to copy.</param>
+        /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public static implicit operator FixedString4096Bytes(in FixedString512Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
-        /// Returns a new FixedString512 that is a copy of another string.
+        /// Returns a new FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString512 that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512.</exception>
+        /// <returns>A new FixedString512Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString512(string b) => new FixedString512(b);
+        public static implicit operator FixedString512Bytes(string b) => new FixedString512Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -4101,11 +4109,11 @@ namespace Unity.Collections
         {
             if(ReferenceEquals(null, obj)) return false;
             if(obj is String aString) return Equals(aString);
-            if(obj is FixedString32 aFixedString32) return Equals(aFixedString32);
-            if(obj is FixedString64 aFixedString64) return Equals(aFixedString64);
-            if(obj is FixedString128 aFixedString128) return Equals(aFixedString128);
-            if(obj is FixedString512 aFixedString512) return Equals(aFixedString512);
-            if(obj is FixedString4096 aFixedString4096) return Equals(aFixedString4096);
+            if(obj is FixedString32Bytes aFixedString32Bytes) return Equals(aFixedString32Bytes);
+            if(obj is FixedString64Bytes aFixedString64Bytes) return Equals(aFixedString64Bytes);
+            if(obj is FixedString128Bytes aFixedString128Bytes) return Equals(aFixedString128Bytes);
+            if(obj is FixedString512Bytes aFixedString512Bytes) return Equals(aFixedString512Bytes);
+            if(obj is FixedString4096Bytes aFixedString4096Bytes) return Equals(aFixedString4096Bytes);
             return false;
         }
 
@@ -4115,7 +4123,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString512 of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString512Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -4124,7 +4132,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString512 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString512Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -4138,7 +4146,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString512: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString512Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -5508,6 +5516,8 @@ namespace Unity.Collections
         [FieldOffset(4093)] public byte byte4093;
 
     }
+    [Obsolete("Renamed to FixedString4096Bytes (UnityUpgradable) -> FixedString4096Bytes", true)]
+    public partial struct FixedString4096 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 4096-byte struct.
@@ -5517,7 +5527,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than 4096 (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList4096{T}"/> of bytes, thus allowing reinterpretation between FixedString4096 and FixedList4096.
+    /// This layout is identical to a <see cref="FixedList4096Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString4096Bytes and FixedList4096Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -5525,21 +5535,21 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=4096)]
     [BurstCompatible]
-    public partial struct FixedString4096
+    public partial struct FixedString4096Bytes
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
         , IEquatable<String>
-        , IComparable<FixedString32>
-        , IEquatable<FixedString32>
-        , IComparable<FixedString64>
-        , IEquatable<FixedString64>
-        , IComparable<FixedString128>
-        , IEquatable<FixedString128>
-        , IComparable<FixedString512>
-        , IEquatable<FixedString512>
-        , IComparable<FixedString4096>
-        , IEquatable<FixedString4096>
+        , IComparable<FixedString32Bytes>
+        , IEquatable<FixedString32Bytes>
+        , IComparable<FixedString64Bytes>
+        , IEquatable<FixedString64Bytes>
+        , IComparable<FixedString128Bytes>
+        , IEquatable<FixedString128Bytes>
+        , IComparable<FixedString512Bytes>
+        , IEquatable<FixedString512Bytes>
+        , IComparable<FixedString4096Bytes>
+        , IEquatable<FixedString4096Bytes>
     {
         internal const ushort utf8MaxLengthInBytes = 4093;
 
@@ -5727,7 +5737,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString4096.
+        /// An enumerator over the characters (not bytes) of a FixedString4096Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -5735,15 +5745,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString4096 target;
+            FixedString4096Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString4096.Enumerator.
+            /// Initializes and returns an instance of FixedString4096Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString4096 for which to create an enumerator.</param>
-            public Enumerator(FixedString4096 other)
+            public Enumerator(FixedString4096Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -5799,7 +5809,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString4096.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString4096Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -5836,21 +5846,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte4096 representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte4096 is the very same bytes as the original FixedString4096,
-        /// so it is only valid as long as the original FixedString4096 is valid.
+        /// The referenced FixedListByte4096 is the very same bytes as the original FixedString4096Bytes,
+        /// so it is only valid as long as the original FixedString4096Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte4096 representation of the FixedString4096.</returns>
-        public unsafe ref FixedList4096<byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte4096 representation of the FixedString4096Bytes.</returns>
+        public unsafe ref FixedList4096Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList4096<byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList4096Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString4096Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString4096(String source)
+        public FixedString4096Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -5866,11 +5876,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString4096Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString4096(Unicode.Rune rune, int count = 1)
+        public FixedString4096Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -5888,17 +5898,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString32 other)
+        public int CompareTo(FixedString32Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public FixedString4096(in FixedString32 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public FixedString4096Bytes(in FixedString32Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -5914,13 +5924,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are equal.
+        /// Returns true if a FixedString4096Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for equality.</param>
-        /// <param name="b">A FixedString32 to compare for equality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString4096 a, in FixedString32 b)
+        public static bool operator ==(in FixedString4096Bytes a, in FixedString32Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -5933,13 +5943,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are unequal.
+        /// Returns true if a FixedString4096Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for inequality.</param>
-        /// <param name="b">A FixedString32 to compare for inequality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString32Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString4096 a, in FixedString32 b)
+        public static bool operator !=(in FixedString4096Bytes a, in FixedString32Bytes b)
         {
             return !(a == b);
         }
@@ -5948,9 +5958,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString32 to compare for equality.</param>
+        /// <param name="other">A FixedString32Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString32 other)
+        public bool Equals(FixedString32Bytes other)
         {
             return this == other;
         }
@@ -5966,17 +5976,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString64 other)
+        public int CompareTo(FixedString64Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public FixedString4096(in FixedString64 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public FixedString4096Bytes(in FixedString64Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -5992,13 +6002,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are equal.
+        /// Returns true if a FixedString4096Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for equality.</param>
-        /// <param name="b">A FixedString64 to compare for equality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString4096 a, in FixedString64 b)
+        public static bool operator ==(in FixedString4096Bytes a, in FixedString64Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -6011,13 +6021,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are unequal.
+        /// Returns true if a FixedString4096Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for inequality.</param>
-        /// <param name="b">A FixedString64 to compare for inequality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString64Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString4096 a, in FixedString64 b)
+        public static bool operator !=(in FixedString4096Bytes a, in FixedString64Bytes b)
         {
             return !(a == b);
         }
@@ -6026,9 +6036,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString64 to compare for equality.</param>
+        /// <param name="other">A FixedString64Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString64 other)
+        public bool Equals(FixedString64Bytes other)
         {
             return this == other;
         }
@@ -6044,17 +6054,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString128 other)
+        public int CompareTo(FixedString128Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public FixedString4096(in FixedString128 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public FixedString4096Bytes(in FixedString128Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -6070,13 +6080,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are equal.
+        /// Returns true if a FixedString4096Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for equality.</param>
-        /// <param name="b">A FixedString128 to compare for equality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString4096 a, in FixedString128 b)
+        public static bool operator ==(in FixedString4096Bytes a, in FixedString128Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -6089,13 +6099,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are unequal.
+        /// Returns true if a FixedString4096Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for inequality.</param>
-        /// <param name="b">A FixedString128 to compare for inequality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString128Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString4096 a, in FixedString128 b)
+        public static bool operator !=(in FixedString4096Bytes a, in FixedString128Bytes b)
         {
             return !(a == b);
         }
@@ -6104,9 +6114,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString128 to compare for equality.</param>
+        /// <param name="other">A FixedString128Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString128 other)
+        public bool Equals(FixedString128Bytes other)
         {
             return this == other;
         }
@@ -6122,17 +6132,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString512 other)
+        public int CompareTo(FixedString512Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public FixedString4096(in FixedString512 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public FixedString4096Bytes(in FixedString512Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -6148,13 +6158,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are equal.
+        /// Returns true if a FixedString4096Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for equality.</param>
-        /// <param name="b">A FixedString512 to compare for equality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString4096 a, in FixedString512 b)
+        public static bool operator ==(in FixedString4096Bytes a, in FixedString512Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -6167,13 +6177,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are unequal.
+        /// Returns true if a FixedString4096Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for inequality.</param>
-        /// <param name="b">A FixedString512 to compare for inequality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString512Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString4096 a, in FixedString512 b)
+        public static bool operator !=(in FixedString4096Bytes a, in FixedString512Bytes b)
         {
             return !(a == b);
         }
@@ -6182,9 +6192,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString512 to compare for equality.</param>
+        /// <param name="other">A FixedString512Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString512 other)
+        public bool Equals(FixedString512Bytes other)
         {
             return this == other;
         }
@@ -6200,17 +6210,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString4096 other)
+        public int CompareTo(FixedString4096Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString4096 that is a copy of another string.
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
-        public FixedString4096(in FixedString4096 other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        public FixedString4096Bytes(in FixedString4096Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -6226,13 +6236,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are equal.
+        /// Returns true if a FixedString4096Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for equality.</param>
-        /// <param name="b">A FixedString4096 to compare for equality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString4096 a, in FixedString4096 b)
+        public static bool operator ==(in FixedString4096Bytes a, in FixedString4096Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -6245,13 +6255,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString4096 and another string are unequal.
+        /// Returns true if a FixedString4096Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString4096 to compare for inequality.</param>
-        /// <param name="b">A FixedString4096 to compare for inequality.</param>
+        /// <param name="a">A FixedString4096Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString4096Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString4096 a, in FixedString4096 b)
+        public static bool operator !=(in FixedString4096Bytes a, in FixedString4096Bytes b)
         {
             return !(a == b);
         }
@@ -6260,21 +6270,21 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString4096 to compare for equality.</param>
+        /// <param name="other">A FixedString4096Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString4096 other)
+        public bool Equals(FixedString4096Bytes other)
         {
             return this == other;
         }
 
         /// <summary>
-        /// Returns a new FixedString4096 that is a copy of another string.
+        /// Returns a new FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString4096 that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096.</exception>
+        /// <returns>A new FixedString4096Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString4096(string b) => new FixedString4096(b);
+        public static implicit operator FixedString4096Bytes(string b) => new FixedString4096Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -6310,11 +6320,11 @@ namespace Unity.Collections
         {
             if(ReferenceEquals(null, obj)) return false;
             if(obj is String aString) return Equals(aString);
-            if(obj is FixedString32 aFixedString32) return Equals(aFixedString32);
-            if(obj is FixedString64 aFixedString64) return Equals(aFixedString64);
-            if(obj is FixedString128 aFixedString128) return Equals(aFixedString128);
-            if(obj is FixedString512 aFixedString512) return Equals(aFixedString512);
-            if(obj is FixedString4096 aFixedString4096) return Equals(aFixedString4096);
+            if(obj is FixedString32Bytes aFixedString32Bytes) return Equals(aFixedString32Bytes);
+            if(obj is FixedString64Bytes aFixedString64Bytes) return Equals(aFixedString64Bytes);
+            if(obj is FixedString128Bytes aFixedString128Bytes) return Equals(aFixedString128Bytes);
+            if(obj is FixedString512Bytes aFixedString512Bytes) return Equals(aFixedString512Bytes);
+            if(obj is FixedString4096Bytes aFixedString4096Bytes) return Equals(aFixedString4096Bytes);
             return false;
         }
 
@@ -6324,7 +6334,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString4096 of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString4096Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -6333,7 +6343,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString4096 of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString4096Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -6347,7 +6357,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString4096: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString4096Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

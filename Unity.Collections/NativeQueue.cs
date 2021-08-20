@@ -201,7 +201,7 @@ namespace Unity.Collections
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public unsafe static void AllocateQueue<T>(Allocator label, out NativeQueueData* outBuf) where T : struct
+        public unsafe static void AllocateQueue<T>(AllocatorManager.AllocatorHandle label, out NativeQueueData* outBuf) where T : struct
         {
             var queueDataSize = CollectionHelper.Align(UnsafeUtility.SizeOf<NativeQueueData>(), JobsUtility.CacheLineSize);
 
@@ -227,7 +227,7 @@ namespace Unity.Collections
             outBuf = data;
         }
 
-        public unsafe static void DeallocateQueue(NativeQueueData* data, NativeQueueBlockPoolData* pool, Allocator allocation)
+        public unsafe static void DeallocateQueue(NativeQueueData* data, NativeQueueBlockPoolData* pool, AllocatorManager.AllocatorHandle allocation)
         {
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)data->m_FirstBlock;
 
@@ -274,13 +274,13 @@ namespace Unity.Collections
         DisposeSentinel m_DisposeSentinel;
 #endif
 
-        Allocator m_AllocatorLabel;
+        AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
         /// Initializes and returns an instance of NativeQueue.
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeQueue(Allocator allocator)
+        public NativeQueue(AllocatorManager.AllocatorHandle allocator)
         {
             CollectionHelper.CheckIsUnmanaged<T>();
 
@@ -290,7 +290,7 @@ namespace Unity.Collections
             NativeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator);
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator.ToAllocator);
 
             if (s_staticSafetyId.Data == 0)
             {
@@ -459,12 +459,12 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array containing a copy of this queue's content. The elements are ordered in the same order they were
         /// enqueued, *e.g.* the earliest enqueued element is copied to index 0 of the array.</returns>
-        public NativeArray<T> ToArray(Allocator allocator)
+        public NativeArray<T> ToArray(AllocatorManager.AllocatorHandle allocator)
         {
             CheckRead();
 
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
-            var outputArray = new NativeArray<T>(Count, allocator);
+            var outputArray = CollectionHelper.CreateNativeArray<T>(Count, allocator);
 
             NativeQueueBlockHeader* currentBlock = firstBlock;
             var arrayPtr = (byte*)outputArray.GetUnsafePtr();
@@ -655,7 +655,7 @@ namespace Unity.Collections
         [NativeDisableUnsafePtrRestriction]
         internal NativeQueueBlockPoolData* m_QueuePool;
 
-        internal Allocator m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;

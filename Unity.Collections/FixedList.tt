@@ -381,17 +381,17 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -420,7 +420,7 @@ namespace Unity.Collections
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckElementAccess(int index, int Length)
         {
             if (index < 0 || index >= Length)
@@ -428,7 +428,7 @@ namespace Unity.Collections
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckResize<BUFFER,T>(int newLength) where BUFFER : struct where T : struct
         {
             var Capacity = Capacity<BUFFER,T>();
@@ -443,8 +443,13 @@ for(var size = 0; size < 5; ++size)
 {
     var BYTES = SIZES[size];
     var BUFFER_BYTES = BYTES - 2;
-    var TYPENAME = String.Format("FixedList{0}", BYTES);
+    var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
+    var OLD_TYPENAME = String.Format("FixedList{0}", BYTES);
+    
 #>
+    [Obsolete("Renamed to <#=TYPENAME#><T> (UnityUpgradable) -> <#=TYPENAME#><T>", true)]
+    public struct <#=OLD_TYPENAME#><T> where T : unmanaged {}
+
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the <#=BYTES#>-byte struct. Useful for small lists.
     /// </summary>
@@ -458,7 +463,7 @@ for(var size = 0; size < 5; ++size)
 <#
     foreach(var OTHERBYTES in SIZES)
     {
-        var OTHERTYPENAME = String.Format("FixedList{0}", OTHERBYTES);
+        var OTHERTYPENAME = String.Format("FixedList{0}Bytes", OTHERBYTES);
         WriteLine("    , IEquatable<{0}<T>>", OTHERTYPENAME);
         WriteLine("    , IComparable<{0}<T>>", OTHERTYPENAME);
     }
@@ -804,11 +809,11 @@ for(var size = 0; size < 5; ++size)
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array that is a copy of this list.</returns>
-        public NativeArray<T> ToNativeArray(Allocator allocator)
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
-                var copy = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+                var copy = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
                 UnsafeUtility.MemCpy(copy.GetUnsafePtr(), Buffer, LengthInBytes);
                 return copy;
             }
@@ -818,7 +823,7 @@ for(var size = 0; size < 5; ++size)
     foreach(var OTHERBYTES in SIZES)
     {
         var OTHER_BUFFER_BYTES = OTHERBYTES - 2;
-        var OTHERTYPENAME = String.Format("FixedList{0}", OTHERBYTES);
+        var OTHERTYPENAME = String.Format("FixedList{0}Bytes", OTHERBYTES);
 #>
 
         /// <summary>
@@ -943,7 +948,7 @@ for(var size = 0; size < 5; ++size)
 <#
     foreach(var OTHERBYTES in SIZES)
     {
-        var OTHERTYPENAME = String.Format("FixedList{0}", OTHERBYTES);
+        var OTHERTYPENAME = String.Format("FixedList{0}Bytes", OTHERBYTES);
         WriteLine("            if(obj is {0}<T> a{0}) return Equals(a{0});", OTHERTYPENAME);
     }
 #>
@@ -1034,7 +1039,7 @@ for(var size = 0; size < 5; ++size)
             throw new NotImplementedException();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if(capacity != Capacity)
@@ -1155,6 +1160,7 @@ for(var size = 0; size < 5; ++size)
     var TYPESIZE = TYPESIZES[type];
     var BUFFER_BYTES = BYTES - 2;
     var TYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), BYTES);
+    var NEW_TYPENAME = $"FixedList{BYTES}Bytes<{TYPE}>";
 #>
 
     /// <summary>
@@ -1163,664 +1169,20 @@ for(var size = 0; size < 5; ++size)
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
-    [DebuggerTypeProxy(typeof(<#=TYPENAME#>DebugView))]
-    [Obsolete("<#=TYPENAME#> is deprecated, please use FixedList<#=BYTES#><<#=TYPE#>> instead. (RemovedAfter 2021-06-10)", false)]
-    public struct <#=TYPENAME#>
-    : INativeList<<#=TYPE#>>
-    , IEnumerable<<#=TYPE#>> // Used by collection initializers.
-<#
-    foreach(var OTHERBYTES in SIZES)
-    {
-        var OTHERTYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), OTHERBYTES);
-        WriteLine("    , IEquatable<{0}>", OTHERTYPENAME);
-        WriteLine("    , IComparable<{0}>", OTHERTYPENAME);
-    }
-#>
-    {
-        [SerializeField] [FieldOffset(0)] internal ushort length;
-        [SerializeField] [FieldOffset(2)] internal FixedBytes<#=BUFFER_BYTES#> buffer;
+    [Obsolete("<#=TYPENAME#> is deprecated, please use FixedList<#=BYTES#>Bytes<<#=TYPE#>> instead. (UnityUpgradable) -> <#=NEW_TYPENAME#>", true)]
+    public struct <#=TYPENAME#> {}
+    
 
-        /// <summary>
-        /// The current number of elements in this list.
-        /// </summary>
-        /// <value>The current number of elements in this list.</value>
-        [CreateProperty]
-        public int Length
-        {
-            get => length;
-            set
-            {
-                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,<#=TYPE#>>(value);
-                length = (ushort)value;
-            }
-        }
-
-        /// <summary>
-        /// A property in order to display items in the Entity Inspector.
-        /// </summary>
-        [CreateProperty] IEnumerable<<#=TYPE#>> Elements => this.ToArray();
-
-        /// <summary>
-        /// Reports whether container is empty.
-        /// </summary>
-        /// <value>True if this container empty.</value>
-        public bool IsEmpty => Length == 0;
-
-        internal int LengthInBytes => Length * sizeof(<#=TYPE#>);
-
-        unsafe internal byte* Buffer
-        {
-            get
-            {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<<#=TYPE#>>();
-            }
-        }
-
-        /// <summary>
-        /// The number of items that can fit in the list.
-        /// </summary>
-        /// <value>The number of items that the list can hold.</value>
-        /// <remarks>Capacity specifies the number of items the list can currently hold. You can not change Capacity
-        /// to fit more or fewer items.</remarks>
-        public int Capacity
-        {
-            get
-            {
-                return FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>, <#=TYPE#>>();
-            }
-            set
-            {
-                CheckCapacityInRange(value);
-            }
-        }
-
-        /// <summary>
-        /// Retrieve a member of the list by index.
-        /// </summary>
-        /// <param name="index">The zero-based index into the list.</param>
-        /// <value>The list item at the specified index.</value>
-        /// <exception cref="IndexOutOfRangeException">Thrown if index is negative or >= to <see cref="Length"/>.</exception>
-        public <#=TYPE#> this[int index]
-        {
-            get
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    return UnsafeUtility.ReadArrayElement<<#=TYPE#>>(Buffer, index);
-                }
-            }
-            set
-            {
-                FixedList.CheckElementAccess(index, length);
-                unsafe
-                {
-                    UnsafeUtility.WriteArrayElement<<#=TYPE#>>(Buffer, index, value);
-                }
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public ref <#=TYPE#> ElementAt(int index)
-        {
-            FixedList.CheckElementAccess(index, length);
-            unsafe
-            {
-                return ref UnsafeUtility.ArrayElementAsRef<<#=TYPE#>>(Buffer, index);
-            }
-        }
-
-        /// <summary>
-        /// Computes a hash code summary of the <#=TYPENAME#>.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            unsafe
-            {
-                return (int)CollectionHelper.Hash(Buffer, LengthInBytes);
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The <#=TYPE#> to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void Add(in <#=TYPE#> item)
-        {
-            this[Length++] = item;
-        }
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRange(void* ptr, int length)
-        {
-            <#=TYPE#>* data = (<#=TYPE#>*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
-        }
-
-        /// <summary>
-        /// Adds an element to the list.
-        /// </summary>
-        /// <param name="item">The <#=TYPE#> to be added at the end of the list.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if list is already full. See <see cref="Capacity"/>.</exception>
-        public void AddNoResize(<#=TYPE#> item) => Add(item);
-
-        /// <summary>
-        /// Adds elements from a buffer to this list.
-        /// </summary>
-        /// <param name="ptr">A pointer to the buffer.</param>
-        /// <param name="length">The number of elements to add to the list.</param>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
-
-        /// <summary>
-        /// Clears the list.
-        /// </summary>
-        public void Clear()
-        {
-            Length = 0;
-        }
-
-        /// <summary>
-        /// Returns true if the list contains at least one occurrence of a specific element.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>True if the list contains the element.</returns>
-        public bool Contains(<#=TYPE#> value)
-        {
-            return IndexOf(value) >= 0;
-        }
-
-        /// <summary>
-        /// Returns the index of the first occurrence of a specific element in the list.
-        /// </summary>
-        /// <param name="value">The element to search for in the list.</param>
-        /// <returns>The index of the first occurrence of the element. Returns -1 if it is not found in the list.</returns>
-        public int IndexOf(<#=TYPE#> value)
-        {
-            for (var i = 0; i < length; ++i)
-            {
-                if (this[i].Equals(value))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Inserts a number of items into a <#=TYPENAME#> at a specified zero-based index. Increases the length.
-        /// </summary>
-        /// <param name="begin">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="end">The zero-based index just after where the elements should be removed.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            int items = end - begin;
-            if(items < 1)
-                return;
-            int itemsToCopy = length - begin;
-            Length += items;
-            if(itemsToCopy < 1)
-                return;
-            int bytesToCopy = itemsToCopy * sizeof(<#=TYPE#>);
-            unsafe
-            {
-                byte* b = Buffer;
-                byte *dest = b + end * sizeof(<#=TYPE#>);
-                byte *src = b + begin * sizeof(<#=TYPE#>);
-                UnsafeUtility.MemMove(dest, src, bytesToCopy);
-            }
-        }
-
-        /// <summary>
-        /// Inserts a single element into a <#=TYPENAME#> at a specified zero-based index.
-        /// </summary>
-        /// <param name="index">The zero-based index at which the new element should be inserted.</param>
-        /// <param name="item">The element to insert</param>
-        public void Insert(int index, <#=TYPE#> item)
-        {
-            InsertRangeWithBeginEnd(index, index+1);
-            this[index] = item;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index with the last item in the list. The list
-        /// is shortened by one.
-        /// </summary>
-        /// <param name="index">The index of the item to delete.</param>
-        public void RemoveAtSwapBack(int index)
-        {
-            RemoveRangeSwapBack(index, 1);
-        }
-
-        /// <summary>
-        /// Removes the first occurrence of an item from the <#=TYPENAME#> and replaces it with the last element,
-        /// which can be much faster than copying down all subsequent elements.
-        /// </summary>
-        /// <param name="item">The elements to remove from the <#=TYPENAME#>.</param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool RemoveSwapBack(<#=TYPE#> item)
-        {
-            var index = IndexOf(item);
-            if (index == -1)
-            {
-                return false;
-            }
-
-            RemoveAtSwapBack(index);
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.max(Length - count, index + count);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(<#=TYPE#>);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
-        /// Removes the <#=TYPE#> at the specified index, and copies all subsequent elements backward to fill the
-        /// hole so created.
-        /// </summary>
-        /// <param name="index">The zero-based index at which to remove the <#=TYPE#></param>
-        public void RemoveAt(int index)
-        {
-            RemoveRange(index, 1);
-        }
-
-        /// <summary>
-        /// Searches for the specified <#=TYPE#> from the begining of the <#=TYPENAME#> forward, removes it if possible,
-        /// and returns true if the <#=TYPE#> was successfully removed.
-        /// </summary>
-        /// <param name="item">The <#=TYPE#> to locate in the <#=TYPENAME#></param>
-        /// <returns>Returns true if item is removed.</returns>
-        public bool Remove(<#=TYPE#> item)
-        {
-            int index = IndexOf(item);
-            if (index < 0)
-            {
-                return false;
-            }
-
-            RemoveAt(index);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="index">The first index of the item to remove.</param>
-        /// <param name="count">The number of elements to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBack`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            if (count > 0)
-            {
-                int copyFrom = math.min(index + count, Length);
-
-                unsafe
-                {
-                    var sizeOf = sizeof(<#=TYPE#>);
-                    void* dst = Buffer + index * sizeOf;
-                    void* src = Buffer + copyFrom * sizeOf;
-                    UnsafeUtility.MemCpy(dst, src, (Length - copyFrom) * sizeOf);
-                }
-
-                Length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
-        /// Creates a managed Array of <#=TYPE#> that is a copy of this <#=TYPENAME#>.
-        /// </summary>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public <#=TYPE#>[] ToArray()
-        {
-            var result = new <#=TYPE#>[Length];
-            unsafe
-            {
-                byte* s = Buffer;
-                fixed(<#=TYPE#>* d = result)
-                    UnsafeUtility.MemCpy(d, s, LengthInBytes);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Creates an unmanaged NativeArray<#=TYPE#> that is a copy of this <#=TYPENAME#>.
-        /// </summary>
-        /// <param name="allocator">A member of the
-        /// [Unity.Collections.Allocator](https://docs.unity3d.com/ScriptReference/Unity.Collections.Allocator.html) enumeration.</param>
-        /// <returns></returns>
-        public NativeArray<<#=TYPE#>> ToNativeArray(Allocator allocator)
-        {
-            unsafe
-            {
-                byte* s = Buffer;
-                var copy = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<<#=TYPE#>>(s, Length, Allocator.None);
-                return new NativeArray<<#=TYPE#>>(copy, allocator);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#> in ascending order.
-        /// </summary>
-        public void Sort()
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((<#=TYPE#>*)Buffer, length);
-            }
-        }
-
-        /// <summary>
-        /// Sorts the elements in this <#=TYPENAME#> using a custom comparison function.
-        /// </summary>
-        /// <typeparam name="U">The comparer type.</typeparam>
-        /// <param name="comp">A comparison function that indicates whether one element in the array is less than, equal to, or greater than another element.</param>
-        public void Sort<U>(U comp) where U : IComparer<<#=TYPE#>>
-        {
-            unsafe
-            {
-                NativeSortExtension.Sort((<#=TYPE#>*)Buffer, length, comp);
-            }
-        }
-
-<#
-foreach(var OTHERBYTES in SIZES)
-{
-    var OTHER_BUFFER_BYTES = OTHERBYTES - 2;
-    var OTHERTYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), OTHERBYTES);
-#>
-
-        /// <summary>
-        /// Determines whether a <#=TYPENAME#> and <#=OTHERTYPENAME#> have the same value.
-        /// </summary>
-        /// <param name="a">The <#=TYPENAME#> to compare for equality</param>
-        /// <param name="b">The <#=OTHERTYPENAME#> to compare for equality</param>
-        /// <returns></returns>
-        public static bool operator ==(in <#=TYPENAME#> a, in <#=OTHERTYPENAME#> b)
-        {
-            unsafe
-            {
-                if(a.Length != b.Length)
-                    return false;
-                return UnsafeUtility.MemCmp(a.Buffer, b.Buffer, a.LengthInBytes) == 0;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether a <#=TYPENAME#> and <#=OTHERTYPENAME#> have different values.
-        /// </summary>
-        /// <param name="a">The <#=TYPENAME#> to compare for inequality</param>
-        /// <param name="b">The <#=OTHERTYPENAME#> to compare for inequality</param>
-        /// <returns></returns>
-        public static bool operator !=(in <#=TYPENAME#> a, in <#=OTHERTYPENAME#> b)
-        {
-            return !(a == b);
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified <#=OTHERTYPENAME#> and indicates whether this instance
-        /// precedes, follows, or appears in the same position in the sort order as the specified <#=OTHERTYPENAME#>.
-        /// </summary>
-        /// <param name="other">The specified <#=OTHERTYPENAME#> to compare with</param>
-        /// <returns></returns>
-        public int CompareTo(<#=OTHERTYPENAME#> other)
-        {
-            unsafe
-            {
-                var mini = math.min(Length, other.Length);
-                for(var i = 0; i < mini; ++i)
-                {
-                    var j = this[i].CompareTo(other[i]);
-                    if(j != 0)
-                        return j;
-                }
-                return Length.CompareTo(other.Length);
-            }
-        }
-
-        /// <summary>
-        /// Compares this instance with a specified <#=OTHERTYPENAME#> and indicates whether this instance
-        /// is equal to the specified <#=OTHERTYPENAME#>.
-        /// </summary>
-        /// <param name="other">The specified <#=OTHERTYPENAME#> to compare with for equality</param>
-        /// <returns></returns>
-        public bool Equals(<#=OTHERTYPENAME#> other)
-        {
-            return CompareTo(other) == 0;
-        }
-
-<#
-    if(BYTES != OTHERBYTES)
-    {
-#>
-
-        /// <summary>
-        /// Initializes and returns an instance of <#=TYPENAME#> with the content copied from another list.
-        /// </summary>
-        /// <param name="other">The <#=OTHERTYPENAME#> to copy.</param>
-        public <#=TYPENAME#>(in <#=OTHERTYPENAME#> other)
-        {
-            FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,<#=TYPE#>>(other.length);
-            length = other.length;
-            buffer = new FixedBytes<#=BUFFER_BYTES#>();
-            unsafe
-            {
-                fixed(FixedBytes<#=OTHER_BUFFER_BYTES#>* s = &other.buffer)
-                fixed(FixedBytes<#=BUFFER_BYTES#>* d = &this.buffer)
-<#
-        if(OTHERBYTES >= BYTES)
-            WriteLine("                    *d = *(FixedBytes{0}*)s;", BUFFER_BYTES);
-        else
-            WriteLine("                    *(FixedBytes{0}*)d = *s;", OTHER_BUFFER_BYTES);
-#>
-            }
-        }
-
-        /// <summary>
-        /// Implicitly converts a <#=OTHERTYPENAME#> to a <#=TYPENAME#>.
-        /// </summary>
-        /// <param name="other">The <#=OTHERTYPENAME#> to copy</param>
-        /// <returns></returns>
-        public static implicit operator <#=TYPENAME#>(in <#=OTHERTYPENAME#> other)
-        {
-            return new <#=TYPENAME#>(other);
-        }
-<#
-    }
-}
-#>
-
-        /// <summary>
-        /// Compares this instance with a specified object and indicates whether this instance
-        /// is equal to the specified object.
-        /// </summary>
-        /// <param name="obj">The specified object to compare with for equality</param>
-        /// <returns></returns>
-        [NotBurstCompatible]
-        public override bool Equals(object obj)
-        {
-<#
-    foreach(var OTHERBYTES in SIZES)
-    {
-        var OTHERTYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), OTHERBYTES);
-        WriteLine("            if(obj is {0} a{0}) return Equals(a{0});", OTHERTYPENAME);
-    }
-#>
-            return false;
-        }
-
-        /// <summary>
-        /// <undoc />
-        /// </summary>
-        public struct Enumerator : IEnumerator<<#=TYPE#>>
-        {
-            <#=TYPENAME#> m_List;
-            int m_Index;
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <param name="list"><undoc /></param>
-            public Enumerator(ref <#=TYPENAME#> list)
-            {
-                m_List = list;
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Dispose()
-            {
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            /// <returns><undoc /></returns>
-            public bool MoveNext()
-            {
-                m_Index++;
-                return m_Index < m_List.Length;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
-
-            /// <summary>
-            /// <undoc />
-            /// </summary>
-            public <#=TYPE#> Current => m_List[m_Index]; // Let <#=TYPENAME#> indexer check for out of range.
-
-            object IEnumerator.Current => Current;
-        }
-
-        /// <summary>
-        /// Returns an enumerator that iterates through a container.
-        /// </summary>
-        /// <returns>An IEnumerator object that can be used to iterate through the container.</returns>
-        public Enumerator GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// This method is not implemented. It will throw NotImplementedException if it is used.
-        /// </summary>
-        /// <remarks>Use Enumerator GetEnumerator() instead.</remarks>
-        /// <returns>Throws NotImplementedException.</returns>
-        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
-        IEnumerator<<#=TYPE#>> IEnumerable<<#=TYPE#>>.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
-    }
-
-    [Obsolete("<#=TYPENAME#>DebugView is deprecated. (RemovedAfter 2021-06-10)", false)]
+    [Obsolete("<#=TYPENAME#>DebugView is deprecated. (UnityUpgradable) -> FixedList<#=BYTES#>BytesDebugView<<#=TYPE#>>", true)]
     sealed class <#=TYPENAME#>DebugView
     {
-        <#=TYPENAME#> m_List;
-        public <#=TYPENAME#>DebugView(<#=TYPENAME#> list)
+        FixedList<#=BYTES#>Bytes<<#=TYPE#>> m_List;
+        public <#=TYPENAME#>DebugView(FixedList<#=BYTES#>Bytes<<#=TYPE#>> list)
         {
             m_List = list;
         }
         public <#=TYPE#>[] Items => m_List.ToArray();
     }
-
 <#
 }
 #>
@@ -1834,7 +1196,7 @@ for(var size = 0; size < 5; ++size)
 {
     var BYTES = SIZES[size];
     var BUFFER_BYTES = BYTES - 2;
-    var TYPENAME = String.Format("FixedList{0}", BYTES);
+    var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
 #>
 
         /// <summary>

@@ -42,16 +42,16 @@ namespace Unity.Collections
         /// <param name="numBits">The number of bits.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public NativeBitArray(int numBits, Allocator allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
+        public NativeBitArray(int numBits, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             : this(numBits, allocator, options, 2)
         {
         }
 
-        NativeBitArray(int numBits, Allocator allocator, NativeArrayOptions options, int disposeSentinelStackDepth)
+        NativeBitArray(int numBits, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options, int disposeSentinelStackDepth)
         {
-            CheckAllocator(allocator);
+            CollectionHelper.CheckAllocator(allocator);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator);
+            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
@@ -345,13 +345,6 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            if (allocator <= Allocator.None)
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -426,7 +419,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="sizeInBytes">Size of the buffer in bytes. Must be a multiple of 8.</param>
         /// <param name="allocator">The allocator that was used to create the buffer.</param>
         /// <returns>A bit array with content aliasing a buffer.</returns>
-        public static unsafe NativeBitArray ConvertExistingDataToNativeBitArray(void* ptr, int sizeInBytes, Allocator allocator)
+        public static unsafe NativeBitArray ConvertExistingDataToNativeBitArray(void* ptr, int sizeInBytes, AllocatorManager.AllocatorHandle allocator)
         {
             return new NativeBitArray
             {

@@ -14,37 +14,37 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFixedStringCtors()
         {
-            using (HeapString aa = new HeapString(new FixedString32("test32"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString32Bytes("test32"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString32("test"));
+                Assert.True(aa != new FixedString32Bytes("test"));
                 Assert.True(aa.Value == "test32");
                 Assert.AreEqual("test32", aa);
             }
 
-            using (HeapString aa = new HeapString(new FixedString64("test64"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString64Bytes("test64"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString64("test"));
+                Assert.True(aa != new FixedString64Bytes("test"));
                 Assert.True(aa.Value == "test64");
                 Assert.AreEqual("test64", aa);
             }
 
-            using (HeapString aa = new HeapString(new FixedString128("test128"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString128Bytes("test128"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString128("test"));
+                Assert.True(aa != new FixedString128Bytes("test"));
                 Assert.True(aa.Value == "test128");
                 Assert.AreEqual("test128", aa);
             }
 
-            using (HeapString aa = new HeapString(new FixedString512("test512"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString512Bytes("test512"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString512("test"));
+                Assert.True(aa != new FixedString512Bytes("test"));
                 Assert.True(aa.Value == "test512");
                 Assert.AreEqual("test512", aa);
             }
 
-            using (HeapString aa = new HeapString(new FixedString4096("test4096"), Allocator.Temp))
+            using (NativeText aa = new NativeText(new FixedString4096Bytes("test4096"), Allocator.Temp))
             {
-                Assert.True(aa != new FixedString4096("test"));
+                Assert.True(aa != new FixedString4096Bytes("test"));
                 Assert.True(aa.Value == "test4096");
                 Assert.AreEqual("test4096", aa);
             }
@@ -53,11 +53,11 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension1Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             Assert.True(aa.IsCreated);
             aa.Junk();
-            FixedString32 format = "{0}";
-            FixedString32 arg0 = "a";
+            FixedString32Bytes format = "{0}";
+            FixedString32Bytes arg0 = "a";
             aa.AppendFormat(format, arg0);
             aa.Add(0x61);
             Assert.AreEqual("aa", aa);
@@ -68,7 +68,7 @@ namespace FixedStringTests
         [Test]
         public void HeapStringCorrectLengthAfterClear()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             Assert.True(aa.IsCreated);
             Assert.AreEqual(0, aa.Length, "Length after creation is not 0");
             aa.AssertNullTerminated();
@@ -85,11 +85,11 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension2Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
+            FixedString32Bytes format = "{0} {1}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
             aa.AppendFormat(format, arg0, arg1);
             Assert.AreEqual("a b", aa);
             aa.AssertNullTerminated();
@@ -100,12 +100,12 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension3Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
+            FixedString32Bytes format = "{0} {1} {2}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
             aa.AppendFormat(format, arg0, arg1, arg2);
             Assert.AreEqual("a b c", aa);
             aa.AssertNullTerminated();
@@ -116,13 +116,13 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension4Params()
         {
-            HeapString aa = new HeapString(Allocator.Temp);
+            NativeText aa = new NativeText(Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
+            FixedString32Bytes format = "{0} {1} {2} {3}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3);
             Assert.AreEqual("a b c d", aa);
             aa.AssertNullTerminated();
@@ -133,14 +133,14 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension5Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
             Assert.AreEqual("a b c d e", aa);
             aa.AssertNullTerminated();
@@ -151,15 +151,15 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension6Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
             Assert.AreEqual("a b c d e f", aa);
             aa.AssertNullTerminated();
@@ -170,16 +170,16 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension7Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5} {6}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5} {6}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
             Assert.AreEqual("a b c d e f g", aa);
             aa.AssertNullTerminated();
@@ -190,17 +190,17 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension8Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             Assert.AreEqual("a b c d e f g h", aa);
             aa.AssertNullTerminated();
@@ -211,18 +211,18 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension9Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             Assert.AreEqual("a b c d e f g h i", aa);
             aa.AssertNullTerminated();
@@ -233,19 +233,19 @@ namespace FixedStringTests
         [Test]
         public void HeapStringFormatExtension10Params()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
-            FixedString32 arg9 = "j";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
+            FixedString32Bytes arg9 = "j";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
             Assert.AreEqual("a b c d e f g h i j", aa);
             aa.AssertNullTerminated();
@@ -255,7 +255,7 @@ namespace FixedStringTests
         [Test]
         public void HeapStringAppendGrows()
         {
-            HeapString aa = new HeapString(1, Allocator.Temp);
+            NativeText aa = new NativeText(1, Allocator.Temp);
             var origCapacity = aa.Capacity;
             for (int i = 0; i < origCapacity; ++i)
                 aa.Append('a');
@@ -269,7 +269,7 @@ namespace FixedStringTests
         [Test]
         public void HeapStringAppendString()
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Append("aa");
             Assert.AreEqual("aa", aa.ToString());
             aa.Append("bb");
@@ -282,7 +282,7 @@ namespace FixedStringTests
         [TestCase("⁣🌹🌻🌷🌿🌵🌾⁣")]
         public void HeapStringCopyFromBytesWorks(String a)
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
+            NativeText aa = new NativeText(4, Allocator.Temp);
             aa.Junk();
             var utf8 = Encoding.UTF8.GetBytes(a);
             unsafe
@@ -307,8 +307,8 @@ namespace FixedStringTests
         [TestCase("村上春樹", TestName = "{m}(HarukiMurakami)")]
         public void HeapStringToStringWorks(String a)
         {
-            HeapString aa = new HeapString(4, Allocator.Temp);
-            aa.Append(new FixedString128(a));
+            NativeText aa = new NativeText(4, Allocator.Temp);
+            aa.Append(new FixedString128Bytes(a));
             Assert.AreEqual(a, aa.ToString());
             aa.AssertNullTerminated();
             aa.Dispose();
@@ -324,8 +324,8 @@ namespace FixedStringTests
         [TestCase("三島 由紀夫", "吉本ばなな", TestName = "{m}(MishimaYukio-YoshimotoBanana")]
         public void HeapStringEqualsWorks(String a, String b)
         {
-            HeapString aa = new HeapString(new FixedString128(a), Allocator.Temp);
-            HeapString bb = new HeapString(new FixedString128(b), Allocator.Temp);
+            NativeText aa = new NativeText(new FixedString128Bytes(a), Allocator.Temp);
+            NativeText bb = new NativeText(new FixedString128Bytes(b), Allocator.Temp);
             Assert.AreEqual(aa.Equals(bb), a.Equals(b));
             aa.AssertNullTerminated();
             bb.AssertNullTerminated();
@@ -336,8 +336,8 @@ namespace FixedStringTests
         [Test]
         public void HeapStringForEach()
         {
-            HeapString actual = new HeapString("A🌕Z🌑", Allocator.Temp);
-            FixedList32<int> expected = default;
+            NativeText actual = new NativeText("A🌕Z🌑", Allocator.Temp);
+            FixedList32Bytes<int> expected = default;
             expected.Add('A');
             expected.Add(0x1F315);
             expected.Add('Z');
@@ -355,8 +355,8 @@ namespace FixedStringTests
         [Test]
         public void HeapStringIndexOf()
         {
-            HeapString a = new HeapString("bookkeeper bookkeeper", Allocator.Temp);
-            HeapString b = new HeapString("ookkee", Allocator.Temp);
+            NativeText a = new NativeText("bookkeeper bookkeeper", Allocator.Temp);
+            NativeText b = new NativeText("ookkee", Allocator.Temp);
             Assert.AreEqual(1, a.IndexOf(b));
             Assert.AreEqual(-1, b.IndexOf(a));
             a.Dispose();
@@ -366,8 +366,8 @@ namespace FixedStringTests
         [Test]
         public void HeapStringLastIndexOf()
         {
-            HeapString a = new HeapString("bookkeeper bookkeeper", Allocator.Temp);
-            HeapString b = new HeapString("ookkee", Allocator.Temp);
+            NativeText a = new NativeText("bookkeeper bookkeeper", Allocator.Temp);
+            NativeText b = new NativeText("ookkee", Allocator.Temp);
             Assert.AreEqual(12, a.LastIndexOf(b));
             Assert.AreEqual(-1, b.LastIndexOf(a));
             a.Dispose();
@@ -377,8 +377,8 @@ namespace FixedStringTests
         [Test]
         public void HeapStringContains()
         {
-            HeapString a = new HeapString("bookkeeper", Allocator.Temp);
-            HeapString b = new HeapString("ookkee", Allocator.Temp);
+            NativeText a = new NativeText("bookkeeper", Allocator.Temp);
+            NativeText b = new NativeText("ookkee", Allocator.Temp);
             Assert.AreEqual(true, a.Contains(b));
             a.Dispose();
             b.Dispose();
@@ -387,8 +387,8 @@ namespace FixedStringTests
         [Test]
         public void HeapStringComparisons()
         {
-            HeapString a = new HeapString("apple", Allocator.Temp);
-            HeapString b = new HeapString("banana", Allocator.Temp);
+            NativeText a = new NativeText("apple", Allocator.Temp);
+            NativeText b = new NativeText("banana", Allocator.Temp);
             Assert.AreEqual(false, a.Equals(b));
             Assert.AreEqual(true, !b.Equals(a));
             a.Dispose();

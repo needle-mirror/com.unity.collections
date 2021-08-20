@@ -10,7 +10,7 @@ namespace Unity.Collections
     public unsafe static partial class FixedStringMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static bool ParseLongInternal<T>(ref T fs, ref int offset, out long value)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -60,7 +60,7 @@ namespace Unity.Collections
         /// <param name="offset">A reference to an index of the byte at which to parse an int.</param>
         /// <param name="output">Outputs the parsed int. Ignore if parsing fails.</param>
         /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow or ParseError.Syntax.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref int output)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -87,7 +87,7 @@ namespace Unity.Collections
         /// <param name="offset">A reference to an index of the byte at which to parse a uint.</param>
         /// <param name="output">Outputs the parsed uint. Ignore if parsing fails.</param>
         /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow or ParseError.Syntax.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref uint output)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -113,7 +113,7 @@ namespace Unity.Collections
         /// <param name="output">Outputs the parsed float. Ignore if parsing fails.</param>
         /// <param name="decimalSeparator">The character used to separate the integer part of the number from the fractional part. Defaults to '.' (period).</param>
         /// <returns>ParseError.None if successful. Otherwise returns ParseError.Overflow, ParseError.Underflow, or ParseError.Syntax.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static ParseError Parse<T>(ref this T fs, ref int offset, ref float output, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

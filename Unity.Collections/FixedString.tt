@@ -65,6 +65,8 @@ namespace Unity.Collections
     foreach (var BYTES in SIZES) {
         // 2 bytes for the ushort length
       var MAXLENGTH = BYTES - 2;
+      var TYPENAME = $"FixedString{BYTES}Bytes";
+      var OLD_TYPENAME = $"FixedString{BYTES}";
 #>
 
     // A temporary copy of a struct is made before it is displayed in a C# debugger.
@@ -105,6 +107,8 @@ namespace Unity.Collections
       }
 #>
     }
+    [Obsolete("Renamed to <#=TYPENAME#> (UnityUpgradable) -> <#=TYPENAME#>", true)]
+    public partial struct <#=OLD_TYPENAME#> {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the <#=BYTES#>-byte struct.
@@ -114,7 +118,7 @@ namespace Unity.Collections
     /// followed by the bytes of the characters (with no padding). A zero byte always immediately follows the last character.
     /// Effectively, the number of bytes for storing characters is 3 less than <#=BYTES#> (two length bytes and one null byte).
     ///
-    /// This layout is identical to a <see cref="FixedList<#=BYTES#>{T}"/> of bytes, thus allowing reinterpretation between FixedString<#=BYTES#> and FixedList<#=BYTES#>.
+    /// This layout is identical to a <see cref="FixedList<#=BYTES#>Bytes{T}"/> of bytes, thus allowing reinterpretation between FixedString<#=BYTES#>Bytes and FixedList<#=BYTES#>Bytes.
     ///
     /// By virtue of being an unmanaged, non-allocated struct with no pointers, this string is fully compatible with jobs and Burst compilation.
     /// Unlike managed string types, these strings can be put in any unmanaged ECS components, FixedList, or any other unmanaged structs.
@@ -122,7 +126,7 @@ namespace Unity.Collections
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=<#=BYTES#>)]
     [BurstCompatible]
-    public partial struct FixedString<#=BYTES#>
+    public partial struct <#=TYPENAME#>
         : INativeList<byte>
         , IUTF8Bytes
         , IComparable<String>
@@ -131,8 +135,8 @@ namespace Unity.Collections
       foreach (var OTHERBYTES in SIZES)
       {
 #>
-        , IComparable<FixedString<#=OTHERBYTES#>>
-        , IEquatable<FixedString<#=OTHERBYTES#>>
+        , IComparable<FixedString<#=OTHERBYTES#>Bytes>
+        , IEquatable<FixedString<#=OTHERBYTES#>Bytes>
 <#
       }
 #>
@@ -323,7 +327,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// An enumerator over the characters (not bytes) of a FixedString<#=BYTES#>.
+        /// An enumerator over the characters (not bytes) of a FixedString<#=BYTES#>Bytes.
         /// </summary>
         /// <remarks>
         /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
@@ -331,15 +335,15 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator
         {
-            FixedString<#=BYTES#> target;
+            FixedString<#=BYTES#>Bytes target;
             int offset;
             Unicode.Rune current;
 
             /// <summary>
-            /// Initializes and returns an instance of FixedString<#=BYTES#>.Enumerator.
+            /// Initializes and returns an instance of FixedString<#=BYTES#>Bytes.Enumerator.
             /// </summary>
             /// <param name="other">A FixeString<#=BYTES#> for which to create an enumerator.</param>
-            public Enumerator(FixedString<#=BYTES#> other)
+            public Enumerator(FixedString<#=BYTES#>Bytes other)
             {
                 target = other;
                 offset = 0;
@@ -395,7 +399,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns an enumerator for iterating over the characters of this string.
         /// </summary>
-        /// <returns>An enumerator for iterating over the characters of the FixedString<#=BYTES#>.</returns>
+        /// <returns>An enumerator for iterating over the characters of the FixedString<#=BYTES#>Bytes.</returns>
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -432,21 +436,21 @@ namespace Unity.Collections
         /// Returns a reference to a FixedListByte<#=BYTES#> representation of this string.
         /// </summary>
         /// <remarks>
-        /// The referenced FixedListByte<#=BYTES#> is the very same bytes as the original FixedString<#=BYTES#>,
-        /// so it is only valid as long as the original FixedString<#=BYTES#> is valid.
+        /// The referenced FixedListByte<#=BYTES#> is the very same bytes as the original FixedString<#=BYTES#>Bytes,
+        /// so it is only valid as long as the original FixedString<#=BYTES#>Bytes is valid.
         /// </remarks>
-        /// <returns>A ref to a FixedListByte<#=BYTES#> representation of the FixedString<#=BYTES#>.</returns>
-        public unsafe ref FixedList<#=BYTES#><byte> AsFixedList()
+        /// <returns>A ref to a FixedListByte<#=BYTES#> representation of the FixedString<#=BYTES#>Bytes.</returns>
+        public unsafe ref FixedList<#=BYTES#>Bytes<byte> AsFixedList()
         {
-            return ref UnsafeUtility.AsRef<FixedList<#=BYTES#><byte>>(UnsafeUtility.AddressOf(ref this));
+            return ref UnsafeUtility.AsRef<FixedList<#=BYTES#>Bytes<byte>>(UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString<#=BYTES#> with the characters copied from a string.
+        /// Initializes and returns an instance of FixedString<#=BYTES#>Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
         [NotBurstCompatible]
-        public FixedString<#=BYTES#>(String source)
+        public FixedString<#=BYTES#>Bytes(String source)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -462,11 +466,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString<#=BYTES#> with a single character repeatedly appended some number of times.
+        /// Initializes and returns an instance of FixedString<#=BYTES#>Bytes with a single character repeatedly appended some number of times.
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        public FixedString<#=BYTES#>(Unicode.Rune rune, int count = 1)
+        public FixedString<#=BYTES#>Bytes(Unicode.Rune rune, int count = 1)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -491,17 +495,17 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        public int CompareTo(FixedString<#=OTHERBYTES#> other)
+        public int CompareTo(FixedString<#=OTHERBYTES#>Bytes other)
         {
             return FixedStringMethods.CompareTo(ref this, other);
         }
 
         /// <summary>
-        /// Initializes and returns an instance of FixedString<#=BYTES#> that is a copy of another string.
+        /// Initializes and returns an instance of FixedString<#=BYTES#>Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>.</exception>
-        public FixedString<#=BYTES#>(in FixedString<#=OTHERBYTES#> other)
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>Bytes.</exception>
+        public FixedString<#=BYTES#>Bytes(in FixedString<#=OTHERBYTES#>Bytes other)
         {
             bytes = default;
             utf8LengthInBytes = 0;
@@ -517,13 +521,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString<#=BYTES#> and another string are equal.
+        /// Returns true if a FixedString<#=BYTES#>Bytes and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString<#=BYTES#> to compare for equality.</param>
-        /// <param name="b">A FixedString<#=OTHERBYTES#> to compare for equality.</param>
+        /// <param name="a">A FixedString<#=BYTES#>Bytes to compare for equality.</param>
+        /// <param name="b">A FixedString<#=OTHERBYTES#>Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public static bool operator ==(in FixedString<#=BYTES#> a, in FixedString<#=OTHERBYTES#> b)
+        public static bool operator ==(in FixedString<#=BYTES#>Bytes a, in FixedString<#=OTHERBYTES#>Bytes b)
         {
             // this must not call any methods on 'a' or 'b'
             unsafe {
@@ -536,13 +540,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns true if a FixedString<#=BYTES#> and another string are unequal.
+        /// Returns true if a FixedString<#=BYTES#>Bytes and another string are unequal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="a">A FixedString<#=BYTES#> to compare for inequality.</param>
-        /// <param name="b">A FixedString<#=OTHERBYTES#> to compare for inequality.</param>
+        /// <param name="a">A FixedString<#=BYTES#>Bytes to compare for inequality.</param>
+        /// <param name="b">A FixedString<#=OTHERBYTES#>Bytes to compare for inequality.</param>
         /// <returns>True if the two strings are unequal.</returns>
-        public static bool operator !=(in FixedString<#=BYTES#> a, in FixedString<#=OTHERBYTES#> b)
+        public static bool operator !=(in FixedString<#=BYTES#>Bytes a, in FixedString<#=OTHERBYTES#>Bytes b)
         {
             return !(a == b);
         }
@@ -551,9 +555,9 @@ namespace Unity.Collections
         /// Returns true if this string and another string are equal.
         /// </summary>
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
-        /// <param name="other">A FixedString<#=OTHERBYTES#> to compare for equality.</param>
+        /// <param name="other">A FixedString<#=OTHERBYTES#>Bytes to compare for equality.</param>
         /// <returns>True if the two strings are equal.</returns>
-        public bool Equals(FixedString<#=OTHERBYTES#> other)
+        public bool Equals(FixedString<#=OTHERBYTES#>Bytes other)
         {
             return this == other;
         }
@@ -564,25 +568,25 @@ namespace Unity.Collections
             // Generate implicit conversions to bigger-sized FixedStrings
 #>
         /// <summary>
-        /// Returns a new FixedString<#=OTHERBYTES#> that is a copy of another string.
+        /// Returns a new FixedString<#=OTHERBYTES#>Bytes that is a copy of another string.
         /// </summary>
-        /// <param name="fs">A FixedString<#=BYTES#> to copy.</param>
-        /// <returns>A new FixedString<#=OTHERBYTES#> that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=OTHERBYTES#>.</exception>
-        public static implicit operator FixedString<#=OTHERBYTES#>(in FixedString<#=BYTES#> fs) => new FixedString<#=OTHERBYTES#>(in fs);
+        /// <param name="fs">A FixedString<#=BYTES#>Bytes to copy.</param>
+        /// <returns>A new FixedString<#=OTHERBYTES#>Bytes that is a copy of the other string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=OTHERBYTES#>Bytes.</exception>
+        public static implicit operator FixedString<#=OTHERBYTES#>Bytes(in FixedString<#=BYTES#>Bytes fs) => new FixedString<#=OTHERBYTES#>Bytes(in fs);
 
 <#
         }
     }
 #>
         /// <summary>
-        /// Returns a new FixedString<#=BYTES#> that is a copy of another string.
+        /// Returns a new FixedString<#=BYTES#>Bytes that is a copy of another string.
         /// </summary>
         /// <param name="b">A string to copy.</param>
-        /// <returns>A new FixedString<#=BYTES#> that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>.</exception>
+        /// <returns>A new FixedString<#=BYTES#>Bytes that is a copy of another string.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>Bytes.</exception>
         [NotBurstCompatible]
-        public static implicit operator FixedString<#=BYTES#>(string b) => new FixedString<#=BYTES#>(b);
+        public static implicit operator FixedString<#=BYTES#>Bytes(string b) => new FixedString<#=BYTES#>Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
@@ -621,7 +625,7 @@ namespace Unity.Collections
 <#
     foreach(var OTHERBYTES in SIZES)
     {
-        var OTHERTYPENAME = "FixedString" + OTHERBYTES;
+        var OTHERTYPENAME = "FixedString" + OTHERBYTES + "Bytes";
         WriteLine("            if(obj is {0} a{0}) return Equals(a{0});", OTHERTYPENAME);
     }
 #>
@@ -634,7 +638,7 @@ namespace Unity.Collections
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
             if (index >= utf8LengthInBytes)
-                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString<#=BYTES#> of '{utf8LengthInBytes}' Length.");
+                throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString<#=BYTES#>Bytes of '{utf8LengthInBytes}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -643,7 +647,7 @@ namespace Unity.Collections
             if (length < 0)
                 throw new ArgumentOutOfRangeException($"Length {length} must be positive.");
             if (length > utf8MaxLengthInBytes)
-                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString<#=BYTES#> of '{utf8MaxLengthInBytes}' Capacity.");
+                throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString<#=BYTES#>Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -657,7 +661,7 @@ namespace Unity.Collections
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
-                throw new ArgumentException($"FixedString<#=BYTES#>: {error} while copying \"{source}\"");
+                throw new ArgumentException($"FixedString<#=BYTES#>Bytes: {error} while copying \"{source}\"");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

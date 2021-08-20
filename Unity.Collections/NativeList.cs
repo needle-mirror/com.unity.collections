@@ -100,13 +100,13 @@ namespace Unity.Collections
 
         //@TODO: Unity.Physics currently relies on the specific layout of NativeList in order to
         //       workaround a bug in 19.1 & 19.2 with atomic safety handle in jobified Dispose.
-        internal Allocator m_DeprecatedAllocator;
+        internal AllocatorManager.AllocatorHandle m_DeprecatedAllocator;
 
         /// <summary>
         /// Initializes and returns a NativeList with a capacity of one.
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeList(Allocator allocator)
+        public NativeList(AllocatorManager.AllocatorHandle allocator)
             : this(1, allocator, 2)
         {
         }
@@ -116,7 +116,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="initialCapacity">The initial capacity of the list.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeList(int initialCapacity, Allocator allocator)
+        public NativeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
             : this(initialCapacity, allocator, 2)
         {
         }
@@ -126,18 +126,20 @@ namespace Unity.Collections
         {
             var totalSize = sizeof(T) * (long)initialCapacity;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CheckAllocator((Allocator)allocator.Handle.Value);
+            CollectionHelper.CheckAllocator(allocator.Handle);
             CheckInitialCapacity(initialCapacity);
             CollectionHelper.CheckIsUnmanaged<T>();
             CheckTotalSize(initialCapacity, totalSize);
 
-            if(allocator.Handle.Value >= AllocatorManager.FirstUserIndex)
+            if(allocator.IsCustomAllocator)
             {
                 m_Safety = AtomicSafetyHandle.Create();
                 m_DisposeSentinel = null;
             }
             else
-                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, (Allocator)allocator.Handle.Value);
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+            }
 
             if (s_staticSafetyId.Data == 0)
                 CreateStaticSafetyId();
@@ -146,7 +148,7 @@ namespace Unity.Collections
             m_SafetyIndexHint = (allocator.Handle).AddSafetyHandle(m_Safety);
 #endif
             m_ListData = UnsafeList<T>.Create(initialCapacity, ref allocator);
-            m_DeprecatedAllocator = (Allocator)allocator.Handle.Value;
+            m_DeprecatedAllocator = allocator.Handle;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
@@ -167,7 +169,7 @@ namespace Unity.Collections
             return New(initialCapacity, ref allocator, 2);
         }
 
-        NativeList(int initialCapacity, Allocator allocator, int disposeSentinelStackDepth)
+        NativeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
             this = default;
             AllocatorManager.AllocatorHandle temp = allocator;
@@ -720,9 +722,9 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array containing a copy of this list's content.</returns>
-        public NativeArray<T> ToArray(Allocator allocator)
+        public NativeArray<T> ToArray(AllocatorManager.AllocatorHandle allocator)
         {
-            NativeArray<T> result = new NativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
+            NativeArray<T> result = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
             result.CopyFrom(this);
             return result;
         }
@@ -885,7 +887,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Increment(ref ListData->length) - 1;
+                var idx = Interlocked.Increment(ref ListData->m_length) - 1;
                 CheckSufficientCapacity(ListData->Capacity, idx + 1);
 
                 UnsafeUtility.WriteArrayElement(Ptr, idx, value);
@@ -907,7 +909,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Add(ref ListData->length, count) - count;
+                var idx = Interlocked.Add(ref ListData->m_length, count) - count;
                 CheckSufficientCapacity(ListData->Capacity, idx + count);
 
                 var sizeOf = sizeof(T);
@@ -940,14 +942,6 @@ namespace Unity.Collections
             {
                 AddRangeNoResize(*list.m_ListData);
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckAllocator(Allocator allocator)
-        {
-            // Native allocation is only valid for Temp, Job and Persistent.
-            if (allocator <= Allocator.None)
-                throw new ArgumentException("Allocator must be Temp, TempJob or Persistent", nameof(allocator));
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

@@ -8,7 +8,7 @@ namespace Unity.Collections
         /// <summary>
         /// Append two characters to this IUTF8Bytes.  This is used as a helper for internal formatting.
         /// </summary>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static FormatError Append<T>(ref this T fs, char a, char b)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -23,7 +23,7 @@ namespace Unity.Collections
         /// <summary>
         /// Append three characters to this IUTF8Bytes.  This is used as a helper for internal formatting.
         /// </summary>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static FormatError Append<T>(ref this T fs, char a, char b, char c)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -39,7 +39,7 @@ namespace Unity.Collections
         /// <summary>
         /// Append 'I' 'n' 'f' 'i' 'n' 'i' 't' 'y' characters to this IUTF8Bytes.  This is used as a helper for internal formatting.
         /// </summary>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static FormatError Append<T>(ref this T fs, char a, char b, char c, char d, char e, char f, char g, char h)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -57,7 +57,7 @@ namespace Unity.Collections
             return FormatError.None;
         }
 
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static FormatError AppendScientific<T>(ref this T fs, char *source, int sourceLength, int decimalExponent, char decimalSeparator = '.')
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -111,7 +111,7 @@ namespace Unity.Collections
         /// <param name="b">rune b</param>
         /// <param name="c">rune c</param>
         /// <returns></returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static bool Found<T>(ref this T fs, ref int offset, char a, char b, char c)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {
@@ -137,7 +137,7 @@ namespace Unity.Collections
         /// <param name="g"></param>
         /// <param name="h"></param>
         /// <returns></returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128) })]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         internal static bool Found<T>(ref this T fs, ref int offset, char a, char b, char c, char d, char e, char f, char g, char h)
             where T : struct, INativeList<byte>, IUTF8Bytes
         {

@@ -31,8 +31,8 @@ namespace Unity.Collections
     {
         IntPtr m_pointer;
         int m_length;
-        Allocator m_allocator;
-        public UnmanagedArray(int length, Allocator allocator)
+        AllocatorManager.AllocatorHandle m_allocator;
+        public UnmanagedArray(int length, AllocatorManager.AllocatorHandle allocator)
         {
             unsafe
             {
@@ -89,8 +89,7 @@ namespace Unity.Collections
                 m_bytes = 0;
                 m_current = 0;
             }
-            public const int kErrorNone = 0;
-            public const int kErrorBufferOverflow = -1;
+
             public int TryAllocate(ref AllocatorManager.Block block)
             {
                 var alignment = math.max(JobsUtility.CacheLineSize, block.Alignment);
@@ -100,10 +99,10 @@ namespace Unity.Collections
                 var begin = Interlocked.Add(ref m_current, size) - size;
                 begin = (begin + mask) & ~mask; // align the offset here
                 if (begin + block.Bytes > m_bytes)
-                    return kErrorBufferOverflow;
+                    return AllocatorManager.kErrorBufferOverflow;
                 block.Range.Pointer = (IntPtr)(m_pointer + begin);
                 block.AllocatedItems = block.Range.Items;
-                return kErrorNone;
+                return AllocatorManager.kErrorNone;
             }
         };
         Spinner m_spinner;
@@ -188,7 +187,7 @@ namespace Unity.Collections
             {
                 // first, try to allocate from the block that succeeded last time, which we expect is likely to succeed again.
                 var error = m_block[m_best].TryAllocate(ref block);
-                if (error == MemoryBlock.kErrorNone)
+                if (error == AllocatorManager.kErrorNone)
                     return error;
                 // if that fails, check all the blocks to see if any of them have enough memory
                 m_spinner.Lock();
@@ -196,7 +195,7 @@ namespace Unity.Collections
                 for (best = 0; best <= m_last; ++best)
                 {
                     error = m_block[best].TryAllocate(ref block);
-                    if (error == MemoryBlock.kErrorNone)
+                    if (error == AllocatorManager.kErrorNone)
                     {
                         m_used = best > m_used ? best : m_used;
                         m_best = best;
@@ -236,6 +235,8 @@ namespace Unity.Collections
         /// Retrieve the Allocator associated with this allocator.
         /// </summary>
         public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
+
+        public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
 
         /// <summary>
         /// Allocate a NativeArray of type T from memory that is guaranteed to remain valid until the end of the

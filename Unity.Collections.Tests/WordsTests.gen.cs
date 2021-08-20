@@ -342,7 +342,7 @@ internal class WordsTests
     public void WordStorageFixedString32Works(String value)
     {
         NumberedWords w = new NumberedWords();
-        FixedString32 fixedString = default;
+        FixedString32Bytes fixedString = default;
         w.SetString(value);
         w.ToFixedString(ref fixedString);
         Assert.AreEqual(value, fixedString.ToString());
@@ -359,7 +359,7 @@ internal class WordsTests
     public void WordStorageFixedString64Works(String value)
     {
         NumberedWords w = new NumberedWords();
-        FixedString64 fixedString = default;
+        FixedString64Bytes fixedString = default;
         w.SetString(value);
         w.ToFixedString(ref fixedString);
         Assert.AreEqual(value, fixedString.ToString());
@@ -376,7 +376,7 @@ internal class WordsTests
     public void WordStorageFixedString128Works(String value)
     {
         NumberedWords w = new NumberedWords();
-        FixedString128 fixedString = default;
+        FixedString128Bytes fixedString = default;
         w.SetString(value);
         w.ToFixedString(ref fixedString);
         Assert.AreEqual(value, fixedString.ToString());

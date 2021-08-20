@@ -38,8 +38,8 @@ namespace FixedStringTests
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             Assert.True(aa.IsCreated);
             aa.Junk();
-            FixedString32 format = "{0}";
-            FixedString32 arg0 = "a";
+            FixedString32Bytes format = "{0}";
+            FixedString32Bytes arg0 = "a";
             aa.AppendFormat(format, arg0);
             aa.Append('a');
             aa.AssertNullTerminated();
@@ -53,9 +53,9 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
+            FixedString32Bytes format = "{0} {1}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
             aa.AppendFormat(format, arg0, arg1);
             AssertAreEqualInTest("a b", aa);
             aa.AssertNullTerminated();
@@ -68,10 +68,10 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
+            FixedString32Bytes format = "{0} {1} {2}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
             aa.AppendFormat(format, arg0, arg1, arg2);
             AssertAreEqualInTest("a b c", aa);
             aa.AssertNullTerminated();
@@ -84,11 +84,11 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(512, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
+            FixedString32Bytes format = "{0} {1} {2} {3}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3);
             AssertAreEqualInTest("a b c d", aa);
             aa.AssertNullTerminated();
@@ -101,12 +101,12 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
             AssertAreEqualInTest("a b c d e", aa);
             aa.AssertNullTerminated();
@@ -119,13 +119,13 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
             AssertAreEqualInTest("a b c d e f", aa);
             aa.AssertNullTerminated();
@@ -138,14 +138,14 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString32 format = "{0} {1} {2} {3} {4} {5} {6}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
+            FixedString32Bytes format = "{0} {1} {2} {3} {4} {5} {6}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
             AssertAreEqualInTest("a b c d e f g", aa);
             aa.AssertNullTerminated();
@@ -158,15 +158,15 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             AssertAreEqualInTest("a b c d e f g h", aa);
             aa.AssertNullTerminated();
@@ -179,16 +179,16 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             AssertAreEqualInTest("a b c d e f g h i", aa);
             aa.AssertNullTerminated();
@@ -201,17 +201,17 @@ namespace FixedStringTests
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
             aa.Junk();
-            FixedString128 format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
-            FixedString32 arg0 = "a";
-            FixedString32 arg1 = "b";
-            FixedString32 arg2 = "c";
-            FixedString32 arg3 = "d";
-            FixedString32 arg4 = "e";
-            FixedString32 arg5 = "f";
-            FixedString32 arg6 = "g";
-            FixedString32 arg7 = "h";
-            FixedString32 arg8 = "i";
-            FixedString32 arg9 = "j";
+            FixedString128Bytes format = "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}";
+            FixedString32Bytes arg0 = "a";
+            FixedString32Bytes arg1 = "b";
+            FixedString32Bytes arg2 = "c";
+            FixedString32Bytes arg3 = "d";
+            FixedString32Bytes arg4 = "e";
+            FixedString32Bytes arg5 = "f";
+            FixedString32Bytes arg6 = "g";
+            FixedString32Bytes arg7 = "h";
+            FixedString32Bytes arg8 = "i";
+            FixedString32Bytes arg9 = "j";
             aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
             AssertAreEqualInTest("a b c d e f g h i j", aa);
             aa.AssertNullTerminated();
@@ -274,7 +274,7 @@ namespace FixedStringTests
         public void UnsafeTextToStringWorks(String a)
         {
             UnsafeText aa = new UnsafeText(4, Allocator.Temp);
-            aa.Append(new FixedString128(a));
+            aa.Append(new FixedString128Bytes(a));
             Assert.AreEqual(a, aa.ToString());
             aa.AssertNullTerminated();
             aa.Dispose();
@@ -284,9 +284,9 @@ namespace FixedStringTests
         public void UnsafeTextIndexOf()
         {
             UnsafeText a = new UnsafeText(16, Allocator.Temp);
-            a.Append((FixedString64) "bookkeeper bookkeeper");
+            a.Append((FixedString64Bytes) "bookkeeper bookkeeper");
             UnsafeText b = new UnsafeText(8, Allocator.Temp);
-            b.Append((FixedString32) "ookkee");
+            b.Append((FixedString32Bytes) "ookkee");
 
             Assert.AreEqual(1, a.IndexOf(b));
             Assert.AreEqual(-1, b.IndexOf(a));
@@ -298,9 +298,9 @@ namespace FixedStringTests
         public void UnsafeTextLastIndexOf()
         {
             UnsafeText a = new UnsafeText(16, Allocator.Temp);
-            a.Append((FixedString64) "bookkeeper bookkeeper");
+            a.Append((FixedString64Bytes) "bookkeeper bookkeeper");
             UnsafeText b = new UnsafeText(8, Allocator.Temp);
-            b.Append((FixedString32) "ookkee");
+            b.Append((FixedString32Bytes) "ookkee");
 
             Assert.AreEqual(12, a.LastIndexOf(b));
             Assert.AreEqual(-1, b.LastIndexOf(a));
@@ -312,9 +312,9 @@ namespace FixedStringTests
         public void UnsafeTextContains()
         {
             UnsafeText a = new UnsafeText(16, Allocator.Temp);
-            a.Append((FixedString64) "bookkeeper bookkeeper");
+            a.Append((FixedString64Bytes) "bookkeeper bookkeeper");
             UnsafeText b = new UnsafeText(8, Allocator.Temp);
-            b.Append((FixedString32) "ookkee");
+            b.Append((FixedString32Bytes) "ookkee");
 
             Assert.AreEqual(true, a.Contains(b));
             a.Dispose();
@@ -325,9 +325,9 @@ namespace FixedStringTests
         public void UnsafeTextComparisons()
         {
             UnsafeText a = new UnsafeText(16, Allocator.Temp);
-            a.Append((FixedString64) "apple");
+            a.Append((FixedString64Bytes) "apple");
             UnsafeText b = new UnsafeText(8, Allocator.Temp);
-            b.Append((FixedString32) "banana");
+            b.Append((FixedString32Bytes) "banana");
 
             Assert.AreEqual(false, a.Equals(b));
             Assert.AreEqual(true, !b.Equals(a));

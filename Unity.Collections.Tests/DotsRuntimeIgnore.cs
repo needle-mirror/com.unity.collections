@@ -12,9 +12,9 @@ namespace Unity.Collections.Tests
     }
 
 #else
-    internal class DotsRuntimeIgnore : Attribute
+    internal class DotsRuntimeIgnoreAttribute : Attribute
     {
-        public DotsRuntimeIgnore(string msg="")
+        public DotsRuntimeIgnoreAttribute(string msg="")
         {
         }
     }
@@ -30,9 +30,9 @@ class IgnoreInPortableTests : IgnoreAttribute
     }
 }
 #else
-class IgnoreInPortableTests : Attribute
+class IgnoreInPortableTestsAttribute : Attribute
 {
-    public IgnoreInPortableTests(string reason)
+    public IgnoreInPortableTestsAttribute(string reason)
     {
     }
 }

@@ -50,14 +50,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -89,14 +89,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -128,14 +128,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -167,15 +167,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -207,14 +207,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -246,14 +246,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -285,14 +285,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -324,15 +324,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -364,14 +364,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -403,14 +403,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -442,14 +442,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, int arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -482,14 +482,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -521,15 +521,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -561,15 +561,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -602,14 +602,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -642,15 +642,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, int arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -682,14 +682,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -721,14 +721,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -760,14 +760,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -799,15 +799,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -839,14 +839,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -878,14 +878,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -917,14 +917,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -956,15 +956,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -996,14 +996,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1035,14 +1035,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1074,14 +1074,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, float arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1114,14 +1114,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -1153,15 +1153,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1193,15 +1193,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1234,14 +1234,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1274,15 +1274,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, float arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -1314,14 +1314,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1353,14 +1353,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1392,14 +1392,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1432,14 +1432,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -1471,14 +1471,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1510,14 +1510,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1549,14 +1549,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1589,14 +1589,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -1628,14 +1628,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1667,14 +1667,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1706,14 +1706,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, string arg2, int arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -1746,14 +1746,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -1786,14 +1786,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1826,14 +1826,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1866,14 +1866,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -1907,14 +1907,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, int arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, string arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -1946,15 +1946,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -1986,15 +1986,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2027,14 +2027,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2067,15 +2067,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -2107,15 +2107,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2147,15 +2147,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2188,14 +2188,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2228,15 +2228,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -2269,14 +2269,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2309,14 +2309,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2349,14 +2349,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, int arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, T1 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -2390,14 +2390,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, int arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -2430,15 +2430,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -2471,15 +2471,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -2513,14 +2513,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, int arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, T2 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -2554,15 +2554,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, int arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, T3 arg2, int arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, arg2, carg3);
@@ -2594,14 +2594,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2633,14 +2633,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2672,14 +2672,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2711,15 +2711,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -2751,14 +2751,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2790,14 +2790,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2829,14 +2829,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2868,15 +2868,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -2908,14 +2908,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2947,14 +2947,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -2986,14 +2986,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, int arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3026,14 +3026,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -3065,15 +3065,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3105,15 +3105,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3146,14 +3146,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3186,15 +3186,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, int arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -3226,14 +3226,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3265,14 +3265,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3304,14 +3304,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3343,15 +3343,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -3383,14 +3383,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3422,14 +3422,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3461,14 +3461,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3500,15 +3500,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -3540,14 +3540,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3579,14 +3579,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3618,14 +3618,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, float arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3658,14 +3658,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -3697,15 +3697,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3737,15 +3737,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3778,14 +3778,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -3818,15 +3818,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, float arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -3858,14 +3858,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3897,14 +3897,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3936,14 +3936,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -3976,14 +3976,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -4015,14 +4015,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4054,14 +4054,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4093,14 +4093,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4133,14 +4133,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -4172,14 +4172,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4211,14 +4211,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4250,14 +4250,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, string arg2, float arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -4290,14 +4290,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -4330,14 +4330,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -4370,14 +4370,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -4410,14 +4410,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -4451,14 +4451,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, float arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, string arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -4490,15 +4490,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4530,15 +4530,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4571,14 +4571,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4611,15 +4611,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -4651,15 +4651,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4691,15 +4691,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4732,14 +4732,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4772,15 +4772,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -4813,14 +4813,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4853,14 +4853,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4893,14 +4893,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, float arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, T1 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -4934,14 +4934,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, float arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -4974,15 +4974,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -5015,15 +5015,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -5057,14 +5057,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, float arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, T2 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -5098,15 +5098,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, float arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, T3 arg2, float arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, arg2, carg3);
@@ -5138,14 +5138,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5177,14 +5177,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5216,14 +5216,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5256,14 +5256,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -5295,14 +5295,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5334,14 +5334,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5373,14 +5373,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5413,14 +5413,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -5452,14 +5452,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5491,14 +5491,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5530,14 +5530,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, int arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -5570,14 +5570,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -5610,14 +5610,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -5650,14 +5650,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -5690,646 +5690,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, int arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, float arg2, string arg3)
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, float arg2, string arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -6363,14 +5731,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, int arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -6402,14 +5770,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, int arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6441,14 +5809,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, int arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6480,14 +5848,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, int arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6520,14 +5888,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, int arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -6559,14 +5927,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, float arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6598,14 +5966,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, float arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6637,14 +6005,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, float arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6677,14 +6045,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, float arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -6716,14 +6084,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, int arg0, string arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6755,14 +6123,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, float arg0, string arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6794,14 +6162,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format(FixedString512 formatString, string arg0, string arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, float arg2, string arg3)
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
@@ -6834,14 +6202,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, T1 arg0, string arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
@@ -6874,14 +6242,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, T1 arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -6914,14 +6282,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, T1 arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -6954,14 +6322,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, T1 arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
@@ -6995,14 +6363,646 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, float arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, int arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, int arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, int arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, int arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, float arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, float arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, float arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, float arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, int arg0, string arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, float arg0, string arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format(FixedString512Bytes formatString, string arg0, string arg1, string arg2, string arg3)
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, T1 arg0, string arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, T1 arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, T1 arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, T1 arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, carg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, T2 arg1, string arg2, string arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, carg3);
@@ -7035,14 +7035,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7075,14 +7075,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7115,14 +7115,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7156,14 +7156,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -7196,14 +7196,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7236,14 +7236,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7276,14 +7276,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7317,14 +7317,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -7357,14 +7357,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7397,14 +7397,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7437,14 +7437,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, T1 arg2, string arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, T1 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, carg3);
@@ -7478,14 +7478,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, carg3);
@@ -7519,14 +7519,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -7560,14 +7560,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -7601,14 +7601,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, T2 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, carg3);
@@ -7643,14 +7643,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, string arg3)
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, T3 arg2, string arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg3 = default; carg3.Append(arg3);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg3 = default; carg3.Append(arg3);
 
 
             result.AppendFormat(formatString, arg0, arg1, arg2, carg3);
@@ -7682,15 +7682,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, int arg2, T1 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7722,15 +7722,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, int arg2, T1 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7763,14 +7763,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, int arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7803,15 +7803,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, int arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -7843,15 +7843,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, int arg2, T1 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7883,15 +7883,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, int arg2, T1 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7924,14 +7924,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, int arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -7964,15 +7964,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, int arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -8005,14 +8005,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, int arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -8045,14 +8045,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, int arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -8085,14 +8085,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, int arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, int arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -8126,14 +8126,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, int arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -8166,15 +8166,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, int arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -8207,663 +8207,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, int arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, int arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-        /// <typeparam name="T3"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, int arg2, T3 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, arg0, arg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, float arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, float arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, float arg2, T1 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, float arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, float arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
-
-
-            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a new string produced by interpolating a format string.
-        /// </summary>
-        /// <remarks>
-        /// Similar to StringBuilder.AppendFormat but with significant limitations:
-        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
-        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
-        ///
-        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
-        /// - string
-        /// - int
-        /// - float
-        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
-        ///
-        /// <seealso cref="FixedStringMethods.AppendFormat"/>
-        /// </remarks>
-        /// <param name="formatString">The format string.</param>
-        /// <typeparam name="T1"><undoc /></typeparam>
-        /// <typeparam name="T2"><undoc /></typeparam>
-
-        /// <param name="arg0">Value to interpolate into the format string.</param>
-        /// <param name="arg1">Value to interpolate into the format string.</param>
-        /// <param name="arg2">Value to interpolate into the format string.</param>
-        /// <param name="arg3">Value to interpolate into the format string.</param>
-        /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, float arg2, T2 arg3)
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-
-        {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -8897,14 +8249,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, float arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, int arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -8938,15 +8290,663 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, float arg2, T3 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, int arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, arg0, arg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, float arg2, T1 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [NotBurstCompatible]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, float arg2, T2 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
+
+
+            result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a new string produced by interpolating a format string.
+        /// </summary>
+        /// <remarks>
+        /// Similar to StringBuilder.AppendFormat but with significant limitations:
+        /// - Only supports numeric format placeholders of the form `{0}` .. `{N}`.
+        /// - No format modifiers (*e.g.* `{0:x}`) are supported.
+        ///
+        /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
+        /// - FixedString*N*
+        /// - string
+        /// - int
+        /// - float
+        /// - structs implementing INativeList&lt;byte&gt; and IUTF8Bytes
+        ///
+        /// <seealso cref="FixedStringMethods.AppendFormat"/>
+        /// </remarks>
+        /// <param name="formatString">The format string.</param>
+        /// <typeparam name="T1"><undoc /></typeparam>
+        /// <typeparam name="T2"><undoc /></typeparam>
+        /// <typeparam name="T3"><undoc /></typeparam>
+
+        /// <param name="arg0">Value to interpolate into the format string.</param>
+        /// <param name="arg1">Value to interpolate into the format string.</param>
+        /// <param name="arg2">Value to interpolate into the format string.</param>
+        /// <param name="arg3">Value to interpolate into the format string.</param>
+        /// <returns>A new string produced by interpolating the format string.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, float arg2, T3 arg3)
+            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T2 : struct, INativeList<byte>, IUTF8Bytes
+            where T3 : struct, INativeList<byte>, IUTF8Bytes
+
+        {
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, arg3);
@@ -8979,14 +8979,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, int arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9019,14 +9019,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, int arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9059,14 +9059,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, int arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, int arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9100,14 +9100,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, int arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, int arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -9140,14 +9140,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, float arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9180,14 +9180,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, float arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9220,14 +9220,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, float arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, float arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9261,14 +9261,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, float arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, float arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -9301,14 +9301,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, int arg0, string arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, int arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9341,14 +9341,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, float arg0, string arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, float arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9381,14 +9381,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1>(FixedString512 formatString, string arg0, string arg1, string arg2, T1 arg3)
+        public static FixedString512Bytes Format<T1>(FixedString512Bytes formatString, string arg0, string arg1, string arg2, T1 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2, arg3);
@@ -9422,14 +9422,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, T1 arg0, string arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, T1 arg0, string arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2, arg3);
@@ -9463,14 +9463,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, T1 arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -9504,14 +9504,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, T1 arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -9545,14 +9545,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, T1 arg1, string arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, T1 arg1, string arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2, arg3);
@@ -9587,14 +9587,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, T2 arg1, string arg2, T3 arg3)
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, T2 arg1, string arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2, arg3);
@@ -9627,15 +9627,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, int arg1, T1 arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9668,15 +9668,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, int arg1, T1 arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9710,14 +9710,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, int arg1, T1 arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, int arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9751,15 +9751,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, int arg1, T2 arg2, T3 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, int arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, arg3);
@@ -9792,15 +9792,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, float arg1, T1 arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9833,15 +9833,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, float arg1, T1 arg2, T2 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9875,14 +9875,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, float arg1, T1 arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, float arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9916,15 +9916,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, float arg1, T2 arg2, T3 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, float arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, arg3);
@@ -9958,14 +9958,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, int arg0, string arg1, T1 arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, int arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -9999,14 +9999,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, float arg0, string arg1, T1 arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, float arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -10040,14 +10040,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2>(FixedString512 formatString, string arg0, string arg1, T1 arg2, T2 arg3)
+        public static FixedString512Bytes Format<T1,T2>(FixedString512Bytes formatString, string arg0, string arg1, T1 arg2, T2 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2, arg3);
@@ -10082,14 +10082,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, T1 arg0, string arg1, T2 arg2, T3 arg3)
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, T1 arg0, string arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2, arg3);
@@ -10123,15 +10123,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, int arg0, T1 arg1, T2 arg2, T3 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, int arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, arg3);
@@ -10165,15 +10165,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, float arg0, T1 arg1, T2 arg2, T3 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, float arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, arg3);
@@ -10208,14 +10208,14 @@ namespace Unity.Collections
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString512 Format<T1,T2,T3>(FixedString512 formatString, string arg0, T1 arg1, T2 arg2, T3 arg3)
+        public static FixedString512Bytes Format<T1,T2,T3>(FixedString512Bytes formatString, string arg0, T1 arg1, T2 arg2, T3 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString512Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2, arg3);
@@ -10250,15 +10250,15 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <param name="arg3">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/), typeof(FixedString32 /*$T4*/) } )]
-        public static FixedString512 Format<T1,T2,T3,T4>(FixedString512 formatString, T1 arg0, T2 arg1, T3 arg2, T4 arg3)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/), typeof(FixedString32Bytes /*$T4*/) } )]
+        public static FixedString512Bytes Format<T1,T2,T3,T4>(FixedString512Bytes formatString, T1 arg0, T2 arg1, T3 arg2, T4 arg3)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
             where T4 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString512 result = default;
+            FixedString512Bytes result = default;
 
 
             result.AppendFormat(formatString, arg0, arg1, arg2, arg3);
@@ -10289,13 +10289,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, int arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10326,13 +10326,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, int arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10363,13 +10363,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, int arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10400,14 +10400,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, int arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, int arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -10438,13 +10438,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, float arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10475,13 +10475,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, float arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10512,13 +10512,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, float arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10549,14 +10549,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, int arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, float arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -10587,13 +10587,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, string arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10624,13 +10624,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, string arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10661,13 +10661,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, int arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, string arg1, int arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10699,13 +10699,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, int arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, string arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -10736,14 +10736,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, int arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -10774,14 +10774,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, int arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -10813,13 +10813,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, int arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, T1 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -10851,14 +10851,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, int arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, T2 arg1, int arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2);
@@ -10889,13 +10889,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, int arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10926,13 +10926,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, int arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -10963,13 +10963,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, int arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11000,14 +11000,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, float arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, int arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11038,13 +11038,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, float arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11075,13 +11075,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, float arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11112,13 +11112,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, float arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11149,14 +11149,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, float arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, float arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11187,13 +11187,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, string arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11224,13 +11224,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, string arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11261,13 +11261,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, float arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, string arg1, float arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11299,13 +11299,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, float arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, string arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11336,14 +11336,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, float arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -11374,14 +11374,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, float arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -11413,13 +11413,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, float arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, T1 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -11451,14 +11451,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, float arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, T2 arg1, float arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2);
@@ -11489,13 +11489,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, int arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11526,13 +11526,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, int arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11563,13 +11563,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, int arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11601,13 +11601,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, int arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11638,13 +11638,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, float arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11675,13 +11675,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, float arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11712,13 +11712,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, float arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11750,13 +11750,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, float arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11787,13 +11787,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, string arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11824,13 +11824,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, string arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11861,13 +11861,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1, string arg2)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, string arg1, string arg2)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, carg1, carg2);
@@ -11899,13 +11899,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, string arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, carg1, carg2);
@@ -11937,13 +11937,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -11975,13 +11975,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -12013,13 +12013,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1, string arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, T1 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, carg0, arg1, carg2);
@@ -12052,13 +12052,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1, string arg2)
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, T2 arg1, string arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg2 = default; carg2.Append(arg2);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg2 = default; carg2.Append(arg2);
 
 
             result.AppendFormat(formatString, arg0, arg1, carg2);
@@ -12089,14 +12089,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, int arg1, T1 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12127,14 +12127,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, int arg1, T1 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12166,13 +12166,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, int arg1, T1 arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, int arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12204,14 +12204,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, int arg1, T2 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, int arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2);
@@ -12242,14 +12242,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, float arg1, T1 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12280,14 +12280,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, float arg1, T1 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12319,13 +12319,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, float arg1, T1 arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, float arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12357,14 +12357,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, float arg1, T2 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, float arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2);
@@ -12396,13 +12396,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, string arg1, T1 arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12434,13 +12434,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, string arg1, T1 arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12472,13 +12472,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, string arg1, T1 arg2)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, string arg1, T1 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1, arg2);
@@ -12511,13 +12511,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, string arg1, T2 arg2)
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, string arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1, arg2);
@@ -12549,14 +12549,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, int arg0, T1 arg1, T2 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, int arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2);
@@ -12588,14 +12588,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, float arg0, T1 arg1, T2 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, float arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2);
@@ -12628,13 +12628,13 @@ namespace Unity.Collections
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, string arg0, T1 arg1, T2 arg2)
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, string arg0, T1 arg1, T2 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1, arg2);
@@ -12667,14 +12667,14 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <param name="arg2">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/), typeof(FixedString32 /*$T3*/) } )]
-        public static FixedString128 Format<T1,T2,T3>(FixedString128 formatString, T1 arg0, T2 arg1, T3 arg2)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/), typeof(FixedString32Bytes /*$T3*/) } )]
+        public static FixedString128Bytes Format<T1,T2,T3>(FixedString128Bytes formatString, T1 arg0, T2 arg1, T3 arg2)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
             where T3 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
+            FixedString128Bytes result = default;
 
 
             result.AppendFormat(formatString, arg0, arg1, arg2);
@@ -12704,12 +12704,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, int arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, int arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12739,12 +12739,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, int arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, int arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12774,12 +12774,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, int arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, int arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12809,13 +12809,13 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, int arg1)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, int arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1);
@@ -12845,12 +12845,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0, float arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, float arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12880,12 +12880,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0, float arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, float arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12915,12 +12915,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, float arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, float arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -12950,13 +12950,13 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, float arg1)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, float arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1);
@@ -12986,12 +12986,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, int arg0, string arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0, string arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -13021,12 +13021,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, float arg0, string arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0, string arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -13056,12 +13056,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0, string arg1)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0, string arg1)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, carg0, carg1);
@@ -13092,12 +13092,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0, string arg1)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0, string arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg1 = default; carg1.Append(arg1);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg1 = default; carg1.Append(arg1);
 
 
             result.AppendFormat(formatString, arg0, carg1);
@@ -13127,13 +13127,13 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, int arg0, T1 arg1)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, int arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1);
@@ -13163,13 +13163,13 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, float arg0, T1 arg1)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, float arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1);
@@ -13200,12 +13200,12 @@ namespace Unity.Collections
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format<T1>(FixedString128 formatString, string arg0, T1 arg1)
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, string arg0, T1 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0, arg1);
@@ -13236,13 +13236,13 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <param name="arg1">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/), typeof(FixedString32 /*$T2*/) } )]
-        public static FixedString128 Format<T1,T2>(FixedString128 formatString, T1 arg0, T2 arg1)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/), typeof(FixedString32Bytes /*$T2*/) } )]
+        public static FixedString128Bytes Format<T1,T2>(FixedString128Bytes formatString, T1 arg0, T2 arg1)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
             where T2 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
+            FixedString128Bytes result = default;
 
 
             result.AppendFormat(formatString, arg0, arg1);
@@ -13271,11 +13271,11 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, int arg0)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, int arg0)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0);
@@ -13304,11 +13304,11 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         
-        public static FixedString128 Format(FixedString128 formatString, float arg0)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, float arg0)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0);
@@ -13337,11 +13337,11 @@ namespace Unity.Collections
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
         [NotBurstCompatible]
-        public static FixedString128 Format(FixedString128 formatString, string arg0)
+        public static FixedString128Bytes Format(FixedString128Bytes formatString, string arg0)
 
         {
-            FixedString128 result = default;
-            FixedString32 carg0 = default; carg0.Append(arg0);
+            FixedString128Bytes result = default;
+            FixedString32Bytes carg0 = default; carg0.Append(arg0);
 
 
             result.AppendFormat(formatString, carg0);
@@ -13370,12 +13370,12 @@ namespace Unity.Collections
 
         /// <param name="arg0">Value to interpolate into the format string.</param>
         /// <returns>A new string produced by interpolating the format string.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32 /*$T1*/) } )]
-        public static FixedString128 Format<T1>(FixedString128 formatString, T1 arg0)
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString32Bytes /*$T1*/) } )]
+        public static FixedString128Bytes Format<T1>(FixedString128Bytes formatString, T1 arg0)
             where T1 : struct, INativeList<byte>, IUTF8Bytes
 
         {
-            FixedString128 result = default;
+            FixedString128Bytes result = default;
 
 
             result.AppendFormat(formatString, arg0);

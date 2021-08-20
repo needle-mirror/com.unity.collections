@@ -36,10 +36,10 @@ internal class FixedListTests : CollectionsTestFixture
 
     [Test]
     [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
-    public void FixedList32DebugView()
+    public void FixedList32BytesDebugView()
     {
-        var list = new FixedList32<NonComparableStruct>();
-        CollectionAssert.IsEmpty(new FixedList32DebugView<NonComparableStruct>(list).Items);
+        var list = new FixedList32Bytes<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList32BytesDebugView<NonComparableStruct>(list).Items);
 
         var reference = new []
         {
@@ -52,15 +52,15 @@ internal class FixedListTests : CollectionsTestFixture
         list.Add(reference[1]);
         list.Add(reference[2]);
 
-        CollectionAssert.AreEqual(reference, new FixedList32DebugView<NonComparableStruct>(list).Items);
+        CollectionAssert.AreEqual(reference, new FixedList32BytesDebugView<NonComparableStruct>(list).Items);
     }
 
     [Test]
     [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
-    public void FixedList64DebugView()
+    public void FixedList64BytesDebugView()
     {
-        var list = new FixedList64<NonComparableStruct>();
-        CollectionAssert.IsEmpty(new FixedList64DebugView<NonComparableStruct>(list).Items);
+        var list = new FixedList64Bytes<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList64BytesDebugView<NonComparableStruct>(list).Items);
 
         var reference = new []
         {
@@ -73,15 +73,15 @@ internal class FixedListTests : CollectionsTestFixture
         list.Add(reference[1]);
         list.Add(reference[2]);
 
-        CollectionAssert.AreEqual(reference, new FixedList64DebugView<NonComparableStruct>(list).Items);
+        CollectionAssert.AreEqual(reference, new FixedList64BytesDebugView<NonComparableStruct>(list).Items);
     }
 
     [Test]
     [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
-    public void FixedList128DebugView()
+    public void FixedList128BytesDebugView()
     {
-        var list = new FixedList128<NonComparableStruct>();
-        CollectionAssert.IsEmpty(new FixedList128DebugView<NonComparableStruct>(list).Items);
+        var list = new FixedList128Bytes<NonComparableStruct>();
+        CollectionAssert.IsEmpty(new FixedList128BytesDebugView<NonComparableStruct>(list).Items);
 
         var reference = new []
         {
@@ -94,7 +94,7 @@ internal class FixedListTests : CollectionsTestFixture
         list.Add(reference[1]);
         list.Add(reference[2]);
 
-        CollectionAssert.AreEqual(reference, new FixedList128DebugView<NonComparableStruct>(list).Items);
+        CollectionAssert.AreEqual(reference, new FixedList128BytesDebugView<NonComparableStruct>(list).Items);
     }
 
 
@@ -116,7 +116,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_ToNativeArrayWorks()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
 
         for(var i = 0; i < 30; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -131,7 +131,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericHasExpectedLayout()
     {
-        var actual = new FixedList32<byte>();
+        var actual = new FixedList32Bytes<byte>();
         for(var i = 0; i < 30; ++i)
           actual.Add((byte)i);
         unsafe
@@ -151,7 +151,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -160,7 +160,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<byte>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -171,7 +171,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericRemoveRange()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -180,7 +180,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericInsert()
     {
-        var list = new FixedList32<byte>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -190,7 +190,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericRemoveAt()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -200,7 +200,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericRemove()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -210,7 +210,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericRemoveSwapBack()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -220,7 +220,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericSort()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -231,7 +231,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_GenericSortCustomComparer()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(i));
         list.Sort(new DescendingComparer<byte>());
@@ -242,7 +242,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList32Byte_IndexOf()
     {
-        var list = new FixedList32<byte>() { 123, 178 };
+        var list = new FixedList32Bytes<byte>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -276,7 +276,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_ToNativeArrayWorks()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
 
         for(var i = 0; i < 62; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -291,7 +291,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericHasExpectedLayout()
     {
-        var actual = new FixedList64<byte>();
+        var actual = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
           actual.Add((byte)i);
         unsafe
@@ -311,7 +311,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -320,7 +320,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<byte>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -331,7 +331,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericRemoveRange()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -340,7 +340,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericInsert()
     {
-        var list = new FixedList64<byte>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -350,7 +350,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericRemoveAt()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -360,7 +360,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericRemove()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -370,7 +370,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericRemoveSwapBack()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -380,7 +380,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericSort()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -391,7 +391,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_GenericSortCustomComparer()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(i));
         list.Sort(new DescendingComparer<byte>());
@@ -402,7 +402,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList64Byte_IndexOf()
     {
-        var list = new FixedList64<byte>() { 123, 178 };
+        var list = new FixedList64Bytes<byte>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -436,7 +436,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_ToNativeArrayWorks()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
 
         for(var i = 0; i < 126; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -451,7 +451,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericHasExpectedLayout()
     {
-        var actual = new FixedList128<byte>();
+        var actual = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
           actual.Add((byte)i);
         unsafe
@@ -471,7 +471,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -480,7 +480,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<byte>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -491,7 +491,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericRemoveRange()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -500,7 +500,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericInsert()
     {
-        var list = new FixedList128<byte>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -510,7 +510,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericRemoveAt()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -520,7 +520,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericRemove()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -530,7 +530,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericRemoveSwapBack()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         for(var i = 0; i < 3; ++i)
@@ -540,7 +540,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericSort()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -551,7 +551,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_GenericSortCustomComparer()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(i));
         list.Sort(new DescendingComparer<byte>());
@@ -562,7 +562,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList128Byte_IndexOf()
     {
-        var list = new FixedList128<byte>() { 123, 178 };
+        var list = new FixedList128Bytes<byte>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -581,7 +581,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_HasExpectedLayout()
     {
-        var actual = new FixedList32<byte>();
+        var actual = new FixedList32Bytes<byte>();
         for(var i = 0; i < 30; ++i)
           actual.Add((byte)i);
         unsafe
@@ -601,7 +601,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_HasExpectedCapacity()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -611,7 +611,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList32Byte_ : UnityEngine.ScriptableObject
     {
-        public FixedList32<byte> List;
+        public FixedList32Bytes<byte> List;
     }
 
     [Test]
@@ -628,7 +628,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<byte>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -636,7 +636,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList32<byte> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList32Bytes<byte> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -649,7 +649,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_RemoveAt()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -658,7 +658,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_Remove()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -667,7 +667,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_RemoveSwapBack()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -676,7 +676,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_RemoveRange()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -684,7 +684,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_RemoveAtSwapBack()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -693,7 +693,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_RemoveRangeSwapBack()
     {
-        var list = new FixedList32<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -701,7 +701,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_Insert()
     {
-        var list = new FixedList32<byte>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -711,7 +711,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_Sort()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -722,20 +722,20 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Byte_To_FixedList64Byte()
     {
-        var a = new FixedList32<byte>();
+        var a = new FixedList32Bytes<byte>();
         for(var i = 0; i < 30; ++i)
             a.Add((byte)i);
-        var b = new FixedList64<byte>(a);
+        var b = new FixedList64Bytes<byte>(a);
         for(var i = 0; i < 30; ++i)
             Assert.AreEqual((byte)i, b[i]);
     }
     [Test]
     public void FixedList32Byte_To_FixedList128Byte()
     {
-        var a = new FixedList32<byte>();
+        var a = new FixedList32Bytes<byte>();
         for(var i = 0; i < 30; ++i)
             a.Add((byte)i);
-        var b = new FixedList128<byte>(a);
+        var b = new FixedList128Bytes<byte>(a);
         for(var i = 0; i < 30; ++i)
             Assert.AreEqual((byte)i, b[i]);
     }
@@ -743,7 +743,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_HasExpectedLayout()
     {
-        var actual = new FixedList64<byte>();
+        var actual = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
           actual.Add((byte)i);
         unsafe
@@ -763,7 +763,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_HasExpectedCapacity()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -773,7 +773,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList64Byte_ : UnityEngine.ScriptableObject
     {
-        public FixedList64<byte> List;
+        public FixedList64Bytes<byte> List;
     }
 
     [Test]
@@ -790,7 +790,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<byte>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -798,7 +798,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList64<byte> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList64Bytes<byte> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -811,7 +811,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_RemoveAt()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -820,7 +820,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_Remove()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -829,7 +829,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_RemoveSwapBack()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -838,7 +838,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_RemoveRange()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -846,7 +846,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_RemoveAtSwapBack()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -855,7 +855,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_RemoveRangeSwapBack()
     {
-        var list = new FixedList64<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -863,7 +863,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_Insert()
     {
-        var list = new FixedList64<byte>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -873,7 +873,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_Sort()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -884,18 +884,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Byte_To_FixedList32Byte()
     {
-        var a = new FixedList64<byte>();
+        var a = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
     }
     [Test]
     public void FixedList64Byte_To_FixedList128Byte()
     {
-        var a = new FixedList64<byte>();
+        var a = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
             a.Add((byte)i);
-        var b = new FixedList128<byte>(a);
+        var b = new FixedList128Bytes<byte>(a);
         for(var i = 0; i < 62; ++i)
             Assert.AreEqual((byte)i, b[i]);
     }
@@ -903,7 +903,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_HasExpectedLayout()
     {
-        var actual = new FixedList128<byte>();
+        var actual = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
           actual.Add((byte)i);
         unsafe
@@ -923,7 +923,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_HasExpectedCapacity()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -933,7 +933,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList128Byte_ : UnityEngine.ScriptableObject
     {
-        public FixedList128<byte> List;
+        public FixedList128Bytes<byte> List;
     }
 
     [Test]
@@ -950,7 +950,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<byte>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -958,7 +958,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList128<byte> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList128Bytes<byte> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -971,7 +971,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_RemoveAt()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -980,7 +980,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_Remove()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((byte)3));
         Assert.True(list.Remove((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -989,7 +989,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_RemoveSwapBack()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((byte)3));
         Assert.True(list.RemoveSwapBack((byte)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -998,7 +998,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_RemoveRange()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1006,7 +1006,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_RemoveAtSwapBack()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -1015,7 +1015,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_RemoveRangeSwapBack()
     {
-        var list = new FixedList128<byte>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1023,7 +1023,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_Insert()
     {
-        var list = new FixedList128<byte>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1033,7 +1033,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_Sort()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         for(var i = 0; i < 5; ++i)
           list.Add((byte)(4-i));
         list.Sort();
@@ -1044,18 +1044,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Byte_To_FixedList32Byte()
     {
-        var a = new FixedList128<byte>();
+        var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
     }
     [Test]
     public void FixedList128Byte_To_FixedList64Byte()
     {
-        var a = new FixedList128<byte>();
+        var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<byte>(a); } );
     }
 
     [Test]
@@ -1076,7 +1076,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_ToNativeArrayWorks()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
 
         for(var i = 0; i < 7; ++i)
             list.Add((int)(i * 123 + 234));
@@ -1091,7 +1091,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericHasExpectedLayout()
     {
-        var actual = new FixedList32<int>();
+        var actual = new FixedList32Bytes<int>();
         for(var i = 0; i < 7; ++i)
           actual.Add((int)i);
         unsafe
@@ -1111,7 +1111,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1120,7 +1120,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<int>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1131,7 +1131,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericRemoveRange()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -1140,7 +1140,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericInsert()
     {
-        var list = new FixedList32<int>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1150,7 +1150,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericRemoveAt()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -1160,7 +1160,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericRemove()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1170,7 +1170,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericRemoveSwapBack()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1180,7 +1180,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericSort()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -1191,7 +1191,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_GenericSortCustomComparer()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(i));
         list.Sort(new DescendingComparer<int>());
@@ -1202,7 +1202,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList32Int_IndexOf()
     {
-        var list = new FixedList32<int>() { 123, 178 };
+        var list = new FixedList32Bytes<int>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -1236,7 +1236,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_ToNativeArrayWorks()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
 
         for(var i = 0; i < 15; ++i)
             list.Add((int)(i * 123 + 234));
@@ -1251,7 +1251,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericHasExpectedLayout()
     {
-        var actual = new FixedList64<int>();
+        var actual = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
           actual.Add((int)i);
         unsafe
@@ -1271,7 +1271,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1280,7 +1280,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<int>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1291,7 +1291,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericRemoveRange()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -1300,7 +1300,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericInsert()
     {
-        var list = new FixedList64<int>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1310,7 +1310,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericRemoveAt()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -1320,7 +1320,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericRemove()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1330,7 +1330,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericRemoveSwapBack()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1340,7 +1340,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericSort()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -1351,7 +1351,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_GenericSortCustomComparer()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(i));
         list.Sort(new DescendingComparer<int>());
@@ -1362,7 +1362,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList64Int_IndexOf()
     {
-        var list = new FixedList64<int>() { 123, 178 };
+        var list = new FixedList64Bytes<int>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -1396,7 +1396,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_ToNativeArrayWorks()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
 
         for(var i = 0; i < 31; ++i)
             list.Add((int)(i * 123 + 234));
@@ -1411,7 +1411,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericHasExpectedLayout()
     {
-        var actual = new FixedList128<int>();
+        var actual = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
           actual.Add((int)i);
         unsafe
@@ -1431,7 +1431,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1440,7 +1440,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<int>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1451,7 +1451,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericRemoveRange()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -1460,7 +1460,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericInsert()
     {
-        var list = new FixedList128<int>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1470,7 +1470,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericRemoveAt()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -1480,7 +1480,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericRemove()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1490,7 +1490,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericRemoveSwapBack()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         for(var i = 0; i < 3; ++i)
@@ -1500,7 +1500,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericSort()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -1511,7 +1511,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_GenericSortCustomComparer()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(i));
         list.Sort(new DescendingComparer<int>());
@@ -1522,7 +1522,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList128Int_IndexOf()
     {
-        var list = new FixedList128<int>() { 123, 178 };
+        var list = new FixedList128Bytes<int>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -1541,7 +1541,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_HasExpectedLayout()
     {
-        var actual = new FixedList32<int>();
+        var actual = new FixedList32Bytes<int>();
         for(var i = 0; i < 7; ++i)
           actual.Add((int)i);
         unsafe
@@ -1561,7 +1561,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_HasExpectedCapacity()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1571,7 +1571,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList32Int_ : UnityEngine.ScriptableObject
     {
-        public FixedList32<int> List;
+        public FixedList32Bytes<int> List;
     }
 
     [Test]
@@ -1588,7 +1588,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<int>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1596,7 +1596,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList32<int> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList32Bytes<int> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -1609,7 +1609,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_RemoveAt()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1618,7 +1618,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_Remove()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1627,7 +1627,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_RemoveSwapBack()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1636,7 +1636,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_RemoveRange()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1644,7 +1644,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_RemoveAtSwapBack()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -1653,7 +1653,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_RemoveRangeSwapBack()
     {
-        var list = new FixedList32<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1661,7 +1661,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_Insert()
     {
-        var list = new FixedList32<int>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1671,7 +1671,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_Sort()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -1682,20 +1682,20 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Int_To_FixedList64Int()
     {
-        var a = new FixedList32<int>();
+        var a = new FixedList32Bytes<int>();
         for(var i = 0; i < 7; ++i)
             a.Add((int)i);
-        var b = new FixedList64<int>(a);
+        var b = new FixedList64Bytes<int>(a);
         for(var i = 0; i < 7; ++i)
             Assert.AreEqual((int)i, b[i]);
     }
     [Test]
     public void FixedList32Int_To_FixedList128Int()
     {
-        var a = new FixedList32<int>();
+        var a = new FixedList32Bytes<int>();
         for(var i = 0; i < 7; ++i)
             a.Add((int)i);
-        var b = new FixedList128<int>(a);
+        var b = new FixedList128Bytes<int>(a);
         for(var i = 0; i < 7; ++i)
             Assert.AreEqual((int)i, b[i]);
     }
@@ -1703,7 +1703,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_HasExpectedLayout()
     {
-        var actual = new FixedList64<int>();
+        var actual = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
           actual.Add((int)i);
         unsafe
@@ -1723,7 +1723,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_HasExpectedCapacity()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1733,7 +1733,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList64Int_ : UnityEngine.ScriptableObject
     {
-        public FixedList64<int> List;
+        public FixedList64Bytes<int> List;
     }
 
     [Test]
@@ -1750,7 +1750,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<int>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1758,7 +1758,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList64<int> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList64Bytes<int> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -1771,7 +1771,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_RemoveAt()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1780,7 +1780,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_Remove()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1789,7 +1789,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_RemoveSwapBack()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1798,7 +1798,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_RemoveRange()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1806,7 +1806,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_RemoveAtSwapBack()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -1815,7 +1815,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_RemoveRangeSwapBack()
     {
-        var list = new FixedList64<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1823,7 +1823,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_Insert()
     {
-        var list = new FixedList64<int>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1833,7 +1833,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_Sort()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -1844,18 +1844,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Int_To_FixedList32Int()
     {
-        var a = new FixedList64<int>();
+        var a = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
     }
     [Test]
     public void FixedList64Int_To_FixedList128Int()
     {
-        var a = new FixedList64<int>();
+        var a = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
             a.Add((int)i);
-        var b = new FixedList128<int>(a);
+        var b = new FixedList128Bytes<int>(a);
         for(var i = 0; i < 15; ++i)
             Assert.AreEqual((int)i, b[i]);
     }
@@ -1863,7 +1863,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_HasExpectedLayout()
     {
-        var actual = new FixedList128<int>();
+        var actual = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
           actual.Add((int)i);
         unsafe
@@ -1883,7 +1883,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_HasExpectedCapacity()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -1893,7 +1893,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList128Int_ : UnityEngine.ScriptableObject
     {
-        public FixedList128<int> List;
+        public FixedList128Bytes<int> List;
     }
 
     [Test]
@@ -1910,7 +1910,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<int>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -1918,7 +1918,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList128<int> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList128Bytes<int> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -1931,7 +1931,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_RemoveAt()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1940,7 +1940,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_Remove()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((int)3));
         Assert.True(list.Remove((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1949,7 +1949,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_RemoveSwapBack()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((int)3));
         Assert.True(list.RemoveSwapBack((int)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -1958,7 +1958,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_RemoveRange()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1966,7 +1966,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_RemoveAtSwapBack()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -1975,7 +1975,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_RemoveRangeSwapBack()
     {
-        var list = new FixedList128<int>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -1983,7 +1983,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_Insert()
     {
-        var list = new FixedList128<int>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -1993,7 +1993,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_Sort()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         for(var i = 0; i < 5; ++i)
           list.Add((int)(4-i));
         list.Sort();
@@ -2004,18 +2004,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Int_To_FixedList32Int()
     {
-        var a = new FixedList128<int>();
+        var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
     }
     [Test]
     public void FixedList128Int_To_FixedList64Int()
     {
-        var a = new FixedList128<int>();
+        var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<int>(a); } );
     }
 
     [Test]
@@ -2036,7 +2036,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_ToNativeArrayWorks()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
 
         for(var i = 0; i < 7; ++i)
             list.Add((float)(i * 123 + 234));
@@ -2051,7 +2051,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericHasExpectedLayout()
     {
-        var actual = new FixedList32<float>();
+        var actual = new FixedList32Bytes<float>();
         for(var i = 0; i < 7; ++i)
           actual.Add((float)i);
         unsafe
@@ -2071,7 +2071,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2080,7 +2080,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<float>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2091,7 +2091,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericRemoveRange()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -2100,7 +2100,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericInsert()
     {
-        var list = new FixedList32<float>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2110,7 +2110,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericRemoveAt()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -2120,7 +2120,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericRemove()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2130,7 +2130,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericRemoveSwapBack()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2140,7 +2140,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericSort()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2151,7 +2151,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_GenericSortCustomComparer()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(i));
         list.Sort(new DescendingComparer<float>());
@@ -2162,7 +2162,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList32Float_IndexOf()
     {
-        var list = new FixedList32<float>() { 123, 178 };
+        var list = new FixedList32Bytes<float>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -2196,7 +2196,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_ToNativeArrayWorks()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
 
         for(var i = 0; i < 15; ++i)
             list.Add((float)(i * 123 + 234));
@@ -2211,7 +2211,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericHasExpectedLayout()
     {
-        var actual = new FixedList64<float>();
+        var actual = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
           actual.Add((float)i);
         unsafe
@@ -2231,7 +2231,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2240,7 +2240,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<float>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2251,7 +2251,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericRemoveRange()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -2260,7 +2260,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericInsert()
     {
-        var list = new FixedList64<float>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2270,7 +2270,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericRemoveAt()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -2280,7 +2280,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericRemove()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2290,7 +2290,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericRemoveSwapBack()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2300,7 +2300,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericSort()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2311,7 +2311,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_GenericSortCustomComparer()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(i));
         list.Sort(new DescendingComparer<float>());
@@ -2322,7 +2322,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList64Float_IndexOf()
     {
-        var list = new FixedList64<float>() { 123, 178 };
+        var list = new FixedList64Bytes<float>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -2356,7 +2356,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_ToNativeArrayWorks()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
 
         for(var i = 0; i < 31; ++i)
             list.Add((float)(i * 123 + 234));
@@ -2371,7 +2371,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericHasExpectedLayout()
     {
-        var actual = new FixedList128<float>();
+        var actual = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
           actual.Add((float)i);
         unsafe
@@ -2391,7 +2391,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2400,7 +2400,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericInsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<float>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2411,7 +2411,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericRemoveRange()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         for(var i = 0; i < 3; ++i)
             Assert.AreEqual(i, list[i]);
@@ -2420,7 +2420,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericInsert()
     {
-        var list = new FixedList128<float>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2430,7 +2430,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericRemoveAt()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         for(var i = 0; i < 3; ++i)
@@ -2440,7 +2440,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericRemove()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2450,7 +2450,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericRemoveSwapBack()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         for(var i = 0; i < 3; ++i)
@@ -2460,7 +2460,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericSort()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2471,7 +2471,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_GenericSortCustomComparer()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(i));
         list.Sort(new DescendingComparer<float>());
@@ -2482,7 +2482,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public unsafe void FixedList128Float_IndexOf()
     {
-        var list = new FixedList128<float>() { 123, 178 };
+        var list = new FixedList128Bytes<float>() { 123, 178 };
         bool r0 = false, r1 = false, r2 = false;
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -2501,7 +2501,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_HasExpectedLayout()
     {
-        var actual = new FixedList32<float>();
+        var actual = new FixedList32Bytes<float>();
         for(var i = 0; i < 7; ++i)
           actual.Add((float)i);
         unsafe
@@ -2521,7 +2521,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_HasExpectedCapacity()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2531,7 +2531,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList32Float_ : UnityEngine.ScriptableObject
     {
-        public FixedList32<float> List;
+        public FixedList32Bytes<float> List;
     }
 
     [Test]
@@ -2548,7 +2548,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList32<float>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2556,7 +2556,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList32<float> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList32Bytes<float> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -2569,7 +2569,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_RemoveAt()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2578,7 +2578,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_Remove()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2587,7 +2587,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_RemoveSwapBack()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2596,7 +2596,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_RemoveRange()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2604,7 +2604,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_RemoveAtSwapBack()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -2613,7 +2613,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_RemoveRangeSwapBack()
     {
-        var list = new FixedList32<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2621,7 +2621,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_Insert()
     {
-        var list = new FixedList32<float>() { 0, 3, 4 };
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2631,7 +2631,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_Sort()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2642,20 +2642,20 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList32Float_To_FixedList64Float()
     {
-        var a = new FixedList32<float>();
+        var a = new FixedList32Bytes<float>();
         for(var i = 0; i < 7; ++i)
             a.Add((float)i);
-        var b = new FixedList64<float>(a);
+        var b = new FixedList64Bytes<float>(a);
         for(var i = 0; i < 7; ++i)
             Assert.AreEqual((float)i, b[i]);
     }
     [Test]
     public void FixedList32Float_To_FixedList128Float()
     {
-        var a = new FixedList32<float>();
+        var a = new FixedList32Bytes<float>();
         for(var i = 0; i < 7; ++i)
             a.Add((float)i);
-        var b = new FixedList128<float>(a);
+        var b = new FixedList128Bytes<float>(a);
         for(var i = 0; i < 7; ++i)
             Assert.AreEqual((float)i, b[i]);
     }
@@ -2663,7 +2663,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_HasExpectedLayout()
     {
-        var actual = new FixedList64<float>();
+        var actual = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
           actual.Add((float)i);
         unsafe
@@ -2683,7 +2683,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_HasExpectedCapacity()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2693,7 +2693,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList64Float_ : UnityEngine.ScriptableObject
     {
-        public FixedList64<float> List;
+        public FixedList64Bytes<float> List;
     }
 
     [Test]
@@ -2710,7 +2710,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList64<float>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2718,7 +2718,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList64<float> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList64Bytes<float> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -2731,7 +2731,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_RemoveAt()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2740,7 +2740,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_Remove()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2749,7 +2749,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_RemoveSwapBack()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2758,7 +2758,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_RemoveRange()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2766,7 +2766,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_RemoveAtSwapBack()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -2775,7 +2775,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_RemoveRangeSwapBack()
     {
-        var list = new FixedList64<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2783,7 +2783,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_Insert()
     {
-        var list = new FixedList64<float>() { 0, 3, 4 };
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2793,7 +2793,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_Sort()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2804,18 +2804,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList64Float_To_FixedList32Float()
     {
-        var a = new FixedList64<float>();
+        var a = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
     }
     [Test]
     public void FixedList64Float_To_FixedList128Float()
     {
-        var a = new FixedList64<float>();
+        var a = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
             a.Add((float)i);
-        var b = new FixedList128<float>(a);
+        var b = new FixedList128Bytes<float>(a);
         for(var i = 0; i < 15; ++i)
             Assert.AreEqual((float)i, b[i]);
     }
@@ -2823,7 +2823,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_HasExpectedLayout()
     {
-        var actual = new FixedList128<float>();
+        var actual = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
           actual.Add((float)i);
         unsafe
@@ -2843,7 +2843,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_HasExpectedCapacity()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -2853,7 +2853,7 @@ internal class FixedListTests : CollectionsTestFixture
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedList128Float_ : UnityEngine.ScriptableObject
     {
-        public FixedList128<float> List;
+        public FixedList128Bytes<float> List;
     }
 
     [Test]
@@ -2870,7 +2870,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_InsertRangeWithBeginEnd()
     {
-        var list = new FixedList128<float>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
@@ -2878,7 +2878,7 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
     }
 
-    private static void Expected(ref FixedList128<float> container, int expectedLength, int[] expected)
+    private static void Expected(ref FixedList128Bytes<float> container, int expectedLength, int[] expected)
     {
         Assert.AreEqual(expectedLength == 0, container.IsEmpty);
         Assert.AreEqual(container.Length, expectedLength);
@@ -2891,7 +2891,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_RemoveAt()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAt(1);
         list.RemoveAt(1);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2900,7 +2900,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_Remove()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         Assert.True(list.Remove((float)3));
         Assert.True(list.Remove((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2909,7 +2909,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_RemoveSwapBack()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 2, 1 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 2, 1 };
         Assert.True(list.RemoveSwapBack((float)3));
         Assert.True(list.RemoveSwapBack((float)3));
         Expected(ref list, 3, new int[] { 0, 1, 2 });
@@ -2918,7 +2918,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_RemoveRange()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRange(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2926,7 +2926,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_RemoveAtSwapBack()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveAtSwapBack(1);
         list.RemoveAtSwapBack(1);
         Expected(ref list, 3, new int[] { 0, 1, 3 });
@@ -2935,7 +2935,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_RemoveRangeSwapBack()
     {
-        var list = new FixedList128<float>() { 0, 3, 3, 1, 2 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 3, 1, 2 };
         list.RemoveRangeSwapBack(1, 2);
         Expected(ref list, 3, new int[] { 0, 1, 2 });
     }
@@ -2943,7 +2943,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_Insert()
     {
-        var list = new FixedList128<float>() { 0, 3, 4 };
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.Insert(1,1);
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
@@ -2953,7 +2953,7 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_Sort()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         for(var i = 0; i < 5; ++i)
           list.Add((float)(4-i));
         list.Sort();
@@ -2964,18 +2964,18 @@ internal class FixedListTests : CollectionsTestFixture
     [Test]
     public void FixedList128Float_To_FixedList32Float()
     {
-        var a = new FixedList128<float>();
+        var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
     }
     [Test]
     public void FixedList128Float_To_FixedList64Float()
     {
-        var a = new FixedList128<float>();
+        var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<float>(a); } );
     }
 
 }

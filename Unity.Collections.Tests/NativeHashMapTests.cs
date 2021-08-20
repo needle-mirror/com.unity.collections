@@ -593,10 +593,10 @@ internal class NativeHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeHashMap_ForEach_FixedStringInHashMap()
     {
-        using (var stringList = new NativeList<FixedString32>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+        using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
-            var container = new NativeHashMap<FixedString128, float>(50, Allocator.Temp);
+            var container = new NativeHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
             foreach (var str in stringList)
             {
                 container.Add(str, 0);
