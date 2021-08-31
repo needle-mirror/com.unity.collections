@@ -1,10 +1,24 @@
 # Change log
 
+## [1.0.0-pre.6] - 2021-08-31
+
+### Removed
+
+* VirtualMemoryUtility
+* BaselibErrorState
+* BaselibSourceLocation
+* VMRange
+
 ## [1.0.0-pre.5] - 2021-08-20
 
 ### Changed
 
 * Renamed FixedListN to FixedListNBytes, for all N, and same for FixedString
+
+### Fixed
+
+* NativeBitArray, NativeQueue, NativeStream, and NativeText will no longer throw an exception when using a custom allocator inside of a job.
+
 
 ## [1.0.0-pre.4] - 2021-08-11
 
@@ -20,8 +34,8 @@
 
 ### Fixed
 
-* Setting UnsafeList.Length will now resize the storage properly. 
-	
+* Setting UnsafeList.Length will now resize the storage properly.
+
 ## [1.0.0-pre.3] - 2021-06-29
 
 ### Added

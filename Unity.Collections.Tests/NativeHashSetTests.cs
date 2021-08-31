@@ -1,6 +1,8 @@
 using System;
 using NUnit.Framework;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.NotBurstCompatible;
 using Unity.Jobs;
 using Unity.Collections.Tests;
@@ -463,4 +465,55 @@ internal class NativeHashSetTests: CollectionsTestFixture
         }
     }
 #endif
+
+    [Test]
+    public void NativeHashSet_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        using (var container = new NativeHashSet<int>(1, allocator.Handle))
+        {
+        }
+
+        FastAssert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new NativeHashSet<int>(1, Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeHashSet_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        FastAssert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

@@ -977,9 +977,6 @@ namespace Unity.Collections.LowLevel.Unsafe
     [BurstCompatible]
     public unsafe static class UnsafeListExtensions
     {
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal static ref UnsafeList ListData<T>(ref this UnsafeList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafeList<T>, UnsafeList>(ref from);
-
         /// <summary>
         /// Finds the index of the first occurrence of a particular value in this list.
         /// </summary>

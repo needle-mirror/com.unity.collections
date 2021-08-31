@@ -747,4 +747,55 @@ internal class NativeBitArrayTests : CollectionsTestFixture
             }
         }
     }
+
+    [Test]
+    public void NativeBitArray_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        var parent = AllocatorManager.Persistent;
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+        using (var bitset = new NativeBitArray(1, allocator.Handle))
+        {
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new NativeBitArray(1, Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeBitArray_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

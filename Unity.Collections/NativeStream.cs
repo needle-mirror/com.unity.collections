@@ -245,7 +245,15 @@ namespace Unity.Collections
             UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
+            if(allocator.IsCustomAllocator)
+            {
+                stream.m_Safety = AtomicSafetyHandle.Create();
+                stream.m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
+            }
 #endif
         }
 

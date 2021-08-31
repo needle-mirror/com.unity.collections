@@ -232,6 +232,53 @@ internal class CustomAllocatorTests
         }
     }
 
+    [BurstCompile(CompileSynchronously = true)]
+    internal struct CountingAllocator : AllocatorManager.IAllocator
+    {
+        public AllocatorManager.AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
+
+        public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
+
+        public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+        public AllocatorManager.AllocatorHandle m_handle;
+        public int AllocationCount;
+        public bool WasUsed => AllocationCount > 0;
+        public void Initialize()
+        {
+            AllocationCount = 0;
+            AllocatorManager.Register(ref this);
+#if ENABLE_UNITY_ALLOCATIONS_CHECKS
+            AllocatorManager.Persistent.Handle.AddChildAllocator(m_handle);
+#endif
+        }
+
+        public int Try(ref AllocatorManager.Block block)
+        {
+            var temp = block.Range.Allocator;
+            block.Range.Allocator = AllocatorManager.Persistent;
+            var error = AllocatorManager.Try(ref block);
+            block.Range.Allocator = temp;
+            if (error != 0)
+                return error;
+            if (block.Range.Pointer != IntPtr.Zero) // if we allocated or reallocated...
+                ++AllocationCount;
+            return 0;
+        }
+
+        [BurstCompile(CompileSynchronously = true)]
+        [MonoPInvokeCallback(typeof(AllocatorManager.TryFunction))]
+        public static unsafe int Try(IntPtr state, ref AllocatorManager.Block block)
+        {
+            return ((CountingAllocator*)state)->Try(ref block);
+        }
+
+        public AllocatorManager.TryFunction Function => Try;
+        public void Dispose()
+        {
+            m_handle.Dispose();
+        }
+    }
+
     [Test]
     public void UserDefinedAllocatorWorks()
     {

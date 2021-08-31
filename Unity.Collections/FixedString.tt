@@ -433,7 +433,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte<#=BYTES#> representation of this string.
+        /// Returns a reference to a FixedList<#=BYTES#>Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte<#=BYTES#> is the very same bytes as the original FixedString<#=BYTES#>Bytes,

@@ -21,7 +21,7 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Provides extension methods for FixedString*N*.
+    /// Provides extension methods for FixedString*N*Bytes.
     /// </summary>
     public unsafe static partial class FixedStringMethods
     {

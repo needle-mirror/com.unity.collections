@@ -954,7 +954,11 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 var buildOptions = new BuildPlayerOptions();
                 buildOptions.target = EditorUserBuildSettings.activeBuildTarget;
                 buildOptions.locationPathName = FileUtil.GetUniqueTempPathInProject();
-                buildOptions.options = BuildOptions.IncludeTestAssemblies;
+                // TODO: https://unity3d.atlassian.net/browse/DOTS-4886
+                // Remove when fixed
+                // Made a development build due to a bug in the Editor causing Debug.isDebugBuild to be false
+                // on the next Domain reload after this build is made
+                buildOptions.options = BuildOptions.IncludeTestAssemblies | BuildOptions.Development;
                 var buildReport = BuildPipeline.BuildPlayer(buildOptions);
                 playerBuildSucceeded = buildReport.summary.result == BuildResult.Succeeded;
                 playerBuildTime = buildReport.summary.totalTime;

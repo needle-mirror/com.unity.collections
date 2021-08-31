@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Provides methods for parsing numbers from FixedString*N*.
+    /// Provides methods for parsing numbers from FixedString*N*Bytes.
     /// </summary>
     [BurstCompatible]
     public unsafe static partial class FixedStringMethods
@@ -55,7 +55,7 @@ namespace Unity.Collections
         ///
         /// The parsed value is bitwise-identical to the result of System.Int32.Parse.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
         /// <param name="fs">The string from which to parse.</param>
         /// <param name="offset">A reference to an index of the byte at which to parse an int.</param>
         /// <param name="output">Outputs the parsed int. Ignore if parsing fails.</param>
@@ -82,7 +82,7 @@ namespace Unity.Collections
         ///
         /// The parsed value is bitwise-identical to the result of System.UInt32.Parse.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
         /// <param name="fs">The string from which to parse.</param>
         /// <param name="offset">A reference to an index of the byte at which to parse a uint.</param>
         /// <param name="output">Outputs the parsed uint. Ignore if parsing fails.</param>
@@ -107,7 +107,7 @@ namespace Unity.Collections
         /// Stops parsing after the last number character. (Unlike parsing methods in other API's, this method does not expect to necessarily parse the entire string.)
         ///
         /// <remarks>The parsed value is bitwise-identical to the result of System.Single.Parse.</remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A FixedString*N*Bytes type.</typeparam>
         /// <param name="fs">The string from which to parse.</param>
         /// <param name="offset">Index of the byte at which to parse a float.</param>
         /// <param name="output">Outputs the parsed float. Ignore if parsing fails.</param>

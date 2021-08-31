@@ -93,9 +93,10 @@ internal class NativeListTests : CollectionsTestFixture
         ExpectedLength(ref list, 1);
         list.Capacity = 10;
 
-        Assert.AreEqual(1, array.Length);
         Assert.Throws<ObjectDisposedException>(
-            () => { array[0] = 1; });
+            () =>
+            {
+                var val = array.Length; });
 
         list.Dispose();
     }
@@ -409,5 +410,55 @@ internal class NativeListTests : CollectionsTestFixture
         }
 
         list.Dispose();
+    }
+
+    [Test]
+    public void NativeList_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+        using (var container = new NativeList<byte>(1, allocator.Handle))
+        {
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new NativeList<byte>(1, Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeList_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
     }
 }

@@ -59,11 +59,11 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         Assert.Throws<InvalidOperationException>(() => { int readVal = list[0]; });
 
         job.Complete();
-        
-        Assert.AreEqual(1, arrayBeforeSchedule.Length);
+
         Assert.Throws<ObjectDisposedException>(
-            () => {
-                int readVal = arrayBeforeSchedule[0];
+            () =>
+            {
+                var val = arrayBeforeSchedule.Length;
             });
 
         Assert.AreEqual(2, list.Length);
@@ -298,7 +298,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             NativeArray<int> array = list;
             list.Add(2);
 
-            Assert.Throws<InvalidOperationException>(() => { array[0] = 5; });
+            Assert.Throws<ObjectDisposedException>(() => { array[0] = 5; });
         }
     }
     [Test]

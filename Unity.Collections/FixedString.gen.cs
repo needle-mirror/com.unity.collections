@@ -539,7 +539,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte32 representation of this string.
+        /// Returns a reference to a FixedList32Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte32 is the very same bytes as the original FixedString32Bytes,
@@ -1522,7 +1522,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte64 representation of this string.
+        /// Returns a reference to a FixedList64Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte64 is the very same bytes as the original FixedString64Bytes,
@@ -2517,7 +2517,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte128 representation of this string.
+        /// Returns a reference to a FixedList128Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte128 is the very same bytes as the original FixedString128Bytes,
@@ -3624,7 +3624,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte512 representation of this string.
+        /// Returns a reference to a FixedList512Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte512 is the very same bytes as the original FixedString512Bytes,
@@ -5843,7 +5843,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedListByte4096 representation of this string.
+        /// Returns a reference to a FixedList4096Bytes<byte> representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte4096 is the very same bytes as the original FixedString4096Bytes,

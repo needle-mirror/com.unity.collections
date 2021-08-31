@@ -35,9 +35,9 @@ Data structure          | Description
 @Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer    | An append-only untyped buffer.
 @Unity.Collections.NativeQueue`1           | A resizable queue. Has thread- and disposal-safety checks. 
 @Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue`1       | A fixed-size circular buffer.
-@Unity.Collections.FixedList32`1        | A 32-byte list. Max capacity depends upon T.
+@Unity.Collections.FixedList32Bytes`1        | A 32-byte list, including 2 bytes of overhead, so 30 bytes are available for storage. Max capacity depends upon T.
 
-`FixedList32<T>` has variants of larger sizes: `FixedList64<T>`, `FixedList128<T>`, `FixedList512<T>`, `FixedList4096<T>`.
+`FixedList32Bytes<T>` has variants of larger sizes: `FixedList64Bytes<T>`, `FixedList128Bytes<T>`, `FixedList512Bytes<T>`, `FixedList4096Bytes<T>`.
 
 There are no multi-dimensional array types, but you can simply pack all the data into a single-dimension. For example, for an `int[4][5]` array, use an `int[20]` array instead (because `4 * 5` is `20`).
 
@@ -72,9 +72,9 @@ Data structure          | Description
 Data structure          | Description
 ----------------------- | -----------
 @Unity.Collections.NativeText            | A UTF-8 encoded string. Mutable and resizable. Has thread- and disposal-safety checks.
-@Unity.Collections.FixedString32        | A 32-byte UTF-8 encoded string.
+@Unity.Collections.FixedString32Bytes        | A 32-byte UTF-8 encoded string, including 3 bytes of overhead, so 29 bytes available for storage.
 
-`FixedString32` has variants of larger sizes: `FixedString64`, `FixedString128`, `FixedString512`, `FixedString4096`.
+`FixedString32Bytes` has variants of larger sizes: `FixedString64Bytes`, `FixedString128Bytes`, `FixedString512Bytes`, `FixedString4096Bytes`.
 
 See also @Unity.Collections.FixedStringMethods
   

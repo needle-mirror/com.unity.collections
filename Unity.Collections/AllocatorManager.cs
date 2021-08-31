@@ -888,8 +888,8 @@ namespace Unity.Collections
             {
                 m_storage = storage;
                 m_top = 0;
-#if ENABLE_UNITY_ALLOCATION_CHECKS
                 Register(ref this);
+#if ENABLE_UNITY_ALLOCATION_CHECKS
                 m_storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
             }
@@ -977,8 +977,8 @@ namespace Unity.Collections
             internal void Initialize(Block storage, int slabSizeInBytes, long budget)
             {
                 this = default;
-#if ENABLE_UNITY_ALLOCATION_CHECKS
                 Register(ref this);
+#if ENABLE_UNITY_ALLOCATION_CHECKS
                 storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
                 Assert.IsTrue((slabSizeInBytes & (slabSizeInBytes - 1)) == 0);

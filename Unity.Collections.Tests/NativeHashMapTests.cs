@@ -855,4 +855,55 @@ internal class NativeHashMapTests : CollectionsTestFixture
             other.Dispose();
         }
     }
+
+    [Test]
+    public void NativeHashMap_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        using (var container = new NativeHashMap<int, int>(1, allocator.Handle))
+        {
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new NativeHashMap<int, int>(1, Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeHashMap_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

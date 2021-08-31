@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "1.0.0-pre.5",
+  "version": "1.0.0-pre.6",
   "unity": "2020.3",
   "unityRelease": "0f1",
   "dependencies": {
@@ -15,11 +15,11 @@
     "unity"
   ],
   "upmCi": {
-    "footprint": "ac8afb457f7a6d73c08ed52d9f40c38c2aa83787"
+    "footprint": "4f8c0fa230f02c75a48c82a3c76c697bf8692b44"
   },
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "7ccff6592fefb3ff74fc8d4dc12e727b7f7e6152"
+    "revision": "785c469da9e2117e564492097add03d65a8fd7ba"
   }
 }

@@ -496,7 +496,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if this string and another object are equal.
         /// </summary>
-        /// <remarks>For the object to be equal, it must itself be a managed string, HeapString, or FixedString*N*.
+        /// <remarks>For the object to be equal, it must itself be a managed string, HeapString, or FixedString*N*Bytes.
         ///
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>

@@ -290,7 +290,15 @@ namespace Unity.Collections
             NativeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator.ToAllocator);
+            if(allocator.IsCustomAllocator)
+            {
+                m_Safety = AtomicSafetyHandle.Create();
+                m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator.ToAllocator);
+            }
 
             if (s_staticSafetyId.Data == 0)
             {

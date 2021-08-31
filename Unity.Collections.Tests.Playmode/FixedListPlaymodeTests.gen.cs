@@ -39,7 +39,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList32BytePlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -51,7 +51,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64BytePlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -63,7 +63,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128BytePlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -75,7 +75,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList32BytePlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList32<byte>();
+        var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -87,7 +87,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64BytePlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList64<byte>();
+        var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -99,17 +99,17 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64BytePlaymode_To_FixedList32Byte()
     {
-        var a = new FixedList64<byte>();
+        var a = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128BytePlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList128<byte>();
+        var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
@@ -121,27 +121,27 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128BytePlaymode_To_FixedList32Byte()
     {
-        var a = new FixedList128<byte>();
+        var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128BytePlaymode_To_FixedList64Byte()
     {
-        var a = new FixedList128<byte>();
+        var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<byte>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<byte>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList32IntPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -153,7 +153,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64IntPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -165,7 +165,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128IntPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -177,7 +177,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList32IntPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList32<int>();
+        var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -189,7 +189,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64IntPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList64<int>();
+        var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -201,17 +201,17 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64IntPlaymode_To_FixedList32Int()
     {
-        var a = new FixedList64<int>();
+        var a = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128IntPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList128<int>();
+        var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
@@ -223,27 +223,27 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128IntPlaymode_To_FixedList32Int()
     {
-        var a = new FixedList128<int>();
+        var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128IntPlaymode_To_FixedList64Int()
     {
-        var a = new FixedList128<int>();
+        var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<int>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<int>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList32FloatPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -255,7 +255,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64FloatPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -267,7 +267,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128FloatPlaymode_GenericHasExpectedCapacity()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -279,7 +279,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList32FloatPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList32<float>();
+        var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -291,7 +291,7 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64FloatPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList64<float>();
+        var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -303,17 +303,17 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList64FloatPlaymode_To_FixedList32Float()
     {
-        var a = new FixedList64<float>();
+        var a = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128FloatPlaymode_HasExpectedCapacity()
     {
-        var list = new FixedList128<float>();
+        var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
@@ -325,20 +325,20 @@ internal class FixedListPlaymodeTests
     [UnityTest]
     public IEnumerator FixedList128FloatPlaymode_To_FixedList32Float()
     {
-        var a = new FixedList128<float>();
+        var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
         yield break;
     }
 
     [UnityTest]
     public IEnumerator FixedList128FloatPlaymode_To_FixedList64Float()
     {
-        var a = new FixedList128<float>();
+        var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
-        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64<float>(a); } );
+        Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<float>(a); } );
         yield break;
     }
 

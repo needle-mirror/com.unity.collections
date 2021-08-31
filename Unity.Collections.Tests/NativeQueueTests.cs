@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
@@ -276,4 +277,55 @@ internal class NativeQueueTests : CollectionsTestCommonBase
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
 #endif
+
+    [Test]
+    public void NativeQueue_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        using (var container = new NativeQueue<int>(allocator.Handle))
+        {
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new NativeQueue<int>(Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeQueue_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

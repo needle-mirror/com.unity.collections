@@ -115,7 +115,17 @@ namespace Unity.Collections
             this = default;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.CheckAllocator(allocator);
-            DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+
+            if(allocator.IsCustomAllocator)
+            {
+                m_Safety = AtomicSafetyHandle.Create();
+                m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+            }
+
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();

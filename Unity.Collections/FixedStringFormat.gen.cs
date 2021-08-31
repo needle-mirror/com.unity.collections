@@ -34,7 +34,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -73,7 +73,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -112,7 +112,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -151,7 +151,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -191,7 +191,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -230,7 +230,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -269,7 +269,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -308,7 +308,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -348,7 +348,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -387,7 +387,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -426,7 +426,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -465,7 +465,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -505,7 +505,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -545,7 +545,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -585,7 +585,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -625,7 +625,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -666,7 +666,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -705,7 +705,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -744,7 +744,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -783,7 +783,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -823,7 +823,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -862,7 +862,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -901,7 +901,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -940,7 +940,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -980,7 +980,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1019,7 +1019,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1058,7 +1058,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1097,7 +1097,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1137,7 +1137,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1177,7 +1177,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1217,7 +1217,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1257,7 +1257,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1298,7 +1298,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1337,7 +1337,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1376,7 +1376,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1415,7 +1415,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1455,7 +1455,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1494,7 +1494,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1533,7 +1533,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1572,7 +1572,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1612,7 +1612,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1651,7 +1651,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1690,7 +1690,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1729,7 +1729,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1769,7 +1769,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1809,7 +1809,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1849,7 +1849,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1889,7 +1889,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1930,7 +1930,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -1970,7 +1970,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2010,7 +2010,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2050,7 +2050,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2091,7 +2091,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2131,7 +2131,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2171,7 +2171,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2211,7 +2211,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2252,7 +2252,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2292,7 +2292,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2332,7 +2332,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2372,7 +2372,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2413,7 +2413,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2454,7 +2454,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2495,7 +2495,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2536,7 +2536,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2578,7 +2578,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2617,7 +2617,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2656,7 +2656,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2695,7 +2695,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2735,7 +2735,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2774,7 +2774,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2813,7 +2813,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2852,7 +2852,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2892,7 +2892,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2931,7 +2931,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -2970,7 +2970,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3009,7 +3009,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3049,7 +3049,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3089,7 +3089,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3129,7 +3129,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3169,7 +3169,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3210,7 +3210,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3249,7 +3249,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3288,7 +3288,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3327,7 +3327,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3367,7 +3367,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3406,7 +3406,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3445,7 +3445,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3484,7 +3484,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3524,7 +3524,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3563,7 +3563,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3602,7 +3602,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3641,7 +3641,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3681,7 +3681,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3721,7 +3721,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3761,7 +3761,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3801,7 +3801,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3842,7 +3842,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3881,7 +3881,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3920,7 +3920,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3959,7 +3959,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -3999,7 +3999,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4038,7 +4038,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4077,7 +4077,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4116,7 +4116,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4156,7 +4156,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4195,7 +4195,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4234,7 +4234,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4273,7 +4273,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4313,7 +4313,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4353,7 +4353,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4393,7 +4393,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4433,7 +4433,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4474,7 +4474,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4514,7 +4514,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4554,7 +4554,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4594,7 +4594,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4635,7 +4635,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4675,7 +4675,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4715,7 +4715,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4755,7 +4755,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4796,7 +4796,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4836,7 +4836,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4876,7 +4876,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4916,7 +4916,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4957,7 +4957,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -4998,7 +4998,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5039,7 +5039,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5080,7 +5080,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5122,7 +5122,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5161,7 +5161,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5200,7 +5200,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5239,7 +5239,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5279,7 +5279,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5318,7 +5318,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5357,7 +5357,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5396,7 +5396,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5436,7 +5436,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5475,7 +5475,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5514,7 +5514,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5553,7 +5553,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5593,7 +5593,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5633,7 +5633,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5673,7 +5673,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5713,7 +5713,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5754,7 +5754,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5793,7 +5793,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5832,7 +5832,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5871,7 +5871,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5911,7 +5911,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5950,7 +5950,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -5989,7 +5989,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6028,7 +6028,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6068,7 +6068,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6107,7 +6107,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6146,7 +6146,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6185,7 +6185,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6225,7 +6225,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6265,7 +6265,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6305,7 +6305,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6345,7 +6345,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6386,7 +6386,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6425,7 +6425,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6464,7 +6464,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6503,7 +6503,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6543,7 +6543,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6582,7 +6582,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6621,7 +6621,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6660,7 +6660,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6700,7 +6700,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6739,7 +6739,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6778,7 +6778,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6817,7 +6817,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6857,7 +6857,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6897,7 +6897,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6937,7 +6937,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -6977,7 +6977,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7018,7 +7018,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7058,7 +7058,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7098,7 +7098,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7138,7 +7138,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7179,7 +7179,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7219,7 +7219,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7259,7 +7259,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7299,7 +7299,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7340,7 +7340,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7380,7 +7380,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7420,7 +7420,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7460,7 +7460,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7501,7 +7501,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7542,7 +7542,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7583,7 +7583,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7624,7 +7624,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7666,7 +7666,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7706,7 +7706,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7746,7 +7746,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7786,7 +7786,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7827,7 +7827,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7867,7 +7867,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7907,7 +7907,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7947,7 +7947,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -7988,7 +7988,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8028,7 +8028,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8068,7 +8068,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8108,7 +8108,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8149,7 +8149,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8190,7 +8190,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8231,7 +8231,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8272,7 +8272,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8314,7 +8314,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8354,7 +8354,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8394,7 +8394,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8434,7 +8434,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8475,7 +8475,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8515,7 +8515,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8555,7 +8555,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8595,7 +8595,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8636,7 +8636,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8676,7 +8676,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8716,7 +8716,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8756,7 +8756,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8797,7 +8797,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8838,7 +8838,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8879,7 +8879,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8920,7 +8920,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -8962,7 +8962,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9002,7 +9002,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9042,7 +9042,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9082,7 +9082,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9123,7 +9123,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9163,7 +9163,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9203,7 +9203,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9243,7 +9243,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9284,7 +9284,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9324,7 +9324,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9364,7 +9364,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9404,7 +9404,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9445,7 +9445,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9486,7 +9486,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9527,7 +9527,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9568,7 +9568,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9610,7 +9610,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9651,7 +9651,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9692,7 +9692,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9733,7 +9733,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9775,7 +9775,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9816,7 +9816,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9857,7 +9857,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9898,7 +9898,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9940,7 +9940,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -9981,7 +9981,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10022,7 +10022,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10063,7 +10063,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10105,7 +10105,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10147,7 +10147,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10189,7 +10189,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10231,7 +10231,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10274,7 +10274,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10311,7 +10311,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10348,7 +10348,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10385,7 +10385,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10423,7 +10423,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10460,7 +10460,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10497,7 +10497,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10534,7 +10534,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10572,7 +10572,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10609,7 +10609,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10646,7 +10646,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10683,7 +10683,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10721,7 +10721,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10759,7 +10759,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10797,7 +10797,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10835,7 +10835,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10874,7 +10874,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10911,7 +10911,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10948,7 +10948,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -10985,7 +10985,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11023,7 +11023,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11060,7 +11060,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11097,7 +11097,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11134,7 +11134,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11172,7 +11172,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11209,7 +11209,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11246,7 +11246,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11283,7 +11283,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11321,7 +11321,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11359,7 +11359,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11397,7 +11397,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11435,7 +11435,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11474,7 +11474,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11511,7 +11511,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11548,7 +11548,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11585,7 +11585,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11623,7 +11623,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11660,7 +11660,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11697,7 +11697,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11734,7 +11734,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11772,7 +11772,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11809,7 +11809,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11846,7 +11846,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11883,7 +11883,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11921,7 +11921,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11959,7 +11959,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -11997,7 +11997,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12035,7 +12035,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12074,7 +12074,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12112,7 +12112,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12150,7 +12150,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12188,7 +12188,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12227,7 +12227,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12265,7 +12265,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12303,7 +12303,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12341,7 +12341,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12380,7 +12380,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12418,7 +12418,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12456,7 +12456,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12494,7 +12494,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12533,7 +12533,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12572,7 +12572,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12611,7 +12611,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12650,7 +12650,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12690,7 +12690,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12725,7 +12725,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12760,7 +12760,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12795,7 +12795,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12831,7 +12831,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12866,7 +12866,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12901,7 +12901,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12936,7 +12936,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -12972,7 +12972,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13007,7 +13007,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13042,7 +13042,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13077,7 +13077,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13113,7 +13113,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13149,7 +13149,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13185,7 +13185,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13221,7 +13221,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13258,7 +13258,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13291,7 +13291,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13324,7 +13324,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float
@@ -13357,7 +13357,7 @@ namespace Unity.Collections
         /// - No format modifiers (*e.g.* `{0:x}`) are supported.
         ///
         /// The various overloads of this method take up to four values for interpolation. The allowed argument types are:
-        /// - FixedString*N*
+        /// - FixedString*N*Bytes
         /// - string
         /// - int
         /// - float

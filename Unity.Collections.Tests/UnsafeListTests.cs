@@ -1,12 +1,10 @@
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using System.Collections;
 
 internal class UnsafeListTests : CollectionsTestCommonBase
 {
@@ -474,5 +472,56 @@ internal class UnsafeListTests : CollectionsTestCommonBase
                 Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
             }
         }
+    }
+
+    [Test]
+    public void UnsafeList_CustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        using (var container = new UnsafeList<byte>(1, allocator.Handle))
+        {
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [BurstCompile]
+    struct BurstedCustomAllocatorJob : IJob
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public unsafe CustomAllocatorTests.CountingAllocator* Allocator;
+
+        public void Execute()
+        {
+            unsafe
+            {
+                using (var container = new UnsafeList<byte>(1, Allocator->Handle))
+                {
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void UnsafeList_BurstedCustomAllocatorTest()
+    {
+        AllocatorManager.Initialize();
+        CustomAllocatorTests.CountingAllocator allocator = default;
+        allocator.Initialize();
+
+        unsafe
+        {
+            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            handle.Complete();
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+        allocator.Dispose();
+        AllocatorManager.Shutdown();
     }
 }

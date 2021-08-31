@@ -3,7 +3,7 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Provides extension methods for FixedString*N*.
+    /// Provides extension methods for FixedString*N*Bytes.
     /// </summary>
     [BurstCompatible]
     public unsafe static partial class FixedStringMethods
@@ -11,8 +11,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a Unicode.Rune to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="rune">A Unicode.Rune to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -29,8 +29,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a char to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="ch">A char to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -46,8 +46,8 @@ namespace Unity.Collections
         /// <remarks>
         /// No validation is performed: it is your responsibility for the data to be valid UTF-8 when you're done appending bytes.
         /// </remarks>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="a">A byte to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -64,8 +64,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a Unicode.Rune a number of times to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="rune">A Unicode.Rune to append some number of times.</param>
         /// <param name="count">The number of times to append the rune.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
@@ -94,8 +94,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A long integer to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -133,8 +133,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">An int to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -147,8 +147,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A ulong integer to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -172,8 +172,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A uint to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -186,8 +186,8 @@ namespace Unity.Collections
         /// <summary>
         /// Appends a number (converted to UTF-8 characters) to this string.
         /// </summary>
-        /// <typeparam name="T">The type of FixedString*N*.</typeparam>
-        /// <param name="fs">A FixedString*N*.</param>
+        /// <typeparam name="T">The type of FixedString*N*Bytes.</typeparam>
+        /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A float to append to the string.</param>
         /// <param name="decimalSeparator">The character to use as the decimal separator. Defaults to a period ('.').</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
