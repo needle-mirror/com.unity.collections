@@ -29,9 +29,11 @@ namespace Unity.Collections.LowLevel.Unsafe
 #pragma warning disable 169
         [NativeDisableUnsafePtrRestriction]
         public void* Ptr;
-        public int Length;
-        public int Capacity;
+        public int m_length;
+        public int m_capacity;
         public AllocatorManager.AllocatorHandle Allocator;
+        internal int obsolete_length;
+        internal int obsolete_capacity;
 #pragma warning restore 169
     }
 
@@ -49,6 +51,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         , IEnumerable<T> // Used by collection initializers.
         where T : unmanaged
     {
+        // <WARNING>
+        // 'Header' of this struct must binary match 'UntypedUnsafeList' struct
+        // Fields must match UntypedUnsafeList structure, please don't reorder and don't insert anything in between first 4 fields
+
         /// <summary>
         /// The internal buffer of this list.
         /// </summary>
@@ -60,18 +66,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public int m_length;
 
-
-        [Obsolete("Use Length property (UnityUpgradable) -> Length", true)]
-        public int length;
         /// <summary>
         /// The number of elements that can fit in the internal buffer.
         /// </summary>
-        public int capacity;
+        public int m_capacity;
 
         /// <summary>
         /// The allocator used to create the internal buffer.
         /// </summary>
         public AllocatorManager.AllocatorHandle Allocator;
+
+        [Obsolete("Use Length property (UnityUpgradable) -> Length", true)]
+        public int length;
+
+        [Obsolete("Use Capacity property (UnityUpgradable) -> Capacity", true)]
+        public int capacity;
 
         /// <summary>
         /// The number of elements.
@@ -79,7 +88,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements.</value>
         public int Length
         {
-            get { return m_length; }
+            get
+            {
+                return CollectionHelper.AssumePositive(m_length);
+            }
+
             set
             {
                 if (value > Capacity)
@@ -99,8 +112,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements that can fit in the internal buffer.</value>
         public int Capacity
         {
-            get { return capacity; }
-            set { capacity = value; }
+            get
+            {
+                return CollectionHelper.AssumePositive(m_capacity);
+            }
+
+            set
+            {
+                SetCapacity(value);
+            }
         }
 
         /// <summary>
@@ -110,8 +130,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The element at the index.</value>
         public T this[int index]
         {
-            get { return Ptr[index]; }
-            set { Ptr[index] = value; }
+            get
+            {
+                CollectionHelper.CheckIndexInRange(index, Length);
+                return Ptr[CollectionHelper.AssumePositive(index)];
+            }
+
+            set
+            {
+                CollectionHelper.CheckIndexInRange(index, Length);
+                Ptr[CollectionHelper.AssumePositive(index)] = value;
+            }
         }
 
         /// <summary>
@@ -121,7 +150,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A reference to the element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            return ref Ptr[index];
+            CollectionHelper.CheckIndexInRange(index, Length);
+            return ref Ptr[CollectionHelper.AssumePositive(index)];
         }
 
         /// <summary>
@@ -133,7 +163,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Ptr = ptr;
             this.m_length = length;
-            capacity = 0;
+            m_capacity = 0;
             Allocator = AllocatorManager.None;
         }
 
@@ -147,7 +177,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Ptr = null;
             m_length = 0;
-            capacity = 0;
+            m_capacity = 0;
             Allocator = allocator;
 
             if (initialCapacity != 0)
@@ -167,7 +197,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Ptr = null;
             m_length = 0;
-            capacity = 0;
+            m_capacity = 0;
             Allocator = AllocatorManager.None;
             Initialize(initialCapacity, ref allocator, options);
         }
@@ -256,7 +286,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             allocator.Free(Ptr, m_length);
             Ptr = null;
             m_length = 0;
-            Capacity = 0;
+            m_capacity = 0;
         }
 
         /// <summary>
@@ -272,7 +302,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             Ptr = null;
             m_length = 0;
-            Capacity = 0;
+            m_capacity = 0;
         }
 
         /// <summary>
@@ -332,7 +362,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        void Realloc<U>(ref U allocator, int capacity) where U : unmanaged, AllocatorManager.IAllocator
+        void Realloc<U>(ref U allocator, int newCapacity) where U : unmanaged, AllocatorManager.IAllocator
         {
             CollectionHelper.CheckAllocator(Allocator);
             T* newPointer = null;
@@ -340,13 +370,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             var alignOf = UnsafeUtility.AlignOf<T>();
             var sizeOf = sizeof(T);
 
-            if (capacity > 0)
+            if (newCapacity > 0)
             {
-                newPointer = (T*)allocator.Allocate(sizeOf, alignOf, capacity);
+                newPointer = (T*)allocator.Allocate(sizeOf, alignOf, newCapacity);
 
-                if (Capacity > 0)
+                if (m_capacity > 0)
                 {
-                    var itemsToCopy = math.min(capacity, Capacity);
+                    var itemsToCopy = math.min(newCapacity, Capacity);
                     var bytesToCopy = itemsToCopy * sizeOf;
                     UnsafeUtility.MemCpy(newPointer, Ptr, bytesToCopy);
                 }
@@ -355,8 +385,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             allocator.Free(Ptr, Capacity);
 
             Ptr = newPointer;
-            Capacity = capacity;
-            m_length = math.min(m_length, capacity);
+            m_capacity = newCapacity;
+            m_length = math.min(m_length, newCapacity);
         }
 
         void Realloc(int capacity)
@@ -366,6 +396,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         void SetCapacity<U>(ref U allocator, int capacity) where U : unmanaged, AllocatorManager.IAllocator
         {
+            CollectionHelper.CheckCapacityInRange(capacity, Length);
+
             var sizeOf = sizeof(T);
             var newCapacity = math.max(capacity, 64 / sizeOf);
             newCapacity = math.ceilpow2(newCapacity);
@@ -384,16 +416,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="capacity">The new capacity.</param>
         public void SetCapacity(int capacity)
         {
-            var sizeOf = sizeof(T);
-            var newCapacity = math.max(capacity, 64 / sizeOf);
-            newCapacity = math.ceilpow2(newCapacity);
-
-            if (newCapacity == Capacity)
-            {
-                return;
-            }
-
-            Realloc(newCapacity);
+            SetCapacity(ref Allocator, capacity);
         }
 
         /// <summary>
@@ -749,7 +772,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A parallel writer of this list.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            return new ParallelWriter(Ptr, (UnsafeList<T>*)UnsafeUtility.AddressOf(ref this));
+            return new ParallelWriter((UnsafeList<T>*)UnsafeUtility.AddressOf(ref this));
         }
 
         /// <summary>
@@ -764,8 +787,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <summary>
             /// The data of the list.
             /// </summary>
-            [NativeDisableUnsafePtrRestriction]
-            public readonly void* Ptr;
+            public readonly void* Ptr => ListData->Ptr;
 
             /// <summary>
             /// The UnsafeList to write to.
@@ -773,9 +795,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             [NativeDisableUnsafePtrRestriction]
             public UnsafeList<T>* ListData;
 
-            internal unsafe ParallelWriter(void* ptr, UnsafeList<T>* listData)
+            internal unsafe ParallelWriter(UnsafeList<T>* listData)
             {
-                Ptr = ptr;
                 ListData = listData;
             }
 
@@ -792,7 +813,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 var idx = Interlocked.Increment(ref ListData->m_length) - 1;
                 ListData->CheckNoResizeHasEnoughCapacity(idx, 1);
-                UnsafeUtility.WriteArrayElement(Ptr, idx, value);
+                UnsafeUtility.WriteArrayElement(ListData->Ptr, idx, value);
             }
 
             /// <summary>
@@ -809,7 +830,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 var idx = Interlocked.Add(ref ListData->m_length, count) - count;
                 ListData->CheckNoResizeHasEnoughCapacity(idx, count);
-                void* dst = (byte*)Ptr + idx * sizeof(T);
+                void* dst = (byte*)ListData->Ptr + idx * sizeof(T);
                 UnsafeUtility.MemCpy(dst, ptr, count * sizeof(T));
             }
 
@@ -1070,6 +1091,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafePtrList<T>
         : INativeDisposable
+        // IIndexable<T> and INativeList<T> can't be implemented because this[index] and ElementAt return T* instead of T.
         , IEnumerable<IntPtr> // Used by collection initializers.
         where T : unmanaged
     {
@@ -1082,31 +1104,57 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// The number of elements.
         /// </summary>
-        public readonly int length;
-
-        public int unused;
+        public readonly int m_length;
 
         /// <summary>
         /// The number of elements that can fit in the internal buffer.
         /// </summary>
-        public readonly int capacity;
+        public readonly int m_capacity;
 
         /// <summary>
         /// The allocator used to create the internal buffer.
         /// </summary>
         public readonly AllocatorManager.AllocatorHandle Allocator;
 
+        [Obsolete("Use Length property (UnityUpgradable) -> Length", true)]
+        public int length;
+
+        [Obsolete("Use Capacity property (UnityUpgradable) -> Capacity", true)]
+        public int capacity;
+
         /// <summary>
         /// The number of elements.
         /// </summary>
         /// <value>The number of elements.</value>
-        public int Length { get { return length; } set { } }
+        public int Length
+        {
+            get
+            {
+                return this.ListData().Length;
+            }
+
+            set
+            {
+                this.ListData().Length = value;
+            }
+        }
 
         /// <summary>
         /// The number of elements that can fit in the internal buffer.
         /// </summary>
         /// <value>The number of elements that can fit in the internal buffer.</value>
-        public int Capacity { get { return capacity; } set { } }
+        public int Capacity
+        {
+            get
+            {
+                return this.ListData().Capacity;
+            }
+
+            set
+            {
+                this.ListData().Capacity = value;
+            }
+        }
 
         /// <summary>
         /// The element at an index.
@@ -1115,8 +1163,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The element at the index.</value>
         public T* this[int index]
         {
-            get { return Ptr[index]; }
-            set { Ptr[index] = value; }
+            get
+            {
+                CollectionHelper.CheckIndexInRange(index, Length);
+                return Ptr[CollectionHelper.AssumePositive(index)];
+            }
+
+            set
+            {
+                CollectionHelper.CheckIndexInRange(index, Length);
+                Ptr[CollectionHelper.AssumePositive(index)] = value;
+            }
         }
 
         /// <summary>
@@ -1126,7 +1183,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A reference to the element at the index.</returns>
         public ref T* ElementAt(int index)
         {
-            return ref Ptr[index];
+            CollectionHelper.CheckIndexInRange(index, Length);
+            return ref Ptr[CollectionHelper.AssumePositive(index)];
         }
 
         /// <summary>
@@ -1137,8 +1195,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafePtrList(T** ptr, int length) : this()
         {
             Ptr = ptr;
-            this.length = length;
-            this.capacity = length;
+            this.m_length = length;
+            this.m_capacity = length;
             Allocator = AllocatorManager.None;
         }
 
@@ -1151,8 +1209,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) : this()
         {
             Ptr = null;
-            length = 0;
-            capacity = 0;
+            m_length = 0;
+            m_capacity = 0;
             Allocator = AllocatorManager.None;
 
             this.ListData() = new UnsafeList<IntPtr>(initialCapacity, allocator, options);
@@ -1226,46 +1284,31 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="inputDeps">The dependency for the new job.</param>
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
-        public JobHandle Dispose(JobHandle inputDeps)
-        {
-            return this.ListData().Dispose(inputDeps);
-        }
+        public JobHandle Dispose(JobHandle inputDeps) => this.ListData().Dispose(inputDeps);
 
         /// <summary>
         /// Sets the length to 0.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>
-        public void Clear()
-        {
-            this.ListData().Clear();
-        }
+        public void Clear() => this.ListData().Clear();
 
         /// <summary>
         /// Sets the length, expanding the capacity if necessary.
         /// </summary>
         /// <param name="length">The new length.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
-        public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-        {
-            this.ListData().Resize(length, options);
-        }
+        public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) => this.ListData().Resize(length, options);
 
         /// <summary>
         /// Sets the capacity.
         /// </summary>
         /// <param name="capacity">The new capacity.</param>
-        public void SetCapacity(int capacity)
-        {
-            this.ListData().SetCapacity(capacity);
-        }
+        public void SetCapacity(int capacity) => this.ListData().SetCapacity(capacity);
 
         /// <summary>
         /// Sets the capacity to match the length.
         /// </summary>
-        public void TrimExcess()
-        {
-            this.ListData().TrimExcess();
-        }
+        public void TrimExcess() => this.ListData().TrimExcess();
 
         /// <summary>
         /// Returns the index of the first occurrence of a specific pointer in the list.
@@ -1314,10 +1357,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="ptr">The buffer to copy from.</param>
         /// <param name="count">The number of pointers to copy from the buffer.</param>
         /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-        public void AddRangeNoResize(void** ptr, int count)
-        {
-            this.ListData().AddRangeNoResize(ptr, count);
-        }
+        public void AddRangeNoResize(void** ptr, int count) => this.ListData().AddRangeNoResize(ptr, count);
 
         /// <summary>
         /// Copies the pointers of another list to the end of this list.
@@ -1327,10 +1367,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
         /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-        public void AddRangeNoResize(UnsafePtrList<T> list)
-        {
-            this.ListData().AddRangeNoResize(list.Ptr, list.Length);
-        }
+        public void AddRangeNoResize(UnsafePtrList<T> list) => this.ListData().AddRangeNoResize(list.Ptr, list.Length);
 
         /// <summary>
         /// Adds a pointer to the end of the list.
@@ -1361,10 +1398,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="ptr">A pointer to the buffer.</param>
         /// <param name="length">The number of elements to add to the list.</param>
-        public void AddRange(void* ptr, int length)
-        {
-            this.ListData().AddRange(ptr, length);
-        }
+        public void AddRange(void* ptr, int length) => this.ListData().AddRange(ptr, length);
 
         /// <summary>
         /// Copies the elements of another list to the end of this list.
@@ -1373,10 +1407,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Increments the length by the length of the other list. Increases the capacity if necessary.
         /// </remarks>
-        public void AddRange(UnsafePtrList<T> list)
-        {
-            this.ListData().AddRange(list.ListData());
-        }
+        public void AddRange(UnsafePtrList<T> list) => this.ListData().AddRange(list.ListData());
 
         /// <summary>
         /// Shifts pointers toward the end of this list, increasing its length.
@@ -1396,10 +1427,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="end">The index where the first shifted pointer will end up.</param>
         /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
-        public void InsertRangeWithBeginEnd(int begin, int end)
-        {
-            this.ListData().InsertRangeWithBeginEnd(begin, end);
-        }
+        public void InsertRangeWithBeginEnd(int begin, int end) => this.ListData().InsertRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// Copies the last pointer of this list to the specified index. Decrements the length by 1.
@@ -1407,10 +1435,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Useful as a cheap way to remove a pointer from this list when you don't care about preserving order.</remarks>
         /// <param name="index">The index to overwrite with the last pointer.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
-        public void RemoveAtSwapBack(int index)
-        {
-            this.ListData().RemoveAtSwapBack(index);
-        }
+        public void RemoveAtSwapBack(int index) => this.ListData().RemoveAtSwapBack(index);
 
         /// <summary>
         /// Copies the last *N* pointer of this list to a range in this list. Decrements the length by *N*.
@@ -1424,10 +1449,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="count">The number of pointers to copy and remove.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
         /// or `index + count` exceeds the length.</exception>
-        public void RemoveRangeSwapBack(int index, int count)
-        {
-            this.ListData().RemoveRangeSwapBack(index, count);
-        }
+        public void RemoveRangeSwapBack(int index, int count) => this.ListData().RemoveRangeSwapBack(index, count);
 
         /// <summary>
         /// Copies the last *N* pointers of this list to a range in this list. Decrements the length by *N*.
@@ -1443,10 +1465,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="end">The index one greater than the last pointers to overwrite.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
         [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            this.ListData().RemoveRangeSwapBackWithBeginEnd(begin, end);
-        }
+        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => this.ListData().RemoveRangeSwapBackWithBeginEnd(begin, end);
 
         /// <summary>
         /// Removes the pointer at an index, shifting everything above it down by one. Decrements the length by 1.
@@ -1456,10 +1475,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// If you don't care about preserving the order of the pointers, <see cref="RemoveAtSwapBack(int)"/> is a more efficient way to remove pointers.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
-        public void RemoveAt(int index)
-        {
-            this.ListData().RemoveAt(index);
-        }
+        public void RemoveAt(int index) => this.ListData().RemoveAt(index);
 
         /// <summary>
         /// Removes *N* pointers in a range, shifting everything above the range down by *N*. Decrements the length by *N*.
@@ -1472,10 +1488,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
         /// or `index + count` exceeds the length.</exception>
-        public void RemoveRange(int index, int count)
-        {
-            this.ListData().RemoveRange(index, count);
-        }
+        public void RemoveRange(int index, int count) => this.ListData().RemoveRange(index, count);
 
         /// <summary>
         /// Removes *N* pointers in a range, shifting everything above it down by *N*. Decrements the length by *N*.
@@ -1488,10 +1501,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
         [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end)
-        {
-            this.ListData().RemoveRangeWithBeginEnd(begin, end);
-        }
+        public void RemoveRangeWithBeginEnd(int begin, int end) => this.ListData().RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// This method is not implemented. It will throw NotImplementedException if it is used.
@@ -1619,10 +1629,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
-            public void AddNoResize(T* value)
-            {
-                ListData->AddNoResize((IntPtr)value);
-            }
+            public void AddNoResize(T* value) => ListData->AddNoResize((IntPtr)value);
 
             /// <summary>
             /// Copies pointers from a buffer to the end of the list.
@@ -1633,10 +1640,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by `count`. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-            public void AddRangeNoResize(T** ptr, int count)
-            {
-                ListData->AddRangeNoResize(ptr, count);
-            }
+            public void AddRangeNoResize(T** ptr, int count) => ListData->AddRangeNoResize(ptr, count);
 
             /// <summary>
             /// Copies the pointers of another list to the end of this list.
@@ -1646,10 +1650,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-            public void AddRangeNoResize(UnsafePtrList<T> list)
-            {
-                ListData->AddRangeNoResize(list.Ptr, list.Length);
-            }
+            public void AddRangeNoResize(UnsafePtrList<T> list) => ListData->AddRangeNoResize(list.Ptr, list.Length);
         }
     }
 

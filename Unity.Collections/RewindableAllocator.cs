@@ -72,15 +72,18 @@ namespace Unity.Collections
             public byte* m_pointer; // pointer to contiguous memory
             public long m_bytes; // how many bytes of contiguous memory it points to
             public long m_current; // next byte to give out, when people "allocate" from this block
+            public long m_allocations; // how many allocations have been made from this block, so far?
             public MemoryBlock(long bytes)
             {
                 m_pointer = (byte*)Memory.Unmanaged.Allocate(bytes, kMaximumAlignment, Allocator.Persistent);
                 m_bytes = bytes;
                 m_current = 0;
+                m_allocations = 0;
             }
             public void Rewind()
             {
                 m_current = 0;
+                m_allocations = 0;
             }
             public void Dispose()
             {
@@ -88,43 +91,63 @@ namespace Unity.Collections
                 m_pointer = null;
                 m_bytes = 0;
                 m_current = 0;
+                m_allocations = 0;
             }
 
             public int TryAllocate(ref AllocatorManager.Block block)
             {
+                // Make the alignment multiple of cacheline size
                 var alignment = math.max(JobsUtility.CacheLineSize, block.Alignment);
                 var extra = alignment != JobsUtility.CacheLineSize ? 1 : 0;
+                var cachelineMask = JobsUtility.CacheLineSize - 1;
+                if (extra == 1)
+                {
+                    alignment = (alignment + cachelineMask) & ~cachelineMask;
+                }
+
+                // Adjust the size to be multiple of alignment, add extra alignment
+                // to size if alignment is more than cacheline size
                 var mask = alignment - 1L;
-                var size = (block.Bytes + mask + extra) & ~mask;
+                var size = (block.Bytes + extra * alignment + mask) & ~mask;
                 var begin = Interlocked.Add(ref m_current, size) - size;
                 begin = (begin + mask) & ~mask; // align the offset here
                 if (begin + block.Bytes > m_bytes)
                     return AllocatorManager.kErrorBufferOverflow;
                 block.Range.Pointer = (IntPtr)(m_pointer + begin);
                 block.AllocatedItems = block.Range.Items;
+                Interlocked.Increment(ref m_allocations);
                 return AllocatorManager.kErrorNone;
             }
+
+            public bool Contains(IntPtr ptr)
+            {
+                unsafe
+                {
+                    void* pointer = (void*)ptr;
+                    return (pointer >= m_pointer) && (pointer < m_pointer + m_current);
+                }
+            }
         };
+
         Spinner m_spinner;
         AllocatorManager.AllocatorHandle m_handle;
         UnmanagedArray<MemoryBlock> m_block;
         int m_best; // block we expect is best to allocate from next
         int m_last; // highest-index block that has memory to allocate from
         int m_used; // highest-index block that we actually allocated from, since last rewind
+        bool m_enableBlockFree; // flag indicating if allocator enables individual block free
 
         /// <summary>
         /// Initializes the allocator. Must be called before first use.
         /// </summary>
         /// <param name="initialSizeInBytes">The initial capacity of the allocator, in bytes</param>
-        [NotBurstCompatible]
-        public void Initialize(int initialSizeInBytes)
+        public void Initialize(int initialSizeInBytes, bool enableBlockFree = false)
         {
             m_spinner = default;
-            m_handle = default;
             m_block = new UnmanagedArray<MemoryBlock>(64, Allocator.Persistent);
             m_block[0] = new MemoryBlock(initialSizeInBytes);
             m_last = m_used = m_best = 0;
-            AllocatorManager.Register(ref this); // register handle with global table
+            m_enableBlockFree = enableBlockFree;
         }
 
         /// <summary>
@@ -141,7 +164,6 @@ namespace Unity.Collections
         /// Rewind the allocator; invalidate all allocations made from it, and potentially also free memory blocks
         /// it has allocated from the system.
         /// </summary>
-        [NotBurstCompatible]
         public void Rewind()
         {
             if (JobsUtility.IsExecutingJob)
@@ -157,12 +179,10 @@ namespace Unity.Collections
         /// <summary>
         /// Dispose the allocator. This must be called to free the memory blocks that were allocated from the system.
         /// </summary>
-        [NotBurstCompatible]
         public void Dispose()
         {
             if (JobsUtility.IsExecutingJob)
                 throw new InvalidOperationException("You cannot Dispose a RewindableAllocator from a Job.");
-            AllocatorManager.Unregister(ref this); // unregister handle from global table, invalidate all dependents
             m_used = 0; // so that we delete all blocks in Rewind() on the next line
             Rewind();
             m_block[0].Dispose();
@@ -213,8 +233,21 @@ namespace Unity.Collections
                 m_spinner.Unlock();
                 return error;
             }
-            if (block.Range.Items == 0) // "Free" should be a no-op
+
+            // To free memory, no-op unless allocator enables individual block to be freed
+            if (block.Range.Items == 0)
+            {
+                if (m_enableBlockFree)
+                {
+                    m_spinner.Lock();
+                    if (m_block[m_best].Contains(block.Range.Pointer))
+                        if (0 == Interlocked.Decrement(ref m_block[m_best].m_allocations))
+                            m_block[m_best].Rewind();
+                    m_spinner.Unlock();
+                }
                 return 0; // we could check to see if the pointer belongs to us, if we want to be strict about it.
+            }
+
             return -1;
         }
 
@@ -229,13 +262,19 @@ namespace Unity.Collections
         /// Retrieve the AllocatorHandle associated with this allocator. The handle is used as an index into a
         /// global table, for times when a reference to the allocator object isn't available.
         /// </summary>
+        /// <value>The AllocatorHandle retrieved.</value>
         public AllocatorManager.AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
 
         /// <summary>
         /// Retrieve the Allocator associated with this allocator.
         /// </summary>
+        /// <value>The Allocator retrieved.</value>
         public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
 
+        /// <summary>
+        /// Check whether this AllocatorHandle is a custom allocator.
+        /// </summary>
+        /// <value>True if this AllocatorHandle is a custom allocator.</value>
         public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
 
         /// <summary>
@@ -250,21 +289,24 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public NativeArray<T> AllocateNativeArray<T>(int length) where T : struct
         {
-            var array = new NativeArray<T>();
+            var container = new NativeArray<T>();
             unsafe
             {
-                array.m_Buffer = this.AllocateStruct(default(T), length);
+                container.m_Buffer = this.AllocateStruct(default(T), length);
             }
-            array.m_Length = length;
-            array.m_AllocatorLabel = Allocator.None;
+            container.m_Length = length;
+            container.m_AllocatorLabel = Allocator.None;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            array.m_MinIndex = 0;
-            array.m_MaxIndex = length - 1;
-            DisposeSentinel.Create(out array.m_Safety, out array.m_DisposeSentinel, 1, ToAllocator);
-            DisposeSentinel.Clear(ref array.m_DisposeSentinel);
-            Handle.AddSafetyHandle(array.m_Safety);
+            container.m_MinIndex = 0;
+            container.m_MaxIndex = length - 1;
+            container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);
+            Handle.AddSafetyHandle(container.m_Safety);
+#if REMOVE_DISPOSE_SENTINEL
+#else
+            container.m_DisposeSentinel = null;
 #endif
-            return array;
+#endif
+            return container;
         }
 
         /// <summary>
@@ -280,26 +322,31 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
         public NativeList<T> AllocateNativeList<T>(int capacity) where T : unmanaged
         {
-            var list = new NativeList<T>();
+            var container = new NativeList<T>();
             unsafe
             {
-                list.m_ListData = this.Allocate(default(UnsafeList<T>), 1);
-                list.m_ListData->Ptr = this.Allocate(default(T), capacity);
-                list.m_ListData->Capacity = capacity;
-                list.m_ListData->Length = 0;
-                list.m_ListData->Allocator = Allocator.None;
+                container.m_ListData = this.Allocate(default(UnsafeList<T>), 1);
+                container.m_ListData->Ptr = this.Allocate(default(T), capacity);
+                container.m_ListData->m_capacity = capacity;
+                container.m_ListData->m_length = 0;
+                container.m_ListData->Allocator = Allocator.None;
             }
-            list.m_DeprecatedAllocator = Allocator.None;
+            container.m_DeprecatedAllocator = Allocator.None;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            DisposeSentinel.Create(out list.m_Safety, out list.m_DisposeSentinel, 1, ToAllocator);
-            if (NativeList<T>.s_staticSafetyId.Data == 0)
-                NativeList<T>.CreateStaticSafetyId();
-            AtomicSafetyHandle.SetStaticSafetyId(ref list.m_Safety, NativeList<T>.s_staticSafetyId.Data);
-            DisposeSentinel.Clear(ref list.m_DisposeSentinel);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(list.m_Safety, true);
-            Handle.AddSafetyHandle(list.m_Safety);
+            container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);
+#if REMOVE_DISPOSE_SENTINEL
+#else
+            container.m_DisposeSentinel = null;
 #endif
-            return list;
+            if (NativeList<T>.s_staticSafetyId.Data == 0)
+            {
+                NativeList<T>.CreateStaticSafetyId();
+            }
+            AtomicSafetyHandle.SetStaticSafetyId(ref container.m_Safety, NativeList<T>.s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(container.m_Safety, true);
+            Handle.AddSafetyHandle(container.m_Safety);
+#endif
+            return container;
         }
     }
 }

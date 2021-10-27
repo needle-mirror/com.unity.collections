@@ -11,9 +11,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     [Test]
     public void NativeHashMap_Read_And_Write()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize, Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
-        var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
+        var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var writeData = new HashMapWriteJob()
         {
@@ -42,15 +42,16 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     [IgnoreInPortableTests("The hash map exception is fatal.")]
     public void NativeHashMap_Read_And_Write_Full()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
-        var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
+        var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var writeData = new HashMapWriteJob()
         {
@@ -89,14 +90,15 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashMap_Key_Collisions()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize, Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
-        var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
+        var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var writeData = new HashMapWriteJob()
         {
@@ -135,6 +137,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -152,8 +155,8 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     [IgnoreInPortableTests("Hash map throws when full.")]
     public void NativeHashMap_Clear_And_Write()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var clearJob = new Clear
         {
@@ -174,6 +177,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
         writeStatus.Dispose();
         hashMap.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -205,19 +209,21 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     [Test]
     public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var deps = new Clear { hashMap = hashMap }.Schedule();
         Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
         deps.Complete();
         hashMap.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashMap_DisposeJobCantBeScheduled()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var deps = hashMap.Dispose(default);
         Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
         deps.Complete();
+        CommonRwdAllocator.Rewind();
     }
 }

@@ -416,14 +416,17 @@ internal class NativeListTests : CollectionsTestFixture
     public void NativeList_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
+
         using (var container = new NativeList<byte>(1, allocator.Handle))
         {
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -445,20 +448,67 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeList_BurstedCustomAllocatorTest()
+    public unsafe void NativeList_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
+    }
+
+    [Test]
+    public unsafe void NativeList_SetCapacity()
+    {
+        using (var list = new NativeList<int>(1, Allocator.Persistent))
+        {
+            list.Add(1);
+            Assert.DoesNotThrow(() => list.SetCapacity(128));
+
+            list.Add(1);
+            Assert.AreEqual(2, list.Length);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.SetCapacity(1));
+
+            list.RemoveAtSwapBack(0);
+            Assert.AreEqual(1, list.Length);
+            Assert.DoesNotThrow(() => list.SetCapacity(1));
+
+            list.TrimExcess();
+            Assert.AreEqual(1, list.Capacity);
+        }
+    }
+
+    [Test]
+    public unsafe void NativeList_TrimExcess()
+    {
+        using (var list = new NativeList<int>(32, Allocator.Persistent))
+        {
+            list.Add(1);
+            list.TrimExcess();
+            Assert.AreEqual(1, list.Length);
+            Assert.AreEqual(1, list.Capacity);
+
+            list.RemoveAtSwapBack(0);
+            Assert.AreEqual(list.Length, 0);
+            list.TrimExcess();
+            Assert.AreEqual(list.Capacity, 0);
+
+            list.Add(1);
+            Assert.AreEqual(list.Length, 1);
+            Assert.AreNotEqual(list.Capacity, 0);
+
+            list.Clear();
+        }
     }
 }

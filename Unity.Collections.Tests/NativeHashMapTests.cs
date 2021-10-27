@@ -112,10 +112,12 @@ internal class NativeHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeHashMap_Double_Deallocate_Throws()
     {
-        var hashMap = new NativeHashMap<int, int>(16, Allocator.TempJob);
+        var hashMap = new NativeHashMap<int, int>(16, CommonRwdAllocator.Handle);
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
         () => { hashMap.Dispose(); });
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -185,7 +187,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     {
         //        Assert.True(false);
 
-        var keys = new NativeArray<LargeKey>(4, Allocator.TempJob);
+        var keys = CollectionHelper.CreateNativeArray<LargeKey>(4, CommonRwdAllocator.Handle);
         for (var i = 0; i < keys.Length; i++)
         {
             keys[i] = new LargeKey { Ptr = (int*)(((ulong)i) << 32) };
@@ -193,7 +195,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
         for (var spin = 0; spin < 1024; spin++)
         {
-            var hashMap = new NativeHashMap<LargeKey, bool>(32, Allocator.TempJob);
+            var hashMap = new NativeHashMap<LargeKey, bool>(32, CommonRwdAllocator.Handle);
 
             var jobHandle = new HashMapTryAddAtomic
             {
@@ -216,6 +218,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
         }
 
         keys.Dispose();
+        CommonRwdAllocator.Rewind();
     }
     #endif
 
@@ -549,12 +552,13 @@ internal class NativeHashMapTests : CollectionsTestFixture
     [Test, DotsRuntimeIgnore]
     public void NativeHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
-        var container = new NativeHashMap<int, int>(10, Allocator.TempJob);
+        var container = new NativeHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container[0] = 123;
         container.Dispose();
         NUnit.Framework.Assert.That(() => container[0],
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
+        CommonRwdAllocator.Rewind();
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -573,7 +577,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     public void NativeHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
-        var container = new NativeHashMap<int, int>(10, Allocator.TempJob);
+        var container = new NativeHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container.Dispose();
 
         var job = new NativeHashMap_CreateAndUseAfterFreeBurst
@@ -587,6 +591,8 @@ internal class NativeHashMapTests : CollectionsTestFixture
         job.Run();
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
+
+        CommonRwdAllocator.Rewind();
     }
 #endif
 
@@ -674,7 +680,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     public void NativeHashMap_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -699,12 +705,70 @@ internal class NativeHashMapTests : CollectionsTestFixture
                 Assert.AreEqual(1, seen[i], $"Incorrect key count {i}");
             }
         }
+
+        CommonRwdAllocator.Rewind();
+    }
+
+    struct NativeHashMap_ForEach_Job : IJob
+    {
+        [ReadOnly]
+        public NativeHashMap<int, int> Input;
+
+        [ReadOnly]
+        public int Num;
+
+        public void Execute()
+        {
+            var seen = new NativeArray<int>(Num, Allocator.Temp);
+
+            var count = 0;
+            foreach (var kv in Input)
+            {
+                int value;
+                Assert.True(Input.TryGetValue(kv.Key, out value));
+                Assert.AreEqual(value, kv.Value);
+                Assert.AreEqual(kv.Key * 37, kv.Value);
+
+                seen[kv.Key] = seen[kv.Key] + 1;
+                ++count;
+            }
+
+            Assert.AreEqual(Input.Count(), count);
+            for (int i = 0; i < Num; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect key count {i}");
+            }
+
+            seen.Dispose();
+        }
+    }
+
+    [Test]
+    public void NativeHashMap_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i, i * 37);
+            }
+
+            new NativeHashMap_ForEach_Job
+            {
+                Input = container,
+                Num = n,
+
+            }.Run();
+        }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashMap_ForEach_Throws_When_Modified()
     {
-        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             container.Add(0, 012);
             container.Add(1, 123);
@@ -733,6 +797,8 @@ internal class NativeHashMapTests : CollectionsTestFixture
                 }
             });
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     struct NativeHashMap_ForEachIterator : IJob
@@ -751,7 +817,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeHashMap_ForEach_Throws_Job_Iterator()
     {
-        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             var jobHandle = new NativeHashMap_ForEachIterator
             {
@@ -763,6 +829,8 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             jobHandle.Complete();
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     struct ParallelWriteToHashMapJob : IJobParallelFor
@@ -779,7 +847,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeHashMap_ForEach_Throws()
     {
-        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             var iter = container.GetEnumerator();
 
@@ -798,12 +866,14 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             jobHandle.Complete();
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public unsafe void NativeHashMap_GetUnsafeBucketData()
     {
-        using (var container = new NativeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             container.Add(0, 012);
             container.Add(1, 123);
@@ -823,7 +893,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
             var keys = bucketData.keys;
             var values = bucketData.values;
 
-            var other = new NativeHashMap<int, int>(32, Allocator.TempJob);
+            var other = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle);
 
             for (int i = 0, count = container.Count(); i < count; i++)
             {
@@ -842,7 +912,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             Assert.AreEqual(container.Count(), other.Count());
 
-            var kvArray = container.GetKeyValueArrays(Allocator.TempJob);
+            var kvArray = container.GetKeyValueArrays(CommonRwdAllocator.Handle);
 
             for (int i = 0, count = kvArray.Length; i < count; i++)
             {
@@ -853,14 +923,18 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             kvArray.Dispose();
             other.Dispose();
+            CommonRwdAllocator.Rewind();
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashMap_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new NativeHashMap<int, int>(1, allocator.Handle))
@@ -869,6 +943,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -890,20 +965,23 @@ internal class NativeHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashMap_BurstedCustomAllocatorTest()
+    public unsafe void NativeHashMap_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }

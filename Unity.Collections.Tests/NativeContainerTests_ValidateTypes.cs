@@ -49,8 +49,8 @@ internal class NativeContainerTests_ValidateTypes : NativeContainerTests_Validat
     [Test]
     public void Scheduling_With_Supported_Types()
     {
-        var temp1 = new NativeArray<float>(1, Allocator.TempJob);
-        var temp2 = new NativeArray<float>(1, Allocator.TempJob);
+        var temp1 = CollectionHelper.CreateNativeArray<float>(1, CommonRwdAllocator.Handle);
+        var temp2 = CollectionHelper.CreateNativeArray<float>(1, CommonRwdAllocator.Handle);
 
         var types = new StructWithVariousStructsAndValueTypesJob();
         types.nativeArrayRO = temp1;
@@ -60,5 +60,6 @@ internal class NativeContainerTests_ValidateTypes : NativeContainerTests_Validat
 
         temp1.Dispose();
         temp2.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 }

@@ -17,6 +17,64 @@ namespace FixedStringTests
             Assert.AreEqual(expected, actualString);
         }
 
+        // NOTE: If you call this function from Mono and T is not marshalable - your app (Editor or the player built with Mono scripting backend) could/will crash.
+        bool IsMarshalable<T>() where T : struct
+        {
+            try
+            {
+                unsafe
+                {
+                    var size = System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+                    IntPtr memoryIntPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(size);
+                    try
+                    {
+                        var obj = new T();
+                        System.Runtime.InteropServices.Marshal.StructureToPtr(obj, memoryIntPtr, false);
+                        System.Runtime.InteropServices.Marshal.DestroyStructure<T>(memoryIntPtr);
+                    }
+                    finally
+                    {
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(memoryIntPtr);
+                    }
+
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogError("ERROR in IsMarshalable<" + typeof(T).FullName + "> " + e);
+                return false;
+            }
+        }
+
+        [Test]
+        public void UnsafeTextIsMarshalable()
+        {
+            var result = IsMarshalable<UnsafeText>();
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public unsafe void UnsafeTextCorrectBinaryHeader()
+        {
+            var text = new UnsafeText(42, Allocator.Persistent);
+            var ptr = text.GetUnsafePtr();
+
+            Assert.AreEqual(0 + 1, text.m_UntypedListData.m_length);
+            Assert.AreEqual(Allocator.Persistent, text.m_UntypedListData.Allocator.ToAllocator);
+            Assert.IsTrue(ptr == text.m_UntypedListData.Ptr, "ptr != text.m_UntypedListData.Ptr");
+
+            var listOfBytesCast = text.AsUnsafeListOfBytes();
+
+            Assert.AreEqual(0 + 1, listOfBytesCast.Length);
+            Assert.AreEqual(Allocator.Persistent, listOfBytesCast.Allocator.ToAllocator);
+            Assert.IsTrue(ptr == listOfBytesCast.Ptr, "ptr != listOfBytesCast.Ptr");
+
+            Assert.AreEqual(text.m_UntypedListData.m_capacity, listOfBytesCast.Capacity);
+
+            text.Dispose();
+        }
+
         [Test]
         public void UnsafeTextCorrectLengthAfterClear()
         {
@@ -341,7 +399,8 @@ namespace FixedStringTests
         public void UnsafeText_CustomAllocatorTest()
         {
             AllocatorManager.Initialize();
-            CustomAllocatorTests.CountingAllocator allocator = default;
+            var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+            ref var allocator = ref allocatorHelper.Allocator;
             allocator.Initialize();
 
             using (var container = new UnsafeText(1, allocator.Handle))
@@ -350,6 +409,7 @@ namespace FixedStringTests
 
             Assert.IsTrue(allocator.WasUsed);
             allocator.Dispose();
+            allocatorHelper.Dispose();
             AllocatorManager.Shutdown();
         }
 
@@ -371,20 +431,23 @@ namespace FixedStringTests
         }
 
         [Test]
-        public void UnsafeText_BurstedCustomAllocatorTest()
+        public unsafe void UnsafeText_BurstedCustomAllocatorTest()
         {
             AllocatorManager.Initialize();
-            CustomAllocatorTests.CountingAllocator allocator = default;
+            var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+            ref var allocator = ref allocatorHelper.Allocator;
             allocator.Initialize();
 
+            var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
             unsafe
             {
-                var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+                var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
                 handle.Complete();
             }
 
             Assert.IsTrue(allocator.WasUsed);
             allocator.Dispose();
+            allocatorHelper.Dispose();
             AllocatorManager.Shutdown();
         }
     }

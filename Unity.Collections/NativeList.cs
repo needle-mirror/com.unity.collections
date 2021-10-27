@@ -92,8 +92,11 @@ namespace Unity.Collections
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeList<T>>();
         }
 
+#if REMOVE_DISPOSE_SENTINEL
+#else
         [NativeSetClassTypeToNullOnSchedule]
         internal DisposeSentinel m_DisposeSentinel;
+#endif
 #endif
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeList<T>* m_ListData;
@@ -131,7 +134,10 @@ namespace Unity.Collections
             CollectionHelper.CheckIsUnmanaged<T>();
             CheckTotalSize(initialCapacity, totalSize);
 
-            if(allocator.IsCustomAllocator)
+#if REMOVE_DISPOSE_SENTINEL
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 m_Safety = AtomicSafetyHandle.Create();
                 m_DisposeSentinel = null;
@@ -140,9 +146,12 @@ namespace Unity.Collections
             {
                 DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
             }
+#endif
 
             if (s_staticSafetyId.Data == 0)
+            {
                 CreateStaticSafetyId();
+            }
             AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
 
             m_SafetyIndexHint = (allocator.Handle).AddSafetyHandle(m_Safety);
@@ -189,16 +198,14 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                CheckIndexInRange(index, m_ListData->Length);
-                return UnsafeUtility.ReadArrayElement<T>(m_ListData->Ptr, CollectionHelper.AssumePositive(index));
+                return (*m_ListData)[index];
             }
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                CheckIndexInRange(index, m_ListData->Length);
-                UnsafeUtility.WriteArrayElement(m_ListData->Ptr, CollectionHelper.AssumePositive(index), value);
+                (*m_ListData)[index] = value;
             }
         }
 
@@ -213,8 +220,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-            CheckIndexInRange(index, m_ListData->Length);
-            return ref UnsafeUtility.ArrayElementAsRef<T>(m_ListData->Ptr, index);
+            return ref m_ListData->ElementAt(index);
         }
 
         /// <summary>
@@ -253,7 +259,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                return CollectionHelper.AssumePositive(m_ListData->Capacity);
+                return m_ListData->Capacity;
             }
 
             set
@@ -261,8 +267,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
-                CheckCapacityInRange(value, m_ListData->Length);
-                m_ListData->SetCapacity(value);
+                m_ListData->Capacity = value;
             }
         }
 
@@ -520,8 +525,12 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            ((AllocatorManager.AllocatorHandle)m_DeprecatedAllocator).TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
+            m_DeprecatedAllocator.TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
             UnsafeList<T>.Destroy(m_ListData);
             m_ListData = null;
@@ -537,8 +546,12 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CheckHandleMatches(allocator.Handle);
-            ((AllocatorManager.AllocatorHandle)m_DeprecatedAllocator).TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
+            m_DeprecatedAllocator.TryRemoveSafetyHandle(m_Safety, m_SafetyIndexHint);
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
             UnsafeList<T>.Destroy(m_ListData, ref allocator);
             m_ListData = null;
@@ -553,11 +566,14 @@ namespace Unity.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
             // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
             // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
+#endif
 
             var jobHandle = new NativeListDisposeJob { Data = new NativeListDispose { m_ListData = (UntypedUnsafeList*)m_ListData, m_Safety = m_Safety } }.Schedule(inputDeps);
 
@@ -806,6 +822,23 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Sets the capacity.
+        /// </summary>
+        /// <param name="capacity">The new capacity.</param>
+        public void SetCapacity(int capacity)
+        {
+            m_ListData->SetCapacity(capacity);
+        }
+
+        /// <summary>
+        /// Sets the capacity to match the length.
+        /// </summary>
+        public void TrimExcess()
+        {
+            m_ListData->TrimExcess();
+        }
+
+        /// <summary>
         /// Returns a parallel reader of this list.
         /// </summary>
         /// <returns>A parallel reader of this list.</returns>
@@ -825,9 +858,9 @@ namespace Unity.Collections
         public ParallelWriter AsParallelWriter()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            return new ParallelWriter(m_ListData->Ptr, m_ListData, ref m_Safety);
+            return new ParallelWriter(m_ListData, ref m_Safety);
 #else
-            return new ParallelWriter(m_ListData->Ptr, m_ListData);
+            return new ParallelWriter(m_ListData);
 #endif
         }
 
@@ -843,11 +876,9 @@ namespace Unity.Collections
         public unsafe struct ParallelWriter
         {
             /// <summary>
-            /// The internal buffer.
+            /// The data of the list.
             /// </summary>
-            /// <value>The internal buffer.</value>
-            [NativeDisableUnsafePtrRestriction]
-            public readonly void* Ptr;
+            public readonly void* Ptr => ListData->Ptr;
 
             /// <summary>
             /// The internal unsafe list.
@@ -860,16 +891,14 @@ namespace Unity.Collections
             internal AtomicSafetyHandle m_Safety;
 
             [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
-            internal unsafe ParallelWriter(void* ptr, UnsafeList<T>* listData, ref AtomicSafetyHandle safety)
+            internal unsafe ParallelWriter(UnsafeList<T>* listData, ref AtomicSafetyHandle safety)
             {
-                Ptr = ptr;
                 ListData = listData;
                 m_Safety = safety;
             }
 #else
-            internal unsafe ParallelWriter(void* ptr, UnsafeList<T>* listData)
+            internal unsafe ParallelWriter(UnsafeList<T>* listData)
             {
-                Ptr = ptr;
                 ListData = listData;
             }
 #endif
@@ -890,7 +919,7 @@ namespace Unity.Collections
                 var idx = Interlocked.Increment(ref ListData->m_length) - 1;
                 CheckSufficientCapacity(ListData->Capacity, idx + 1);
 
-                UnsafeUtility.WriteArrayElement(Ptr, idx, value);
+                UnsafeUtility.WriteArrayElement(ListData->Ptr, idx, value);
             }
 
             /// <summary>
@@ -913,7 +942,7 @@ namespace Unity.Collections
                 CheckSufficientCapacity(ListData->Capacity, idx + count);
 
                 var sizeOf = sizeof(T);
-                void* dst = (byte*)Ptr + idx * sizeOf;
+                void* dst = (byte*)ListData->Ptr + idx * sizeOf;
                 UnsafeUtility.MemCpy(dst, ptr, count * sizeOf);
             }
 
@@ -976,16 +1005,6 @@ namespace Unity.Collections
 
             if ((uint)value >= (uint)length)
                 throw new IndexOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckCapacityInRange(int value, int length)
-        {
-            if (value < 0)
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-
-            if ((uint)value < (uint)length)
-                throw new ArgumentOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

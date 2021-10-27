@@ -2,6 +2,8 @@ using System;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
+using Unity.Jobs.LowLevel.Unsafe;
+
 
 namespace Unity.Collections
 {
@@ -64,14 +66,17 @@ namespace Unity.Collections
                 internal static void* Resize(void* oldPointer, long oldCount, long newCount, AllocatorManager.AllocatorHandle allocator,
                     long size, int align)
                 {
+                    // Make the alignment multiple of cacheline size
+                    var alignment = math.max(JobsUtility.CacheLineSize, align);
+
                     if (IsCustom(allocator))
-                        return CustomResize(oldPointer, oldCount, newCount, allocator, size, align);
+                        return CustomResize(oldPointer, oldCount, newCount, allocator, size, alignment);
                     void* newPointer = default;
                     if (newCount > 0)
                     {
                         long bytesToAllocate = newCount * size;
                         CheckByteCountIsReasonable(bytesToAllocate);
-                        newPointer = UnsafeUtility.Malloc(bytesToAllocate, align, allocator.ToAllocator);
+                        newPointer = UnsafeUtility.Malloc(bytesToAllocate, alignment, allocator.ToAllocator);
                         if (oldCount > 0)
                         {
                             long count = math.min(oldCount, newCount);

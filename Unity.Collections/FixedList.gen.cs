@@ -87,7 +87,7 @@ namespace Unity.Collections
           }
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -101,14 +101,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -123,7 +125,7 @@ namespace Unity.Collections
         /// <returns>A reference to the element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -384,13 +386,6 @@ namespace Unity.Collections
                 return copy;
             }
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
     }
 
     [BurstCompatible]
@@ -412,13 +407,6 @@ namespace Unity.Collections
         internal static int Capacity<BUFFER,T>() where BUFFER : struct where T : struct
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        internal static void CheckElementAccess(int index, int Length)
-        {
-            if (index < 0 || index >= Length)
-                throw new IndexOutOfRangeException($"Index {index} is out of range of '{Length}' Length.");
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
@@ -508,9 +496,10 @@ namespace Unity.Collections
           {
               return FixedList.Capacity<FixedBytes30,T>();
           }
+
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -524,14 +513,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -546,7 +537,7 @@ namespace Unity.Collections
         /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -1378,13 +1369,6 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
     }
 
     /// <summary>
@@ -1562,9 +1546,10 @@ namespace Unity.Collections
           {
               return FixedList.Capacity<FixedBytes62,T>();
           }
+
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -1578,14 +1563,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -1600,7 +1587,7 @@ namespace Unity.Collections
         /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -2432,13 +2419,6 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
     }
 
     /// <summary>
@@ -2616,9 +2596,10 @@ namespace Unity.Collections
           {
               return FixedList.Capacity<FixedBytes126,T>();
           }
+
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -2632,14 +2613,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -2654,7 +2637,7 @@ namespace Unity.Collections
         /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -3486,13 +3469,6 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
     }
 
     /// <summary>
@@ -3670,9 +3646,10 @@ namespace Unity.Collections
           {
               return FixedList.Capacity<FixedBytes510,T>();
           }
+
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -3686,14 +3663,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -3708,7 +3687,7 @@ namespace Unity.Collections
         /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -4540,13 +4519,6 @@ namespace Unity.Collections
         {
             throw new NotImplementedException();
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
-        }
     }
 
     /// <summary>
@@ -4724,9 +4696,10 @@ namespace Unity.Collections
           {
               return FixedList.Capacity<FixedBytes4094,T>();
           }
+
           set
           {
-              CheckCapacityInRange(value);
+              CollectionHelper.CheckCapacityInRange(value, Length);
           }
         }
 
@@ -4740,14 +4713,16 @@ namespace Unity.Collections
         {
             get
             {
-                FixedList.CheckElementAccess(index, length);
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     return UnsafeUtility.ReadArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index));
                 }
             }
+
             set
             {
+                CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
                 {
                     UnsafeUtility.WriteArrayElement<T>(Buffer, CollectionHelper.AssumePositive(index), value);
@@ -4762,7 +4737,7 @@ namespace Unity.Collections
         /// <returns>The list element at the index.</returns>
         public ref T ElementAt(int index)
         {
-            FixedList.CheckElementAccess(index, length);
+            CollectionHelper.CheckIndexInRange(index, length);
             unsafe
             {
                 return ref UnsafeUtility.ArrayElementAsRef<T>(Buffer, index);
@@ -5593,13 +5568,6 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             throw new NotImplementedException();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckCapacityInRange(int capacity)
-        {
-            if(capacity != Capacity)
-                throw new ArgumentOutOfRangeException($"Capacity {capacity} must be {Capacity}.");
         }
     }
 

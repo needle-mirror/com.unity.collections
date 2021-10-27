@@ -282,7 +282,8 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     public void NativeQueue_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new NativeQueue<int>(allocator.Handle))
@@ -291,6 +292,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -312,20 +314,24 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void NativeQueue_BurstedCustomAllocatorTest()
+    public unsafe void NativeQueue_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
+
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }

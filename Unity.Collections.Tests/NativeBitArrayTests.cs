@@ -752,15 +752,15 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     public void NativeBitArray_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        var parent = AllocatorManager.Persistent;
-        CustomAllocatorTests.CountingAllocator allocator = default;
-        allocator.Initialize();
-        using (var bitset = new NativeBitArray(1, allocator.Handle))
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        allocatorHelper.Allocator.Initialize();
+        using (var bitset = new NativeBitArray(1, allocatorHelper.Allocator.Handle))
         {
         }
 
-        Assert.IsTrue(allocator.WasUsed);
-        allocator.Dispose();
+        Assert.IsTrue(allocatorHelper.Allocator.WasUsed);
+        allocatorHelper.Allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -782,20 +782,23 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeBitArray_BurstedCustomAllocatorTest()
+    public unsafe void NativeBitArray_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
-        allocator.Initialize();
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
+        allocatorHelper.Allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }

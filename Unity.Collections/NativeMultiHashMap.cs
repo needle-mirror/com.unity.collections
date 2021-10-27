@@ -63,8 +63,11 @@ namespace Unity.Collections
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeMultiHashMap<TKey, TValue>>();
         }
 
+#if REMOVE_DISPOSE_SENTINEL
+#else
         [NativeSetClassTypeToNullOnSchedule]
         internal DisposeSentinel m_DisposeSentinel;
+#endif
 #endif
 
         /// <summary>
@@ -84,7 +87,10 @@ namespace Unity.Collections
             m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if(allocator.IsCustomAllocator)
+#if REMOVE_DISPOSE_SENTINEL
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 m_Safety = AtomicSafetyHandle.Create();
                 m_DisposeSentinel = null;
@@ -93,12 +99,14 @@ namespace Unity.Collections
             {
                 DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
             }
+#endif
 
             if (s_staticSafetyId.Data == 0)
             {
                 CreateStaticSafetyId();
             }
             AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
@@ -279,7 +287,11 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
             m_MultiHashMapData.Dispose();
         }
@@ -293,12 +305,14 @@ namespace Unity.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
             // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
             // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
-
+#endif
             var jobHandle = new UnsafeHashMapDataDisposeJob { Data = new UnsafeHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);
@@ -501,7 +515,6 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
             var ash = m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref ash);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(ash, true);
 #endif
             return new KeyValueEnumerator
             {
@@ -670,8 +683,10 @@ namespace Unity.Collections
             nativeMultiHashMap.m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-
-            if(allocator.IsCustomAllocator)
+#if REMOVE_DISPOSE_SENTINEL
+            nativeMultiHashMap.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 nativeMultiHashMap.m_Safety = AtomicSafetyHandle.Create();
                 nativeMultiHashMap.m_DisposeSentinel = null;
@@ -683,6 +698,7 @@ namespace Unity.Collections
                                         disposeSentinelStackDepth,
                                         allocator.ToAllocator);
             }
+#endif
 
             if (NativeMultiHashMap<TKey, TValue>.s_staticSafetyId.Data == 0)
             {

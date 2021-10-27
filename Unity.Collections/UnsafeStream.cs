@@ -345,7 +345,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             public void Execute()
             {
-                Container.AllocateForEach(List->Length);
+                Container.AllocateForEach(List->m_length);
             }
         }
 

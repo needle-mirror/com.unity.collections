@@ -35,8 +35,11 @@ namespace Unity.Collections
             s_SafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeReference<T>>();
         }
 
+#if REMOVE_DISPOSE_SENTINEL
+#else
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
+#endif
 #endif
 
         internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
@@ -75,7 +78,10 @@ namespace Unity.Collections
             reference.m_AllocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+#if REMOVE_DISPOSE_SENTINEL
+            reference.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 reference.m_Safety = AtomicSafetyHandle.Create();
                 reference.m_DisposeSentinel = null;
@@ -84,6 +90,7 @@ namespace Unity.Collections
             {
                 DisposeSentinel.Create(out reference.m_Safety, out reference.m_DisposeSentinel, 1, allocator.ToAllocator);
             }
+#endif
 
             if (s_SafetyId.Data == 0)
             {
@@ -133,7 +140,12 @@ namespace Unity.Collections
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+
+#if REMOVE_DISPOSE_SENTINEL
+                CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
                 DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
                 Memory.Unmanaged.Free(m_Data, m_AllocatorLabel);
                 m_AllocatorLabel = Allocator.Invalid;
@@ -155,13 +167,15 @@ namespace Unity.Collections
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
                 // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
                 // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
                 // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
                 // will check that no jobs are writing to the container).
                 DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-
+#endif
                 var jobHandle = new NativeReferenceDisposeJob
                 {
                     Data = new NativeReferenceDispose

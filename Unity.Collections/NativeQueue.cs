@@ -270,8 +270,11 @@ namespace Unity.Collections
             s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeQueue<T>>();
         }
 
+#if REMOVE_DISPOSE_SENTINEL
+#else
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
+#endif
 #endif
 
         AllocatorManager.AllocatorHandle m_AllocatorLabel;
@@ -290,7 +293,10 @@ namespace Unity.Collections
             NativeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if(allocator.IsCustomAllocator)
+#if REMOVE_DISPOSE_SENTINEL
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 m_Safety = AtomicSafetyHandle.Create();
                 m_DisposeSentinel = null;
@@ -299,6 +305,7 @@ namespace Unity.Collections
             {
                 DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator.ToAllocator);
             }
+#endif
 
             if (s_staticSafetyId.Data == 0)
             {
@@ -531,7 +538,11 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
             NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
             m_Buffer = null;
@@ -546,12 +557,14 @@ namespace Unity.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
             // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
             // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
-
+#endif
             var jobHandle = new NativeQueueDisposeJob { Data = new NativeQueueDispose { m_Buffer = m_Buffer, m_QueuePool = m_QueuePool, m_AllocatorLabel = m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);

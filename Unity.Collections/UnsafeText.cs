@@ -8,6 +8,14 @@ using UnityEngine.Assertions;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
+    internal static class UnsafeTextExtensions
+    {
+        public static ref UnsafeList<byte> AsUnsafeListOfBytes( this ref UnsafeText text )
+        {
+            return ref UnsafeUtility.As<UntypedUnsafeList, UnsafeList<byte>>(ref text.m_UntypedListData);
+        }
+    }
+
     /// <summary>
     /// An unmanaged, mutable, resizable UTF-8 string.
     /// </summary>
@@ -21,7 +29,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         // NOTE! This Length is always > 0, because we have a null terminating byte.
         // We hide this byte from UnsafeText users.
-        private UnsafeList<byte> m_ListData;
+        internal UntypedUnsafeList m_UntypedListData;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeText.
@@ -30,7 +38,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         public UnsafeText(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_ListData = new UnsafeList<byte>(capacity + 1, allocator);
+            m_UntypedListData = default;
+
+            this.AsUnsafeListOfBytes() = new UnsafeList<byte>(capacity + 1, allocator);
             Length = 0;
         }
 
@@ -38,7 +48,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this string's character buffer has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>Whether this string's character buffer has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_ListData.IsCreated;
+        public bool IsCreated => this.AsUnsafeListOfBytes().IsCreated;
 
 
         /// <summary>
@@ -46,7 +56,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
-            m_ListData.Dispose();
+            this.AsUnsafeListOfBytes().Dispose();
         }
 
         /// <summary>
@@ -57,7 +67,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            return m_ListData.Dispose(inputDeps);
+            return this.AsUnsafeListOfBytes().Dispose(inputDeps);
         }
 
         /// <summary>
@@ -77,12 +87,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             get
             {
                 CheckIndexInRange(index);
-                return UnsafeUtility.ReadArrayElement<byte>(m_ListData.Ptr, index);
+                return UnsafeUtility.ReadArrayElement<byte>(m_UntypedListData.Ptr, index);
             }
             set
             {
                 CheckIndexInRange(index);
-                UnsafeUtility.WriteArrayElement(m_ListData.Ptr, index, value);
+                UnsafeUtility.WriteArrayElement(m_UntypedListData.Ptr, index, value);
             }
         }
 
@@ -98,7 +108,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public ref byte ElementAt(int index)
         {
             CheckIndexInRange(index);
-            return ref UnsafeUtility.ArrayElementAsRef<byte>(m_ListData.Ptr, index);
+            return ref UnsafeUtility.ArrayElementAsRef<byte>(m_UntypedListData.Ptr, index);
         }
 
         /// <summary>
@@ -118,7 +128,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A pointer to this string's character buffer.</returns>
         public byte* GetUnsafePtr()
         {
-            return m_ListData.Ptr;
+            return (byte*)m_UntypedListData.Ptr;
         }
 
         /// <summary>
@@ -130,8 +140,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool TryResize(int newLength, NativeArrayOptions clearOptions = NativeArrayOptions.ClearMemory)
         {
             // this can't ever fail, because if we can't resize malloc will abort
-            m_ListData.Resize(newLength + 1, clearOptions);
-            m_ListData[newLength] = 0;
+            this.AsUnsafeListOfBytes().Resize(newLength + 1, clearOptions);
+            this.AsUnsafeListOfBytes()[newLength] = 0;
             return true;
         }
 
@@ -144,11 +154,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The current capacity in bytes of the string.</value>
         public int Capacity
         {
-            get => m_ListData.Capacity - 1;
+            get => this.AsUnsafeListOfBytes().Capacity - 1;
             set
             {
-                CheckCapacityInRange(value + 1, m_ListData.Length);
-                m_ListData.SetCapacity(value + 1);
+                CheckCapacityInRange(value + 1, this.AsUnsafeListOfBytes().Length);
+                this.AsUnsafeListOfBytes().SetCapacity(value + 1);
             }
         }
 
@@ -161,11 +171,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The current length in bytes of the UTF-8 encoded string.</value>
         public int Length
         {
-            get => m_ListData.Length - 1;
+            get => this.AsUnsafeListOfBytes().Length - 1;
             set
             {
-                m_ListData.Resize(value + 1);
-                m_ListData[value] = 0;
+                this.AsUnsafeListOfBytes().Resize(value + 1);
+                this.AsUnsafeListOfBytes()[value] = 0;
             }
         }
 

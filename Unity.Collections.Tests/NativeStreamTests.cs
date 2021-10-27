@@ -424,7 +424,8 @@ internal class NativeStreamTests : CollectionsTestFixture
     public void NativeStream_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new NativeStream(1, allocator.Handle))
@@ -433,6 +434,7 @@ internal class NativeStreamTests : CollectionsTestFixture
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -454,20 +456,23 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeStream_BurstedCustomAllocatorTest()
+    public unsafe void NativeStream_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }

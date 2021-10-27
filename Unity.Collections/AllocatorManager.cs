@@ -11,6 +11,7 @@ using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine.Assertions;
+using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections
 {
@@ -27,7 +28,9 @@ namespace Unity.Collections
             block.Range.Items = items;
             block.Range.Allocator = t.Handle;
             block.BytesPerItem = sizeOf;
-            block.Alignment = alignOf;
+            // Make the alignment multiple of cacheline size
+            block.Alignment = math.max(JobsUtility.CacheLineSize, alignOf);
+
             var error = t.Try(ref block);
             CheckFailedToAllocate(error);
             return block;
@@ -197,7 +200,10 @@ namespace Unity.Collections
 #if ENABLE_UNITY_ALLOCATION_CHECKS
                 if (IsInstalled && IsCurrent)
                 {
-                    Version = ++OfficialVersion;
+                    // When allocator version is larger than 0x7FFF, allocator.ToAllocator
+                    // returns a negative value which causes problem when comparing to Allocator.None.
+                    // So only lower 15 bits of version is valid.
+                    Version = OfficialVersion = (ushort)(++OfficialVersion & 0x7FFF);
                 }
 #endif
             }
@@ -416,7 +422,9 @@ namespace Unity.Collections
             /// This allocator's version number.
             /// </summary>
             /// <remarks>An allocator function is uniquely identified by its *combination* of <see cref="Index"/> and <see cref="Version"/> together: each
-            /// index has a version number that starts at 0; the version number is incremented each time the index is reused for another registered allocator function.
+            /// index has a version number that starts at 0; the version number is incremented each time the allocator is invalidated.  Only the
+            /// lower 15 bits of Version is in use because when allocator version is larger than 0x7FFF, allocator.ToAllocator returns a negative value
+            /// which causes problem when comparing to Allocator.None.
             /// </remarks>
             /// <value>This allocator's version number.</value>
             public ushort Version;
@@ -493,8 +501,9 @@ namespace Unity.Collections
             public AllocatorHandle Handle { get { return this; } set { this = value; } }
 
             /// <summary>
-            /// Cast the Index to Allocator.
+            /// Retrieve the Allocator associated with this allocator handle.
             /// </summary>
+            /// <value>The Allocator retrieved.</value>
             public Allocator ToAllocator
             {
                 get
@@ -509,14 +518,16 @@ namespace Unity.Collections
             /// <summary>
             /// Check whether this allocator is a custom allocator.
             /// </summary>
+            /// <remarks>The AllocatorHandle is a custom allocator if its Index is larger or equal to `FirstUserIndex`.</remarks>
+            /// <value>True if this AllocatorHandle is a custom allocator.</value>
             public bool IsCustomAllocator { get { return this.Index >= FirstUserIndex; } }
 
             /// <summary>
-            /// Unregister the allocator.
+            /// Dispose the allocator.
             /// </summary>
             public void Dispose()
             {
-                Unregister(ref this);
+                Rewind();
             }
         }
 
@@ -756,9 +767,13 @@ namespace Unity.Collections
 
 
         /// <summary>
-        /// Memory allocation status
+        /// Memory allocation Success status
         /// </summary>
         public const int kErrorNone = 0;
+
+        /// <summary>
+        /// Memory allocation Buffer Overflow status
+        /// </summary>
         public const int kErrorBufferOverflow = -1;
 
 #if !UNITY_IOS
@@ -888,7 +903,6 @@ namespace Unity.Collections
             {
                 m_storage = storage;
                 m_top = 0;
-                Register(ref this);
 #if ENABLE_UNITY_ALLOCATION_CHECKS
                 m_storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
@@ -938,7 +952,7 @@ namespace Unity.Collections
 
             public void Dispose()
             {
-                Unregister(ref this);
+                m_handle.Rewind();
             }
         }
 
@@ -975,9 +989,7 @@ namespace Unity.Collections
             internal int Slabs => (int)(Storage.Bytes >> Log2SlabSizeInBytes);
 
             internal void Initialize(Block storage, int slabSizeInBytes, long budget)
-            {
-                this = default;
-                Register(ref this);
+            {   
 #if ENABLE_UNITY_ALLOCATION_CHECKS
                 storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
@@ -1048,7 +1060,7 @@ namespace Unity.Collections
 
             public void Dispose()
             {
-                Unregister(ref this);
+                m_handle.Rewind();
             }
         }
 
@@ -1111,6 +1123,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="index">Index into the TryFunction delegates table.</param>
             /// <param name="function">TryFunction delegate to be registered.</param>
+            [NotBurstCompatible]
             public static void RegisterDelegate(int index, TryFunction function)
             {
 #if !UNITY_IOS
@@ -1127,6 +1140,7 @@ namespace Unity.Collections
             /// Unregister TryFunction delegate
             /// </summary>
             /// <param name="int">Index into the TryFunction delegates table.</param>
+            [NotBurstCompatible]
             public static void UnregisterDelegate(int index)
             {
 #if !UNITY_IOS
@@ -1212,6 +1226,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of allocator to register.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
+        [NotBurstCompatible]
         public static unsafe void Register<T>(ref this T t) where T : unmanaged, IAllocator
         {
             var functionPointer = (t.Function == null)
@@ -1232,6 +1247,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of allocator to unregister.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
+        [NotBurstCompatible]
         public static void Unregister<T>(ref this T t) where T : unmanaged, IAllocator
         {
             if(t.Handle.IsInstalled)
@@ -1239,6 +1255,45 @@ namespace Unity.Collections
                 t.Handle.Install(default);
                 ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
                 Managed.UnregisterDelegate(t.Handle.Index);
+            }
+        }
+
+        /// <summary>
+        /// Create a custom allocator by allocating a backing storage to store the allocator and then register it
+        /// </summary>
+        /// <typeparam name="T">The type of allocator to create.</typeparam>
+        /// <param name="backingAllocator">Allocator used to allocate backing storage.</param>
+        /// <returns>Returns reference to the newly created allocator.</returns>
+        [NotBurstCompatible]
+        internal static ref T CreateAllocator<T>(AllocatorHandle backingAllocator)
+            where T : unmanaged, IAllocator
+        {
+            unsafe
+            {
+                var allocatorPtr = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>(), 16, backingAllocator);
+                *allocatorPtr = default;
+                ref T allocator = ref UnsafeUtility.AsRef<T>(allocatorPtr);
+                Register(ref allocator);
+                return ref allocator;
+            }
+        }
+
+        /// <summary>
+        /// Destroy a custom allocator by unregistering the allocator and freeing its backing storage
+        /// </summary>
+        /// <typeparam name="T">The type of allocator to destroy.</typeparam>
+        /// <param name="t">Reference to the allocator.</param>
+        /// <param name="backingAllocator">Allocator used in allocating the backing storage.</param>
+        [NotBurstCompatible]
+        internal static void DestroyAllocator<T>(ref this T t, AllocatorHandle backingAllocator)
+            where T : unmanaged, IAllocator
+        {
+            Unregister(ref t);
+
+            unsafe
+            {
+                var allocatorPtr = UnsafeUtility.AddressOf<T>(ref t);
+                Memory.Unmanaged.Free(allocatorPtr, backingAllocator);
             }
         }
 
@@ -1282,6 +1337,51 @@ namespace Unity.Collections
             if(handle.IsValid == false)
                 throw new ArgumentException("allocator handle is not valid.");
 #endif
+        }
+    }
+
+    /// <summary>
+    /// Provides a wrapper for custom allocator.
+    /// </summary>
+    [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+    public unsafe struct AllocatorHelper<T> : IDisposable
+        where T : unmanaged, AllocatorManager.IAllocator
+    {
+        /// <summary>
+        /// Pointer to a custom allocator.
+        /// </summary>
+        readonly T* m_allocator;
+
+        /// <summary>
+        /// Allocator used to allocate backing storage of T.
+        /// </summary>
+        AllocatorManager.AllocatorHandle m_backingAllocator;
+
+        /// <summary>
+        /// Get the custom allocator.
+        /// </summary>
+        public ref T Allocator => ref UnsafeUtility.AsRef<T>(m_allocator);
+
+        /// <summary>
+        /// Allocate the custom allocator from backingAllocator and register it.
+        /// </summary>
+        /// <param name="backingAllocator">Allocator used to allocate backing storage.</param>
+        [NotBurstCompatible]
+        public AllocatorHelper(AllocatorManager.AllocatorHandle backingAllocator)
+        {
+            ref var allocator = ref AllocatorManager.CreateAllocator<T>(backingAllocator);
+            m_allocator = (T*)UnsafeUtility.AddressOf<T>(ref allocator);
+            m_backingAllocator = backingAllocator;
+        }
+
+        /// <summary>
+        /// Dispose the custom allocator backing memory and unregister it.
+        /// </summary>
+        [NotBurstCompatible]
+        public void Dispose()
+        {
+            ref var allocator = ref UnsafeUtility.AsRef<T>(m_allocator);
+            AllocatorManager.DestroyAllocator(ref allocator, m_backingAllocator);
         }
     }
 }

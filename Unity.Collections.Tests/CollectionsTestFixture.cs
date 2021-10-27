@@ -6,9 +6,17 @@ namespace Unity.Collections.Tests
 {
     internal class CollectionsTestCommonBase
     {
+        AllocatorHelper<RewindableAllocator> rwdAllocatorHelper;
+
+        protected AllocatorHelper<RewindableAllocator> CommonRwdAllocatorHelper => rwdAllocatorHelper;
+        protected ref RewindableAllocator CommonRwdAllocator => ref rwdAllocatorHelper.Allocator;
+
         [SetUp]
         public virtual void Setup()
         {
+            rwdAllocatorHelper = new AllocatorHelper<RewindableAllocator>(Allocator.Persistent);
+            CommonRwdAllocator.Initialize(128 * 1024);
+
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.EnterScope();
 #endif
@@ -17,6 +25,9 @@ namespace Unity.Collections.Tests
         [TearDown]
         public virtual void TearDown()
         {
+            CommonRwdAllocator.Dispose();
+            rwdAllocatorHelper.Dispose();
+
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.ExitScope();
 #endif

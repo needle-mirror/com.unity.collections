@@ -6,8 +6,11 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using Unity.Mathematics;
+using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Collections.Tests;
 
-internal class CustomAllocatorTests
+internal class CustomAllocatorTests : CollectionsTestCommonBase
 {
 
 #if !NET_DOTS
@@ -38,13 +41,15 @@ internal class CustomAllocatorTests
         var storage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
         for(var i = 1; i <= 3; ++i)
         {
-            AllocatorManager.StackAllocator allocator = default;
+            var allocatorHelper = new AllocatorHelper<AllocatorManager.StackAllocator>(AllocatorManager.Persistent);
+            ref var allocator = ref allocatorHelper.Allocator;
             allocator.Initialize(storage);
             var oldIndex = allocator.Handle.Index;
             var oldVersion = allocator.Handle.Version;
             allocator.Dispose();
             var newVersion = AllocatorManager.SharedStatics.Version.Ref.Data.ElementAt(oldIndex);
             Assert.AreEqual(oldVersion + 1, newVersion);
+            allocatorHelper.Dispose();
         }
         storage.Dispose();
         AllocatorManager.Shutdown();
@@ -58,7 +63,8 @@ internal class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var storage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        AllocatorManager.StackAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<AllocatorManager.StackAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize(storage);
         var list = NativeList<int>.New(10, ref allocator);
         list.Add(0); // put something in the list, so it'll have a size for later
@@ -68,6 +74,7 @@ internal class CustomAllocatorTests
             list[0] = 0; // we haven't disposed this list, but it was released automatically already. so this is an error.
         });
         storage.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -78,22 +85,25 @@ internal class CustomAllocatorTests
 
         var origin = AllocatorManager.Persistent;
         var parentStorage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        AllocatorManager.StackAllocator parent = default;
+        var parentHelper = new AllocatorHelper<AllocatorManager.StackAllocator>(AllocatorManager.Persistent);
+        ref var parent = ref parentHelper.Allocator;
+
         parent.Initialize(parentStorage);  // and make a stack allocator from it
 
         var childStorage = parent.AllocateBlock(default(byte), 10000); // allocate some space from the parent
-        AllocatorManager.StackAllocator child = default;
-        child.Initialize(childStorage);  // and make a stack allocator from it
+        var childHelper = new AllocatorHelper<AllocatorManager.StackAllocator>(AllocatorManager.Persistent);
+        childHelper.Allocator.Initialize(childStorage);  // and make a stack allocator from it
 
         parent.Dispose(); // tear down the parent allocator
 
         Assert.Throws<ArgumentException>(() =>
         {
-            child.Allocate(default(byte), 1000); // try to allocate from the child - it should fail.
+            childHelper.Allocator.Allocate(default(byte), 1000); // try to allocate from the child - it should fail.
         });
 
         parentStorage.Dispose();
-
+        parentHelper.Dispose();
+        childHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 #endif
@@ -103,6 +113,9 @@ internal class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         const int kLength = 100;
+
+        var expectedAlignment = math.max(JobsUtility.CacheLineSize, UnsafeUtility.AlignOf<int>());
+
         for (int i = 0; i < kLength; ++i)
         {
             var allocator = AllocatorManager.Persistent;
@@ -111,7 +124,7 @@ internal class CustomAllocatorTests
                 Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
             Assert.AreEqual(i, block.Range.Items);
             Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
-            Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+            Assert.AreEqual(expectedAlignment, block.Alignment);
             Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
             allocator.FreeBlock(ref block);
         }
@@ -152,6 +165,8 @@ internal class CustomAllocatorTests
         allocateJob.m_blocks = blocks;
         allocateJob.Schedule(kLength, 1).Complete();
 
+        var expectedAlignment = math.max(JobsUtility.CacheLineSize, UnsafeUtility.AlignOf<int>());
+
         for (int i = 0; i < kLength; ++i)
         {
             var block = allocateJob.m_blocks[i];
@@ -159,7 +174,7 @@ internal class CustomAllocatorTests
                 Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
             Assert.AreEqual(i, block.Range.Items);
             Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
-            Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+            Assert.AreEqual(expectedAlignment, block.Alignment);
             Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
         }
 
@@ -173,7 +188,7 @@ internal class CustomAllocatorTests
             Assert.AreEqual(IntPtr.Zero, block.Range.Pointer);
             Assert.AreEqual(0, block.Range.Items);
             Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
-            Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+            Assert.AreEqual(expectedAlignment, block.Alignment);
             Assert.AreEqual(AllocatorManager.Persistent.Value, block.Range.Allocator.Value);
         }
         blocks.Dispose();
@@ -200,7 +215,6 @@ internal class CustomAllocatorTests
             m_parent = parent.Handle;
             m_clearValue = ClearValue;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AllocatorManager.Register(ref this);
             parent.Handle.AddChildAllocator(m_handle);
 #endif
         }
@@ -246,7 +260,6 @@ internal class CustomAllocatorTests
         public void Initialize()
         {
             AllocationCount = 0;
-            AllocatorManager.Register(ref this);
 #if ENABLE_UNITY_ALLOCATIONS_CHECKS
             AllocatorManager.Persistent.Handle.AddChildAllocator(m_handle);
 #endif
@@ -284,8 +297,12 @@ internal class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         var parent = AllocatorManager.Persistent;
-        ClearToValueAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<ClearToValueAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize(0, ref parent);
+
+        var expectedAlignment = math.max(JobsUtility.CacheLineSize, UnsafeUtility.AlignOf<int>());
+
         for (byte ClearValue = 0; ClearValue < 0xF; ++ClearValue)
         {
             allocator.m_clearValue = ClearValue;
@@ -296,11 +313,12 @@ internal class CustomAllocatorTests
                 Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
                 Assert.AreEqual(i, block.Range.Items);
                 Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
-                Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+                Assert.AreEqual(expectedAlignment, block.Alignment);
                 allocator.FreeBlock(ref block);
             }
         }
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -312,8 +330,12 @@ internal class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var backingStorage = origin.AllocateBlock(default(byte), 100000); // allocate a block of bytes from Malloc.Persistent
-        AllocatorManager.StackAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<AllocatorManager.StackAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize(backingStorage);
+
+        var expectedAlignment = math.max(JobsUtility.CacheLineSize, UnsafeUtility.AlignOf<int>());
+
         const int kLength = 100;
         for (int i = 1; i < kLength; ++i)
         {
@@ -321,11 +343,12 @@ internal class CustomAllocatorTests
             Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
             Assert.AreEqual(i, block.Range.Items);
             Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block.BytesPerItem);
-            Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block.Alignment);
+            Assert.AreEqual(expectedAlignment, block.Alignment);
             allocator.FreeBlock(ref block);
         }
         allocator.Dispose();
         backingStorage.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -345,13 +368,13 @@ internal class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         var allocator0 = AllocatorManager.Persistent;
-        var allocator1 = AllocatorManager.TempJob;
         var list = NativeList<byte>.New(100, ref allocator0);
         Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
-            list.Dispose(ref allocator1);
+            list.Dispose(ref CommonRwdAllocatorHelper.Allocator);
         });
         list.Dispose(ref allocator0);
+        CommonRwdAllocator.Rewind();
         AllocatorManager.Shutdown();
     }
 #endif
@@ -363,9 +386,9 @@ internal class CustomAllocatorTests
     {
         AllocatorManager.Initialize();
         var parent = AllocatorManager.Persistent;
-        ClearToValueAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<ClearToValueAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize(0xFE, ref parent);
-        allocator.Register();
         for (byte ClearValue = 0; ClearValue < 0xF; ++ClearValue)
         {
             allocator.m_clearValue = ClearValue;
@@ -377,11 +400,12 @@ internal class CustomAllocatorTests
             unsafelist.Dispose();
         }
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
     [Test]
-    public void SlabAllocatorWorks()
+    public unsafe void SlabAllocatorWorks()
     {
         var SlabSizeInBytes = 256;
         var SlabSizeInInts = SlabSizeInBytes / sizeof(int);
@@ -389,21 +413,24 @@ internal class CustomAllocatorTests
         AllocatorManager.Initialize();
         var origin = AllocatorManager.Persistent;
         var backingStorage = origin.AllocateBlock(default(byte), Slabs * SlabSizeInBytes); // allocate a block of bytes from Malloc.Persistent
-        AllocatorManager.SlabAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<AllocatorManager.SlabAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize(backingStorage, SlabSizeInBytes, Slabs * SlabSizeInBytes);
+
+        var expectedAlignment = math.max(JobsUtility.CacheLineSize, UnsafeUtility.AlignOf<int>());
 
         var block0 = allocator.AllocateBlock(default(int), SlabSizeInInts);
         Assert.AreNotEqual(IntPtr.Zero, block0.Range.Pointer);
         Assert.AreEqual(SlabSizeInInts, block0.Range.Items);
         Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block0.BytesPerItem);
-        Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block0.Alignment);
+        Assert.AreEqual(expectedAlignment, block0.Alignment);
         Assert.AreEqual(1, allocator.Occupied[0]);
 
         var block1 = allocator.AllocateBlock(default(int), SlabSizeInInts - 1);
         Assert.AreNotEqual(IntPtr.Zero, block1.Range.Pointer);
         Assert.AreEqual(SlabSizeInInts - 1, block1.Range.Items);
         Assert.AreEqual(UnsafeUtility.SizeOf<int>(), block1.BytesPerItem);
-        Assert.AreEqual(UnsafeUtility.AlignOf<int>(), block1.Alignment);
+        Assert.AreEqual(expectedAlignment, block1.Alignment);
         Assert.AreEqual(3, allocator.Occupied[0]);
 
         allocator.FreeBlock(ref block0);
@@ -413,11 +440,12 @@ internal class CustomAllocatorTests
 
         Assert.Throws<ArgumentException>(() =>
         {
-            allocator.AllocateBlock(default(int), 65);
+            allocatorHelper.Allocator.AllocateBlock(default(int), 65);
         });
 
         allocator.Dispose();
         backingStorage.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -431,6 +459,41 @@ internal class CustomAllocatorTests
         for (var i = 0; i < 31; ++i)
         {
             Assert.IsTrue(CollectionHelper.IsAligned((void*)0x80000000, 1<<i));
+        }
+    }
+
+    [Test]
+    public void AllocatorManager_AllocateBlock_UsesAlignmentArgument()
+    {
+        int sizeOf = 1;
+        int alignOf = 4096;
+        int items = 1;
+        var temp = AllocatorManager.Temp;
+        var block = temp.AllocateBlock(sizeOf, alignOf, items);
+        Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
+
+        unsafe
+        {
+            Assert.IsTrue(CollectionHelper.IsAligned((void*)block.Range.Pointer, alignOf));
+        }
+    }
+
+    [Test]
+    public void AllocatorManager_AllocateBlock_AlwaysCacheLineAligned()
+    {
+        int sizeOf = 1;
+        int items = 1;
+        var temp = AllocatorManager.Temp;
+
+        for (int alignment = 1; alignment < 256; ++alignment)
+        {
+            var block = temp.AllocateBlock(sizeOf, alignment, items);
+            Assert.AreNotEqual(IntPtr.Zero, block.Range.Pointer);
+
+            unsafe
+            {
+                Assert.IsTrue(CollectionHelper.IsAligned((void*)block.Range.Pointer, CollectionHelper.CacheLineSize));
+            }
         }
     }
 }

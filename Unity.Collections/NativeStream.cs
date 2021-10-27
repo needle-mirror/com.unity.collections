@@ -39,8 +39,11 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
 
+#if REMOVE_DISPOSE_SENTINEL
+#else
         [NativeSetClassTypeToNullOnSchedule]
         DisposeSentinel m_DisposeSentinel;
+#endif
 #endif
 
         /// <summary>
@@ -181,7 +184,11 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
             DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
 #endif
             m_Stream.Dispose();
         }
@@ -195,11 +202,14 @@ namespace Unity.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
             // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
             // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
             // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
+#endif
 #endif
             var jobHandle = m_Stream.Dispose(inputDeps);
 
@@ -220,7 +230,7 @@ namespace Unity.Collections
 
             public void Execute()
             {
-                Container.AllocateForEach(List->Length);
+                Container.AllocateForEach(List->m_length);
             }
         }
 
@@ -245,7 +255,10 @@ namespace Unity.Collections
             UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            if(allocator.IsCustomAllocator)
+#if REMOVE_DISPOSE_SENTINEL
+            stream.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (allocator.IsCustomAllocator)
             {
                 stream.m_Safety = AtomicSafetyHandle.Create();
                 stream.m_DisposeSentinel = null;
@@ -254,6 +267,7 @@ namespace Unity.Collections
             {
                 DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
             }
+#endif
 #endif
         }
 

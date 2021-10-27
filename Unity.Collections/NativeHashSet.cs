@@ -151,7 +151,6 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Data.m_Safety);
             var ash = m_Data.m_Safety;
             AtomicSafetyHandle.UseSecondaryVersion(ref ash);
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(ash, true);
 #endif
             return new Enumerator
             {

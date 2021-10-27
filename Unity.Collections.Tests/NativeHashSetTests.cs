@@ -92,10 +92,11 @@ internal class NativeHashSetTests: CollectionsTestFixture
     [Test]
     public void NativeHashSet_Double_Deallocate_Throws()
     {
-        var hashMap = new NativeHashSet<int>(16, Allocator.TempJob);
+        var hashMap = new NativeHashSet<int>(16, CommonRwdAllocator.Handle);
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { hashMap.Dispose(); });
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -147,7 +148,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     public void NativeHashSet_ParallelWriter_CanBeUsedInJob()
     {
         const int count = 32;
-        using (var hashSet = new NativeHashSet<int>(count, Allocator.TempJob))
+        using (var hashSet = new NativeHashSet<int>(count, CommonRwdAllocator.Handle))
         {
             new ParallelWriteToHashSetJob
             {
@@ -159,6 +160,8 @@ internal class NativeHashSetTests: CollectionsTestFixture
             for (int i = 0; i < count; i++)
                 Assert.AreEqual(i, result[i]);
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     struct ParallelWriteToHashSetJob : IJobParallelFor
@@ -175,8 +178,8 @@ internal class NativeHashSetTests: CollectionsTestFixture
     [Test]
     public void NativeHashSet_CanBeReadFromJob()
     {
-        using (var hashSet = new NativeHashSet<int>(1, Allocator.TempJob))
-        using (var result = new NativeReference<int>(Allocator.TempJob))
+        using (var hashSet = new NativeHashSet<int>(1, CommonRwdAllocator.Handle))
+        using (var result = new NativeReference<int>(CommonRwdAllocator.Handle))
         {
             hashSet.Add(42);
             new ReadHashSetJob
@@ -186,6 +189,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
             }.Run();
             Assert.AreEqual(42, result.Value);
         }
+        CommonRwdAllocator.Rewind();
     }
 
     struct ReadHashSetJob : IJob
@@ -197,6 +201,11 @@ internal class NativeHashSetTests: CollectionsTestFixture
         public void Execute()
         {
             Output.Value = Input.ToNativeArray(Allocator.Temp)[0];
+
+            foreach (var value in Input)
+            {
+                Assert.AreEqual(42, value);
+            }
         }
     }
 
@@ -230,7 +239,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     public void NativeHashSet_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new NativeHashSet<int>(32, Allocator.TempJob))
+        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -251,12 +260,65 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
             }
         }
+
+        CommonRwdAllocator.Rewind();
+    }
+
+    struct NativeHashSet_ForEach_Job : IJob
+    {
+        [ReadOnly]
+        public NativeHashSet<int> Input;
+
+        [ReadOnly]
+        public int Num;
+
+        public void Execute()
+        {
+            var seen = new NativeArray<int>(Num, Allocator.Temp);
+
+            var count = 0;
+            foreach (var item in Input)
+            {
+                Assert.True(Input.Contains(item));
+                seen[item] = seen[item] + 1;
+                ++count;
+            }
+
+            Assert.AreEqual(Input.Count(), count);
+            for (int i = 0; i < Num; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
+            }
+
+            seen.Dispose();
+        }
+    }
+
+    [Test]
+    public void NativeHashSet_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i);
+            }
+
+            new NativeHashSet_ForEach_Job
+            {
+                Input = container,
+                Num = n,
+
+            }.Run();
+        }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_ForEach_Throws_When_Modified()
     {
-        using (var container = new NativeHashSet<int>(32, Allocator.TempJob))
+        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             container.Add(0);
             container.Add(1);
@@ -285,12 +347,14 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 }
             });
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_ForEach_Throws()
     {
-        using (var container = new NativeHashSet<int>(32, Allocator.TempJob))
+        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             var iter = container.GetEnumerator();
 
@@ -309,6 +373,8 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             jobHandle.Complete();
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     struct ForEachIterator : IJob
@@ -327,7 +393,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     [Test]
     public void NativeHashSet_ForEach_Throws_Job_Iterator()
     {
-        using (var container = new NativeHashSet<int>(32, Allocator.TempJob))
+        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             var jobHandle = new ForEachIterator
             {
@@ -339,26 +405,29 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             jobHandle.Complete();
         }
+
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_ExceptWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 0);
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_ExceptWith_AxB()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -368,13 +437,14 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_ExceptWith_BxA()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setB.ExceptWith(setA);
 
         ExpectedCount(ref setB, 3);
@@ -384,26 +454,28 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_IntersectWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 0);
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_IntersectWith()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -413,26 +485,28 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_UnionWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 0);
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
     [Test]
     public void NativeHashSet_EIU_UnionWith()
     {
-        var setA = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 9);
@@ -448,13 +522,14 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
+        CommonRwdAllocator.Rewind();
     }
 
 #if !NET_DOTS // Array.Sort is not supported
     [Test]
     public void NativeHashSet_ToArray()
     {
-        using (var set = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 })
+        using (var set = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 })
         {
             var array = set.ToArray();
             Array.Sort(array);
@@ -463,6 +538,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 Assert.AreEqual(array[i], i);
             }
         }
+        CommonRwdAllocator.Rewind();
     }
 #endif
 
@@ -470,7 +546,8 @@ internal class NativeHashSetTests: CollectionsTestFixture
     public void NativeHashSet_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new NativeHashSet<int>(1, allocator.Handle))
@@ -479,6 +556,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         FastAssert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -500,20 +578,23 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_BurstedCustomAllocatorTest()
+    public unsafe void NativeHashSet_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr }.Schedule();
             handle.Complete();
         }
 
         FastAssert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }

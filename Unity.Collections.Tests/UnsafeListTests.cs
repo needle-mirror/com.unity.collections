@@ -87,12 +87,31 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
+    public unsafe void UnsafeListT_SetCapacity()
+    {
+        using (var list = new UnsafeList<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory))
+        {
+            list.Add(1);
+            Assert.DoesNotThrow(() => list.SetCapacity(128));
+
+            list.Add(1);
+            Assert.AreEqual(2, list.Length);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.SetCapacity(1));
+
+            list.RemoveAtSwapBack(0);
+            Assert.AreEqual(1, list.Length);
+            Assert.DoesNotThrow(() => list.SetCapacity(1));
+
+            list.TrimExcess();
+            Assert.AreEqual(1, list.Capacity);
+        }
+    }
+
+    [Test]
     public unsafe void UnsafeListT_TrimExcess()
     {
         using (var list = new UnsafeList<int>(32, Allocator.Persistent, NativeArrayOptions.ClearMemory))
         {
-            var capacity = list.Capacity;
-
             list.Add(1);
             list.TrimExcess();
             Assert.AreEqual(1, list.Length);
@@ -147,7 +166,8 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.SetCapacity(17);
         Assert.DoesNotThrow(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
 
-        list.SetCapacity(16);
+        list.Length = 16;
+        list.TrimExcess();
         Assert.Throws<Exception>(() => { list.AddNoResize(16); });
     }
 
@@ -397,6 +417,41 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.Dispose();
     }
 
+    [BurstCompile(CompileSynchronously = true)]
+    struct UnsafeListTestParallelWriter : IJob
+    {
+        [WriteOnly]
+        public UnsafeList<int>.ParallelWriter writer;
+
+        public unsafe void Execute()
+        {
+            var range = stackalloc int[2] { 7, 3 };
+
+            writer.AddNoResize(range[0]);
+            writer.AddRangeNoResize(range, 1);
+        }
+    }
+
+    [Test]
+    public void UnsafeListT_ParallelWriter_NoPtrCaching()
+    {
+        UnsafeList<int> list;
+
+        {
+            list = new UnsafeList<int>(2, Allocator.Persistent);
+            var writer = list.AsParallelWriter();
+            list.SetCapacity(100);
+            var writerJob = new UnsafeListTestParallelWriter { writer = writer }.Schedule();
+            writerJob.Complete();
+        }
+
+        Assert.AreEqual(2, list.Length);
+        Assert.AreEqual(7, list[0]);
+        Assert.AreEqual(7, list[1]);
+
+        list.Dispose();
+    }
+
     [Test]
     public unsafe void UnsafeListT_IndexOf()
     {
@@ -443,7 +498,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeListT_ForEach([Values(10, 1000)]int n)
+    public void UnsafeListT_ForEach([Values(10, 1000)] int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
         using (var container = new UnsafeList<int>(32, Allocator.TempJob))
@@ -475,10 +530,11 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeList_CustomAllocatorTest()
+    public void UnsafeListT_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new UnsafeList<byte>(1, allocator.Handle))
@@ -487,6 +543,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -508,20 +565,96 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeList_BurstedCustomAllocatorTest()
+    public unsafe void UnsafeListT_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob { Allocator = allocatorPtr }.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    void IIndexableTest<T>(T container)
+        where T : struct, IIndexable<int>
+    {
+        var length = container.Length;
+
+        Assert.Throws<IndexOutOfRangeException>(() => container.ElementAt(-1));
+        Assert.Throws<IndexOutOfRangeException>(() => container.ElementAt(container.Length));
+
+        Assert.DoesNotThrow(() => { for (int i = 0, len = container.Length; i < len; ++i) { container.ElementAt(i) = 4; } });
+
+        for (int i = 0, len = container.Length; i < len; ++i)
+        {
+            Assert.AreEqual(4, container.ElementAt(i));
+        }
+    }
+
+    void INativeListTest<T>(T container)
+        where T : struct, INativeList<int>
+    {
+        var length = container.Length;
+
+        Assert.Throws<IndexOutOfRangeException>(() => container[-1] = 1);
+        Assert.Throws<IndexOutOfRangeException>(() => container[container.Length] = 1);
+
+        Assert.DoesNotThrow(() => { for (int i = 0, len = container.Length; i < len; ++i) { container[i] = 4; } });
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => container.Capacity = container.Length - 1);
+        Assert.DoesNotThrow(() => container.Capacity = container.Length);
+        Assert.DoesNotThrow(() => container.Capacity = container.Length + 1);
+
+        for (int i = 0, len = container.Length; i < len; ++i)
+        {
+            Assert.AreEqual(4, container[i]);
+        }
+    }
+
+    private unsafe void TestInterfaces<T>(T container)
+        where T : struct, IIndexable<int>, INativeList<int>
+	{
+        container.Length = 4;
+        Assert.DoesNotThrow(() => { for (int i = 0, len = container.Length; i < len; ++i) { container.ElementAt(i) = i; } });
+
+        IIndexableTest(container);
+        INativeListTest(container);
+    }
+    private unsafe void TestInterfacesDispose<T>(T container)
+        where T : struct, IIndexable<int>, INativeList<int>, IDisposable
+    {
+        TestInterfaces(container);
+        container.Dispose();
+    }
+
+    [Test]
+    public unsafe void UnsafeListT_TestInterfaces() => TestInterfacesDispose(new UnsafeList<int>(1, Allocator.TempJob));
+
+    [Test]
+    public unsafe void NativeList_TestInterfaces() => TestInterfacesDispose(new NativeList<int>(1, Allocator.TempJob));
+
+    [Test]
+    public unsafe void FixedList32Bytes_TestInterfaces() => TestInterfaces(new FixedList32Bytes<int>());
+
+    [Test]
+    public unsafe void FixedList64Bytes_TestInterfaces() => TestInterfaces(new FixedList64Bytes<int>());
+
+    [Test]
+    public unsafe void FixedList128Bytes_TestInterfaces() => TestInterfaces(new FixedList128Bytes<int>());
+
+    [Test]
+    public unsafe void FixedList512Bytes_TestInterfaces() => TestInterfaces(new FixedList512Bytes<int>());
+
+    [Test]
+    public unsafe void FixedList4096Bytes_TestInterfaces() => TestInterfaces(new FixedList4096Bytes<int>());
 }

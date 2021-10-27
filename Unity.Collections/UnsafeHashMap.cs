@@ -967,19 +967,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// The value.
+        /// Value of key/value pair.
         /// </summary>
-        /// <value>The value. If this KeyValue is Null, returns the default of TValue.</value>
-        public TValue Value
+        public ref TValue Value
         {
             get
             {
-                if (m_Index != -1)
-                {
-                    return UnsafeUtility.ReadArrayElement<TValue>(m_Buffer->values, m_Index);
-                }
+                #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                if (m_Index == -1)
+                    throw new ArgumentException("must be valid");
+                #endif
 
-                return default;
+                return ref UnsafeUtility.AsRef<TValue>(m_Buffer->values + UnsafeUtility.SizeOf<TValue>() * m_Index);
             }
         }
 

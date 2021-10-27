@@ -473,6 +473,26 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    public void NativeList_ParallelWriter_NoPtrCaching()
+    {
+        NativeList<int> list;
+
+        {
+            list = new NativeList<int>(2, Allocator.Persistent);
+            var writer = list.AsParallelWriter();
+            list.Capacity = 100;
+            var writerJob = new NativeListTestParallelWriter { writer = writer }.Schedule();
+            writerJob.Complete();
+        }
+
+        Assert.AreEqual(2, list.Length);
+        Assert.AreEqual(7, list[0]);
+        Assert.AreEqual(7, list[1]);
+
+        list.Dispose();
+    }
+
+    [Test]
     public void NativeList_ParallelReaderWriter()
     {
         NativeList<int> list;

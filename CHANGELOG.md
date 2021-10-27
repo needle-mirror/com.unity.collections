@@ -1,4 +1,25 @@
-# Change log
+# Changelog
+
+## [1.1.0] - 2021-10-27
+
+### Added
+
+* `REMOVE_DISPOSE_SENTINEL` ifdefs in all containers for future removal of DisposeSentinel.
+* Bounds check to `Fixed/Native/UnsafeList`.
+* `SetCapacity` and `TrimExcess` to `NativeList`.
+* A custom allocator wrapper `AllocatorHelper` to facilitate custom allocator creation and destruction.
+
+### Changed
+
+* Only lower 15 bits of an allocator handle version are valid.
+
+### Fixed
+
+* Error in leak detection for NativeList created by RewindableAllocator.
+* Removed pointer caching from `Native/UnsafeList.ParallelWriter`.
+* `AtomicSafetyHandle` issue preventing use of `foreach` iterator in jobs for `NativeHashSet`, `NativeHashMap`, and `NativeMultiHashMap` containers.
+
+
 
 ## [1.0.0-pre.6] - 2021-08-31
 
@@ -8,6 +29,19 @@
 * BaselibErrorState
 * BaselibSourceLocation
 * VMRange
+* DisposeSentinel (managed object) from all `Native*` containers.
+
+### Changed
+
+* Native container memory allocations align to multiple cacheline size.
+* UnsafeText is marshalable now (doesn't contain generic field UnsafeList<byte>).
+
+### Fixed
+
+* AllocatorManager.AllocateBlock no longer ignores alignment when allocating.
+* Redundant and wrong computation of memory allocation alignment.
+
+
 
 ## [1.0.0-pre.5] - 2021-08-20
 

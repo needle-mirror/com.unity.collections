@@ -399,6 +399,70 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         }
     }
 
+    struct NativeMultiHashMap_ForEach_Job : IJob
+    {
+        [ReadOnly]
+        public NativeMultiHashMap<int, int> Input;
+
+        [ReadOnly]
+        public int Num;
+
+        public void Execute()
+        {
+            var seenKeys = new NativeArray<int>(Num, Allocator.Temp);
+            var seenValues = new NativeArray<int>(Num * 2, Allocator.Temp);
+
+            var count = 0;
+            foreach (var kv in Input)
+            {
+                if (kv.Value < Num)
+                {
+                    Assert.AreEqual(kv.Key, kv.Value);
+                }
+                else
+                {
+                    Assert.AreEqual(kv.Key + Num, kv.Value);
+                }
+
+                seenKeys[kv.Key] = seenKeys[kv.Key] + 1;
+                seenValues[kv.Value] = seenValues[kv.Value] + 1;
+
+                ++count;
+            }
+
+            Assert.AreEqual(Input.Count(), count);
+            for (int i = 0; i < Num; i++)
+            {
+                Assert.AreEqual(2, seenKeys[i], $"Incorrect key count {i}");
+                Assert.AreEqual(1, seenValues[i], $"Incorrect value count {i}");
+                Assert.AreEqual(1, seenValues[i + Num], $"Incorrect value count {i + Num}");
+            }
+
+            seenKeys.Dispose();
+            seenValues.Dispose();
+        }
+    }
+
+    [Test]
+    public void NativeMultiHashMap_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        using (var container = new NativeMultiHashMap<int, int>(1, Allocator.TempJob))
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                container.Add(i, i);
+                container.Add(i, i + n);
+            }
+
+            new NativeMultiHashMap_ForEach_Job
+            {
+                Input = container,
+                Num = n,
+
+            }.Run();
+        }
+    }
+
     [Test]
     public void NativeMultiHashMap_ForEach_Throws_When_Modified()
     {
@@ -562,7 +626,8 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     public void NativeMultiHashMap_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
         using (var container = new NativeMultiHashMap<int, int>(1, allocator.Handle))
@@ -571,6 +636,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 
@@ -592,20 +658,23 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeMultiHashMap_BurstedCustomAllocatorTest()
+    public unsafe void NativeMultiHashMap_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
-        CustomAllocatorTests.CountingAllocator allocator = default;
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
+        var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = &allocator}.Schedule();
+            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
             handle.Complete();
         }
 
         Assert.IsTrue(allocator.WasUsed);
         allocator.Dispose();
+        allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
 }
