@@ -327,9 +327,21 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 }
                 else
                 {
-                    buf.Append($"        ref var instance = ref UnsafeUtility.AsRef<");
-                    TypeToString(methodData.InstanceType, buf, methodData);
-                    buf.AppendLine(">((void*)p);");
+                    StringBuilder typeStringBuilder = new StringBuilder();
+                    TypeToString(methodData.InstanceType, typeStringBuilder, methodData);
+
+                    if (typeStringBuilder.ToString() == "Unity.Entities.SystemState")
+                    {
+                        buf.Append($"        ref var instance = ref *(");
+                        buf.Append(typeStringBuilder);
+                        buf.AppendLine("*)((void*)p);");
+                    }
+                    else
+                    {
+                        buf.Append($"        ref var instance = ref UnsafeUtility.AsRef<");
+                        buf.Append(typeStringBuilder);
+                        buf.AppendLine(">((void*)p);");
+                    }
 
                     if (isIndexer)
                     {

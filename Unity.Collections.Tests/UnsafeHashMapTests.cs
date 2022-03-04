@@ -24,7 +24,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashMap_AddJob()
     {
-        var container = new UnsafeHashMap<int, int>(32, Allocator.TempJob);
+        var container = new UnsafeHashMap<int, int>(32, CommonRwdAllocator.Handle);
 
         var job = new UnsafeHashMapAddJob()
         {
@@ -42,7 +42,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     public void UnsafeHashMap_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new UnsafeHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new UnsafeHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -73,7 +73,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_ToArray()
     {
-        using (var set = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 })
+        using (var set = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 })
         {
             var array = set.ToArray();
             Array.Sort(array);

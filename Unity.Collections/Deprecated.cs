@@ -218,7 +218,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Reports whether container is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
@@ -1035,14 +1035,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         ///
         /// </summary>
         public readonly int length;
-        
+
         public readonly int unused;
 
         /// <summary>
         ///
         /// </summary>
         public readonly int capacity;
-        
+
         /// <summary>
         ///
         /// </summary>
@@ -1181,7 +1181,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Reports whether container is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
@@ -1699,6 +1699,9 @@ namespace Unity.Collections.LowLevel.Unsafe
 #if !UNITY_DOTSRUNTIME
             // Free storage on domain unload, which happens when iterating on the Entities module a lot.
             AppDomain.CurrentDomain.DomainUnload += (_, __) => { Shutdown(); };
+
+            // There is no domain unload in player builds, so we must be sure to shutdown when the process exits.
+            AppDomain.CurrentDomain.ProcessExit += (_, __) => { Shutdown(); };
 #endif
         }
 

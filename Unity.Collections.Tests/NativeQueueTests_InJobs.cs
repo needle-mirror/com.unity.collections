@@ -30,8 +30,8 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
     public void Enqueue()
     {
         const int queueSize = 100 * 1024;
-        var queue = new NativeQueue<int>(Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
+        var queue = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(queueSize, CommonRwdAllocator.Handle);
 
         var enqueueJob = new ConcurrentEnqueue()
         {
@@ -83,11 +83,11 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
         var handles = new NativeArray<JobHandle>(4, Allocator.Temp);
         for (int i = 0; i < 10; ++i)
         {
-            var q1 = new NativeQueue<int>(Allocator.TempJob);
-            var q2 = new NativeQueue<int>(Allocator.TempJob);
-            var q3 = new NativeQueue<int>(Allocator.TempJob);
-            var q4 = new NativeQueue<int>(Allocator.TempJob);
-            var rangeCheck = new NativeArray<int>(1, Allocator.TempJob);
+            var q1 = new NativeQueue<int>(CommonRwdAllocator.Handle);
+            var q2 = new NativeQueue<int>(CommonRwdAllocator.Handle);
+            var q3 = new NativeQueue<int>(CommonRwdAllocator.Handle);
+            var q4 = new NativeQueue<int>(CommonRwdAllocator.Handle);
+            var rangeCheck = CollectionHelper.CreateNativeArray<int>(1, CommonRwdAllocator.Handle);
             var j1 = new EnqueueDequeueJob {queue = q1, arr = rangeCheck, val = 0};
             var j2 = new EnqueueDequeueJob {queue = q2, arr = rangeCheck, val = 0};
             var j3 = new EnqueueDequeueJob {queue = q3, arr = rangeCheck, val = 0};
@@ -121,7 +121,7 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
     [Test]
     public void ToArray_WorksFromJobs()
     {
-        using (var queue = new NativeQueue<int>(Allocator.TempJob))
+        using (var queue = new NativeQueue<int>(CommonRwdAllocator.Handle))
         {
             new EnqueueJob
             {
@@ -142,8 +142,8 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
     public void NativeQueue_ParallelWriter()
     {
         const int queueSize = 100 * 1024;
-        var queue = new NativeQueue<int>(Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(queueSize, Allocator.TempJob);
+        var queue = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(queueSize, CommonRwdAllocator.Handle);
 
         var jobHandle = new ConcurrentEnqueue()
         {

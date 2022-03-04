@@ -59,7 +59,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether the list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -470,7 +470,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -949,13 +949,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
         public FixedList32Bytes(in FixedList64Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes30,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes30,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList32Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList64Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes30();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -1048,13 +1063,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
         public FixedList32Bytes(in FixedList128Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes30,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes30,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList32Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList128Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes30();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -1147,13 +1177,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
         public FixedList32Bytes(in FixedList512Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes30,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes30,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList32Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList512Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes30();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -1246,13 +1291,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList32Bytes&lt;T&gt;.</exception>
         public FixedList32Bytes(in FixedList4096Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes30,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes30,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList32Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList4096Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes30();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -1520,7 +1580,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -1927,13 +1987,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
         public FixedList64Bytes(in FixedList32Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes62,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes62,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList64Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList32Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes62();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -2098,13 +2173,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
         public FixedList64Bytes(in FixedList128Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes62,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes62,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList64Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList128Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes62();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -2197,13 +2287,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
         public FixedList64Bytes(in FixedList512Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes62,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes62,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList64Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList512Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes62();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -2296,13 +2401,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList64Bytes&lt;T&gt;.</exception>
         public FixedList64Bytes(in FixedList4096Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes62,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes62,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList64Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList4096Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes62();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -2570,7 +2690,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -2977,13 +3097,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
         public FixedList128Bytes(in FixedList32Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes126,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes126,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList128Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList32Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes126();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -3076,13 +3211,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
         public FixedList128Bytes(in FixedList64Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes126,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes126,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList128Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList64Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes126();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -3247,13 +3397,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
         public FixedList128Bytes(in FixedList512Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes126,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes126,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList128Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList512Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes126();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -3346,13 +3511,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList128Bytes&lt;T&gt;.</exception>
         public FixedList128Bytes(in FixedList4096Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes126,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes126,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList128Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList4096Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes126();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -3620,7 +3800,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -4027,13 +4207,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
         public FixedList512Bytes(in FixedList32Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes510,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes510,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList512Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList32Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes510();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -4126,13 +4321,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
         public FixedList512Bytes(in FixedList64Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes510,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes510,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList512Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList64Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes510();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -4225,13 +4435,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
         public FixedList512Bytes(in FixedList128Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes510,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes510,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList512Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList128Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes510();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -4396,13 +4621,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList512Bytes&lt;T&gt;.</exception>
         public FixedList512Bytes(in FixedList4096Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes510,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes510,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList512Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList4096Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes510();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -4670,7 +4910,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -5077,13 +5317,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
         public FixedList4096Bytes(in FixedList32Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes4094,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes4094,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList4096Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList32Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes4094();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -5176,13 +5431,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
         public FixedList4096Bytes(in FixedList64Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes4094,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes4094,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList4096Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList64Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes4094();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -5275,13 +5545,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
         public FixedList4096Bytes(in FixedList128Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes4094,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes4094,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList4096Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList128Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes4094();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>
@@ -5374,13 +5659,28 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of FixedList4096Bytes&lt;T&gt;.</exception>
         public FixedList4096Bytes(in FixedList512Bytes<T> other)
         {
-            FixedList.CheckResize<FixedBytes4094,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes4094,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedList4096Bytes with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedList512Bytes<T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes4094();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>

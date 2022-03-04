@@ -21,7 +21,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test, DotsRuntimeIgnore]
     public void NativeMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
-        var container = new NativeMultiHashMap<int, int>(10, Allocator.TempJob);
+        var container = new NativeMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container.Add(0, 123);
         container.Dispose();
         Assert.That(() => container.ContainsKey(0),
@@ -45,7 +45,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     public void NativeMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
-        var container = new NativeMultiHashMap<int, int>(10, Allocator.TempJob);
+        var container = new NativeMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container.Dispose();
 
         var job = new NativeMultiHashMap_CreateAndUseAfterFreeBurst
@@ -135,7 +135,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         hashMap.Add(5, 1);
         hashMap.Add(5, 2);
 
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(CommonRwdAllocator.Handle);
 
         GCAllocRecorder.ValidateNoGCAllocs(() =>
         {
@@ -172,7 +172,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_Double_Deallocate_Throws()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.TempJob);
+        var hashMap = new NativeMultiHashMap<int, int>(16, CommonRwdAllocator.Handle);
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { hashMap.Dispose(); });
@@ -243,7 +243,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
 
     void ExpectValues(NativeMultiHashMap<int, long> hashMap, int key, long[] expectedValues)
     {
-        var list = new NativeList<long>(Allocator.TempJob);
+        var list = new NativeList<long>(CommonRwdAllocator.Handle);
         foreach (var value in hashMap.GetValuesForKey(key))
             list.Add(value);
 
@@ -263,7 +263,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
         }
         var keys = container.GetKeyArray(Allocator.Temp);
 #if !NET_DOTS // Tuple is not supported by TinyBCL
-        var (unique, uniqueLength) = container.GetUniqueKeyArrayNBC(Allocator.Temp);
+        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
         Assert.AreEqual(30, uniqueLength);
 #endif
 
@@ -284,7 +284,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     public void NativeMultiHashMap_GetUniqueKeysEmpty()
     {
         var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
-        var keys = hashMap.GetUniqueKeyArrayNBC(Allocator.Temp);
+        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
 
         Assert.AreEqual(0, keys.Item1.Length);
         Assert.AreEqual(0, keys.Item2);
@@ -299,7 +299,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
             hashMap.Add(i, 2 * i);
             hashMap.Add(i, 3 * i);
         }
-        var keys = hashMap.GetUniqueKeyArrayNBC(Allocator.Temp);
+        var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
         hashMap.Dispose();
         Assert.AreEqual(30, keys.Item2);
         for (int i = 0; i < 30; ++i)
@@ -446,7 +446,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_ForEach_From_Job([Values(10, 1000)] int n)
     {
-        using (var container = new NativeMultiHashMap<int, int>(1, Allocator.TempJob))
+        using (var container = new NativeMultiHashMap<int, int>(1, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; ++i)
             {
@@ -466,7 +466,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_ForEach_Throws_When_Modified()
     {
-        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < 30; ++i)
             {
@@ -508,7 +508,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_ForEach_Throws_Job_Iterator()
     {
-        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             var jobHandle = new NativeMultiHashMap_ForEachIterator
             {
@@ -536,7 +536,7 @@ internal class NativeMultiHashMapTests : CollectionsTestFixture
     [Test]
     public void NativeMultiHashMap_ForEach_Throws_When_Modified_From_Job()
     {
-        using (var container = new NativeMultiHashMap<int, int>(32, Allocator.TempJob))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             var iter = container.GetEnumerator();
 

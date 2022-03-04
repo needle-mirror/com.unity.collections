@@ -271,7 +271,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Whether the list is empty.
         /// </summary>
-        /// <value>True if the list is empty.</value>
+        /// <value>True if the list is empty or the list has not been constructed.</value>
         public bool IsEmpty => !IsCreated || m_length == 0;
 
         /// <summary>
@@ -850,6 +850,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Overwrites the elements of this list with the elements of an equal-length array.
+        /// </summary>
+        /// <param name="array">An array to copy into this list.</param>
+        public void CopyFrom(UnsafeList<T> array)
+        {
+            Resize(array.Length);
+            UnsafeUtility.MemCpy(Ptr, array.Ptr, UnsafeUtility.SizeOf<T>() * Length);
+        }
+
+
+        /// <summary>
         /// Returns an enumerator over the elements of the list.
         /// </summary>
         /// <returns>An enumerator over the elements of the list.</returns>
@@ -1053,6 +1064,30 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             return list.IndexOf(value) != -1;
         }
+
+
+        /// <summary>
+        /// Returns true if this array and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source array's elements.</typeparam>
+        /// <param name="array">The array to compare for equality.</param>
+        /// <param name="other">The other array to compare for equality.</param>
+        /// <returns>True if the arrays have equal length and content.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        public static bool ArraysEqual<T>(this UnsafeList<T> array, UnsafeList<T> other) where T : unmanaged, IEquatable<T>
+        {
+            if (array.Length != other.Length)
+                return false;
+
+            for (int i = 0; i != array.Length; i++)
+            {
+                if (!array[i].Equals(other[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
     }
 
     internal sealed class UnsafeListTDebugView<T>
@@ -1261,7 +1296,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Whether the list is empty.
         /// </summary>
-        /// <value>True if the list is empty.</value>
+        /// <value>True if the list is empty or the list has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>

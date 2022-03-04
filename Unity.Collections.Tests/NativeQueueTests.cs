@@ -93,7 +93,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     [Test]
     public void Double_Deallocate_Throws()
     {
-        var queue = new NativeQueue<int>(Allocator.TempJob);
+        var queue = new NativeQueue<int>(CommonRwdAllocator.Handle);
         queue.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { queue.Dispose(); });
@@ -269,7 +269,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     [Test,DotsRuntimeIgnore]
     public void NativeQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
-        var container = new NativeQueue<int>(Allocator.TempJob);
+        var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
         container.Enqueue(123);
         container.Dispose();
         NUnit.Framework.Assert.That(() => container.Dequeue(),

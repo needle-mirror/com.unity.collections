@@ -1,4 +1,4 @@
-#if !UNITY_DOTSRUNTIME
+#if !NET_DOTS
 using System;
 using System.Globalization;
 using System.Threading;
@@ -6,7 +6,9 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using System.Text;
+#if !UNITY_DOTSRUNTIME
 using UnityEditor.VersionControl;
+#endif
 
 // change this to change the core type under test
 using FixedStringN = Unity.Collections.FixedString128Bytes;
@@ -25,7 +27,7 @@ internal static class FixedStringTestUtils
         UnsafeUtility.MemSet(bytes, 0xcc, cap);
     }
 
-    internal unsafe static void AssertNullTerminated<T>(ref this T fs)
+    internal unsafe static void AssertNullTerminated<T>(this T fs)
         where T : struct, INativeList<byte>, IUTF8Bytes
     {
         Assert.AreEqual(0, fs.GetUnsafePtr()[fs.Length]);

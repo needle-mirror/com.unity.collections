@@ -96,7 +96,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { hashMap.Dispose(); });
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -160,8 +159,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
             for (int i = 0; i < count; i++)
                 Assert.AreEqual(i, result[i]);
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct ParallelWriteToHashSetJob : IJobParallelFor
@@ -189,7 +186,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
             }.Run();
             Assert.AreEqual(42, result.Value);
         }
-        CommonRwdAllocator.Rewind();
     }
 
     struct ReadHashSetJob : IJob
@@ -260,8 +256,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
             }
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct NativeHashSet_ForEach_Job : IJob
@@ -311,8 +305,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             }.Run();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -347,8 +339,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 }
             });
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -373,8 +363,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             jobHandle.Complete();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct ForEachIterator : IJob
@@ -405,8 +393,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
             jobHandle.Complete();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -420,7 +406,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -437,7 +422,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -454,7 +438,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -468,7 +451,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -485,7 +467,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -499,7 +480,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -522,7 +502,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
         setA.Dispose();
         setB.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
 #if !NET_DOTS // Array.Sort is not supported
@@ -538,7 +517,6 @@ internal class NativeHashSetTests: CollectionsTestFixture
                 Assert.AreEqual(array[i], i);
             }
         }
-        CommonRwdAllocator.Rewind();
     }
 #endif
 

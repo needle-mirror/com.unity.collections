@@ -163,7 +163,7 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     public void UnsafeHashSet_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new UnsafeHashSet<int>(32, Allocator.TempJob))
+        using (var container = new UnsafeHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -189,8 +189,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_ExceptWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -202,8 +202,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_ExceptWith_AxB()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -218,8 +218,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_ExceptWith_BxA()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setB.ExceptWith(setA);
 
         ExpectedCount(ref setB, 3);
@@ -234,8 +234,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_IntersectWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -247,8 +247,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_IntersectWith()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -263,8 +263,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_UnionWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -276,8 +276,8 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashSet_EIU_UnionWith()
     {
-        var setA = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 9);

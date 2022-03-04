@@ -21,3 +21,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Unity.Scenes")]
 [assembly: InternalsVisibleTo("Unity.Scenes.Editor")]
 [assembly: InternalsVisibleTo("Samples.GridPath.Tests")]
+[assembly: InternalsVisibleTo("Unity.Entities.PerformanceTests")]

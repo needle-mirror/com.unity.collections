@@ -36,8 +36,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_ExceptWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -49,8 +49,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_ExceptWith_AxB()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -65,8 +65,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_IntersectWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -78,8 +78,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_IntersectWith()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -94,8 +94,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_UnionWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -107,8 +107,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_UnionWith()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new <#=OtherContainerType#><int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new <#=OtherContainerType#><int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -140,7 +140,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_ExceptWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         var other = new <#=OtherContainerType#><int>() { };
         container.ExceptWith(other);
 
@@ -152,7 +152,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_ExceptWith_AxB()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new <#=OtherContainerType#><int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -167,7 +167,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_IntersectWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         var other = new <#=OtherContainerType#><int>() { };
         container.IntersectWith(other);
 
@@ -179,7 +179,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_IntersectWith()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new <#=OtherContainerType#><int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -194,7 +194,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_UnionWith_Empty()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { };
         var other = new <#=OtherContainerType#><int>() { };
         container.UnionWith(other);
 
@@ -206,7 +206,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void <#=ContainerType#>_<#=OtherContainerType#>_EIU_UnionWith()
     {
-        var container = new <#=ContainerType#><int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new <#=ContainerType#><int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new <#=OtherContainerType#><int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 

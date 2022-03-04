@@ -97,12 +97,6 @@ namespace Unity.Collections
         internal AtomicSafetyHandle m_Safety;
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashMap<TKey, TValue>>();
 
-        [BurstDiscard]
-        static void CreateStaticSafetyId()
-        {
-            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeHashMap<TKey, TValue>>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -139,11 +133,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_staticSafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
@@ -151,7 +141,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this hash map is empty.
         /// </summary>
-        /// <value>True if this hash map is empty.</value>
+        /// <value>True if this hash map is empty or if the map has not been constructed.</value>
         public bool IsEmpty
         {
             get
@@ -398,6 +388,7 @@ namespace Unity.Collections
             writer.m_Writer = m_HashMapData.AsParallelWriter();
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             writer.m_Safety = m_Safety;
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
 #endif
             return writer;
         }
@@ -418,6 +409,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 #endif
             /// <summary>
             /// Returns the index of the current thread.

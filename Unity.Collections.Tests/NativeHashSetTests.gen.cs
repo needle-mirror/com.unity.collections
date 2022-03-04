@@ -17,8 +17,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -30,8 +30,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -46,8 +46,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -59,8 +59,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -75,8 +75,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -88,8 +88,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeHashSet_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -111,8 +111,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -124,8 +124,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -140,8 +140,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -153,8 +153,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -169,8 +169,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -182,8 +182,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeHashSet_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -205,8 +205,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -218,8 +218,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -234,8 +234,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -247,8 +247,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -263,8 +263,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -276,8 +276,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_NativeList_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -299,8 +299,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -312,8 +312,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -328,8 +328,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -341,8 +341,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -357,8 +357,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -370,8 +370,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_UnsafeList_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -393,7 +393,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -405,7 +405,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -420,7 +420,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -432,7 +432,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -447,7 +447,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.UnionWith(other);
 
@@ -459,7 +459,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList32Bytes_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -479,7 +479,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -491,7 +491,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -506,7 +506,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -518,7 +518,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -533,7 +533,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.UnionWith(other);
 
@@ -545,7 +545,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList64Bytes_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -565,7 +565,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -577,7 +577,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -592,7 +592,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -604,7 +604,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -619,7 +619,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.UnionWith(other);
 
@@ -631,7 +631,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList128Bytes_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -651,7 +651,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -663,7 +663,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -678,7 +678,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -690,7 +690,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -705,7 +705,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.UnionWith(other);
 
@@ -717,7 +717,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList512Bytes_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -737,7 +737,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -749,7 +749,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -764,7 +764,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -776,7 +776,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_IntersectWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -791,7 +791,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_UnionWith_Empty()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.UnionWith(other);
 
@@ -803,7 +803,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void NativeHashSet_FixedList4096Bytes_EIU_UnionWith()
     {
-        var container = new NativeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -831,8 +831,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -844,8 +844,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -860,8 +860,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -873,8 +873,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -889,8 +889,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -902,8 +902,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeHashSet_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -925,8 +925,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -938,8 +938,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -954,8 +954,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -967,8 +967,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -983,8 +983,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -996,8 +996,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeHashSet_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeHashSet<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1019,8 +1019,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1032,8 +1032,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1048,8 +1048,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1061,8 +1061,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1077,8 +1077,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new NativeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1090,8 +1090,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_NativeList_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new NativeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new NativeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1113,8 +1113,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1126,8 +1126,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1142,8 +1142,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1155,8 +1155,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
         ExpectedCount(ref container, 3);
@@ -1171,8 +1171,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 0);
@@ -1184,8 +1184,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_UnsafeList_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
-        var other = new UnsafeList<int>(8, Allocator.TempJob) { 3, 4, 5, 6, 7, 8 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var other = new UnsafeList<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
         ExpectedCount(ref container, 9);
@@ -1207,7 +1207,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -1219,7 +1219,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -1234,7 +1234,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -1246,7 +1246,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -1261,7 +1261,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList32Bytes<int>() { };
         container.UnionWith(other);
 
@@ -1273,7 +1273,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList32Bytes_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList32Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -1293,7 +1293,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -1305,7 +1305,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -1320,7 +1320,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -1332,7 +1332,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -1347,7 +1347,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList64Bytes<int>() { };
         container.UnionWith(other);
 
@@ -1359,7 +1359,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList64Bytes_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList64Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -1379,7 +1379,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -1391,7 +1391,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -1406,7 +1406,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -1418,7 +1418,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -1433,7 +1433,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList128Bytes<int>() { };
         container.UnionWith(other);
 
@@ -1445,7 +1445,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList128Bytes_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList128Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -1465,7 +1465,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -1477,7 +1477,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -1492,7 +1492,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -1504,7 +1504,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -1519,7 +1519,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList512Bytes<int>() { };
         container.UnionWith(other);
 
@@ -1531,7 +1531,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList512Bytes_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList512Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 
@@ -1551,7 +1551,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_ExceptWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.ExceptWith(other);
 
@@ -1563,7 +1563,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_ExceptWith_AxB()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.ExceptWith(other);
 
@@ -1578,7 +1578,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_IntersectWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.IntersectWith(other);
 
@@ -1590,7 +1590,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_IntersectWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.IntersectWith(other);
 
@@ -1605,7 +1605,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_UnionWith_Empty()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
         var other = new FixedList4096Bytes<int>() { };
         container.UnionWith(other);
 
@@ -1617,7 +1617,7 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_FixedList4096Bytes_EIU_UnionWith()
     {
-        var container = new UnsafeHashSet<int>(8, Allocator.TempJob) { 0, 1, 2, 3, 4, 5 };
+        var container = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
         var other = new FixedList4096Bytes<int>() { 3, 4, 5, 6, 7, 8 };
         container.UnionWith(other);
 

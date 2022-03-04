@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine.Internal;
+using Unity.Burst;
 
 namespace Unity.Collections
 {
@@ -21,6 +22,10 @@ namespace Unity.Collections
         , IEnumerable<T> // Used by collection initializers.
         where T : unmanaged, IEquatable<T>
     {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashSet<T>>();
+#endif
+
         internal NativeHashMap<T, bool> m_Data;
 
         /// <summary>
@@ -31,12 +36,15 @@ namespace Unity.Collections
         public NativeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = new NativeHashMap<T, bool>(capacity, allocator);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.SetStaticSafetyId<NativeHashSet<T>>(ref m_Data.m_Safety, ref s_staticSafetyId.Data);
+#endif
         }
 
         /// <summary>
         /// Whether this set is empty.
         /// </summary>
-        /// <value>True if this set is empty.</value>
+        /// <value>True if this set is empty or if the set has not been constructed.</value>
         public bool IsEmpty => m_Data.IsEmpty;
 
         /// <summary>
@@ -112,7 +120,12 @@ namespace Unity.Collections
         /// <returns>A parallel writer.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            return new ParallelWriter { m_Data = m_Data.AsParallelWriter() };
+            ParallelWriter writer;
+            writer.m_Data = m_Data.AsParallelWriter();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Data.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
+#endif
+            return writer;
         }
 
         /// <summary>
@@ -125,6 +138,9 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public struct ParallelWriter
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
+#endif
             internal NativeHashMap<T, bool>.ParallelWriter m_Data;
 
             /// <summary>

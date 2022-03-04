@@ -64,16 +64,11 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="hashmap">The multi hash map.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
-        [NotBurstCompatible]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.UnsafeMultiHashMap` instead.", false)]
         public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
         where TKey : struct, IEquatable<TKey>, IComparable<TKey>
-        where TValue : struct
-        {
-            var result = hashmap.GetKeyArray(allocator);
-            result.Sort();
-            int uniques = result.Unique();
-            return (result, uniques);
-        }
+        where TValue : struct => hashmap.GetUniqueKeyArray(allocator);
 
         /// <summary>
         /// Returns an array with the unique keys of this multi hash map.
@@ -83,16 +78,11 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="hashmap">The multi hash map.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
-        [NotBurstCompatible]
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.NativeMultiHashMap` instead.", false)]
         public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
-            where TValue : struct
-        {
-            var result = hashmap.GetKeyArray(allocator);
-            result.Sort();
-            int uniques = result.Unique();
-            return (result, uniques);
-        }
+            where TValue : struct => hashmap.GetUniqueKeyArray(allocator);
 #endif
     }
 }

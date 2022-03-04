@@ -85,13 +85,6 @@ namespace Unity.Collections
         internal int m_SafetyIndexHint;
         internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeList<T>>();
 
-        [BurstDiscard]
-        [NotBurstCompatible /* Static safety ID */]
-        internal static void CreateStaticSafetyId()
-        {
-            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeList<T>>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -148,11 +141,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_staticSafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeList<T>>(ref m_Safety, ref s_staticSafetyId.Data);
 
             m_SafetyIndexHint = (allocator.Handle).AddSafetyHandle(m_Safety);
 #endif
@@ -510,7 +499,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if the list is empty or if the list has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>
@@ -715,7 +704,7 @@ namespace Unity.Collections
             // We use the first bit of the pointer to infer that the array is in list mode
             // Thus the job scheduling code will need to patch it.
             buffer += 1;
-            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(buffer, 0, Allocator.None);
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(buffer, 0, Allocator.Invalid);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, m_Safety);
@@ -889,12 +878,14 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 
             [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
             internal unsafe ParallelWriter(UnsafeList<T>* listData, ref AtomicSafetyHandle safety)
             {
                 ListData = listData;
                 m_Safety = safety;
+                CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref m_Safety, ref s_staticSafetyId.Data);
             }
 #else
             internal unsafe ParallelWriter(UnsafeList<T>* listData)
@@ -1018,11 +1009,11 @@ namespace Unity.Collections
         void CheckHandleMatches(AllocatorManager.AllocatorHandle handle)
         {
             if(m_ListData == null)
-                throw new ArgumentOutOfRangeException("$Allocator handle {handle} can't match because container is not initialized.");
+                throw new ArgumentOutOfRangeException($"Allocator handle {handle} can't match because container is not initialized.");
             if(m_ListData->Allocator.Index != handle.Index)
-                throw new ArgumentOutOfRangeException("$Allocator handle {handle} can't match because container handle index doesn't match.");
+                throw new ArgumentOutOfRangeException($"Allocator handle {handle} can't match because container handle index doesn't match.");
             if(m_ListData->Allocator.Version != handle.Version)
-                throw new ArgumentOutOfRangeException("$Allocator handle {handle} matches container handle index, but has different version.");
+                throw new ArgumentOutOfRangeException($"Allocator handle {handle} matches container handle index, but has different version.");
         }
     }
 

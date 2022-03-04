@@ -56,13 +56,6 @@ namespace Unity.Collections
         internal AtomicSafetyHandle m_Safety;
         internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
 
-        [BurstDiscard]
-        [NotBurstCompatible /* Static safety ID */]
-        internal static void CreateStaticSafetyId()
-        {
-            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeMultiHashMap<TKey, TValue>>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -101,11 +94,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_staticSafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
@@ -119,7 +108,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether this hash map is empty.
         /// </summary>
-        /// <value>True if this hash map is empty.</value>
+        /// <value>True if the hash map is empty or if the hash map has not been constructed.</value>
         public bool IsEmpty
         {
             get
@@ -374,6 +363,7 @@ namespace Unity.Collections
             writer.m_Writer = m_MultiHashMapData.AsParallelWriter();
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             writer.m_Safety = m_Safety;
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Safety, ref s_staticSafetyId.Data);
 #endif
             return writer;
         }
@@ -393,6 +383,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 #endif
             /// <summary>
             /// Returns the index of the current thread.
@@ -642,7 +633,7 @@ namespace Unity.Collections
             get
             {
                 var result = new List<ListPair<TKey, List<TValue>>>();
-                var keys = m_Target.GetUniqueKeyArrayNBC(Allocator.Temp);
+                var keys = m_Target.GetUniqueKeyArray(Allocator.Temp);
 
                 using (keys.Item1)
                 {
@@ -700,11 +691,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (NativeMultiHashMap<TKey, TValue>.s_staticSafetyId.Data == 0)
-            {
-                NativeMultiHashMap<TKey, TValue>.CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref nativeMultiHashMap.m_Safety, NativeMultiHashMap<TKey, TValue>.s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref nativeMultiHashMap.m_Safety, ref NativeMultiHashMap<TKey, TValue>.s_staticSafetyId.Data);
 #endif
         }
     }

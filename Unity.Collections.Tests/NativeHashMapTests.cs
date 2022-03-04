@@ -116,8 +116,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
         () => { hashMap.Dispose(); });
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -218,7 +216,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
         }
 
         keys.Dispose();
-        CommonRwdAllocator.Rewind();
     }
     #endif
 
@@ -558,7 +555,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
         NUnit.Framework.Assert.That(() => container[0],
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
-        CommonRwdAllocator.Rewind();
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -591,8 +587,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
         job.Run();
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
-
-        CommonRwdAllocator.Rewind();
     }
 #endif
 
@@ -705,8 +699,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
                 Assert.AreEqual(1, seen[i], $"Incorrect key count {i}");
             }
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct NativeHashMap_ForEach_Job : IJob
@@ -761,8 +753,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             }.Run();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -797,8 +787,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
                 }
             });
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct NativeHashMap_ForEachIterator : IJob
@@ -829,8 +817,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             jobHandle.Complete();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     struct ParallelWriteToHashMapJob : IJobParallelFor
@@ -866,8 +852,6 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             jobHandle.Complete();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -923,10 +907,7 @@ internal class NativeHashMapTests : CollectionsTestFixture
 
             kvArray.Dispose();
             other.Dispose();
-            CommonRwdAllocator.Rewind();
         }
-
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]

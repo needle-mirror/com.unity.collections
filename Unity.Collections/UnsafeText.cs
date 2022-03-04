@@ -73,7 +73,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Reports whether container is empty.
         /// </summary>
-        /// <value>True if this container empty.</value>
+        /// <value>True if the string is empty or the string has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>

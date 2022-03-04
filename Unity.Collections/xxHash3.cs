@@ -203,102 +203,6 @@ namespace Unity.Collections
             }
         }
 
-        #region Burst Proxy
-
-        // To call the burst version of Hash64/128Long independent of the callsite being burst or not
-#if !(NET_DOTS || UNITY_IOS)
-        static bool _initialized = false;
-
-        [BurstDiscard]
-        private static void CheckMono(ref bool isMono)
-        {
-            isMono = true;
-        }
-
-        private static bool IsMono()
-        {
-            bool result = false;
-            CheckMono(ref result);
-            return result;
-        }
-
-        private unsafe delegate void _dlg_Hash64Long(byte* input, byte* dest, long length, byte* secret, out ulong result);
-        private static _dlg_Hash64Long _bfp_Hash64Long;
-
-        private unsafe delegate void _dlg_Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result);
-        private static _dlg_Hash128Long _bfp_Hash128Long;
-
-#if !UNITY_DOTSRUNTIME
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
-#if UNITY_EDITOR
-        [InitializeOnLoadMethod]
-#endif
-        static unsafe void Initialize()
-#else
-        static unsafe xxHash3()
-#endif
-        {
-            if (_initialized)
-                return;
-            _initialized = true;
-            _bfp_Hash64Long = BurstCompiler.CompileFunctionPointer<_dlg_Hash64Long>(_mono_to_burst_Hash64Long).Invoke;
-            _bfp_Hash128Long = BurstCompiler.CompileFunctionPointer<_dlg_Hash128Long>(_mono_to_burst_Hash128Long).Invoke;
-        }
-
-        [BurstCompile]
-        private static unsafe void _mono_to_burst_Hash64Long(byte* input, byte* dest, long length, byte* secret, out ulong result)
-        {
-            _Hash64Long(input, dest, length, secret, out result);
-        }
-
-        [BurstDiscard]
-        private static unsafe void _forward_mono_Hash64Long(byte* input, byte* dest, long length, byte* secret, out ulong result)
-        {
-            _bfp_Hash64Long(input, dest, length, secret, out result);
-        }
-
-        [BurstCompile]
-        private static unsafe void _mono_to_burst_Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
-        {
-             _Hash128Long(input, dest, length, secret, out result);
-        }
-
-        [BurstDiscard]
-        private static unsafe void _forward_mono_Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
-        {
-            _bfp_Hash128Long(input, dest, length, secret, out result);
-        }
-#endif
-
-        private static unsafe ulong Hash64Long(byte* input, byte* dest, long length, byte* secret)
-        {
-            ulong result;
-#if !(NET_DOTS || UNITY_IOS)
-            if (IsMono())
-            {
-                _forward_mono_Hash64Long(input, dest, length, secret, out result);
-                return result;
-            }
-#endif
-
-            _Hash64Long(input, dest, length, secret, out result);
-            return result;
-        }
-
-        private static unsafe void Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
-        {
-#if !(NET_DOTS || UNITY_IOS)
-            if (IsMono())
-            {
-                _forward_mono_Hash128Long(input, dest, length, secret, out result);
-                return;
-            }
-#endif
-
-            _Hash128Long(input, dest, length, secret, out result);
-        }
-#endregion
-
         internal static unsafe ulong Hash64Internal(byte* input, byte* dest, long length, byte* secret, ulong seed)
         {
             if (length < 16)
@@ -493,7 +397,8 @@ namespace Unity.Collections
             }
         }
 
-        private static unsafe void _Hash64Long(byte* input, byte* dest, long length, byte* secret, out ulong result)
+        [BurstCompile]
+        private static unsafe ulong Hash64Long(byte* input, byte* dest, long length, byte* secret)
         {
             var addr = stackalloc byte[STRIPE_LEN + 31];
             var acc = (ulong*) ((ulong) addr + 31 & 0xFFFFFFFFFFFFFFE0); // Aligned the allocated address on 32 bytes
@@ -518,7 +423,7 @@ namespace Unity.Collections
                 {
                     DefaultHashLongInternalLoop(acc, input, dest, length, secret, 1);
                 }
-                result = MergeAcc(acc, secret + SECRET_MERGEACCS_START, (ulong) length * PRIME64_1);
+                return MergeAcc(acc, secret + SECRET_MERGEACCS_START, (ulong) length * PRIME64_1);
             }
         }
 
@@ -684,7 +589,8 @@ namespace Unity.Collections
             }
         }
 
-        private static unsafe void _Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
+        [BurstCompile]
+        private static unsafe void Hash128Long(byte* input, byte* dest, long length, byte* secret, out uint4 result)
         {
             // var acc = stackalloc ulong[ACC_NB];
             var addr = stackalloc byte[STRIPE_LEN + 31];

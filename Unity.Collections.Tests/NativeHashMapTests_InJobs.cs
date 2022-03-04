@@ -42,7 +42,6 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -90,7 +89,6 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -137,7 +135,6 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         hashMap.Dispose();
         writeStatus.Dispose();
         readValues.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -177,7 +174,6 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
         writeStatus.Dispose();
         hashMap.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -214,7 +210,6 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
         deps.Complete();
         hashMap.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 
     [Test]
@@ -224,6 +219,5 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
         var deps = hashMap.Dispose(default);
         Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
         deps.Complete();
-        CommonRwdAllocator.Rewind();
     }
 }

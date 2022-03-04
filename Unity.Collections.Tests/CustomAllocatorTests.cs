@@ -374,7 +374,6 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
             list.Dispose(ref CommonRwdAllocatorHelper.Allocator);
         });
         list.Dispose(ref allocator0);
-        CommonRwdAllocator.Rewind();
         AllocatorManager.Shutdown();
     }
 #endif

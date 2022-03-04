@@ -157,6 +157,9 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>The maximum value of a valid UNICODE code point</summary>
+        public const int kMaximumValidCodePoint = 0x10FFFF;
+
         /// <summary>
         /// Returns true if a code point is valid.
         /// </summary>
@@ -164,7 +167,7 @@ namespace Unity.Collections
         /// <returns>True if a code point is valid.</returns>
         public static bool IsValidCodePoint(int codepoint)
         {
-            if (codepoint > 0x10FFFF) // maximum valid code point
+            if (codepoint > kMaximumValidCodePoint) // maximum valid code point
                 return false;
 //            if (codepoint >= 0xD800 && codepoint <= 0xDFFF) // surrogate pair
 //                return false;

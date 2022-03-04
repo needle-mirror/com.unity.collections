@@ -1,4 +1,4 @@
-#if !UNITY_DOTSRUNTIME
+#if !NET_DOTS
 using System;
 using NUnit.Framework;
 using Unity.Collections;
@@ -48,6 +48,14 @@ namespace FixedStringTests
                 Assert.True(aa != new FixedString4096Bytes("test"));
                 Assert.True(aa.Value == "test4096");
                 Assert.AreEqual("test4096", aa);
+            }
+
+            using (NativeText aa = new NativeText("testString", Allocator.Temp))
+            {
+                var s = "testString";
+                Assert.AreEqual(aa, s);
+                Assert.True(aa.Value == "testString");
+                Assert.AreEqual("testString", aa);
             }
         }
 
@@ -326,13 +334,13 @@ namespace FixedStringTests
         [TestCase("三島 由紀夫", "吉本ばなな", TestName = "{m}(MishimaYukio-YoshimotoBanana")]
         public void NativeTextEqualsWorks(String a, String b)
         {
-            NativeText aa = new NativeText(new FixedString128Bytes(a), Allocator.Temp);
-            NativeText bb = new NativeText(new FixedString128Bytes(b), Allocator.Temp);
-            Assert.AreEqual(aa.Equals(bb), a.Equals(b));
-            aa.AssertNullTerminated();
-            bb.AssertNullTerminated();
-            aa.Dispose();
-            bb.Dispose();
+            using (var aa = new NativeText(new FixedString128Bytes(a), Allocator.Temp))
+            using (var bb = new NativeText(new FixedString128Bytes(b), Allocator.Temp))
+            {
+                Assert.AreEqual(aa.Equals(bb), a.Equals(b));
+                aa.AssertNullTerminated();
+                bb.AssertNullTerminated();
+            }
         }
 
         [Test]
@@ -397,12 +405,12 @@ namespace FixedStringTests
         [Test]
         public void NativeTextComparisons()
         {
-            NativeText a = new NativeText("apple", Allocator.Temp);
-            NativeText b = new NativeText("banana", Allocator.Temp);
-            Assert.AreEqual(false, a.Equals(b));
-            Assert.AreEqual(true, !b.Equals(a));
-            a.Dispose();
-            b.Dispose();
+            using (var a = new NativeText("apple", Allocator.Temp))
+            using (var b = new NativeText("banana", Allocator.Temp))
+            {
+                Assert.AreEqual(false, a.Equals(b));
+                Assert.AreEqual(true, !b.Equals(a));
+            }
         }
 
         [Test]
@@ -458,6 +466,467 @@ namespace FixedStringTests
             Assert.IsTrue(allocator.WasUsed);
             allocator.Dispose();
             allocatorHelper.Dispose();
+            AllocatorManager.Shutdown();
+        }
+
+        [Test]
+        public void NativeTextIsEmpty()
+        {
+            var a = new NativeText("", Allocator.Temp);
+            Assert.IsTrue(a.IsEmpty);
+            a.CopyFrom("hello");
+            Assert.IsFalse(a.IsEmpty);
+            a.Dispose();
+        }
+
+        [Test]
+        public void NativeTextIsEmptyReturnsTrueForNotConstructed()
+        {
+            NativeText a = default;
+            Assert.IsTrue(a.IsEmpty);
+        }
+
+        [Test]
+        public void NativeTextReadonlyCtor()
+        {
+            using (NativeText aa = new NativeText(new FixedString32Bytes("test32"), Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+                Assert.True(ro != new FixedString32Bytes("test"));
+                Assert.True(ro.Value == "test32");
+                Assert.AreEqual("test32", ro);
+            }
+
+            using (NativeText aa = new NativeText(new FixedString64Bytes("test64"), Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+                Assert.True(ro != new FixedString64Bytes("test"));
+                Assert.True(ro.Value == "test64");
+                Assert.AreEqual("test64", ro);
+            }
+
+            using (NativeText aa = new NativeText(new FixedString128Bytes("test128"), Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+                Assert.True(ro != new FixedString128Bytes("test"));
+                Assert.True(ro.Value == "test128");
+                Assert.AreEqual("test128", ro);
+            }
+
+            using (NativeText aa = new NativeText(new FixedString512Bytes("test512"), Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+                Assert.True(ro != new FixedString512Bytes("test"));
+                Assert.True(ro.Value == "test512");
+                Assert.AreEqual("test512", ro);
+            }
+
+            using (NativeText aa = new NativeText(new FixedString4096Bytes("test4096"), Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+                Assert.True(ro != new FixedString4096Bytes("test"));
+                Assert.True(ro.Value == "test4096");
+                Assert.AreEqual("test4096", ro);
+            }
+
+            using (var aa = new NativeText("Hello", Allocator.Temp))
+            {
+                var ro = aa.AsReadOnly();
+
+                Assert.AreEqual(aa.Equals(ro), ro.Equals(aa));
+                aa.AssertNullTerminated();
+                ro.AssertNullTerminated();
+            }
+        }
+
+        [TestCase("monkey", "monkey")]
+        [TestCase("yellow", "green")]
+        [TestCase("violet", "紅色", TestName = "{m}(Violet-Chinese-Red")]
+        [TestCase("绿色", "蓝色", TestName = "{m}(Chinese-Green-Blue")]
+        [TestCase("靛蓝色", "紫罗兰色", TestName = "{m}(Chinese-Indigo-Violet")]
+        [TestCase("James Monroe", "John Quincy Adams")]
+        [TestCase("Andrew Jackson", "村上春樹", TestName = "{m}(AndrewJackson-HarukiMurakami")]
+        [TestCase("三島 由紀夫", "吉本ばなな", TestName = "{m}(MishimaYukio-YoshimotoBanana")]
+        public void NativeTextReadOnlyEqualsWorks(String a, String b)
+        {
+            using (var aa = new NativeText(new FixedString128Bytes(a), Allocator.Temp))
+            using (var bb = new NativeText(new FixedString128Bytes(b), Allocator.Temp))
+            {
+                var aaRO = aa.AsReadOnly();
+                var bbRO = bb.AsReadOnly();
+                Assert.AreEqual(aaRO.Equals(bbRO), a.Equals(b));
+                aaRO.AssertNullTerminated();
+                bbRO.AssertNullTerminated();
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyIndexOf()
+        {
+            using (var a = new NativeText("bookkeeper bookkeeper", Allocator.Temp))
+            using (var b = new NativeText("ookkee", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                var bRO = b.AsReadOnly();
+                Assert.AreEqual(1, aRO.IndexOf(bRO));
+                Assert.AreEqual(-1, bRO.IndexOf(aRO));
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyLastIndexOf()
+        {
+            using (var a = new NativeText("bookkeeper bookkeeper", Allocator.Temp))
+            using (var b = new NativeText("ookkee", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                var bRO = b.AsReadOnly();
+                Assert.AreEqual(12, aRO.LastIndexOf(bRO));
+                Assert.AreEqual(-1, bRO.LastIndexOf(aRO));
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyContains()
+        {
+            using (var a = new NativeText("bookkeeper", Allocator.Temp))
+            using (var b = new NativeText("ookkee", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                var bRO = b.AsReadOnly();
+                Assert.AreEqual(true, aRO.Contains(bRO));
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyComparisons()
+        {
+            using (var a = new NativeText("apple", Allocator.Temp))
+            using (var b = new NativeText("banana", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                var bRO = b.AsReadOnly();
+                Assert.AreEqual(false, aRO.Equals(bRO));
+                Assert.AreEqual(true, !bRO.Equals(aRO));
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyMakeMoreThanOne()
+        {
+            using (var a = new NativeText("apple", Allocator.Temp))
+            {
+                var aRO1 = a.AsReadOnly();
+                var aRO2 = a.AsReadOnly();
+                Assert.IsTrue(a.Equals(aRO1));
+                Assert.IsTrue(aRO1.Equals(aRO2));
+                Assert.IsTrue(aRO2.Equals(aRO1));
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyIsNotACopy()
+        {
+            using (var a = new NativeText("apple", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                Assert.AreEqual(true, aRO.Equals(a));
+
+                unsafe
+                {
+                    Assert.IsTrue(aRO.GetUnsafePtr() == a.GetUnsafePtr());
+                }
+            }
+        }
+
+
+        [Test]
+        public void NativeTextReadOnlyIsEmpty()
+        {
+            var a = new NativeText("", Allocator.Temp);
+            var aRO = a.AsReadOnly();
+            Assert.IsTrue(aRO.IsEmpty);
+            a.Dispose();
+
+            a = new NativeText("not empty", Allocator.Temp);
+            aRO = a.AsReadOnly();
+            Assert.IsFalse(aRO.IsEmpty);
+            a.Dispose();
+        }
+
+        [Test]
+        public void NativeTextReadOnlyIsEmptyReturnsTrueOrThrowsForNotConstructed()
+        {
+            NativeText.ReadOnly aRO = default;
+            Assert.IsTrue(aRO.IsEmpty);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            NativeText aa = default;
+            NativeText.ReadOnly aaRO = aa.AsReadOnly();
+            Assert.IsTrue(aaRO.IsEmpty);
+#endif
+        }
+
+        [Test]
+        public void NativeTextReadOnlyIsNotWritable()
+        {
+            using (var a = new NativeText("apple", Allocator.Temp))
+            {
+                var aRO = a.AsReadOnly();
+                Assert.AreEqual(true, aRO.Equals(a));
+
+                Assert.Throws<NotSupportedException>(() => { aRO.IsEmpty = true; });
+                Assert.Throws<NotSupportedException>(() => { aRO.Length = 0; });
+                Assert.Throws<NotSupportedException>(() => { aRO.Capacity = 0; });
+                Assert.Throws<NotSupportedException>(() => { aRO.ElementAt(0); });
+                Assert.Throws<NotSupportedException>(() => { aRO.Clear(); });
+                Assert.Throws<NotSupportedException>(() => { aRO.Append("won't work"); });
+                FixedString32Bytes format = "{0}";
+                FixedString32Bytes arg0 = "a";
+                Assert.Throws<NotSupportedException>(() => { aRO.AppendFormat(format, arg0); });
+                Assert.Throws<NotSupportedException>(() => { aRO.AppendRawByte(1); });
+                Assert.Throws<NotSupportedException>(() => { aRO.TryResize(0); });
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyCannotBeUsedAfterSourceIsDisposed()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+                a.Dispose(); // Invalidate the string we are referring to
+                Assert.Throws<ObjectDisposedException>(() => { UnityEngine.Debug.Log(ro.ToString()); });
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+        [Test]
+        public void NativeTextReadOnlyCannotBeUsedAfterSourceIsChanged()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+
+                a.Clear(); // Change the string we are referring to
+
+                Assert.DoesNotThrow(() => { UnityEngine.Debug.Log(ro.ToString()); });
+
+                a.Dispose();
+
+                Assert.Throws<ObjectDisposedException>(() => { UnityEngine.Debug.Log(ro.ToString()); });
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+
+        [Test]
+        public void NativeTextReadOnlyModificationDuringEnumerationThrows()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+
+                int iterations = 0;
+                Assert.Throws<ObjectDisposedException>(() =>
+                {
+                    // Mutate the source string while iterating. Can append once but when we use the iterator
+                    // again it will now be invalid and should throw
+                    foreach (var c in ro)
+                    {
+                        iterations++;
+                        a.Append("keep it safe, ");
+                    }
+                });
+                Assert.AreEqual(1, iterations);
+
+                a.Dispose();
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+        struct TestWriteOfTextMappedToReadOnly : IJob
+        {
+            public NativeText Text;
+            public void Execute() { }
+        }
+
+        struct TestClearTextMappedToReadOnly : IJob
+        {
+            public NativeText Text;
+            public void Execute()
+            {
+                Text.Clear();
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyCannotScheduledSourceTextForWrite()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+                var job = new TestWriteOfTextMappedToReadOnly
+                {
+                    Text = a
+                };
+
+                var handle = job.Schedule();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    UnityEngine.Debug.Log(ro.ToString());
+                });
+
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    a.Dispose();
+                });
+                handle.Complete();
+
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+        [Test]
+        public void NativeTextReadOnlyCanReadFromSourceTextModifiedInJob()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+                var job = new TestClearTextMappedToReadOnly
+                {
+                    Text = a
+                };
+
+                var handle = job.Schedule();
+                handle.Complete();
+
+                Assert.DoesNotThrow(() =>
+                {
+                    UnityEngine.Debug.Log(ro.ToString());
+                });
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+        struct TestReadOfTextMappedToReadOnly : IJob
+        {
+            [ReadOnly]
+            public NativeText Text;
+            public void Execute() { }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyCanScheduledSourceTextForRead()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var ro = a.AsReadOnly();
+                var job = new TestReadOfTextMappedToReadOnly
+                {
+                    Text = a
+                };
+
+                Assert.DoesNotThrow(() =>
+                {
+                    job.Schedule().Complete();
+                });
+
+                a.Dispose();
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
+            AllocatorManager.Shutdown();
+        }
+
+        struct TestReadFromReadOnly : IJob
+        {
+            [ReadOnly] public NativeText.ReadOnly RO;
+            public void Execute()
+            {
+                UnityEngine.Debug.Log($"{RO.Length}");
+            }
+        }
+
+        [Test]
+        public void NativeTextReadOnlyThrowWhenUsingReadOnlyInJobAfterSourceHasBeenDisposed()
+        {
+            AllocatorManager.Initialize();
+            using (var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent))
+            {
+                ref var allocator = ref allocatorHelper.Allocator;
+                allocator.Initialize();
+
+                var a = new NativeText("Keep it secret, ", allocator.Handle);
+                var job = new TestReadFromReadOnly
+                {
+                    RO = a.AsReadOnly()
+                };
+
+                var handle = job.Schedule();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    a.Dispose();
+                });
+
+                Assert.IsTrue(allocator.WasUsed);
+                allocator.Dispose();
+            }
+
             AllocatorManager.Shutdown();
         }
     }

@@ -151,6 +151,15 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Property to get and set enable block free flag, a flag indicating whether allocator enables individual block free.
+        /// </summary>
+        public bool EnableBlockFree
+        {
+            get => m_enableBlockFree;
+            set => m_enableBlockFree = value;
+        }
+
+        /// <summary>
         /// Retrieves the number of memory blocks that the allocator has requested from the system.
         /// </summary>
         public int BlocksAllocated => (int)(m_last + 1);
@@ -300,11 +309,12 @@ namespace Unity.Collections
             container.m_MinIndex = 0;
             container.m_MaxIndex = length - 1;
             container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);
-            Handle.AddSafetyHandle(container.m_Safety);
 #if REMOVE_DISPOSE_SENTINEL
 #else
             container.m_DisposeSentinel = null;
 #endif
+            CollectionHelper.SetStaticSafetyId<NativeArray<T>>(ref container.m_Safety, ref NativeArrayExtensions.NativeArrayStaticId<T>.s_staticSafetyId.Data);
+            Handle.AddSafetyHandle(container.m_Safety);
 #endif
             return container;
         }
@@ -338,11 +348,7 @@ namespace Unity.Collections
 #else
             container.m_DisposeSentinel = null;
 #endif
-            if (NativeList<T>.s_staticSafetyId.Data == 0)
-            {
-                NativeList<T>.CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref container.m_Safety, NativeList<T>.s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeList<T>>(ref container.m_Safety, ref NativeList<T>.s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(container.m_Safety, true);
             Handle.AddSafetyHandle(container.m_Safety);
 #endif

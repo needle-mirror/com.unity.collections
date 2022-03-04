@@ -1,6 +1,4 @@
-# @collections-overview
-  <!-- [Collections Overview](index.md) -->
-# @collections-allocation
-  <!-- [Using unmanaged memory](allocation.md) -->
-# @collections-known-issues
-  <!-- [Known issues](issues.md) -->
+# [Collections Overview](index.md)
+# [Collection types](collection-types.md)
+# [Using unmanaged memory](allocation.md)
+# [Known issues](issues.md)

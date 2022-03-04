@@ -22,7 +22,7 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeMultiHashMap_AddJob()
     {
-        var container = new UnsafeMultiHashMap<int, int>(32, Allocator.TempJob);
+        var container = new UnsafeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle);
 
         var job = new UnsafeMultiHashMapAddJob()
         {
@@ -137,7 +137,7 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
         }
         var keys = container.GetKeyArray(Allocator.Temp);
 #if !NET_DOTS // Tuple is not supported by TinyBCL
-        var (unique, uniqueLength) = container.GetUniqueKeyArrayNBC(Allocator.Temp);
+        var (unique, uniqueLength) = container.GetUniqueKeyArray(Allocator.Temp);
         Assert.AreEqual(30, uniqueLength);
 #endif
 

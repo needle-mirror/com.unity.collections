@@ -10,9 +10,9 @@ internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixt
     [Test]
     public void NativeMultiHashMap_Read_And_Write_Without_Fences()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, Allocator.TempJob);
-        var writeStatus = new NativeArray<int>(hashMapSize, Allocator.TempJob);
-        var readValues = new NativeArray<int>(hashMapSize, Allocator.TempJob);
+        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
+        var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var writeData = new MultiHashMapWriteParallelForJob()
         {

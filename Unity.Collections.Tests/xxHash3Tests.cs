@@ -119,7 +119,7 @@ internal class xxHash3Tests : CollectionsTestCommonBase
         {
             SanityBuffer = SanityBuffer,
             DestinationBuffer = DestinationBuffer,
-            Result = new NativeArray<uint2>(10, Allocator.TempJob),
+            Result = CollectionHelper.CreateNativeArray<uint2>(10, CommonRwdAllocator.Handle),
             Seed = 0,
             Length = length
         };
@@ -291,7 +291,7 @@ internal class xxHash3Tests : CollectionsTestCommonBase
         {
             SanityBuffer = SanityBuffer,
             DestinationBuffer = DestinationBuffer,
-            Result = new NativeArray<uint4>(10, Allocator.TempJob),
+            Result = CollectionHelper.CreateNativeArray<uint4>(10, CommonRwdAllocator.Handle),
             Seed = 0,
             Length = length
         };

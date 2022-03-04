@@ -1089,7 +1089,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Whether this hash map is empty.
         /// </summary>
-        /// <value>True if this hash map is empty.</value>
+        /// <value>True if this hash map is empty or the hash map has not been constructed.</value>
         public bool IsEmpty => !IsCreated || UnsafeHashMapData.IsEmpty(m_Buffer);
 
         /// <summary>

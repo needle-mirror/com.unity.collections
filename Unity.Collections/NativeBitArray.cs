@@ -24,12 +24,6 @@ namespace Unity.Collections
         internal AtomicSafetyHandle m_Safety;
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeBitArray>();
 
-        [BurstDiscard]
-        static void CreateStaticSafetyId()
-        {
-            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeBitArray>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -69,11 +63,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_staticSafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeBitArray");
 #endif
             m_BitArray = new UnsafeBitArray(numBits, allocator, options);
         }

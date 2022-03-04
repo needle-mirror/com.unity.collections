@@ -264,12 +264,6 @@ namespace Unity.Collections
 
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeQueue<T>>();
 
-        [BurstDiscard]
-        static void CreateStaticSafetyId()
-        {
-            s_staticSafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeQueue<T>>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -307,18 +301,14 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_staticSafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref m_Safety, s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeQueue<T>>(ref m_Safety, ref s_staticSafetyId.Data);
 #endif
         }
 
         /// <summary>
         /// Returns true if this queue is empty.
         /// </summary>
-        /// <returns>True if the queue is empty.</returns>
+        /// <value>True if this queue has no items or if the queue has not been constructed.</value>
         public bool IsEmpty()
         {
             if (!IsCreated)
@@ -586,6 +576,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             writer.m_Safety = m_Safety;
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
 #endif
             writer.m_Buffer = m_Buffer;
             writer.m_QueuePool = m_QueuePool;
@@ -613,6 +604,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
 #endif
             [NativeSetThreadIndex]
             internal int m_ThreadIndex;

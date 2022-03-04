@@ -58,9 +58,11 @@ namespace Unity.Collections
         /// <returns><see cref="CopyError.None"/> if the copy fully completes. Otherwise, returns <see cref="CopyError.Truncation"/>.</returns>
         public static CopyError Copy(byte *dest, out int destLength, int destUTF8MaxLengthInBytes, byte *src, int srcLength)
         {
-            destLength = srcLength > destUTF8MaxLengthInBytes ? destUTF8MaxLengthInBytes : srcLength;
-            UnsafeUtility.MemCpy(dest, src, destLength);
-            return destLength == srcLength ? CopyError.None : CopyError.Truncation;
+            var error = Unicode.Utf8ToUtf8(src, srcLength, dest, out var temp, destUTF8MaxLengthInBytes);
+            destLength = temp;
+            if (error == ConversionError.None)
+                return CopyError.None;
+            return CopyError.Truncation;
         }
 
         /// <summary>
@@ -197,20 +199,126 @@ namespace Unity.Collections
             return CopyError.Truncation;
         }
 
-        /// <summary>
-        /// Returns true if two UTF-8 buffers have the same length and content.
-        /// </summary>
+        internal struct Comparison
+        {
+            public bool terminates;
+            public int result;
+            public Comparison(Unicode.Rune runeA, ConversionError errorA, Unicode.Rune runeB, ConversionError errorB)
+            {
+                if(errorA != ConversionError.None)
+                    runeA.value = 0;
+                if(errorB != ConversionError.None)
+                    runeB.value = 0;
+                if(runeA.value != runeB.value)
+                {
+                    result = runeA.value - runeB.value;
+                    terminates = true;
+                }
+                else
+                {
+                    result = 0;
+                    terminates = (runeA.value == 0 && runeB.value == 0);
+                }
+            }
+        }
+
+        /// <summary>Compares two UTF-8 buffers for relative equality.</summary>
+        /// <param name="utf8BufferA">The first buffer of UTF-8 text.</param>
+        /// <param name="utf8LengthInBytesA">The length in bytes of the first UTF-8 buffer.</param>
+        /// <param name="utf8BufferB">The second buffer of UTF-8 text.</param>
+        /// <param name="utf8LengthInBytesB">The length in bytes of the second UTF-8 buffer.</param>
+        /// <returns>
+        /// Less than zero if first different code point is less in the first UTF-8 buffer.
+        /// Zero if the strings are identical.
+        /// More than zero if first different code point is less in the second UTF-8 buffer.
+        /// </returns>
+        public static int StrCmp(byte* utf8BufferA, int utf8LengthInBytesA, byte* utf8BufferB, int utf8LengthInBytesB)
+        {
+            int byteIndexA = 0;
+            int byteIndexB = 0;
+            while(true)
+            {
+                var utf8ErrorA = Unicode.Utf8ToUcs(out var utf8RuneA, utf8BufferA,ref byteIndexA, utf8LengthInBytesA);
+                var utf8ErrorB = Unicode.Utf8ToUcs(out var utf8RuneB, utf8BufferB, ref byteIndexB, utf8LengthInBytesB);
+                var comparison = new Comparison(utf8RuneA, utf8ErrorA, utf8RuneB, utf8ErrorB);
+                if(comparison.terminates)
+                    return comparison.result;
+            }
+        }
+
+        /// <summary>Compares two UTF-16 buffers for relative equality.</summary>
+        /// <param name="utf16BufferA">The first buffer of UTF-16 text.</param>
+        /// <param name="utf16LengthInCharsA">The length in chars of the first UTF-16 buffer.</param>
+        /// <param name="utf16BufferB">The second buffer of UTF-16 text.</param>
+        /// <param name="utf16LengthInCharsB">The length in chars of the second UTF-16 buffer.</param>
+        /// <returns>
+        /// Less than zero if first different code point is less in the first UTF-16 buffer.
+        /// Zero if the strings are identical.
+        /// More than zero if first different code point is less in the second UTF-16 buffer.
+        /// </returns>
+        public static int StrCmp(char* utf16BufferA, int utf16LengthInCharsA, char* utf16BufferB, int utf16LengthInCharsB)
+        {
+            int charIndexA = 0;
+            int charIndexB = 0;
+            while(true)
+            {
+                var utf16ErrorA = Unicode.Utf16ToUcs(out var utf16RuneA, utf16BufferA,ref charIndexA, utf16LengthInCharsA);
+                var utf16ErrorB = Unicode.Utf16ToUcs(out var utf16RuneB, utf16BufferB, ref charIndexB, utf16LengthInCharsB);
+                var comparison = new Comparison(utf16RuneA, utf16ErrorA, utf16RuneB, utf16ErrorB);
+                if(comparison.terminates)
+                    return comparison.result;
+            }
+        }
+
+        /// <summary>Returns true if two UTF-8 buffers have the same length and content.</summary>
         /// <param name="aBytes">The first buffer of UTF-8 text.</param>
         /// <param name="aLength">The length in bytes of the first buffer.</param>
         /// <param name="bBytes">The second buffer of UTF-8 text.</param>
         /// <param name="bLength">The length in bytes of the second buffer.</param>
-        /// <returns></returns>
+        /// <returns>True if the content of both strings is identical.</returns>
         public static bool EqualsUTF8Bytes(byte* aBytes, int aLength, byte* bBytes, int bLength)
         {
-            if (aLength != bLength)
-                return false;
-
-            return UnsafeUtility.MemCmp(aBytes, bBytes, aLength) == 0;
+            return StrCmp(aBytes, aLength, bBytes, bLength) == 0;
         }
+
+        /// <summary>Compares a UTF-8 buffer and a UTF-16 buffer for relative equality.</summary>
+        /// <param name="utf8Buffer">The buffer of UTF-8 text.</param>
+        /// <param name="utf8LengthInBytes">The length in bytes of the UTF-8 buffer.</param>
+        /// <param name="utf16Buffer">The buffer of UTF-16 text.</param>
+        /// <param name="utf16LengthInChars">The length in chars of the UTF-16 buffer.</param>
+        /// <returns>
+        /// Less than zero if first different code point is less in UTF-8 buffer.
+        /// Zero if the strings are identical.
+        /// More than zero if first different code point is less in UTF-16 buffer.
+        /// </returns>
+        public static int StrCmp(byte* utf8Buffer, int utf8LengthInBytes, char* utf16Buffer, int utf16LengthInChars)
+        {
+            int byteIndex = 0;
+            int charIndex = 0;
+            while(true)
+            {
+                var utf8Error = Unicode.Utf8ToUcs(out var utf8Rune, utf8Buffer,ref byteIndex, utf8LengthInBytes);
+                var utf16Error = Unicode.Utf16ToUcs(out var utf16Rune, utf16Buffer, ref charIndex, utf16LengthInChars);
+                var comparison = new Comparison(utf8Rune, utf8Error, utf16Rune, utf16Error);
+                if(comparison.terminates)
+                    return comparison.result;
+            }
+        }
+
+        /// <summary>Compares a UTF-16 buffer and a UTF-8 buffer for relative equality.</summary>
+        /// <param name="utf16Buffer">The buffer of UTF-16 text.</param>
+        /// <param name="utf16LengthInChars">The length in chars of the UTF-16 buffer.</param>
+        /// <param name="utf8Buffer">The buffer of UTF-8 text.</param>
+        /// <param name="utf8LengthInBytes">The length in bytes of the UTF-8 buffer.</param>
+        /// <returns>
+        /// Less than zero if first different code point is less in UTF-16 buffer.
+        /// Zero if the strings are identical.
+        /// More than zero if first different code point is less in UTF-8 buffer.
+        /// </returns>
+        public static int StrCmp(char* utf16Buffer, int utf16LengthInChars, byte* utf8Buffer, int utf8LengthInBytes)
+        {
+            return -StrCmp(utf8Buffer, utf8LengthInBytes, utf16Buffer, utf16LengthInChars);
+        }
+
     }
 }

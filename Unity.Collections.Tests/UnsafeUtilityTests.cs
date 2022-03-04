@@ -15,9 +15,9 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 #pragma warning restore
 
-    private static NativeArray<T> MakeTestArray<T>(params T[] data) where T : struct
+    private NativeArray<T> MakeTestArray<T>(params T[] data) where T : struct
     {
-        return new NativeArray<T>(data, Allocator.TempJob);
+        return CollectionHelper.CreateNativeArray<T>(data, CommonRwdAllocator.Handle);
     }
 
     [Test]
@@ -110,7 +110,12 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         using (var src = MakeTestArray(12))
         {
             alias = src.Reinterpret<int, float>();
+
+            // `Free` of memory allocated by world update allocator is an no-op.
+            // World update allocator needs to be rewound in order to free the memory.
+            CommonRwdAllocator.Rewind();
         }
+
         Assert.Throws<ObjectDisposedException>(
             () => alias[0] = 1.0f);
     }
@@ -127,6 +132,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         }
     }
 
+#pragma warning disable 0169 // field is never used
     struct AlignOfX
     {
         float x;
@@ -166,6 +172,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
         bool x;
         unsafe void* y;
     }
+#pragma warning restore 0169 // field is never used
 
     [Test]
     public void UnsafeUtility_AlignOf()

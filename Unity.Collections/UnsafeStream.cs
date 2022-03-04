@@ -177,7 +177,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Returns true if this stream is empty.
         /// </summary>
-        /// <returns>True if this stream is empty.</returns>
+        /// <returns>True if this stream is empty or the stream has not been constructed.</returns>
         public bool IsEmpty()
         {
             if (!IsCreated)

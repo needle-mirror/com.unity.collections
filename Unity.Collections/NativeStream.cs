@@ -38,6 +38,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeStream>();
 
 #if REMOVE_DISPOSE_SENTINEL
 #else
@@ -105,7 +106,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if this stream is empty.
         /// </summary>
-        /// <returns>True if this stream is empty.</returns>
+        /// <returns>True if this stream is empty or the stream has not been constructed.</returns>
         public bool IsEmpty()
         {
             CheckReadAccess();
@@ -268,6 +269,8 @@ namespace Unity.Collections
                 DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
             }
 #endif
+
+            CollectionHelper.SetStaticSafetyId(ref stream.m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeStream");
 #endif
         }
 
@@ -297,6 +300,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Writer>();
 #pragma warning disable CS0414 // warning CS0414: The field 'NativeStream.Writer.m_Length' is assigned but its value is never used
             int m_Length;
 #pragma warning restore CS0414
@@ -313,6 +317,7 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = stream.m_Safety;
+                CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeStream.Writer");
                 m_Length = int.MaxValue;
                 m_MinIndex = int.MinValue;
                 m_MaxIndex = int.MinValue;
@@ -511,6 +516,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             int m_RemainingBlocks;
             internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Reader>();
 #endif
 
             internal Reader(ref NativeStream stream)
@@ -520,6 +526,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_RemainingBlocks = 0;
                 m_Safety = stream.m_Safety;
+                CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeStream.Reader");
 #endif
             }
 

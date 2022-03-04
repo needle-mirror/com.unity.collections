@@ -91,7 +91,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     [Test]
     public void NativeReference_TempInBurstJob()
     {
-        var job = new TempNativeReferenceInJob() { Output = new NativeReference<int>(Allocator.TempJob) };
+        var job = new TempNativeReferenceInJob() { Output = new NativeReference<int>(CommonRwdAllocator.Handle) };
         job.Schedule().Complete();
 
         Assert.That(job.Output.Value, Is.EqualTo(42));
@@ -102,7 +102,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     [Test]
     public unsafe void NativeReference_UnsafePtr()
     {
-        var reference = new NativeReference<int>(Allocator.TempJob);
+        var reference = new NativeReference<int>(CommonRwdAllocator.Handle);
         var job = new TempNativeReferenceInJob() { Output = reference };
         var jobHandle = job.Schedule();
 

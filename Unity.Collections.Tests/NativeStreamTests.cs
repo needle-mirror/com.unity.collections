@@ -49,7 +49,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     [Test]
     public void PopulateInts([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
-        var stream = new NativeStream(count, Allocator.TempJob);
+        var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         var jobHandle = fillInts.Schedule(count, batchSize);
 
@@ -85,7 +85,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     [Test]
     public void ItemCount([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
-        var stream = new NativeStream(count, Allocator.TempJob);
+        var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         fillInts.Schedule(count, batchSize).Complete();
 
@@ -97,7 +97,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     [Test]
     public void ToArray([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
-        var stream = new NativeStream(count, Allocator.TempJob);
+        var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
         fillInts.Schedule(count, batchSize).Complete();
         ExpectedCount(ref stream, count * (count - 1) / 2);
@@ -115,14 +115,13 @@ internal class NativeStreamTests : CollectionsTestFixture
         }
 
         array.Dispose();
-
         stream.Dispose();
     }
 
     [Test]
     public void NativeStream_DisposeJob()
     {
-        var stream = new NativeStream(100, Allocator.TempJob);
+        var stream = new NativeStream(100, CommonRwdAllocator.Handle);
         Assert.IsTrue(stream.IsCreated);
 
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
@@ -138,7 +137,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     [Test]
     public void ParallelWriteThrows()
     {
-        var stream = new NativeStream(100, Allocator.TempJob);
+        var stream = new NativeStream(100, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
 
         var writerJob = fillInts.Schedule(100, 16);
@@ -155,7 +154,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         container.Add(2);
 
         NativeStream stream;
-        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
 
         Assert.Throws<InvalidOperationException>(() => { int val = stream.ForEachCount; });
 
@@ -174,7 +173,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         container[0] = 1;
 
         NativeStream stream;
-        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        var jobHandle = NativeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
 
         Assert.Throws<InvalidOperationException>(() => { int val = stream.ForEachCount; });
 
@@ -395,7 +394,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         container.Add(13);
 
         UnsafeStream stream;
-        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
         jobHandle.Complete();
 
         Assert.AreEqual(4, stream.ForEachCount);
@@ -411,7 +410,7 @@ internal class NativeStreamTests : CollectionsTestFixture
         container[0] = 4;
 
         UnsafeStream stream;
-        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, Allocator.TempJob);
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
         jobHandle.Complete();
 
         Assert.AreEqual(4, stream.ForEachCount);

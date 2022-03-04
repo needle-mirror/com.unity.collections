@@ -15,7 +15,7 @@ namespace Unity.Collections.Tests
         public virtual void Setup()
         {
             rwdAllocatorHelper = new AllocatorHelper<RewindableAllocator>(Allocator.Persistent);
-            CommonRwdAllocator.Initialize(128 * 1024);
+            CommonRwdAllocator.Initialize(128 * 1024, true);
 
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.EnterScope();
@@ -43,7 +43,9 @@ namespace Unity.Collections.Tests
     /// </remarks>
     internal abstract class CollectionsTestFixture : CollectionsTestCommonBase
     {
+#if !UNITY_DOTSRUNTIME
         static string SafetyChecksMenu = "Jobs > Burst > Safety Checks";
+#endif
         private bool JobsDebuggerWasEnabled;
 
         [SetUp]

@@ -369,6 +369,24 @@ namespace Unity.Collections
                 return false;
             }
 
+            // when you rewind an allocator, it invalidates and unregisters all of its child allocators - allocators that use as
+            // backing memory, memory that was allocated from this (parent) allocator. the rewind operation was itself unmanaged,
+            // until we added a managed global table of delegates alongside the unmanaged global table of function pointers. once
+            // this table was added, the "unregister" extension function became managed, because it manipulates a managed array of
+            // delegates.
+
+            // a workaround (UnmanagedUnregister) was found that makes it possible for rewind to become unmanaged again: only in
+            // the case that we rewind an allocator and invalidate all of its child allocators, we then unregister the child
+            // allocators without touching the managed array of delegates as well.
+
+            // this can "leak" delegates - it's possible for this to cause us to hold onto a GC reference to a delegate until
+            // the end of the program, long after the delegate is no longer needed. but, there are only 65,536 such slots to
+            // burn, and delegates are small data structures, and the leak ends when a delegate slot is reused, and most importantly,
+            // when we've rewound an allocator while child allocators remain registered, we are likely before long to encounter
+            // a use-before-free crash or a safety handle violation, both of which are likely to terminate the session before
+            // anything can leak.
+
+            [NotBurstCompatible]
             internal void InvalidateDependents()
             {
                 if(!NeedsUseAfterFreeTracking())
@@ -393,7 +411,7 @@ namespace Unity.Collections
                     {
                         AllocatorHandle* handle = (AllocatorHandle*)ChildAllocators.Ptr + i;
                         if(handle->IsValid)
-                            handle->Unregister();
+                            handle->UnmanagedUnregister(); // see above comment
                     }
                 }
                 ChildAllocators.Clear();
@@ -1240,6 +1258,20 @@ namespace Unity.Collections
             if (!t.Handle.IsValid)
                 throw new InvalidOperationException("Allocator registration succeeded, but failed to produce valid handle.");
 #endif
+        }
+
+        /// <summary>
+        /// Removes an allocator's function pointers from the global function table, without managed code
+        /// </summary>
+        /// <typeparam name="T">The type of allocator to unregister.</typeparam>
+        /// <param name="t">Reference to the allocator.</param>
+        public static void UnmanagedUnregister<T>(ref this T t) where T : unmanaged, IAllocator
+        {
+            if(t.Handle.IsInstalled)
+            {
+                t.Handle.Install(default);
+                ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
+            }
         }
 
         /// <summary>

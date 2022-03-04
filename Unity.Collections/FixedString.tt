@@ -429,7 +429,15 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public bool Equals(String other)
         {
-            return ToString().Equals(other);
+            unsafe {
+                int alen = utf8LengthInBytes;
+                int blen = other.Length;
+                byte* aptr = (byte*) UnsafeUtilityExtensions.AddressOf(bytes);
+                fixed(char* bptr = other)
+                {
+                    return UTF8ArrayUnsafeUtility.StrCmp(aptr, alen, bptr, blen) == 0;
+                }
+            }
         }
 
         /// <summary>
@@ -452,6 +460,19 @@ namespace Unity.Collections
         [NotBurstCompatible]
         public FixedString<#=BYTES#>Bytes(String source)
         {
+            this = default;
+            var error = Initialize(source);
+            CheckCopyError((CopyError)error, source);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedString<#=BYTES#>Bytes with the characters copied from a string.
+        /// </summary>
+        /// <param name="source">The source string to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        [NotBurstCompatible]
+        internal int Initialize(String source)
+        {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe
@@ -459,10 +480,12 @@ namespace Unity.Collections
                 fixed (char* sourceptr = source)
                 {
                     var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    CheckCopyError(error, source);
+                    if(error != CopyError.None)
+                        return (int)error;
                     this.Length = utf8LengthInBytes;
                 }
             }
+            return 0;
         }
 
         /// <summary>
@@ -472,9 +495,20 @@ namespace Unity.Collections
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
         public FixedString<#=BYTES#>Bytes(Unicode.Rune rune, int count = 1)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            this.Append(rune, count);
+            this = default;
+            Initialize(rune, count);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedString<#=BYTES#>Bytes with a single character repeatedly appended some number of times.
+        /// </summary>
+        /// <param name="rune">The Unicode.Rune to repeat.</param>
+        /// <param name="count">The number of times to repeat the character. Default is 1.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(Unicode.Rune rune, int count = 1)
+        {
+            this = default;
+            return (int)this.Append(rune, count);
         }
 
 <#
@@ -507,6 +541,18 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString<#=BYTES#>Bytes.</exception>
         public FixedString<#=BYTES#>Bytes(in FixedString<#=OTHERBYTES#>Bytes other)
         {
+            this = default;
+            var error = Initialize(other);
+            CheckFormatError((FormatError)error);
+        }
+
+        /// <summary>
+        /// Initializes an instance of FixedString<#=BYTES#>Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in FixedString<#=OTHERBYTES#>Bytes other)
+        {
             bytes = default;
             utf8LengthInBytes = 0;
             unsafe {
@@ -515,9 +561,11 @@ namespace Unity.Collections
                 byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
                 var srcLength = other.utf8LengthInBytes;
                 var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                CheckFormatError(error);
+                if(error != FormatError.None)
+                    return (int)error;
                 this.Length = len;
             }
+            return 0;
         }
 
         /// <summary>

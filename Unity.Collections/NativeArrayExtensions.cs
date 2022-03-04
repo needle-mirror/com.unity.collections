@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Burst;
 using static Unity.Collections.AllocatorManager;
 
 namespace Unity.Collections
@@ -11,6 +12,12 @@ namespace Unity.Collections
     [BurstCompatible]
     public unsafe static class NativeArrayExtensions
     {
+        public struct NativeArrayStaticId<T>
+            where T : struct
+        {
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeArray<T>>();
+        }
+
         /// <summary>
         /// Returns true if a particular value is present in this array.
         /// </summary>
@@ -183,6 +190,20 @@ namespace Unity.Collections
             return true;
         }
 
+        /// <summary>
+        /// Returns true if this array and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source array's elements.</typeparam>
+        /// <param name="array">The array to compare for equality.</param>
+        /// <param name="other">The other array to compare for equality.</param>
+        /// <returns>True if the arrays have equal length and content.</returns>
+        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        public static bool ArraysEqual<T>(this NativeList<T> array, NativeArray<T> other) where T : unmanaged, IEquatable<T>
+        {
+            return ArraysEqual(array.AsArray(), other);
+        }
+
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         static void CheckReinterpretSize<T, U>(ref NativeArray<T> array) where U : struct where T : struct
         {
@@ -219,6 +240,8 @@ namespace Unity.Collections
             array.m_MaxIndex = length - 1;
             DisposeSentinel.Create(out array.m_Safety, out array.m_DisposeSentinel, 1, handle.ToAllocator);
             DisposeSentinel.Clear(ref array.m_DisposeSentinel);
+
+            CollectionHelper.SetStaticSafetyId<NativeArray<T>>(ref array.m_Safety, ref NativeArrayStaticId<T>.s_staticSafetyId.Data);
             handle.AddSafetyHandle(array.m_Safety);
 #endif
         }
@@ -244,6 +267,8 @@ namespace Unity.Collections
             array.m_MaxIndex = length - 1;
             DisposeSentinel.Create(out array.m_Safety, out array.m_DisposeSentinel, 1, allocator.ToAllocator);
             DisposeSentinel.Clear(ref array.m_DisposeSentinel);
+
+            CollectionHelper.SetStaticSafetyId<NativeArray<T>>(ref array.m_Safety, ref NativeArrayStaticId<T>.s_staticSafetyId.Data);
             allocator.Handle.AddSafetyHandle(array.m_Safety);
 #endif
         }

@@ -105,7 +105,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Whether the queue is empty.
         /// </summary>
-        /// <value>True if the queue is empty.</value>
+        /// <value>True if the queue is empty or the queue has not been constructed.</value>
         public bool IsEmpty => !IsCreated || Length == 0;
 
         /// <summary>

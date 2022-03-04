@@ -29,13 +29,15 @@ internal class NativeContainerTests_ValidateTypes : NativeContainerTests_Validat
         public NativeArray<float> nativeArrayRO;
         public NativeArray<float> nativeArrayRW;
 
-        Vector3     vec3;
+#pragma warning disable 0169 // field is never used
+        Vector3 vec3;
         float       floatVal;
         Matrix4x4   matrix;
         int         intValue;
         byte        byteValue;
         short       shortValue;
         MyTestEnum  myEnum;
+#pragma warning restore 0169 // field is never used
 
         public void Execute() {}
     }
@@ -60,6 +62,5 @@ internal class NativeContainerTests_ValidateTypes : NativeContainerTests_Validat
 
         temp1.Dispose();
         temp2.Dispose();
-        CommonRwdAllocator.Rewind();
     }
 }

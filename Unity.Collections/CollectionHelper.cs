@@ -428,6 +428,55 @@ namespace Unity.Collections
             }
             AtomicSafetyHandle.Release(safety);
         }
+
+        static unsafe void CreateStaticSafetyIdInternal(ref int id, in FixedString512Bytes name)
+        {
+            id = AtomicSafetyHandle.NewStaticSafetyId(name.GetUnsafePtr(), name.Length);
+        }
+
+        [BurstDiscard]
+        static void CreateStaticSafetyIdInternal<T>(ref int id)
+        {
+            CreateStaticSafetyIdInternal(ref id, typeof(T).ToString());
+        }
+
+        /// <summary>
+        /// Returns a static safety id which better identifies resources in safety system messages.
+        /// </summary>
+        /// <remarks>This is preferable to AtomicSafetyHandle.NewStaticSafetyId as it is compatible with burst.</remarks>
+        /// <param name="name">The name of the resource type.</param>
+        /// <returns>An int representing the static safety id for this resource.</returns>
+        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", GenericTypeArguments = new[] { typeof(NativeArray<int>) })]
+        public static void SetStaticSafetyId<T>(ref AtomicSafetyHandle handle, ref int sharedStaticId)
+        {
+            if (sharedStaticId == 0)
+            {
+                // This will eventually either work with burst supporting a subset of typeof()
+                // or something similar to Burst.BurstRuntime.GetTypeName() will be implemented
+                // JIRA issue https://jira.unity3d.com/browse/DOTS-5685
+
+                CreateStaticSafetyIdInternal<T>(ref sharedStaticId);
+            }
+
+            AtomicSafetyHandle.SetStaticSafetyId(ref handle, sharedStaticId);
+        }
+
+        /// <summary>
+        /// Returns a static safety id which better identifies resources in safety system messages.
+        /// </summary>
+        /// <remarks>This is preferable to AtomicSafetyHandle.NewStaticSafetyId as it is compatible with burst.</remarks>
+        /// <param name="name">The name of the resource type.</param>
+        /// <returns>An int representing the static safety id for this resource.</returns>
+        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        public static unsafe void SetStaticSafetyId(ref AtomicSafetyHandle handle, ref int sharedStaticId, FixedString512Bytes name)
+        {
+            if (sharedStaticId == 0)
+            {
+                CreateStaticSafetyIdInternal(ref sharedStaticId, name);
+            }
+
+            AtomicSafetyHandle.SetStaticSafetyId(ref handle, sharedStaticId);
+        }
 #endif
     }
 }

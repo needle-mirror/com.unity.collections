@@ -65,7 +65,7 @@ namespace Unity.Collections
         /// <summary>
         /// Whether the list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -483,7 +483,7 @@ for(var size = 0; size < 5; ++size)
         /// <summary>
         /// Whether this list is empty.
         /// </summary>
-        /// <value>True if this list is empty.</value>
+        /// <value>True if this string has no characters or if the container has not been constructed.</value>
         public bool IsEmpty => Length == 0;
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
@@ -900,13 +900,28 @@ for(var size = 0; size < 5; ++size)
         /// <exception cref="IndexOutOfRangeException">Throws if the other list's length exceeds the capacity of <#=TYPENAME#>&lt;T&gt;.</exception>
         public <#=TYPENAME#>(in <#=OTHERTYPENAME#><T> other)
         {
-            FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,T>(other.length);
+            this = default;
+            var error = Initialize(other);
+            if(error != 0)
+                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,T>(other.Length);
+        }
+
+        /// <summary>
+        /// Initializes an instance of <#=TYPENAME#> with content copied from another list.
+        /// </summary>
+        /// <param name="other">The list to copy.</param>
+        /// <returns>zero on success, or non-zero on error.</returns>
+        internal int Initialize(in <#=OTHERTYPENAME#><T> other)
+        {
+            if(other.Length > Capacity)
+                return (int)CopyError.Truncation;
             length = other.length;
             buffer = new FixedBytes<#=BUFFER_BYTES#>();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
             }
+            return 0;
         }
 
         /// <summary>

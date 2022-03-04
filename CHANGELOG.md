@@ -1,4 +1,35 @@
-# Changelog
+## [1.2.3-pre.1] - 2022-03-04
+
+### Changed
+
+* Updated package dependencies
+
+## [1.2.2] - 2022-03-03
+
+### Changed
+
+* Updated package `com.unity.test-framework` to version `1.1.31`.
+* Updated package `com.unity.burst` to version `1.6.4`.
+
+## [1.2.1] - 2022-02-17
+
+### Fixed
+
+* Shutdown the WordStorage with application exit to ensure memory is freed.
+* `NativeList.AsDeferredJobArray` allocator label is changed to `Allocator.Invalid` to infer that the array is in list mode.
+
+### Added
+
+* Added FixedStringMethods.CopyFromTruncated to copy a string to a FixedString explicitly allowing truncation
+* Added `NativeText.ReadOnly` type which provides a readonly, lightweight copy of a `NativeText` or `UnsafeText` type.
+* New public API AllocatorHandle.UnmanagedUnregister, which unregisters an allocator without using managed code.
+
+### Changed
+
+* `Native/UnsafeMultiHashMap.GetUniqueKeyArrayNBC` extension methods from `Unity.Collections.NotBurstCompatible` are not necessary anymore. Burst supports tuple. Original methods `Native/UnsafeMultiHashMap.GetUniqueKeyArray` are now available again.
+* Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
+* Static safety ID created for all types containing a uniquely represented AtomicSafetyHandle
+
 
 ## [1.1.0] - 2021-10-27
 
@@ -8,6 +39,8 @@
 * Bounds check to `Fixed/Native/UnsafeList`.
 * `SetCapacity` and `TrimExcess` to `NativeList`.
 * A custom allocator wrapper `AllocatorHelper` to facilitate custom allocator creation and destruction.
+* NativeList<>.ArraysEqual & UnsafeList<>.ArraysEqual
+* UnsafeList.CopyFrom
 
 ### Changed
 

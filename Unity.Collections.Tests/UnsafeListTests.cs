@@ -501,7 +501,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     public void UnsafeListT_ForEach([Values(10, 1000)] int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new UnsafeList<int>(32, Allocator.TempJob))
+        using (var container = new UnsafeList<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -638,10 +638,10 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public unsafe void UnsafeListT_TestInterfaces() => TestInterfacesDispose(new UnsafeList<int>(1, Allocator.TempJob));
+    public unsafe void UnsafeListT_TestInterfaces() => TestInterfacesDispose(new UnsafeList<int>(1, CommonRwdAllocator.Handle));
 
     [Test]
-    public unsafe void NativeList_TestInterfaces() => TestInterfacesDispose(new NativeList<int>(1, Allocator.TempJob));
+    public unsafe void NativeList_TestInterfaces() => TestInterfacesDispose(new NativeList<int>(1, CommonRwdAllocator.Handle));
 
     [Test]
     public unsafe void FixedList32Bytes_TestInterfaces() => TestInterfaces(new FixedList32Bytes<int>());

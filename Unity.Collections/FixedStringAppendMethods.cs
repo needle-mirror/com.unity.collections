@@ -397,5 +397,23 @@ namespace Unity.Collections
                 return CopyError.Truncation;
             return CopyError.None;
         }
+
+        /// <summary>
+        /// Copies another string to this string. If the string exceeds the capacity it will be truncated.
+        /// </summary>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="s">The source string.</param>
+        [NotBurstCompatible]
+        public static void CopyFromTruncated<T>(ref this T fs, string s)
+            where T : struct, INativeList<byte>, IUTF8Bytes
+        {
+            int utf8Len;
+            fixed (char* chars = s)
+            {
+                UTF8ArrayUnsafeUtility.Copy(fs.GetUnsafePtr(), out utf8Len, fs.Capacity, chars, s.Length);
+                fs.Length = utf8Len;
+            }
+        }
     }
 }

@@ -18,6 +18,7 @@
 using System;
 using NUnit.Framework;
 using Unity.Collections;
+using Unity.Collections.Tests;
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
 using UnityEngine;
 #endif
@@ -37,15 +38,15 @@ foreach(var BYTES in SIZES)
 #>
 
 #if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
-    class ScriptableObjectFixedString<#=BYTES#> : UnityEngine.ScriptableObject
+    class ScriptableObjectFixedString<#=BYTES#>Bytes : UnityEngine.ScriptableObject
     {
-        public FixedString<#=BYTES#> String;
+        public FixedString<#=BYTES#>Bytes String;
     }
 
     [Test]
-    public void FixedString<#=BYTES#>Serializes()
+    public void FixedString<#=BYTES#>BytesSerializes()
     {
-        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObjectFixedString<#=BYTES#>>();
+        var a = UnityEngine.ScriptableObject.CreateInstance<ScriptableObjectFixedString<#=BYTES#>Bytes>();
         a.String = "Hello World";
         var b = UnityEngine.Object.Instantiate(a);
         Assert.AreEqual(a.String, b.String);
@@ -54,9 +55,9 @@ foreach(var BYTES in SIZES)
 
     [TestCase("<#=ALMOST_TOO_BIG#>", FormatError.None, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Almost")]
     [TestCase("<#=TOO_BIG#>", FormatError.Overflow, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Over")]
-    public void FixedString<#=BYTES#>AtMaximumSizeWorks(String a, FormatError expectedError)
+    public void FixedString<#=BYTES#>BytesAtMaximumSizeWorks(String a, FormatError expectedError)
     {
-        FixedString<#=BYTES#> aa = default;
+        FixedString<#=BYTES#>Bytes aa = default;
         aa.Junk();
         var error = aa.Append(a);
         Assert.AreEqual(expectedError, error);
@@ -67,9 +68,9 @@ foreach(var BYTES in SIZES)
     }
 
     [Test]
-    public unsafe void FixedString<#=BYTES#>ToFixedList()
+    public unsafe void FixedString<#=BYTES#>BytesToFixedList()
     {
-        FixedString<#=BYTES#> a = default;
+        FixedString<#=BYTES#>Bytes a = default;
         a.Junk();
         a.Append("0123");
         ref var aList = ref a.AsFixedList();
@@ -86,6 +87,19 @@ foreach(var BYTES in SIZES)
         Assert.AreNotEqual(0, a.GetUnsafePtr()[a.Length]);
     }
 
+    [TestCase("red")]
+    [TestCase("紅色", TestName="{m}(Chinese-Red)")]
+    [TestCase("George Washington")]
+    [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
+    public unsafe void FixedString<#=BYTES#>BytesEqualsStringNoGC(string a)
+    {
+        FixedString<#=BYTES#>Bytes b = a;
+        GCAllocRecorder.ValidateNoGCAllocs(() =>
+        {
+            b.Equals(a);
+        });
+    }
+
 <#
     foreach(var OTHERBYTES in SIZES)
     {
@@ -97,10 +111,10 @@ foreach(var BYTES in SIZES)
     [TestCase("紅色", TestName="{m}(Chinese-Red)")]
     [TestCase("George Washington")]
     [TestCase("村上春樹", TestName="{m}(HarukiMurakami)")]
-    public void FixedString<#=BYTES#>ToFixedString<#=OTHERBYTES#>Works(String a)
+    public void FixedString<#=BYTES#>BytesToFixedString<#=OTHERBYTES#>Works(String a)
     {
-        var b = new FixedString<#=BYTES#>(a);
-        var c = new FixedString<#=OTHERBYTES#>(b);
+        var b = new FixedString<#=BYTES#>Bytes(a);
+        var c = new FixedString<#=OTHERBYTES#>Bytes(b);
         String d = c.ToString();
         Assert.AreEqual(a, d);
     }

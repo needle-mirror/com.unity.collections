@@ -29,12 +29,6 @@ namespace Unity.Collections
 
         static readonly SharedStatic<int> s_SafetyId = SharedStatic<int>.GetOrCreate<NativeReference<T>>();
 
-        [BurstDiscard]
-        static void CreateStaticSafetyId()
-        {
-            s_SafetyId.Data = AtomicSafetyHandle.NewStaticSafetyId<NativeReference<T>>();
-        }
-
 #if REMOVE_DISPOSE_SENTINEL
 #else
         [NativeSetClassTypeToNullOnSchedule]
@@ -92,11 +86,7 @@ namespace Unity.Collections
             }
 #endif
 
-            if (s_SafetyId.Data == 0)
-            {
-                CreateStaticSafetyId();
-            }
-            AtomicSafetyHandle.SetStaticSafetyId(ref reference.m_Safety, s_SafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeQueue<T>>(ref reference.m_Safety, ref s_SafetyId.Data);
 #endif
         }
 
@@ -320,12 +310,14 @@ namespace Unity.Collections
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ReadOnly>();
 
             [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
             internal ReadOnly(void* data, ref AtomicSafetyHandle safety)
             {
                 m_Data = data;
                 m_Safety = safety;
+                CollectionHelper.SetStaticSafetyId<ReadOnly>(ref m_Safety, ref s_staticSafetyId.Data);
             }
 #else
             internal ReadOnly(void* data)
