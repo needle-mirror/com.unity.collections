@@ -1,3 +1,9 @@
+## [1.2.3] - 2022-03-18
+
+### Changed
+
+* Minor fixes to changelog
+
 ## [1.2.3-pre.1] - 2022-03-04
 
 ### Changed
