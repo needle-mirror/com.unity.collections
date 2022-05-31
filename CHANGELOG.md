@@ -1,3 +1,15 @@
+# Changelog
+
+## [1.2.4] - 2022-05-31
+
+### Changed
+
+* Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
+
+### Fixed
+
+* Added an assembly definition file for sample code in the package to avoid spurious warnings when adding the package
+
 ## [1.2.3] - 2022-03-18
 
 ### Changed
