@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.Collections.NotBurstCompatible;
 using Unity.Jobs;
 
 namespace Unity.Collections
@@ -16,7 +15,7 @@ namespace Unity.Collections
     /// <remarks>The iteration order over the values associated with a key is an implementation detail. Do not rely upon any particular ordering.</remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public struct NativeMultiHashMapIterator<TKey>
+    public struct NativeParallelMultiHashMapIterator<TKey>
         where TKey : struct
     {
         internal TKey key;
@@ -34,7 +33,7 @@ namespace Unity.Collections
     /// An unordered, expandable associative array. Each key can have more than one associated value.
     /// </summary>
     /// <remarks>
-    /// Unlike a regular NativeHashMap, a NativeMultiHashMap can store multiple key-value pairs with the same key.
+    /// Unlike a regular NativeParallelHashMap, a NativeParallelMultiHashMap can store multiple key-value pairs with the same key.
     ///
     /// The keys are not deduplicated: two key-value pairs with the same key are stored as fully separate key-value pairs.
     /// </remarks>
@@ -42,19 +41,19 @@ namespace Unity.Collections
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    [DebuggerTypeProxy(typeof(NativeMultiHashMapDebuggerTypeProxy<,>))]
+    [DebuggerTypeProxy(typeof(NativeParallelMultiHashMapDebuggerTypeProxy<,>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-    public unsafe struct NativeMultiHashMap<TKey, TValue>
+    public unsafe struct NativeParallelMultiHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        internal UnsafeMultiHashMap<TKey, TValue> m_MultiHashMapData;
+        internal UnsafeParallelMultiHashMap<TKey, TValue> m_MultiHashMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeParallelMultiHashMap<TKey, TValue>>();
 
 #if REMOVE_DISPOSE_SENTINEL
 #else
@@ -68,7 +67,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public NativeParallelMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
             : this(capacity, allocator, 2)
         {
         }
@@ -77,7 +76,7 @@ namespace Unity.Collections
         internal void Initialize<U>(int capacity, ref U allocator, int disposeSentinelStackDepth)
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
+            m_MultiHashMapData = new UnsafeParallelMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if REMOVE_DISPOSE_SENTINEL
@@ -94,12 +93,12 @@ namespace Unity.Collections
             }
 #endif
 
-            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeParallelMultiHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
 
-        NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
+        NativeParallelMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
             this = default;
             Initialize(capacity, ref allocator, disposeSentinelStackDepth);
@@ -190,7 +189,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="it">An iterator representing the key-value pair to remove.</param>
         /// <exception cref="InvalidOperationException">Thrown if the iterator is invalid.</exception>
-        public void Remove(NativeMultiHashMapIterator<TKey> it)
+        public void Remove(NativeParallelMultiHashMapIterator<TKey> it)
         {
             CheckWrite();
             m_MultiHashMapData.Remove(it);
@@ -203,7 +202,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the associated value represented by the iterator.</param>
         /// <param name="it">Outputs an iterator.</param>
         /// <returns>True if the key was present.</returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             CheckRead();
             return m_MultiHashMapData.TryGetFirstValue(key, out item, out it);
@@ -215,7 +214,7 @@ namespace Unity.Collections
         /// <param name="item">Outputs the next value.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present and had another value.</returns>
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             CheckRead();
             return m_MultiHashMapData.TryGetNextValue(out item, ref it);
@@ -258,7 +257,7 @@ namespace Unity.Collections
         /// <param name="item">The new value.</param>
         /// <param name="it">The iterator representing a key-value pair.</param>
         /// <returns>True if a value was overwritten.</returns>
-        public bool SetValue(TValue item, NativeMultiHashMapIterator<TKey> it)
+        public bool SetValue(TValue item, NativeParallelMultiHashMapIterator<TKey> it)
         {
             CheckWrite();
             return m_MultiHashMapData.SetValue(item, it);
@@ -302,11 +301,11 @@ namespace Unity.Collections
             // will check that no jobs are writing to the container).
             DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
-            var jobHandle = new UnsafeHashMapDataDisposeJob { Data = new UnsafeHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);
 #else
-            var jobHandle = new UnsafeHashMapDataDisposeJob { Data = new UnsafeHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel } }.Schedule(inputDeps);
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel } }.Schedule(inputDeps);
 #endif
             m_MultiHashMapData.m_Buffer = null;
 
@@ -318,7 +317,7 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>A key with *N* values is included *N* times in the array.
         ///
-        /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
+        /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeParallelHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the keys (in no particular order).</returns>
         public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
@@ -331,7 +330,7 @@ namespace Unity.Collections
         /// Returns an array with a copy of all the values (in no particular order).
         /// </summary>
         /// <remarks>The values are not deduplicated. If you sort the returned array,
-        /// you can use <see cref="Unity.Collections.NativeHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
+        /// you can use <see cref="Unity.Collections.NativeParallelHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the values (in no particular order).</returns>
         public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
@@ -369,17 +368,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// A parallel writer for a NativeMultiHashMap.
+        /// A parallel writer for a NativeParallelMultiHashMap.
         /// </summary>
         /// <remarks>
-        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeMultiHashMap.
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelMultiHashMap.
         /// </remarks>
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
-            internal UnsafeMultiHashMap<TKey, TValue>.ParallelWriter m_Writer;
+            internal UnsafeParallelMultiHashMap<TKey, TValue>.ParallelWriter m_Writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
@@ -447,12 +446,12 @@ namespace Unity.Collections
         /// </remarks>
         public struct Enumerator : IEnumerator<TValue>
         {
-            internal NativeMultiHashMap<TKey, TValue> hashmap;
+            internal NativeParallelMultiHashMap<TKey, TValue> hashmap;
             internal TKey key;
             internal bool isFirst;
 
             TValue value;
-            NativeMultiHashMapIterator<TKey> iterator;
+            NativeParallelMultiHashMapIterator<TKey> iterator;
 
             /// <summary>
             /// Does nothing.
@@ -512,7 +511,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Enumerator = new UnsafeHashMapDataEnumerator(m_MultiHashMapData.m_Buffer),
+                m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_MultiHashMapData.m_Buffer),
             };
         }
 
@@ -551,7 +550,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
-            internal UnsafeHashMapDataEnumerator m_Enumerator;
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Does nothing.
@@ -616,14 +615,14 @@ namespace Unity.Collections
         }
     }
 
-    internal sealed class NativeMultiHashMapDebuggerTypeProxy<TKey, TValue>
+    internal sealed class NativeParallelMultiHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : struct, IEquatable<TKey>, IComparable<TKey>
         where TValue : struct
     {
 #if !NET_DOTS
-        NativeMultiHashMap<TKey, TValue> m_Target;
+        NativeParallelMultiHashMap<TKey, TValue> m_Target;
 
-        public NativeMultiHashMapDebuggerTypeProxy(NativeMultiHashMap<TKey, TValue> target)
+        public NativeParallelMultiHashMapDebuggerTypeProxy(NativeParallelMultiHashMap<TKey, TValue> target)
         {
             m_Target = target;
         }
@@ -660,10 +659,10 @@ namespace Unity.Collections
     }
 
     [BurstCompatible]
-    public unsafe static class NativeMultiHashMapExtensions
+    public unsafe static class NativeParallelMultiHashMapExtensions
     {
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
-        internal static void Initialize<TKey, TValue, U>(ref this NativeMultiHashMap<TKey, TValue> nativeMultiHashMap,
+        internal static void Initialize<TKey, TValue, U>(ref this NativeParallelMultiHashMap<TKey, TValue> container,
                                                             int capacity,
                                                             ref U allocator,
                                                             int disposeSentinelStackDepth = 2)
@@ -671,27 +670,27 @@ namespace Unity.Collections
             where TValue : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            nativeMultiHashMap.m_MultiHashMapData = new UnsafeMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
+            container.m_MultiHashMapData = new UnsafeParallelMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if REMOVE_DISPOSE_SENTINEL
-            nativeMultiHashMap.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
+            container.m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
 #else
             if (allocator.IsCustomAllocator)
             {
-                nativeMultiHashMap.m_Safety = AtomicSafetyHandle.Create();
-                nativeMultiHashMap.m_DisposeSentinel = null;
+                container.m_Safety = AtomicSafetyHandle.Create();
+                container.m_DisposeSentinel = null;
             }
             else
             {
-                DisposeSentinel.Create(out nativeMultiHashMap.m_Safety,
-                                        out nativeMultiHashMap.m_DisposeSentinel,
+                DisposeSentinel.Create(out container.m_Safety,
+                                        out container.m_DisposeSentinel,
                                         disposeSentinelStackDepth,
                                         allocator.ToAllocator);
             }
 #endif
 
-            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref nativeMultiHashMap.m_Safety, ref NativeMultiHashMap<TKey, TValue>.s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeParallelMultiHashMap<TKey, TValue>>(ref container.m_Safety, ref NativeParallelMultiHashMap<TKey, TValue>.s_staticSafetyId.Data);
 #endif
         }
     }

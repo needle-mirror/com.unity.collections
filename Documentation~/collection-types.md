@@ -4,17 +4,17 @@
 
 A few key array-like types are provided by the [core module](https://docs.unity3d.com/ScriptReference/UnityEngine.CoreModule), including [`Unity.Collections.NativeArray<T>`](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1) and [`Unity.Collections.NativeSlice<T>`](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeSlice_1). This package itself provides:
 
-Data structure          | Description
------------------------ | -----------
-@Unity.Collections.NativeList`1            | A resizable list. Has thread- and disposal-safety checks. 
-@Unity.Collections.LowLevel.Unsafe.UnsafeList`1            | A resizable list.
-@Unity.Collections.LowLevel.Unsafe.UnsafePtrList`1         | A resizable list of pointers.
-@Unity.Collections.NativeStream          | A set of append-only, untyped buffers. Has thread- and disposal-safety checks.
-@Unity.Collections.LowLevel.Unsafe.UnsafeStream          | A set of append-only, untyped buffers.
-@Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer    | An append-only untyped buffer.
-@Unity.Collections.NativeQueue`1           | A resizable queue. Has thread- and disposal-safety checks. 
-@Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue`1       | A fixed-size circular buffer.
-@Unity.Collections.FixedList32Bytes`1        | A 32-byte list, including 2 bytes of overhead, so 30 bytes are available for storage. Max capacity depends upon T.
+Data structure                                        | Description
+----------------------------------------------------- | -----------
+@Unity.Collections.NativeList`1                       | A resizable list. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeList`1       | A resizable list.
+@Unity.Collections.LowLevel.Unsafe.UnsafePtrList`1    | A resizable list of pointers.
+@Unity.Collections.NativeStream                       | A set of append-only, untyped buffers. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeStream       | A set of append-only, untyped buffers.
+@Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer | An append-only untyped buffer.
+@Unity.Collections.NativeQueue`1                      | A resizable queue. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue`1  | A fixed-size circular buffer.
+@Unity.Collections.FixedList32Bytes`1                 | A 32-byte list, including 2 bytes of overhead, so 30 bytes are available for storage. Max capacity depends upon T.
 
 `FixedList32Bytes<T>` has variants of larger sizes: `FixedList64Bytes<T>`, `FixedList128Bytes<T>`, `FixedList512Bytes<T>`, `FixedList4096Bytes<T>`.
 
@@ -26,32 +26,32 @@ See also @Unity.Collections.NativeArrayExtensions, @Unity.Collections.ListExtens
 
 ## Map and set types
 
-Data structure          | Description
------------------------ | -----------
-@Unity.Collections.NativeHashMap`2         | An unordered associative array of key-value pairs. Has thread- and disposal-safety checks.
-@Unity.Collections.LowLevel.Unsafe.UnsafeHashMap`2         | An unordered associative array of key-value pairs.
-@Unity.Collections.NativeHashSet`1         | A set of unique values. Has thread- and disposal-safety checks. 
-@Unity.Collections.LowLevel.Unsafe.UnsafeHashSet`1         | A set of unique values.
-@Unity.Collections.NativeMultiHashMap`2    | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys. Has thread- and disposal-safety checks. 
-@Unity.Collections.LowLevel.Unsafe.UnsafeMultiHashMap`2    | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys.
+Data structure                                                  | Description
+--------------------------------------------------------------- | -----------
+@Unity.Collections.NativeParallelHashMap`2                      | An unordered associative array of key-value pairs. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMap`2      | An unordered associative array of key-value pairs.
+@Unity.Collections.NativeParallelHashSet`1                      | A set of unique values. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashSet`1      | A set of unique values.
+@Unity.Collections.NativeMultiParallelHashMap`2                 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeMultiParallelHashMap`2 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys.
 
-See also @Unity.Collections.HashSetExtensions, @Unity.Collections.NotBurstCompatible.Extensions, and @Unity.Collections.LowLevel.Unsafe.NotBurstCompatible.Extensions
+See also @Unity.Collections.ParallelHashSetExtensions, @Unity.Collections.NotBurstCompatible.Extensions, and @Unity.Collections.LowLevel.Unsafe.NotBurstCompatible.Extensions
 
 ## Bit arrays and bit fields
 
-Data structure          | Description
------------------------ | -----------
-@Unity.Collections.BitField32            | A fixed-size array of 32 bits.
-@Unity.Collections.BitField64            | A fixed-size array of 64 bits.
-@Unity.Collections.NativeBitArray        | An arbitrary-sized array of bits. Has thread- and disposal-safety checks.
-@Unity.Collections.LowLevel.Unsafe.UnsafeBitArray        | An arbitrary-sized array of bits.
+Data structure                                    | Description
+------------------------------------------------- | -----------
+@Unity.Collections.BitField32                     | A fixed-size array of 32 bits.
+@Unity.Collections.BitField64                     | A fixed-size array of 64 bits.
+@Unity.Collections.NativeBitArray                 | An arbitrary-sized array of bits. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeBitArray | An arbitrary-sized array of bits.
 
 ## String types
 
-Data structure          | Description
------------------------ | -----------
-@Unity.Collections.NativeText            | A UTF-8 encoded string. Mutable and resizable. Has thread- and disposal-safety checks.
-@Unity.Collections.FixedString32Bytes        | A 32-byte UTF-8 encoded string, including 3 bytes of overhead, so 29 bytes available for storage.
+Data structure                        | Description
+------------------------------------- | -----------
+@Unity.Collections.NativeText         | A UTF-8 encoded string. Mutable and resizable. Has thread- and disposal-safety checks.
+@Unity.Collections.FixedString32Bytes | A 32-byte UTF-8 encoded string, including 3 bytes of overhead, so 29 bytes available for storage.
 
 `FixedString32Bytes` has variants of larger sizes: `FixedString64Bytes`, `FixedString128Bytes`, `FixedString512Bytes`, `FixedString4096Bytes`.
 
@@ -59,9 +59,9 @@ See also @Unity.Collections.FixedStringMethods
   
 ## Other types
 
-Data structure          | Description
------------------------ | -----------
-@Unity.Collections.NativeReference`1       | A reference to a single value. Functionally equivalent to an array of length 1. Has thread- and disposal-safety checks. 
+Data structure                                           | Description
+-------------------------------------------------------- | -----------
+@Unity.Collections.NativeReference`1                     | A reference to a single value. Functionally equivalent to an array of length 1. Has thread- and disposal-safety checks.
 @Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter32 | A 32-bit atomic counter.
 @Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter64 | A 64-bit atomic counter.
  

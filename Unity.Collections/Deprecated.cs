@@ -8,8 +8,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Assertions;
 using Unity.Burst;
-using UnityEngine;
-using static Unity.Baselib.LowLevel.Binding;
+using Unity.Collections.LowLevel.Unsafe;
 
 #pragma warning disable 618 // disable obsolete warnings
 
@@ -1626,7 +1625,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-     [Obsolete("This storage will no longer be used. (RemovedAfter 2021-06-01)")]
+    [Obsolete("This storage will no longer be used. (RemovedAfter 2021-06-01)")]
     sealed class WordStorageStatic
     {
         private WordStorageStatic()
@@ -1654,7 +1653,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         NativeArray<byte> buffer; // all the UTF-8 encoded bytes in one place
         NativeArray<Entry> entry; // one offset for each text in "buffer"
-        NativeMultiHashMap<int, int> hash; // from string hash to table entry
+        NativeParallelMultiHashMap<int, int> hash; // from string hash to table entry
         int chars; // bytes in buffer allocated so far
         int entries; // number of strings allocated so far
 
@@ -1694,7 +1693,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return;
             WordStorageStatic.Ref.Data.buffer = new NativeArray<byte>(kMaxChars, Allocator.Persistent);
             WordStorageStatic.Ref.Data.entry = new NativeArray<Entry>(kMaxEntries, Allocator.Persistent);
-            WordStorageStatic.Ref.Data.hash = new NativeMultiHashMap<int, int>(kMaxEntries, Allocator.Persistent);
+            WordStorageStatic.Ref.Data.hash = new NativeParallelMultiHashMap<int, int>(kMaxEntries, Allocator.Persistent);
             Clear();
 #if !UNITY_DOTSRUNTIME
             // Free storage on domain unload, which happens when iterating on the Entities module a lot.
@@ -1770,7 +1769,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Assert.IsTrue(temp.Length <= kMaxCharsPerEntry); // about one printed page of text
             int itemIndex;
-            NativeMultiHashMapIterator<int> iter;
+            NativeParallelMultiHashMapIterator<int> iter;
             if (hash.TryGetFirstValue(h, out itemIndex, out iter))
             {
                 do
@@ -1979,25 +1978,25 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var leadingZeroes = LeadingZeroes;
 
                 WordStorage.Instance.GetFixedString(Index, ref result);
-                if(positiveNumericSuffix == 0 && leadingZeroes == 0)
+                if (positiveNumericSuffix == 0 && leadingZeroes == 0)
                     return 0;
 
                 // print the numeric suffix, if any, backwards, as ASCII, to a little buffer.
                 const int maximumDigits = kMaxLeadingZeroes + 10;
                 var buffer = stackalloc byte[maximumDigits];
                 var firstDigit = maximumDigits;
-                while(positiveNumericSuffix > 0)
+                while (positiveNumericSuffix > 0)
                 {
                     buffer[--firstDigit] = (byte)('0' + positiveNumericSuffix % 10);
                     positiveNumericSuffix /= 10;
                 }
-                while(leadingZeroes-- > 0)
+                while (leadingZeroes-- > 0)
                     buffer[--firstDigit] = (byte)'0';
 
                 // make space in the output for leading zeroes if any, followed by the positive numeric index if any.
                 var dest = result.GetUnsafePtr() + result.Length;
                 result.Length += maximumDigits - firstDigit;
-                while(firstDigit < maximumDigits)
+                while (firstDigit < maximumDigits)
                     *dest++ = buffer[firstDigit++];
                 return 0;
             }
@@ -2106,4 +2105,2328 @@ namespace Unity.Collections.LowLevel.Unsafe
             SetString(ref temp);
         }
     }
+
+    [Obsolete("UntypedUnsafeHashMap is renamed to UntypedUnsafeParallelHashMap. (UnityUpgradable) -> UntypedUnsafeParallelHashMap", false)]
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct UntypedUnsafeHashMap
+    {
+#pragma warning disable 169
+        [NativeDisableUnsafePtrRestriction]
+        UnsafeParallelHashMapData* m_Buffer;
+        AllocatorManager.AllocatorHandle m_AllocatorLabel;
+#pragma warning restore 169
+    }
+
+    [Obsolete("UnsafeHashMap is renamed to UnsafeParallelHashMap. (UnityUpgradable) -> UnsafeParallelHashMap<TKey, TValue>", false)]
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct UnsafeHashMap<TKey, TValue>
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        [NativeDisableUnsafePtrRestriction]
+        internal UnsafeParallelHashMapData* m_Buffer;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
+
+        /// <summary>
+        /// Initializes and returns an instance of UnsafeHashMap.
+        /// </summary>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public UnsafeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        {
+            CollectionHelper.CheckIsUnmanaged<TKey>();
+            CollectionHelper.CheckIsUnmanaged<TValue>();
+
+            m_AllocatorLabel = allocator;
+            // Bucket size if bigger to reduce collisions
+            UnsafeParallelHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, allocator, out m_Buffer);
+
+            Clear();
+        }
+
+        /// <summary>
+        /// Whether this hash map is empty.
+        /// </summary>
+        /// <value>True if this hash map is empty or the hash map has not been constructed.</value>
+        public bool IsEmpty => !IsCreated || UnsafeParallelHashMapData.IsEmpty(m_Buffer);
+
+        /// <summary>
+        /// The current number of key-value pairs in this hash map.
+        /// </summary>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
+        public int Count() => UnsafeParallelHashMapData.GetCount(m_Buffer);
+
+        /// <summary>
+        /// The number of key-value pairs that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity
+        {
+            get
+            {
+                UnsafeParallelHashMapData* data = m_Buffer;
+                return data->keyCapacity;
+            }
+
+            set
+            {
+                UnsafeParallelHashMapData* data = m_Buffer;
+                UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, value, UnsafeParallelHashMapData.GetBucketSize(value), m_AllocatorLabel);
+            }
+        }
+
+        /// <summary>
+        /// Removes all key-value pairs.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear()
+        {
+            UnsafeParallelHashMapBase<TKey, TValue>.Clear(m_Buffer);
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the key-value pair was added.</returns>
+        public bool TryAdd(TKey key, TValue item)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        public void Add(TKey key, TValue item)
+        {
+            TryAdd(key, item);
+        }
+
+        /// <summary>
+        /// Removes a key-value pair.
+        /// </summary>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>True if a key-value pair was removed.</returns>
+        public bool Remove(TKey key)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.Remove(m_Buffer, key, false) != 0;
+        }
+
+        /// <summary>
+        /// Returns the value associated with a key.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool TryGetValue(TKey key, out TValue item)
+        {
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out tempIt);
+        }
+
+        /// <summary>
+        /// Returns true if a given key is present in this hash map.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool ContainsKey(TKey key)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var tempValue, out var tempIt);
+        }
+
+        /// <summary>
+        /// Gets and sets values by key.
+        /// </summary>
+        /// <remarks>Getting a key that is not present will throw. Setting a key that is not already present will add the key.</remarks>
+        /// <param name="key">The key to look up.</param>
+        /// <value>The value associated with the key.</value>
+        /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
+        public TValue this[TKey key]
+        {
+            get
+            {
+                TValue res;
+                TryGetValue(key, out res);
+                return res;
+            }
+
+            set
+            {
+                if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var item, out var iterator))
+                {
+                    UnsafeParallelHashMapBase<TKey, TValue>.SetValue(m_Buffer, ref iterator, ref value);
+                }
+                else
+                {
+                    UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, value, false, m_AllocatorLabel);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether this hash map has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_Buffer != null;
+
+        /// <summary>
+        /// Releases all resources (memory).
+        /// </summary>
+        public void Dispose()
+        {
+            UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
+            m_Buffer = null;
+        }
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this hash map.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+            var jobHandle = new UnsafeParallelHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
+            m_Buffer = null;
+            return jobHandle;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all this hash map's keys (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = CollectionHelper.CreateNativeArray<TKey>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyArray(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all this hash map's values (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = CollectionHelper.CreateNativeArray<TValue>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetValueArray(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
+        /// </summary>
+        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = new NativeKeyValueArrays<TKey, TValue>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyValueArrays(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a parallel writer for this hash map.
+        /// </summary>
+        /// <returns>A parallel writer for this hash map.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            ParallelWriter writer;
+            writer.m_ThreadIndex = 0;
+            writer.m_Buffer = m_Buffer;
+            return writer;
+        }
+
+        /// <summary>
+        /// A parallel writer for a UnsafeParallelHashMap.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a UnsafeParallelHashMap.
+        /// </remarks>
+        [NativeContainerIsAtomicWriteOnly]
+        public unsafe struct ParallelWriter
+        {
+            [NativeDisableUnsafePtrRestriction]
+            internal UnsafeParallelHashMapData* m_Buffer;
+
+            [NativeSetThreadIndex]
+            internal int m_ThreadIndex;
+
+            /// <summary>
+            /// The number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public int Capacity
+            {
+                get
+                {
+                    UnsafeParallelHashMapData* data = m_Buffer;
+                    return data->keyCapacity;
+                }
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the key-value pair was added.</returns>
+            public bool TryAdd(TKey key, TValue item)
+            {
+                Assert.IsTrue(m_ThreadIndex >= 0);
+                return UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, m_ThreadIndex);
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the key-value pairs of this hash map.
+        /// </summary>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator { m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Buffer) };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the key-value pairs of a hash map.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// From this state, the first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
+        public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
+        {
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next key-value pair.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public bool MoveNext() => m_Enumerator.MoveNext();
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => m_Enumerator.Reset();
+
+            /// <summary>
+            /// The current key-value pair.
+            /// </summary>
+            /// <value>The current key-value pair.</value>
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
+
+            object IEnumerator.Current => Current;
+        }
+    }
+
+    [Obsolete("UnsafeMultiHashMap is renamed to UnsafeParallelMultiHashMap. (UnityUpgradable) -> UnsafeParallelMultiHashMap<TKey, TValue>", false)]
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct UnsafeMultiHashMap<TKey, TValue>
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        [NativeDisableUnsafePtrRestriction]
+        internal UnsafeParallelHashMapData* m_Buffer;
+        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
+
+        /// <summary>
+        /// Initializes and returns an instance of UnsafeParallelMultiHashMap.
+        /// </summary>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public UnsafeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        {
+            m_AllocatorLabel = allocator;
+            // Bucket size if bigger to reduce collisions
+            UnsafeParallelHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, allocator, out m_Buffer);
+            Clear();
+        }
+
+        /// <summary>
+        /// Whether this hash map is empty.
+        /// </summary>
+        /// <value>True if this hash map is empty or the hash map has not been constructed.</value>
+        public bool IsEmpty => !IsCreated || UnsafeParallelHashMapData.IsEmpty(m_Buffer);
+
+        /// <summary>
+        /// Returns the current number of key-value pairs in this hash map.
+        /// </summary>
+        /// <remarks>Key-value pairs with matching keys are counted as separate, individual pairs.</remarks>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
+        public int Count()
+        {
+            if (m_Buffer->allocatedIndexLength <= 0)
+            {
+                return 0;
+            }
+
+            return UnsafeParallelHashMapData.GetCount(m_Buffer);
+        }
+
+        /// <summary>
+        /// Returns the number of key-value pairs that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity
+        {
+            get
+            {
+                UnsafeParallelHashMapData* data = m_Buffer;
+                return data->keyCapacity;
+            }
+
+            set
+            {
+                UnsafeParallelHashMapData* data = m_Buffer;
+                UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, value, UnsafeParallelHashMapData.GetBucketSize(value), m_AllocatorLabel);
+            }
+        }
+
+        /// <summary>
+        /// Removes all key-value pairs.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear()
+        {
+            UnsafeParallelHashMapBase<TKey, TValue>.Clear(m_Buffer);
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>
+        /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+        /// </remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        public void Add(TKey key, TValue item)
+        {
+            UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, true, m_AllocatorLabel);
+        }
+
+        /// <summary>
+        /// Removes a key and its associated value(s).
+        /// </summary>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>The number of removed key-value pairs. If the key was not present, returns 0.</returns>
+        public int Remove(TKey key)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.Remove(m_Buffer, key, true);
+        }
+
+        /// <summary>
+        /// Removes all key-value pairs with a particular key and a particular value.
+        /// </summary>
+        /// <remarks>Removes all key-value pairs which have a particular key and which *also have* a particular value.
+        /// In other words: (key *AND* value) rather than (key *OR* value).</remarks>
+        /// <typeparam name="TValueEQ">The type of the value.</typeparam>
+        /// <param name="key">The key of the key-value pairs to remove.</param>
+        /// <param name="value">The value of the key-value pairs to remove.</param>
+        public void Remove<TValueEQ>(TKey key, TValueEQ value)
+            where TValueEQ : struct, IEquatable<TValueEQ>
+        {
+            UnsafeParallelHashMapBase<TKey, TValueEQ>.RemoveKeyValue(m_Buffer, key, value);
+        }
+
+        /// <summary>
+        /// Removes a single key-value pair.
+        /// </summary>
+        /// <param name="it">An iterator representing the key-value pair to remove.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the iterator is invalid.</exception>
+        public void Remove(NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            UnsafeParallelHashMapBase<TKey, TValue>.Remove(m_Buffer, it);
+        }
+
+        /// <summary>
+        /// Gets an iterator for a key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="item">Outputs the associated value represented by the iterator.</param>
+        /// <param name="it">Outputs an iterator.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out it);
+        }
+
+        /// <summary>
+        /// Advances an iterator to the next value associated with its key.
+        /// </summary>
+        /// <param name="item">Outputs the next value.</param>
+        /// <param name="it">A reference to the iterator to advance.</param>
+        /// <returns>True if the key was present and had another value.</returns>
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetNextValueAtomic(m_Buffer, out item, ref it);
+        }
+
+        /// <summary>
+        /// Returns true if a given key is present in this hash map.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present in this hash map.</returns>
+        public bool ContainsKey(TKey key)
+        {
+            return TryGetFirstValue(key, out var temp0, out var temp1);
+        }
+
+        /// <summary>
+        /// Returns the number of values associated with a given key.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>The number of values associated with the key. Returns 0 if the key was not present.</returns>
+        public int CountValuesForKey(TKey key)
+        {
+            if (!TryGetFirstValue(key, out var value, out var iterator))
+            {
+                return 0;
+            }
+
+            var count = 1;
+            while (TryGetNextValue(out value, ref iterator))
+            {
+                count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Sets a new value for an existing key-value pair.
+        /// </summary>
+        /// <param name="item">The new value.</param>
+        /// <param name="it">The iterator representing a key-value pair.</param>
+        /// <returns>True if a value was overwritten.</returns>
+        public bool SetValue(TValue item, NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            return UnsafeParallelHashMapBase<TKey, TValue>.SetValue(m_Buffer, ref it, ref item);
+        }
+
+        /// <summary>
+        /// Whether this hash map has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_Buffer != null;
+
+        /// <summary>
+        /// Releases all resources (memory and safety handles).
+        /// </summary>
+        public void Dispose()
+        {
+            UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
+            m_Buffer = null;
+        }
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this hash map.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+            var jobHandle = new UnsafeParallelHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
+            m_Buffer = null;
+            return jobHandle;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all the keys (in no particular order).
+        /// </summary>
+        /// <remarks>A key with *N* values is included *N* times in the array.
+        ///
+        /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeParallelHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all the keys (in no particular order).</returns>
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = CollectionHelper.CreateNativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyArray(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all the values (in no particular order).
+        /// </summary>
+        /// <remarks>The values are not deduplicated. If you sort the returned array,
+        /// you can use <see cref="Unity.Collections.NativeParallelHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all the values (in no particular order).</returns>
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = CollectionHelper.CreateNativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetValueArray(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a NativeKeyValueArrays with a copy of all the keys and values (in no particular order).
+        /// </summary>
+        /// <remarks>A key with *N* values is included *N* times in the array.
+        /// </remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all the keys and values (in no particular order).</returns>
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        {
+            var result = new NativeKeyValueArrays<TKey, TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyValueArrays(m_Buffer, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the values of an individual key.
+        /// </summary>
+        /// <param name="key">The key to get an enumerator for.</param>
+        /// <returns>An enumerator over the values of a key.</returns>
+        public Enumerator GetValuesForKey(TKey key)
+        {
+            return new Enumerator { hashmap = this, key = key, isFirst = true };
+        }
+
+        /// <summary>
+        /// An enumerator over the values of an individual key in a multi hash map.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first value of the key.
+        /// </remarks>
+        public struct Enumerator : IEnumerator<TValue>
+        {
+            internal UnsafeMultiHashMap<TKey, TValue> hashmap;
+            internal TKey key;
+            internal bool isFirst;
+
+            TValue value;
+            NativeParallelMultiHashMapIterator<TKey> iterator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next value of the key.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public bool MoveNext()
+            {
+                //Avoids going beyond the end of the collection.
+                if (isFirst)
+                {
+                    isFirst = false;
+                    return hashmap.TryGetFirstValue(key, out value, out iterator);
+                }
+
+                return hashmap.TryGetNextValue(out value, ref iterator);
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => isFirst = true;
+
+            /// <summary>
+            /// The current value.
+            /// </summary>
+            /// <value>The current value.</value>
+            public TValue Current => value;
+
+            object IEnumerator.Current => Current;
+
+            /// <summary>
+            /// Returns this enumerator.
+            /// </summary>
+            /// <returns>This enumerator.</returns>
+            public Enumerator GetEnumerator() { return this; }
+        }
+
+        /// <summary>
+        /// Returns a parallel writer for this hash map.
+        /// </summary>
+        /// <returns>A parallel writer for this hash map.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            ParallelWriter writer;
+
+#if UNITY_DOTSRUNTIME
+            writer.m_ThreadIndex = -1;    // aggressively check that code-gen has patched the ThreadIndex
+#else
+            writer.m_ThreadIndex = 0;
+#endif
+            writer.m_Buffer = m_Buffer;
+
+            return writer;
+        }
+
+        /// <summary>
+        /// A parallel writer for an UnsafeParallelMultiHashMap.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a UnsafeParallelMultiHashMap.
+        /// </remarks>
+        [NativeContainerIsAtomicWriteOnly]
+        public unsafe struct ParallelWriter
+        {
+            [NativeDisableUnsafePtrRestriction]
+            internal UnsafeParallelHashMapData* m_Buffer;
+
+            [NativeSetThreadIndex]
+            internal int m_ThreadIndex;
+
+            /// <summary>
+            /// Returns the number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public int Capacity
+            {
+                get
+                {
+                    return m_Buffer->keyCapacity;
+                }
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>
+            /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+            /// </remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            public void Add(TKey key, TValue item)
+            {
+                Assert.IsTrue(m_ThreadIndex >= 0);
+                UnsafeParallelHashMapBase<TKey, TValue>.AddAtomicMulti(m_Buffer, key, item, m_ThreadIndex);
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the key-value pairs of this hash map.
+        /// </summary>
+        /// <remarks>A key with *N* values is visited by the enumerator *N* times.</remarks>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        public KeyValueEnumerator GetEnumerator()
+        {
+            return new KeyValueEnumerator { m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Buffer) };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the key-value pairs of a multi hash map.
+        /// </summary>
+        /// <remarks>A key with *N* values is visited by the enumerator *N* times.
+        ///
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
+        public struct KeyValueEnumerator : IEnumerator<KeyValue<TKey, TValue>>
+        {
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next key-value pair.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public bool MoveNext() => m_Enumerator.MoveNext();
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => m_Enumerator.Reset();
+
+            /// <summary>
+            /// The current key-value pair.
+            /// </summary>
+            /// <value>The current key-value pair.</value>
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
+
+            object IEnumerator.Current => Current;
+        }
+    }
+
+    [Obsolete("UnsafeHashSet is renamed to UnsafeParallelHashSet. (UnityUpgradable) -> UnsafeParallelHashSet<T>", false)]
+    public unsafe struct UnsafeHashSet<T>
+        : INativeDisposable
+        , IEnumerable<T>  // Used by collection initializers.
+        where T : unmanaged, IEquatable<T>
+    {
+        internal UnsafeParallelHashMap<T, bool> m_Data;
+
+        /// <summary>
+        /// Initializes and returns an instance of UnsafeHashSet.
+        /// </summary>
+        /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public UnsafeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
+        {
+            m_Data = new UnsafeParallelHashMap<T, bool>(capacity, allocator);
+        }
+
+        /// <summary>
+        /// Whether this set is empty.
+        /// </summary>
+        /// <value>True if this set is empty.</value>
+        public bool IsEmpty => m_Data.IsEmpty;
+
+        /// <summary>
+        /// Returns the current number of values in this set.
+        /// </summary>
+        /// <returns>The current number of values in this set.</returns>
+        public int Count() => m_Data.Count();
+
+        /// <summary>
+        /// The number of values that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of values that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity { get => m_Data.Capacity; set => m_Data.Capacity = value; }
+
+        /// <summary>
+        /// Whether this set has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this set has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_Data.IsCreated;
+
+        /// <summary>
+        /// Releases all resources (memory).
+        /// </summary>
+        public void Dispose() => m_Data.Dispose();
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this set.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this set.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps) => m_Data.Dispose(inputDeps);
+
+        /// <summary>
+        /// Removes all values.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear() => m_Data.Clear();
+
+        /// <summary>
+        /// Adds a new value (unless it is already present).
+        /// </summary>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the value was not already present.</returns>
+        public bool Add(T item) => m_Data.TryAdd(item, false);
+
+        /// <summary>
+        /// Removes a particular value.
+        /// </summary>
+        /// <param name="item">The value to remove.</param>
+        /// <returns>True if the value was present.</returns>
+        public bool Remove(T item) => m_Data.Remove(item);
+
+        /// <summary>
+        /// Returns true if a particular value is present.
+        /// </summary>
+        /// <param name="item">The value to check for.</param>
+        /// <returns>True if the value was present.</returns>
+        public bool Contains(T item) => m_Data.ContainsKey(item);
+
+        /// <summary>
+        /// Returns an array with a copy of this set's values (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of the set's values.</returns>
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyArray(allocator);
+
+        /// <summary>
+        /// Returns a parallel writer.
+        /// </summary>
+        /// <returns>A parallel writer.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            return new ParallelWriter { m_Data = m_Data.AsParallelWriter() };
+        }
+
+        /// <summary>
+        /// A parallel writer for an UnsafeHashSet.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a set.
+        /// </remarks>
+        [NativeContainerIsAtomicWriteOnly]
+        public struct ParallelWriter
+        {
+            internal UnsafeParallelHashMap<T, bool>.ParallelWriter m_Data;
+
+            /// <summary>
+            /// The number of values that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of values that fit in the current allocation.</value>
+            public int Capacity => m_Data.Capacity;
+
+            /// <summary>
+            /// Adds a new value (unless it is already present).
+            /// </summary>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the value is not already present.</returns>
+            public bool Add(T item) => m_Data.TryAdd(item, false);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the values of this set.
+        /// </summary>
+        /// <returns>An enumerator over the values of this set.</returns>
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator { m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Data.m_Buffer) };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the values of a set.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is invalid.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first value.
+        /// </remarks>
+        public struct Enumerator : IEnumerator<T>
+        {
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next value.
+            /// </summary>
+            /// <returns>True if `Current` is valid to read after the call.</returns>
+            public bool MoveNext() => m_Enumerator.MoveNext();
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => m_Enumerator.Reset();
+
+            /// <summary>
+            /// The current value.
+            /// </summary>
+            /// <value>The current value.</value>
+            public T Current => m_Enumerator.GetCurrentKey<T>();
+
+            object IEnumerator.Current => Current;
+        }
+    }
+}
+
+namespace Unity.Collections
+{
+    [Obsolete("NativeMultiHashMapIterator is renamed to NativeParallelMultiHashMapIterator. (UnityUpgradable) -> NativeParallelMultiHashMapIterator<TKey>", false)]
+    public struct NativeMultiHashMapIterator<TKey>
+        where TKey : struct
+    {
+        internal TKey key;
+        internal int NextEntryIndex;
+        internal int EntryIndex;
+
+        /// <summary>
+        /// Returns the entry index.
+        /// </summary>
+        /// <returns>The entry index.</returns>
+        public int GetEntryIndex() => EntryIndex;
+    }
+
+    [Obsolete("NativeHashMap is renamed to NativeParallelHashMap. (UnityUpgradable) -> NativeParallelHashMap<TKey, TValue>", false)]
+    [StructLayout(LayoutKind.Sequential)]
+    [NativeContainer]
+    public unsafe struct NativeHashMap<TKey, TValue>
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal AtomicSafetyHandle m_Safety;
+        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashMap<TKey, TValue>>();
+
+#if REMOVE_DISPOSE_SENTINEL
+#else
+        [NativeSetClassTypeToNullOnSchedule]
+        DisposeSentinel m_DisposeSentinel;
+#endif
+#endif
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeParallelHashMap.
+        /// </summary>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+            : this(capacity, allocator, 2)
+        {
+        }
+
+        NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
+        {
+            m_HashMapData = new UnsafeParallelHashMap<TKey, TValue>(capacity, allocator);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
+            {
+                m_Safety = AtomicSafetyHandle.Create();
+                m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+            }
+#endif
+
+            CollectionHelper.SetStaticSafetyId<NativeParallelHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
+#endif
+        }
+
+        /// <summary>
+        /// Whether this hash map is empty.
+        /// </summary>
+        /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+        public bool IsEmpty
+        {
+            get
+            {
+                if (!IsCreated)
+                {
+                    return true;
+                }
+
+                CheckRead();
+                return m_HashMapData.IsEmpty;
+            }
+        }
+
+        /// <summary>
+        /// The current number of key-value pairs in this hash map.
+        /// </summary>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
+        public int Count()
+        {
+            CheckRead();
+            return m_HashMapData.Count();
+        }
+
+        /// <summary>
+        /// The number of key-value pairs that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity
+        {
+            get
+            {
+                CheckRead();
+                return m_HashMapData.Capacity;
+            }
+
+            set
+            {
+                CheckWrite();
+                m_HashMapData.Capacity = value;
+            }
+        }
+
+        /// <summary>
+        /// Removes all key-value pairs.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear()
+        {
+            CheckWrite();
+            m_HashMapData.Clear();
+        }
+
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>If the key is already present, this method returns false without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the key-value pair was added.</returns>
+        public bool TryAdd(TKey key, TValue item)
+        {
+            CheckWrite();
+            return m_HashMapData.TryAdd(key, item);
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        public void Add(TKey key, TValue item)
+        {
+            var added = TryAdd(key, item);
+
+            if (!added)
+            {
+                ThrowKeyAlreadyAdded(key);
+            }
+        }
+
+        /// <summary>
+        /// Removes a key-value pair.
+        /// </summary>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>True if a key-value pair was removed.</returns>
+        public bool Remove(TKey key)
+        {
+            CheckWrite();
+            return m_HashMapData.Remove(key);
+        }
+
+        /// <summary>
+        /// Returns the value associated with a key.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool TryGetValue(TKey key, out TValue item)
+        {
+            CheckRead();
+            return m_HashMapData.TryGetValue(key, out item);
+        }
+
+        /// <summary>
+        /// Returns true if a given key is present in this hash map.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool ContainsKey(TKey key)
+        {
+            CheckRead();
+            return m_HashMapData.ContainsKey(key);
+        }
+
+        /// <summary>
+        /// Gets and sets values by key.
+        /// </summary>
+        /// <remarks>Getting a key that is not present will throw. Setting a key that is not already present will add the key.</remarks>
+        /// <param name="key">The key to look up.</param>
+        /// <value>The value associated with the key.</value>
+        /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
+        public TValue this[TKey key]
+        {
+            get
+            {
+                CheckRead();
+
+                TValue res;
+
+                if (m_HashMapData.TryGetValue(key, out res))
+                {
+                    return res;
+                }
+
+                ThrowKeyNotPresent(key);
+
+                return default;
+            }
+
+            set
+            {
+                CheckWrite();
+                m_HashMapData[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Whether this hash map has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_HashMapData.IsCreated;
+
+        /// <summary>
+        /// Releases all resources (memory and safety handles).
+        /// </summary>
+        public void Dispose()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
+#endif
+            m_HashMapData.Dispose();
+        }
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this hash map.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
+            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
+            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
+            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
+            // will check that no jobs are writing to the container).
+            DisposeSentinel.Clear(ref m_DisposeSentinel);
+#endif
+
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
+
+            AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel }  }.Schedule(inputDeps);
+#endif
+            m_HashMapData.m_Buffer = null;
+
+            return jobHandle;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all this hash map's keys (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_HashMapData.GetKeyArray(allocator);
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all this hash map's values (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_HashMapData.GetValueArray(allocator);
+        }
+
+        /// <summary>
+        /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
+        /// </summary>
+        /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_HashMapData.GetKeyValueArrays(allocator);
+        }
+
+        /// <summary>
+        /// Returns a parallel writer for this hash map.
+        /// </summary>
+        /// <returns>A parallel writer for this hash map.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            ParallelWriter writer;
+            writer.m_Writer = m_HashMapData.AsParallelWriter();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            writer.m_Safety = m_Safety;
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
+#endif
+            return writer;
+        }
+
+        /// <summary>
+        /// A parallel writer for a NativeParallelHashMap.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelHashMap.
+        /// </remarks>
+        [NativeContainer]
+        [NativeContainerIsAtomicWriteOnly]
+        [DebuggerDisplay("Capacity = {m_Writer.Capacity}")]
+        public unsafe struct ParallelWriter
+        {
+            internal UnsafeParallelHashMap<TKey, TValue>.ParallelWriter m_Writer;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
+#endif
+            /// <summary>
+            /// Returns the index of the current thread.
+            /// </summary>
+            /// <remarks>In a job, each thread gets its own copy of the ParallelWriter struct, and the job system assigns
+            /// each copy the index of its thread.</remarks>
+            /// <value>The index of the current thread.</value>
+            public int m_ThreadIndex => m_Writer.m_ThreadIndex;
+
+            /// <summary>
+            /// The number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public int Capacity
+            {
+                get
+                {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                    return m_Writer.Capacity;
+                }
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>If the key is already present, this method returns false without modifying this hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the key-value pair was added.</returns>
+            public bool TryAdd(TKey key, TValue item)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+                return m_Writer.TryAdd(key, item);
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the key-value pairs of this hash map.
+        /// </summary>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        public Enumerator GetEnumerator()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+            var ash = m_Safety;
+            AtomicSafetyHandle.UseSecondaryVersion(ref ash);
+#endif
+            return new Enumerator
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                m_Safety = ash,
+#endif
+                m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_HashMapData.m_Buffer),
+            };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the key-value pairs of a hash map.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// From this state, the first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal AtomicSafetyHandle m_Safety;
+#endif
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next key-value pair.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public bool MoveNext()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                return m_Enumerator.MoveNext();
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                m_Enumerator.Reset();
+            }
+
+            /// <summary>
+            /// The current key-value pair.
+            /// </summary>
+            /// <value>The current key-value pair.</value>
+            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
+
+            object IEnumerator.Current => Current;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckRead()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWrite()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void ThrowKeyNotPresent(TKey key)
+        {
+            throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void ThrowKeyAlreadyAdded(TKey key)
+        {
+            throw new ArgumentException("An item with the same key has already been added", nameof(key));
+        }
+    }
+
+    [Obsolete("NativeMultiHashMap is renamed to NativeParallelMultiHashMap. (UnityUpgradable) -> NativeParallelMultiHashMap<TKey, TValue>", false)]
+    [StructLayout(LayoutKind.Sequential)]
+    [NativeContainer]
+    public unsafe struct NativeMultiHashMap<TKey, TValue>
+        : INativeDisposable
+        , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
+        where TKey : struct, IEquatable<TKey>
+        where TValue : struct
+    {
+        internal UnsafeParallelMultiHashMap<TKey, TValue> m_MultiHashMapData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal AtomicSafetyHandle m_Safety;
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeMultiHashMap<TKey, TValue>>();
+
+#if REMOVE_DISPOSE_SENTINEL
+#else
+        [NativeSetClassTypeToNullOnSchedule]
+        internal DisposeSentinel m_DisposeSentinel;
+#endif
+#endif
+
+        /// <summary>
+        /// Returns a newly allocated multi hash map.
+        /// </summary>
+        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+            : this(capacity, allocator, 2)
+        {
+        }
+
+        internal void Initialize<U>(int capacity, ref U allocator, int disposeSentinelStackDepth)
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            m_MultiHashMapData = new UnsafeParallelMultiHashMap<TKey, TValue>(capacity, allocator.Handle);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+#else
+            if (allocator.IsCustomAllocator)
+            {
+                m_Safety = AtomicSafetyHandle.Create();
+                m_DisposeSentinel = null;
+            }
+            else
+            {
+                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
+            }
+#endif
+
+            CollectionHelper.SetStaticSafetyId<NativeMultiHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
+#endif
+        }
+
+        NativeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
+        {
+            this = default;
+            Initialize(capacity, ref allocator, disposeSentinelStackDepth);
+        }
+
+        /// <summary>
+        /// Whether this hash map is empty.
+        /// </summary>
+        /// <value>True if the hash map is empty or if the hash map has not been constructed.</value>
+        public bool IsEmpty
+        {
+            get
+            {
+                CheckRead();
+                return m_MultiHashMapData.IsEmpty;
+            }
+        }
+
+        /// <summary>
+        /// Returns the current number of key-value pairs in this hash map.
+        /// </summary>
+        /// <remarks>Key-value pairs with matching keys are counted as separate, individual pairs.</remarks>
+        /// <returns>The current number of key-value pairs in this hash map.</returns>
+        public int Count()
+        {
+            CheckRead();
+            return m_MultiHashMapData.Count();
+        }
+
+        /// <summary>
+        /// Returns the number of key-value pairs that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of key-value pairs that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity
+        {
+            get
+            {
+                CheckRead();
+                return m_MultiHashMapData.Capacity;
+            }
+
+            set
+            {
+                CheckWrite();
+                m_MultiHashMapData.Capacity = value;
+            }
+        }
+
+        /// <summary>
+        /// Removes all key-value pairs.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear()
+        {
+            CheckWrite();
+            m_MultiHashMapData.Clear();
+        }
+
+        /// <summary>
+        /// Adds a new key-value pair.
+        /// </summary>
+        /// <remarks>
+        /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+        /// </remarks>
+        /// <param name="key">The key to add.</param>
+        /// <param name="item">The value to add.</param>
+        public void Add(TKey key, TValue item)
+        {
+            CheckWrite();
+            m_MultiHashMapData.Add(key, item);
+        }
+
+        /// <summary>
+        /// Removes a key and its associated value(s).
+        /// </summary>
+        /// <param name="key">The key to remove.</param>
+        /// <returns>The number of removed key-value pairs. If the key was not present, returns 0.</returns>
+        public int Remove(TKey key)
+        {
+            CheckWrite();
+            return m_MultiHashMapData.Remove(key);
+        }
+
+        /// <summary>
+        /// Removes a single key-value pair.
+        /// </summary>
+        /// <param name="it">An iterator representing the key-value pair to remove.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the iterator is invalid.</exception>
+        public void Remove(NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            CheckWrite();
+            m_MultiHashMapData.Remove(it);
+        }
+
+        /// <summary>
+        /// Gets an iterator for a key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="item">Outputs the associated value represented by the iterator.</param>
+        /// <param name="it">Outputs an iterator.</param>
+        /// <returns>True if the key was present.</returns>
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            CheckRead();
+            return m_MultiHashMapData.TryGetFirstValue(key, out item, out it);
+        }
+
+        /// <summary>
+        /// Advances an iterator to the next value associated with its key.
+        /// </summary>
+        /// <param name="item">Outputs the next value.</param>
+        /// <param name="it">A reference to the iterator to advance.</param>
+        /// <returns>True if the key was present and had another value.</returns>
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            CheckRead();
+            return m_MultiHashMapData.TryGetNextValue(out item, ref it);
+        }
+
+        /// <summary>
+        /// Returns true if a given key is present in this hash map.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>True if the key was present in this hash map.</returns>
+        public bool ContainsKey(TKey key)
+        {
+            return TryGetFirstValue(key, out var temp0, out var temp1);
+        }
+
+        /// <summary>
+        /// Returns the number of values associated with a given key.
+        /// </summary>
+        /// <param name="key">The key to look up.</param>
+        /// <returns>The number of values associated with the key. Returns 0 if the key was not present.</returns>
+        public int CountValuesForKey(TKey key)
+        {
+            if (!TryGetFirstValue(key, out var value, out var iterator))
+            {
+                return 0;
+            }
+
+            var count = 1;
+            while (TryGetNextValue(out value, ref iterator))
+            {
+                count++;
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Sets a new value for an existing key-value pair.
+        /// </summary>
+        /// <param name="item">The new value.</param>
+        /// <param name="it">The iterator representing a key-value pair.</param>
+        /// <returns>True if a value was overwritten.</returns>
+        public bool SetValue(TValue item, NativeParallelMultiHashMapIterator<TKey> it)
+        {
+            CheckWrite();
+            return m_MultiHashMapData.SetValue(item, it);
+        }
+
+        /// <summary>
+        /// Whether this hash map has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_MultiHashMapData.IsCreated;
+
+        /// <summary>
+        /// Releases all resources (memory and safety handles).
+        /// </summary>
+        public void Dispose()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+            CollectionHelper.DisposeSafetyHandle(ref m_Safety);
+#else
+            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
+#endif
+#endif
+            m_MultiHashMapData.Dispose();
+        }
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this hash map.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this hash map.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if REMOVE_DISPOSE_SENTINEL
+#else
+            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
+            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
+            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
+            // will check that no jobs are writing to the container).
+            DisposeSentinel.Clear(ref m_DisposeSentinel);
+#endif
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
+
+            AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_MultiHashMapData.m_Buffer, m_AllocatorLabel = m_MultiHashMapData.m_AllocatorLabel } }.Schedule(inputDeps);
+#endif
+            m_MultiHashMapData.m_Buffer = null;
+
+            return jobHandle;
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all the keys (in no particular order).
+        /// </summary>
+        /// <remarks>A key with *N* values is included *N* times in the array.
+        ///
+        /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeParallelHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all the keys (in no particular order).</returns>
+        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_MultiHashMapData.GetKeyArray(allocator);
+        }
+
+        /// <summary>
+        /// Returns an array with a copy of all the values (in no particular order).
+        /// </summary>
+        /// <remarks>The values are not deduplicated. If you sort the returned array,
+        /// you can use <see cref="Unity.Collections.NativeParallelHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of all the values (in no particular order).</returns>
+        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_MultiHashMapData.GetValueArray(allocator);
+        }
+
+        /// <summary>
+        /// Returns a NativeKeyValueArrays with a copy of all the keys and values (in no particular order).
+        /// </summary>
+        /// <remarks>A key with *N* values is included *N* times in the array.
+        /// </remarks>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>A NativeKeyValueArrays with a copy of all the keys and values (in no particular order).</returns>
+        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckRead();
+            return m_MultiHashMapData.GetKeyValueArrays(allocator);
+        }
+
+        /// <summary>
+        /// Returns a parallel writer for this hash map.
+        /// </summary>
+        /// <returns>A parallel writer for this hash map.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            ParallelWriter writer;
+            writer.m_Writer = m_MultiHashMapData.AsParallelWriter();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            writer.m_Safety = m_Safety;
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Safety, ref s_staticSafetyId.Data);
+#endif
+            return writer;
+        }
+
+        /// <summary>
+        /// A parallel writer for a NativeParallelMultiHashMap.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelMultiHashMap.
+        /// </remarks>
+        [NativeContainer]
+        [NativeContainerIsAtomicWriteOnly]
+        public unsafe struct ParallelWriter
+        {
+            internal UnsafeParallelMultiHashMap<TKey, TValue>.ParallelWriter m_Writer;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
+#endif
+            /// <summary>
+            /// Returns the index of the current thread.
+            /// </summary>
+            /// <remarks>In a job, each thread gets its own copy of the ParallelWriter struct, and the job system assigns
+            /// each copy the index of its thread.</remarks>
+            /// <value>The index of the current thread.</value>
+            public int m_ThreadIndex => m_Writer.m_ThreadIndex;
+
+            /// <summary>
+            /// Returns the number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public int Capacity
+            {
+                get
+                {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                    return m_Writer.Capacity;
+                }
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>
+            /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+            /// </remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            public void Add(TKey key, TValue item)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+                m_Writer.Add(key, item);
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the values of an individual key.
+        /// </summary>
+        /// <param name="key">The key to get an enumerator for.</param>
+        /// <returns>An enumerator over the values of a key.</returns>
+        public Enumerator GetValuesForKey(TKey key)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            return new Enumerator { hashmap = this, key = key, isFirst = true };
+        }
+
+        /// <summary>
+        /// An enumerator over the values of an individual key in a multi hash map.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first value of the key.
+        /// </remarks>
+        public struct Enumerator : IEnumerator<TValue>
+        {
+            internal NativeMultiHashMap<TKey, TValue> hashmap;
+            internal TKey key;
+            internal bool isFirst;
+
+            TValue value;
+            NativeParallelMultiHashMapIterator<TKey> iterator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next value of the key.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public bool MoveNext()
+            {
+                //Avoids going beyond the end of the collection.
+                if (isFirst)
+                {
+                    isFirst = false;
+                    return hashmap.TryGetFirstValue(key, out value, out iterator);
+                }
+
+                return hashmap.TryGetNextValue(out value, ref iterator);
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset() => isFirst = true;
+
+            /// <summary>
+            /// The current value.
+            /// </summary>
+            /// <value>The current value.</value>
+            public TValue Current => value;
+
+            object IEnumerator.Current => Current;
+
+            /// <summary>
+            /// Returns this enumerator.
+            /// </summary>
+            /// <returns>This enumerator.</returns>
+            public Enumerator GetEnumerator() { return this; }
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the key-value pairs of this hash map.
+        /// </summary>
+        /// <remarks>A key with *N* values is visited by the enumerator *N* times.</remarks>
+        /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+        public KeyValueEnumerator GetEnumerator()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+            var ash = m_Safety;
+            AtomicSafetyHandle.UseSecondaryVersion(ref ash);
+#endif
+            return new KeyValueEnumerator
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                m_Safety = ash,
+#endif
+                m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_MultiHashMapData.m_Buffer),
+            };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the key-value pairs of a multi hash map.
+        /// </summary>
+        /// <remarks>A key with *N* values is visited by the enumerator *N* times.
+        ///
+        /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first key-value pair.
+        /// </remarks>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        public struct KeyValueEnumerator : IEnumerator<KeyValue<TKey, TValue>>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal AtomicSafetyHandle m_Safety;
+#endif
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next key-value pair.
+            /// </summary>
+            /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            public unsafe bool MoveNext()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                return m_Enumerator.MoveNext();
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                m_Enumerator.Reset();
+            }
+
+            /// <summary>
+            /// The current key-value pair.
+            /// </summary>
+            /// <value>The current key-value pair.</value>
+            public KeyValue<TKey, TValue> Current
+            {
+                get
+                {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                    return m_Enumerator.GetCurrent<TKey, TValue>();
+                }
+            }
+
+            object IEnumerator.Current => Current;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckRead()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckWrite()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+        }
+    }
+
+    [Obsolete("NativeHashSet is renamed to NativeParallelHashSet. (UnityUpgradable) -> NativeParallelHashSet<T>", false)]
+    public unsafe struct NativeHashSet<T>
+        : INativeDisposable
+        , IEnumerable<T> // Used by collection initializers.
+        where T : unmanaged, IEquatable<T>
+    {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashSet<T>>();
+#endif
+
+        internal NativeParallelHashMap<T, bool> m_Data;
+
+        /// <summary>
+        /// Initializes and returns an instance of NativeHashSet.
+        /// </summary>
+        /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
+        /// <param name="allocator">The allocator to use.</param>
+        public NativeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
+        {
+            m_Data = new NativeParallelHashMap<T, bool>(capacity, allocator);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.SetStaticSafetyId<NativeHashSet<T>>(ref m_Data.m_Safety, ref s_staticSafetyId.Data);
+#endif
+        }
+
+        /// <summary>
+        /// Whether this set is empty.
+        /// </summary>
+        /// <value>True if this set is empty or if the set has not been constructed.</value>
+        public bool IsEmpty => m_Data.IsEmpty;
+
+        /// <summary>
+        /// Returns the current number of values in this set.
+        /// </summary>
+        /// <returns>The current number of values in this set.</returns>
+        public int Count() => m_Data.Count();
+
+        /// <summary>
+        /// The number of values that fit in the current allocation.
+        /// </summary>
+        /// <value>The number of values that fit in the current allocation.</value>
+        /// <param name="value">A new capacity. Must be larger than current capacity.</param>
+        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        public int Capacity { get => m_Data.Capacity; set => m_Data.Capacity = value; }
+
+        /// <summary>
+        /// Whether this set has been allocated (and not yet deallocated).
+        /// </summary>
+        /// <value>True if this set has been allocated (and not yet deallocated).</value>
+        public bool IsCreated => m_Data.IsCreated;
+
+        /// <summary>
+        /// Releases all resources (memory and safety handles).
+        /// </summary>
+        public void Dispose() => m_Data.Dispose();
+
+        /// <summary>
+        /// Creates and schedules a job that will dispose this set.
+        /// </summary>
+        /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
+        /// <returns>The handle of a new job that will dispose this set.</returns>
+        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        public JobHandle Dispose(JobHandle inputDeps) => m_Data.Dispose(inputDeps);
+
+        /// <summary>
+        /// Removes all values.
+        /// </summary>
+        /// <remarks>Does not change the capacity.</remarks>
+        public void Clear() => m_Data.Clear();
+
+        /// <summary>
+        /// Adds a new value (unless it is already present).
+        /// </summary>
+        /// <param name="item">The value to add.</param>
+        /// <returns>True if the value was not already present.</returns>
+        public bool Add(T item) => m_Data.TryAdd(item, false);
+
+        /// <summary>
+        /// Removes a particular value.
+        /// </summary>
+        /// <param name="item">The value to remove.</param>
+        /// <returns>True if the value was present.</returns>
+        public bool Remove(T item) => m_Data.Remove(item);
+
+        /// <summary>
+        /// Returns true if a particular value is present.
+        /// </summary>
+        /// <param name="item">The value to check for.</param>
+        /// <returns>True if the value was present.</returns>
+        public bool Contains(T item) => m_Data.ContainsKey(item);
+
+        /// <summary>
+        /// Returns an array with a copy of this set's values (in no particular order).
+        /// </summary>
+        /// <param name="allocator">The allocator to use.</param>
+        /// <returns>An array with a copy of the set's values.</returns>
+        public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyArray(allocator);
+
+        /// <summary>
+        /// Returns a parallel writer.
+        /// </summary>
+        /// <returns>A parallel writer.</returns>
+        public ParallelWriter AsParallelWriter()
+        {
+            ParallelWriter writer;
+            writer.m_Data = m_Data.AsParallelWriter();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Data.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
+#endif
+            return writer;
+        }
+
+        /// <summary>
+        /// A parallel writer for a NativeHashSet.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a set.
+        /// </remarks>
+        [NativeContainerIsAtomicWriteOnly]
+        public struct ParallelWriter
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
+#endif
+            internal NativeParallelHashMap<T, bool>.ParallelWriter m_Data;
+
+            /// <summary>
+            /// The number of values that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of values that fit in the current allocation.</value>
+            public int Capacity => m_Data.Capacity;
+
+            /// <summary>
+            /// Adds a new value (unless it is already present).
+            /// </summary>
+            /// <param name="item">The value to add.</param>
+            /// <returns>True if the value is not already present.</returns>
+            public bool Add(T item) => m_Data.TryAdd(item, false);
+        }
+
+        /// <summary>
+        /// Returns an enumerator over the values of this set.
+        /// </summary>
+        /// <returns>An enumerator over the values of this set.</returns>
+        public Enumerator GetEnumerator()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Data.m_Safety);
+            var ash = m_Data.m_Safety;
+            AtomicSafetyHandle.UseSecondaryVersion(ref ash);
+#endif
+            return new Enumerator
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                m_Safety = ash,
+#endif
+                m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Data.m_HashMapData.m_Buffer),
+            };
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+        /// </summary>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// An enumerator over the values of a set.
+        /// </summary>
+        /// <remarks>
+        /// In an enumerator's initial state, <see cref="Current"/> is invalid.
+        /// The first <see cref="MoveNext"/> call advances the enumerator to the first value.
+        /// </remarks>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        public struct Enumerator : IEnumerator<T>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal AtomicSafetyHandle m_Safety;
+#endif
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
+
+            /// <summary>
+            /// Does nothing.
+            /// </summary>
+            public void Dispose() { }
+
+            /// <summary>
+            /// Advances the enumerator to the next value.
+            /// </summary>
+            /// <returns>True if `Current` is valid to read after the call.</returns>
+            public bool MoveNext()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                return m_Enumerator.MoveNext();
+            }
+
+            /// <summary>
+            /// Resets the enumerator to its initial state.
+            /// </summary>
+            public void Reset()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                m_Enumerator.Reset();
+            }
+
+            /// <summary>
+            /// The current value.
+            /// </summary>
+            /// <value>The current value.</value>
+            public T Current
+            {
+                get
+                {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+                    return m_Enumerator.GetCurrentKey<T>();
+                }
+            }
+
+            /// <summary>
+            /// Gets the element at the current position of the enumerator in the container.
+            /// </summary>
+            object IEnumerator.Current => Current;
+        }
+    }
+
 }

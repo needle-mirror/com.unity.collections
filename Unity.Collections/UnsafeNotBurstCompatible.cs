@@ -13,7 +13,7 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
         /// <typeparam name="T">The type of elements.</typeparam>
         /// <param name="set">The set whose elements are copied to the array.</param>
         /// <returns>A new managed array with all the elements copied from a set.</returns>
-        public static T[] ToArray<T>(this UnsafeHashSet<T> set)
+        public static T[] ToArray<T>(this UnsafeParallelHashSet<T> set)
             where T : unmanaged, IEquatable<T>
         {
             var array = set.ToNativeArray(Allocator.TempJob);

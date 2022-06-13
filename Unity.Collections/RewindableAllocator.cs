@@ -109,10 +109,23 @@ namespace Unity.Collections
                 // to size if alignment is more than cacheline size
                 var mask = alignment - 1L;
                 var size = (block.Bytes + extra * alignment + mask) & ~mask;
-                var begin = Interlocked.Add(ref m_current, size) - size;
-                begin = (begin + mask) & ~mask; // align the offset here
-                if (begin + block.Bytes > m_bytes)
-                    return AllocatorManager.kErrorBufferOverflow;
+
+                var readValue = Interlocked.Read(ref m_current);
+                long oldReadValue;
+                long writtenValue;
+                long begin;
+                do
+                {
+                    writtenValue = readValue + size;
+                    begin = (readValue + mask) & ~mask;
+                    if (begin + block.Bytes > m_bytes)
+                    {
+                        return AllocatorManager.kErrorBufferOverflow;
+                    }
+                    oldReadValue = readValue;
+                    readValue = Interlocked.CompareExchange(ref m_current, writtenValue, oldReadValue);
+                } while (readValue != oldReadValue);
+
                 block.Range.Pointer = (IntPtr)(m_pointer + begin);
                 block.AllocatedItems = block.Range.Items;
                 Interlocked.Increment(ref m_allocations);
@@ -183,6 +196,7 @@ namespace Unity.Collections
             while (m_used > 0) // simply *rewind* all blocks we used in this update, to avoid allocating again, every update.
                 m_block[m_used--].Rewind();
             m_block[0].Rewind();
+            m_best = 0;
         }
 
         /// <summary>

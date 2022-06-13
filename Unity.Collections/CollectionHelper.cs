@@ -275,17 +275,17 @@ namespace Unity.Collections
             where T : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            NativeArray<T> nativeArray;
+            NativeArray<T> container;
             if (!allocator.IsCustomAllocator)
             {
-                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
+                container = new NativeArray<T>(length, allocator.ToAllocator, options);
             }
             else
             {
-                nativeArray = new NativeArray<T>();
-                nativeArray.Initialize(length, ref allocator, options);
+                container = new NativeArray<T>();
+                container.Initialize(length, ref allocator, options);
             }
-            return nativeArray;
+            return container;
         }
 
         /// <summary>
@@ -299,17 +299,17 @@ namespace Unity.Collections
         public static NativeArray<T> CreateNativeArray<T>(int length, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             where T : struct
         {
-            NativeArray<T> nativeArray;
+            NativeArray<T> container;
             if(!AllocatorManager.IsCustomAllocator(allocator))
             {
-                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
+                container = new NativeArray<T>(length, allocator.ToAllocator, options);
             }
             else
             {
-                nativeArray = new NativeArray<T>();
-                nativeArray.Initialize(length, allocator, options);
+                container = new NativeArray<T>();
+                container.Initialize(length, allocator, options);
             }
-            return nativeArray;
+            return container;
         }
 
         /// <summary>
@@ -322,18 +322,18 @@ namespace Unity.Collections
         public static NativeArray<T> CreateNativeArray<T>(NativeArray<T> array, AllocatorManager.AllocatorHandle allocator)
             where T : struct
         {
-            NativeArray<T> nativeArray;
+            NativeArray<T> container;
             if (!AllocatorManager.IsCustomAllocator(allocator))
             {
-                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+                container = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                nativeArray = new NativeArray<T>();
-                nativeArray.Initialize(array.Length, allocator);
-                nativeArray.CopyFrom(array);
+                container = new NativeArray<T>();
+                container.Initialize(array.Length, allocator);
+                container.CopyFrom(array);
             }
-            return nativeArray;
+            return container;
         }
 
         /// <summary>
@@ -346,18 +346,18 @@ namespace Unity.Collections
         public static NativeArray<T> CreateNativeArray<T>(T[] array, AllocatorManager.AllocatorHandle allocator)
             where T : struct
         {
-            NativeArray<T> nativeArray;
+            NativeArray<T> container;
             if (!AllocatorManager.IsCustomAllocator(allocator))
             {
-                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+                container = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                nativeArray = new NativeArray<T>();
-                nativeArray.Initialize(array.Length, allocator);
-                nativeArray.CopyFrom(array);
+                container = new NativeArray<T>();
+                container.Initialize(array.Length, allocator);
+                container.CopyFrom(array);
             }
-            return nativeArray;
+            return container;
         }
 
         /// <summary>
@@ -371,18 +371,33 @@ namespace Unity.Collections
             where T : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            NativeArray<T> nativeArray;
+            NativeArray<T> container;
             if (!allocator.IsCustomAllocator)
             {
-                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
+                container = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                nativeArray = new NativeArray<T>();
-                nativeArray.Initialize(array.Length, ref allocator);
-                nativeArray.CopyFrom(array);
+                container = new NativeArray<T>();
+                container.Initialize(array.Length, ref allocator);
+                container.CopyFrom(array);
             }
-            return nativeArray;
+            return container;
+        }
+
+        /// <summary>
+        /// Create a NativeParallelHashMap from a managed array, using a provided Allocator.
+        /// </summary>
+        /// <param name="length">The desired capacity of the NativeMultiHashMap.</param>
+        /// <param name="allocator">The Allocator to use.</param>
+        /// <returns>Returns the NativeMultiHashMap that was created.</returns>
+        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        public static NativeParallelHashMap<TKey, TValue> CreateNativeParallelHashMap<TKey, TValue, U>(int length, ref U allocator)
+            where TKey : struct, IEquatable<TKey>
+            where TValue : struct
+            where U : unmanaged, AllocatorManager.IAllocator
+        {
+            return new NativeParallelHashMap<TKey, TValue>();
         }
 
         /// <summary>
@@ -391,15 +406,14 @@ namespace Unity.Collections
         /// <param name="length">The desired capacity of the NativeMultiHashMap.</param>
         /// <param name="allocator">The Allocator to use.</param>
         /// <returns>Returns the NativeMultiHashMap that was created.</returns>
+        [Obsolete("CreateNativeMultiHashMap is renamed to CreateNativeParallelHashMap. (UnityUpgradable) -> CreateNativeParallelHashMap<TKey, TValue, U>(*)", true)]
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
-        public static NativeMultiHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
+        public static NativeHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            var nativeMultiHashMap = new NativeMultiHashMap<TKey, TValue>();
-            nativeMultiHashMap.Initialize(length, ref allocator);
-            return nativeMultiHashMap;
+            return new NativeHashMap<TKey, TValue> { };
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

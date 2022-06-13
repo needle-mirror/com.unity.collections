@@ -7,7 +7,7 @@ namespace Unity.Collections
     /// Provides extension methods for hash maps.
     /// </summary>
     [BurstCompatible]
-    public static class NativeHashMapExtensions
+    public static class NativeParallelHashMapExtensions
     {
         /// <summary>
         /// Removes duplicate values from this sorted array and returns the number of values remaining.
@@ -55,7 +55,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array populated with the unique keys from this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
         {
@@ -74,7 +74,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array populated with the unique keys from this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> container, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct
         {
@@ -101,7 +101,7 @@ namespace Unity.Collections
         /// <returns>A "bucket" view of this hash map.</returns>
         [Obsolete("GetBucketData is deprecated, please use GetUnsafeBucketData instead. (RemovedAfter 2021-07-08) (UnityUpgradable) -> GetUnsafeBucketData<TKey,TValue>(*)", false)]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
+        public static unsafe UnsafeHashMapBucketData GetBucketData<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -123,7 +123,7 @@ namespace Unity.Collections
         /// <param name="container">The hash map.</param>
         /// <returns>A "bucket" view of this hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeHashMap<TKey, TValue> container)
+        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeParallelHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -145,7 +145,7 @@ namespace Unity.Collections
         /// <param name="container">The multi hash map.</param>
         /// <returns>A "bucket" view of this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container)
+        public static unsafe UnsafeHashMapBucketData GetUnsafeBucketData<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> container)
             where TKey : struct, IEquatable<TKey>
             where TValue : struct
         {
@@ -163,7 +163,7 @@ namespace Unity.Collections
         /// <param name="key">The key of the key-value pairs to remove.</param>
         /// <param name="value">The value of the key-value pairs to remove.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static void Remove<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> container, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
+        public static void Remove<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> container, TKey key, TValue value) where TKey : struct, IEquatable<TKey> where TValue : struct, IEquatable<TValue>
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(container.m_Safety);

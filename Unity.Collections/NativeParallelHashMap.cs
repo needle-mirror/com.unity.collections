@@ -83,19 +83,19 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
-    [DebuggerTypeProxy(typeof(NativeHashMapDebuggerTypeProxy<,>))]
+    [DebuggerTypeProxy(typeof(NativeParallelHashMapDebuggerTypeProxy<,>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-    public unsafe struct NativeHashMap<TKey, TValue>
+    public unsafe struct NativeParallelHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        internal UnsafeHashMap<TKey, TValue> m_HashMapData;
+        internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
-        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashMap<TKey, TValue>>();
+        static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeParallelHashMap<TKey, TValue>>();
 
 #if REMOVE_DISPOSE_SENTINEL
 #else
@@ -105,18 +105,18 @@ namespace Unity.Collections
 #endif
 
         /// <summary>
-        /// Initializes and returns an instance of NativeHashMap.
+        /// Initializes and returns an instance of NativeParallelHashMap.
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public NativeParallelHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
             : this(capacity, allocator, 2)
         {
         }
 
-        NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
+        NativeParallelHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
         {
-            m_HashMapData = new UnsafeHashMap<TKey, TValue>(capacity, allocator);
+            m_HashMapData = new UnsafeParallelHashMap<TKey, TValue>(capacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 #if REMOVE_DISPOSE_SENTINEL
@@ -133,7 +133,7 @@ namespace Unity.Collections
             }
 #endif
 
-            CollectionHelper.SetStaticSafetyId<NativeHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
+            CollectionHelper.SetStaticSafetyId<NativeParallelHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
         }
@@ -333,11 +333,11 @@ namespace Unity.Collections
             DisposeSentinel.Clear(ref m_DisposeSentinel);
 #endif
 
-            var jobHandle = new UnsafeHashMapDataDisposeJob { Data = new UnsafeHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);
 #else
-            var jobHandle = new UnsafeHashMapDataDisposeJob { Data = new UnsafeHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel }  }.Schedule(inputDeps);
+            var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel }  }.Schedule(inputDeps);
 #endif
             m_HashMapData.m_Buffer = null;
 
@@ -394,10 +394,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// A parallel writer for a NativeHashMap.
+        /// A parallel writer for a NativeParallelHashMap.
         /// </summary>
         /// <remarks>
-        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeHashMap.
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelHashMap.
         /// </remarks>
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
@@ -405,7 +405,7 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
-            internal UnsafeHashMap<TKey, TValue>.ParallelWriter m_Writer;
+            internal UnsafeParallelHashMap<TKey, TValue>.ParallelWriter m_Writer;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
@@ -466,7 +466,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Enumerator = new UnsafeHashMapDataEnumerator(m_HashMapData.m_Buffer),
+                m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_HashMapData.m_Buffer),
             };
         }
 
@@ -504,7 +504,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
-            internal UnsafeHashMapDataEnumerator m_Enumerator;
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Does nothing.
@@ -562,7 +562,7 @@ namespace Unity.Collections
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void ThrowKeyNotPresent(TKey key)
         {
-            throw new ArgumentException($"Key: {key} is not present in the NativeHashMap.");
+            throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -572,14 +572,14 @@ namespace Unity.Collections
         }
     }
 
-    internal sealed class NativeHashMapDebuggerTypeProxy<TKey, TValue>
+    internal sealed class NativeParallelHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
 #if !NET_DOTS
-        UnsafeHashMap<TKey, TValue> m_Target;
+        UnsafeParallelHashMap<TKey, TValue> m_Target;
 
-        public NativeHashMapDebuggerTypeProxy(NativeHashMap<TKey, TValue> target)
+        public NativeParallelHashMapDebuggerTypeProxy(NativeParallelHashMap<TKey, TValue> target)
         {
             m_Target = target.m_HashMapData;
         }

@@ -11,9 +11,9 @@ using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 #endif
 
-internal class UnsafeHashSetTests : CollectionsTestCommonBase
+internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
 {
-    static void ExpectedCount<T>(ref UnsafeHashSet<T> container, int expected)
+    static void ExpectedCount<T>(ref UnsafeParallelHashSet<T> container, int expected)
         where T : unmanaged, IEquatable<T>
     {
         Assert.AreEqual(expected == 0, container.IsEmpty);
@@ -21,9 +21,9 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_IsEmpty()
+    public void UnsafeParallelHashSet_IsEmpty()
     {
-        var container = new UnsafeHashSet<int>(0, Allocator.Persistent);
+        var container = new UnsafeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
 
         Assert.IsTrue(container.Add(0));
@@ -42,9 +42,9 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_Capacity()
+    public void UnsafeParallelHashSet_Capacity()
     {
-        var container = new UnsafeHashSet<int>(0, Allocator.Persistent);
+        var container = new UnsafeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
         Assert.AreEqual(0, container.Capacity);
 
@@ -56,9 +56,9 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
 
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
-    public void UnsafeHashSet_Full_Throws()
+    public void UnsafeParallelHashSet_Full_Throws()
     {
-        var container = new UnsafeHashSet<int>(16, Allocator.Temp);
+        var container = new UnsafeParallelHashSet<int>(16, Allocator.Temp);
         ExpectedCount(ref container, 0);
 
         for (int i = 0, capacity = container.Capacity; i < capacity; ++i)
@@ -80,18 +80,18 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
 #endif
 
     [Test]
-    public void UnsafeHashSet_RemoveOnEmptyMap_DoesNotThrow()
+    public void UnsafeParallelHashSet_RemoveOnEmptyMap_DoesNotThrow()
     {
-        var container = new UnsafeHashSet<int>(0, Allocator.Temp);
+        var container = new UnsafeParallelHashSet<int>(0, Allocator.Temp);
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
         container.Dispose();
     }
 
     [Test]
-    public void UnsafeHashSet_Collisions()
+    public void UnsafeParallelHashSet_Collisions()
     {
-        var container = new UnsafeHashSet<int>(16, Allocator.Temp);
+        var container = new UnsafeParallelHashSet<int>(16, Allocator.Temp);
 
         Assert.IsFalse(container.Contains(0), "Contains on empty hash map did not fail");
         ExpectedCount(ref container, 0);
@@ -124,9 +124,9 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_SameElement()
+    public void UnsafeParallelHashSet_SameElement()
     {
-        using (var container = new UnsafeHashSet<int>(0, Allocator.Persistent))
+        using (var container = new UnsafeParallelHashSet<int>(0, Allocator.Persistent))
         {
             Assert.IsTrue(container.Add(0));
             Assert.IsFalse(container.Add(0));
@@ -134,11 +134,11 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_ForEach_FixedStringInHashMap()
+    public void UnsafeParallelHashSet_ForEach_FixedStringInHashMap()
     {
         using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new NativeHashSet<FixedString128Bytes>(50, Allocator.Temp);
+            var container = new NativeParallelHashSet<FixedString128Bytes>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {
@@ -160,10 +160,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_ForEach([Values(10, 1000)]int n)
+    public void UnsafeParallelHashSet_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new UnsafeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new UnsafeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -187,10 +187,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_ExceptWith_Empty()
+    public void UnsafeParallelHashSet_EIU_ExceptWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -200,10 +200,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_ExceptWith_AxB()
+    public void UnsafeParallelHashSet_EIU_ExceptWith_AxB()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -216,10 +216,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_ExceptWith_BxA()
+    public void UnsafeParallelHashSet_EIU_ExceptWith_BxA()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setB.ExceptWith(setA);
 
         ExpectedCount(ref setB, 3);
@@ -232,10 +232,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_IntersectWith_Empty()
+    public void UnsafeParallelHashSet_EIU_IntersectWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -245,10 +245,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_IntersectWith()
+    public void UnsafeParallelHashSet_EIU_IntersectWith()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -261,10 +261,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_UnionWith_Empty()
+    public void UnsafeParallelHashSet_EIU_UnionWith_Empty()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -274,10 +274,10 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_EIU_UnionWith()
+    public void UnsafeParallelHashSet_EIU_UnionWith()
     {
-        var setA = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new UnsafeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 9);
@@ -296,14 +296,14 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashSet_CustomAllocatorTest()
+    public void UnsafeParallelHashSet_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
         ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
-        using (var container = new UnsafeHashSet<int>(1, allocator.Handle))
+        using (var container = new UnsafeParallelHashSet<int>(1, allocator.Handle))
         {
         }
 
@@ -323,7 +323,7 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
         {
             unsafe
             {
-                using (var container = new UnsafeHashSet<int>(1, Allocator->Handle))
+                using (var container = new UnsafeParallelHashSet<int>(1, Allocator->Handle))
                 {
                 }
             }
@@ -331,7 +331,7 @@ internal class UnsafeHashSetTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public unsafe void UnsafeHashSet_BurstedCustomAllocatorTest()
+    public unsafe void UnsafeParallelHashSet_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);

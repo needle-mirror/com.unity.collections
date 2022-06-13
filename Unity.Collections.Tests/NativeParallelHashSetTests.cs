@@ -6,15 +6,10 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.NotBurstCompatible;
 using Unity.Jobs;
 using Unity.Collections.Tests;
-using UnityEngine;
-using UnityEngine.TestTools;
-#if !UNITY_PORTABLE_TEST_RUNNER
-using System.Text.RegularExpressions;
-#endif
 
-internal class NativeHashSetTests: CollectionsTestFixture
+internal class NativeParallelHashSetTests: CollectionsTestFixture
 {
-    static void ExpectedCount<T>(ref NativeHashSet<T> container, int expected)
+    static void ExpectedCount<T>(ref NativeParallelHashSet<T> container, int expected)
         where T : unmanaged, IEquatable<T>
     {
         Assert.AreEqual(expected == 0, container.IsEmpty);
@@ -22,9 +17,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_IsEmpty()
+    public void NativeParallelHashSet_IsEmpty()
     {
-        var container = new NativeHashSet<int>(0, Allocator.Persistent);
+        var container = new NativeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
 
         Assert.IsTrue(container.Add(0));
@@ -45,7 +40,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     [Test]
     public void UnsafeHashSet_Capacity()
     {
-        var container = new NativeHashSet<int>(0, Allocator.Persistent);
+        var container = new NativeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
         Assert.AreEqual(0, container.Capacity);
 
@@ -57,9 +52,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
-    public void NativeHashSet_Full_Throws()
+    public void NativeParallelHashSet_Full_Throws()
     {
-        var container = new NativeHashSet<int>(16, Allocator.Temp);
+        var container = new NativeParallelHashSet<int>(16, Allocator.Temp);
         ExpectedCount(ref container, 0);
 
         for (int i = 0, capacity = container.Capacity; i < capacity; ++i)
@@ -81,27 +76,27 @@ internal class NativeHashSetTests: CollectionsTestFixture
 #endif
 
     [Test]
-    public void NativeHashSet_RemoveOnEmptyMap_DoesNotThrow()
+    public void NativeParallelHashSet_RemoveOnEmptyMap_DoesNotThrow()
     {
-        var container = new NativeHashSet<int>(0, Allocator.Temp);
+        var container = new NativeParallelHashSet<int>(0, Allocator.Temp);
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
         container.Dispose();
     }
 
     [Test]
-    public void NativeHashSet_Double_Deallocate_Throws()
+    public void NativeParallelHashSet_Double_Deallocate_Throws()
     {
-        var hashMap = new NativeHashSet<int>(16, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashSet<int>(16, CommonRwdAllocator.Handle);
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { hashMap.Dispose(); });
     }
 
     [Test]
-    public void NativeHashSet_Collisions()
+    public void NativeParallelHashSet_Collisions()
     {
-        var container = new NativeHashSet<int>(16, Allocator.Temp);
+        var container = new NativeParallelHashSet<int>(16, Allocator.Temp);
 
         Assert.IsFalse(container.Contains(0), "Contains on empty hash map did not fail");
         ExpectedCount(ref container, 0);
@@ -134,9 +129,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_SameElement()
+    public void NativeParallelHashSet_SameElement()
     {
-        using (var container = new NativeHashSet<int>(0, Allocator.Persistent))
+        using (var container = new NativeParallelHashSet<int>(0, Allocator.Persistent))
         {
             Assert.IsTrue(container.Add(0));
             Assert.IsFalse(container.Add(0));
@@ -144,10 +139,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ParallelWriter_CanBeUsedInJob()
+    public void NativeParallelHashSet_ParallelWriter_CanBeUsedInJob()
     {
         const int count = 32;
-        using (var hashSet = new NativeHashSet<int>(count, CommonRwdAllocator.Handle))
+        using (var hashSet = new NativeParallelHashSet<int>(count, CommonRwdAllocator.Handle))
         {
             new ParallelWriteToHashSetJob
             {
@@ -164,7 +159,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     struct ParallelWriteToHashSetJob : IJobParallelFor
     {
         [WriteOnly]
-        public NativeHashSet<int>.ParallelWriter Writer;
+        public NativeParallelHashSet<int>.ParallelWriter Writer;
 
         public void Execute(int index)
         {
@@ -173,9 +168,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_CanBeReadFromJob()
+    public void NativeParallelHashSet_CanBeReadFromJob()
     {
-        using (var hashSet = new NativeHashSet<int>(1, CommonRwdAllocator.Handle))
+        using (var hashSet = new NativeParallelHashSet<int>(1, CommonRwdAllocator.Handle))
         using (var result = new NativeReference<int>(CommonRwdAllocator.Handle))
         {
             hashSet.Add(42);
@@ -191,7 +186,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     struct ReadHashSetJob : IJob
     {
         [ReadOnly]
-        public NativeHashSet<int> Input;
+        public NativeParallelHashSet<int> Input;
 
         public NativeReference<int> Output;
         public void Execute()
@@ -206,11 +201,11 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach_FixedStringInHashMap()
+    public void NativeParallelHashSet_ForEach_FixedStringInHashMap()
     {
         using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new NativeHashSet<FixedString128Bytes>(50, Allocator.Temp);
+            var container = new NativeParallelHashSet<FixedString128Bytes>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {
@@ -232,10 +227,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach([Values(10, 1000)]int n)
+    public void NativeParallelHashSet_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
-        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
@@ -258,10 +253,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
         }
     }
 
-    struct NativeHashSet_ForEach_Job : IJob
+    struct NativeParallelHashSet_ForEach_Job : IJob
     {
         [ReadOnly]
-        public NativeHashSet<int> Input;
+        public NativeParallelHashSet<int> Input;
 
         [ReadOnly]
         public int Num;
@@ -289,16 +284,16 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach_From_Job([Values(10, 1000)] int n)
+    public void NativeParallelHashSet_ForEach_From_Job([Values(10, 1000)] int n)
     {
-        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; i++)
             {
                 container.Add(i);
             }
 
-            new NativeHashSet_ForEach_Job
+            new NativeParallelHashSet_ForEach_Job
             {
                 Input = container,
                 Num = n,
@@ -308,9 +303,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach_Throws_When_Modified()
+    public void NativeParallelHashSet_ForEach_Throws_When_Modified()
     {
-        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             container.Add(0);
             container.Add(1);
@@ -342,9 +337,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach_Throws()
+    public void NativeParallelHashSet_ForEach_Throws()
     {
-        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             var iter = container.GetEnumerator();
 
@@ -368,7 +363,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     struct ForEachIterator : IJob
     {
         [ReadOnly]
-        public NativeHashSet<int>.Enumerator Iter;
+        public NativeParallelHashSet<int>.Enumerator Iter;
 
         public void Execute()
         {
@@ -379,9 +374,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_ForEach_Throws_Job_Iterator()
+    public void NativeParallelHashSet_ForEach_Throws_Job_Iterator()
     {
-        using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
         {
             var jobHandle = new ForEachIterator
             {
@@ -396,10 +391,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_ExceptWith_Empty()
+    public void NativeParallelHashSet_EIU_ExceptWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -409,10 +404,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_ExceptWith_AxB()
+    public void NativeParallelHashSet_EIU_ExceptWith_AxB()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.ExceptWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -425,10 +420,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_ExceptWith_BxA()
+    public void NativeParallelHashSet_EIU_ExceptWith_BxA()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setB.ExceptWith(setA);
 
         ExpectedCount(ref setB, 3);
@@ -441,10 +436,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_IntersectWith_Empty()
+    public void NativeParallelHashSet_EIU_IntersectWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -454,10 +449,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_IntersectWith()
+    public void NativeParallelHashSet_EIU_IntersectWith()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.IntersectWith(setB);
 
         ExpectedCount(ref setA, 3);
@@ -470,10 +465,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_UnionWith_Empty()
+    public void NativeParallelHashSet_EIU_UnionWith_Empty()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 0);
@@ -483,10 +478,10 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void NativeHashSet_EIU_UnionWith()
+    public void NativeParallelHashSet_EIU_UnionWith()
     {
-        var setA = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
-        var setB = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
+        var setA = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 };
+        var setB = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 3, 4, 5, 6, 7, 8 };
         setA.UnionWith(setB);
 
         ExpectedCount(ref setA, 9);
@@ -506,9 +501,9 @@ internal class NativeHashSetTests: CollectionsTestFixture
 
 #if !NET_DOTS // Array.Sort is not supported
     [Test]
-    public void NativeHashSet_ToArray()
+    public void NativeParallelHashSet_ToArray()
     {
-        using (var set = new NativeHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 })
+        using (var set = new NativeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 })
         {
             var array = set.ToArray();
             Array.Sort(array);
@@ -521,14 +516,14 @@ internal class NativeHashSetTests: CollectionsTestFixture
 #endif
 
     [Test]
-    public void NativeHashSet_CustomAllocatorTest()
+    public void NativeParallelHashSet_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
         ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
-        using (var container = new NativeHashSet<int>(1, allocator.Handle))
+        using (var container = new NativeParallelHashSet<int>(1, allocator.Handle))
         {
         }
 
@@ -548,7 +543,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
         {
             unsafe
             {
-                using (var container = new NativeHashSet<int>(1, Allocator->Handle))
+                using (var container = new NativeParallelHashSet<int>(1, Allocator->Handle))
                 {
                 }
             }
@@ -556,7 +551,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public unsafe void NativeHashSet_BurstedCustomAllocatorTest()
+    public unsafe void NativeParallelHashSet_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);

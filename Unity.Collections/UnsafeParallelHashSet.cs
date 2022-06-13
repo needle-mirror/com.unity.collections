@@ -3,48 +3,38 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using UnityEngine.Internal;
-using Unity.Burst;
 
-namespace Unity.Collections
+namespace Unity.Collections.LowLevel.Unsafe
 {
     /// <summary>
     /// An unordered, expandable set of unique values.
     /// </summary>
     /// <typeparam name="T">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
-    [DebuggerTypeProxy(typeof(NativeHashSetDebuggerTypeProxy<>))]
+    [DebuggerTypeProxy(typeof(UnsafeHashSetDebuggerTypeProxy<>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-    public unsafe struct NativeHashSet<T>
+    public unsafe struct UnsafeParallelHashSet<T>
         : INativeDisposable
-        , IEnumerable<T> // Used by collection initializers.
+        , IEnumerable<T>  // Used by collection initializers.
         where T : unmanaged, IEquatable<T>
     {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-        internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeHashSet<T>>();
-#endif
-
-        internal NativeHashMap<T, bool> m_Data;
+        internal UnsafeParallelHashMap<T, bool> m_Data;
 
         /// <summary>
-        /// Initializes and returns an instance of NativeHashSet.
+        /// Initializes and returns an instance of UnsafeHashSet.
         /// </summary>
         /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public UnsafeParallelHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_Data = new NativeHashMap<T, bool>(capacity, allocator);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.SetStaticSafetyId<NativeHashSet<T>>(ref m_Data.m_Safety, ref s_staticSafetyId.Data);
-#endif
+            m_Data = new UnsafeParallelHashMap<T, bool>(capacity, allocator);
         }
 
         /// <summary>
         /// Whether this set is empty.
         /// </summary>
-        /// <value>True if this set is empty or if the set has not been constructed.</value>
+        /// <value>True if this set is empty.</value>
         public bool IsEmpty => m_Data.IsEmpty;
 
         /// <summary>
@@ -68,7 +58,7 @@ namespace Unity.Collections
         public bool IsCreated => m_Data.IsCreated;
 
         /// <summary>
-        /// Releases all resources (memory and safety handles).
+        /// Releases all resources (memory).
         /// </summary>
         public void Dispose() => m_Data.Dispose();
 
@@ -120,16 +110,11 @@ namespace Unity.Collections
         /// <returns>A parallel writer.</returns>
         public ParallelWriter AsParallelWriter()
         {
-            ParallelWriter writer;
-            writer.m_Data = m_Data.AsParallelWriter();
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.SetStaticSafetyId<ParallelWriter>(ref writer.m_Data.m_Safety, ref ParallelWriter.s_staticSafetyId.Data);
-#endif
-            return writer;
+            return new ParallelWriter { m_Data = m_Data.AsParallelWriter() };
         }
 
         /// <summary>
-        /// A parallel writer for a NativeHashSet.
+        /// A parallel writer for an UnsafeHashSet.
         /// </summary>
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a set.
@@ -138,10 +123,7 @@ namespace Unity.Collections
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
         public struct ParallelWriter
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ParallelWriter>();
-#endif
-            internal NativeHashMap<T, bool>.ParallelWriter m_Data;
+            internal UnsafeParallelHashMap<T, bool>.ParallelWriter m_Data;
 
             /// <summary>
             /// The number of values that fit in the current allocation.
@@ -163,18 +145,7 @@ namespace Unity.Collections
         /// <returns>An enumerator over the values of this set.</returns>
         public Enumerator GetEnumerator()
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Data.m_Safety);
-            var ash = m_Data.m_Safety;
-            AtomicSafetyHandle.UseSecondaryVersion(ref ash);
-#endif
-            return new Enumerator
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                m_Safety = ash,
-#endif
-                m_Enumerator = new UnsafeHashMapDataEnumerator(m_Data.m_HashMapData.m_Buffer),
-            };
+            return new Enumerator { m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Data.m_Buffer) };
         }
 
         /// <summary>
@@ -204,14 +175,9 @@ namespace Unity.Collections
         /// In an enumerator's initial state, <see cref="Current"/> is invalid.
         /// The first <see cref="MoveNext"/> call advances the enumerator to the first value.
         /// </remarks>
-        [NativeContainer]
-        [NativeContainerIsReadOnly]
         public struct Enumerator : IEnumerator<T>
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            internal AtomicSafetyHandle m_Safety;
-#endif
-            internal UnsafeHashMapDataEnumerator m_Enumerator;
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Does nothing.
@@ -222,54 +188,30 @@ namespace Unity.Collections
             /// Advances the enumerator to the next value.
             /// </summary>
             /// <returns>True if `Current` is valid to read after the call.</returns>
-            public bool MoveNext()
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-                return m_Enumerator.MoveNext();
-            }
+            public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
             /// Resets the enumerator to its initial state.
             /// </summary>
-            public void Reset()
-            {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-                m_Enumerator.Reset();
-            }
+            public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
             /// The current value.
             /// </summary>
             /// <value>The current value.</value>
-            public T Current
-            {
-                get
-                {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-#endif
-                    return m_Enumerator.GetCurrentKey<T>();
-                }
-            }
+            public T Current => m_Enumerator.GetCurrentKey<T>();
 
-            /// <summary>
-            /// Gets the element at the current position of the enumerator in the container.
-            /// </summary>
             object IEnumerator.Current => Current;
         }
     }
 
-    sealed internal class NativeHashSetDebuggerTypeProxy<T>
+    sealed internal class UnsafeHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
 #if !NET_DOTS
-        NativeHashSet<T> Data;
+        UnsafeParallelHashSet<T> Data;
 
-        public NativeHashSetDebuggerTypeProxy(NativeHashSet<T> data)
+        public UnsafeHashSetDebuggerTypeProxy(UnsafeParallelHashSet<T> data)
         {
             Data = data;
         }
@@ -279,11 +221,11 @@ namespace Unity.Collections
             get
             {
                 var result = new List<T>();
-                using (var keys = Data.ToNativeArray(Allocator.Temp))
+                using (var item = Data.ToNativeArray(Allocator.Temp))
                 {
-                    for (var k = 0; k < keys.Length; ++k)
+                    for (var k = 0; k < item.Length; ++k)
                     {
-                        result.Add(keys[k]);
+                        result.Add(item[k]);
                     }
                 }
 

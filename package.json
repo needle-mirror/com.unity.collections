@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "1.2.4",
+  "version": "1.3.1",
   "unity": "2020.3",
   "unityRelease": "17f1",
   "dependencies": {
@@ -15,14 +15,14 @@
     "unity"
   ],
   "upm": {
-    "changelog": "### Changed\n\n* Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4\n\n### Fixed\n\n* Added an assembly definition file for sample code in the package to avoid spurious warnings when adding the package"
+    "changelog": "* Minor fixes to changelog"
   },
   "upmCi": {
-    "footprint": "2e3bf6bc7be60e397777c2b26ebd0a8e27aeddd0"
+    "footprint": "3da3daf8022632cd3abb32b049882381ccbebc55"
   },
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "32d153034bea0703098263469b88c73619422782"
+    "revision": "1fd9087eb32346a178c3ea9b4999ff4d861ed3c5"
   }
 }

@@ -17,7 +17,7 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="set">The set whose elements are copied to the array.</param>
         /// <returns>A new managed array with all the elements copied from a set.</returns>
         [NotBurstCompatible]
-        public static T[] ToArray<T>(this NativeHashSet<T> set)
+        public static T[] ToArray<T>(this NativeParallelHashSet<T> set)
             where T : unmanaged, IEquatable<T>
         {
             var array = set.ToNativeArray(Allocator.TempJob);
@@ -65,8 +65,8 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.UnsafeMultiHashMap` instead.", false)]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this UnsafeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
+        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.UnsafeParallelMultiHashMap` instead.", false)]
+        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this UnsafeParallelMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
         where TKey : struct, IEquatable<TKey>, IComparable<TKey>
         where TValue : struct => hashmap.GetUniqueKeyArray(allocator);
 
@@ -79,8 +79,8 @@ namespace Unity.Collections.NotBurstCompatible
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with the unique keys of this multi hash map.</returns>
         [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.NativeMultiHashMap` instead.", false)]
-        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this NativeMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
+        [Obsolete("Burst now supports tuple, please use `GetUniqueKeyArray` method from `Unity.Collections.NativeParallelMultiHashMap` instead.", false)]
+        public static (NativeArray<TKey>, int) GetUniqueKeyArrayNBC<TKey, TValue>(this NativeParallelMultiHashMap<TKey, TValue> hashmap, AllocatorManager.AllocatorHandle allocator)
             where TKey : struct, IEquatable<TKey>, IComparable<TKey>
             where TValue : struct => hashmap.GetUniqueKeyArray(allocator);
 #endif

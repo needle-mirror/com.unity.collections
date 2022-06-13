@@ -15,27 +15,27 @@ https://docs.unity3d.com/Packages/com.unity.collections@0.14/manual/index.html
 
 The Unity.Collections package includes the following data structures:
 
-Data structure          | Description | Documentation
------------------------ | ----------- | -------------
-`BitField32`            | Fixed size 32-bit array of bits. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.BitField32.html)
-`BitField64`            | Fixed size 64-bit array of bits. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.BitField64.html)
-`NativeBitArray`        | Arbitrary sized array of bits.   | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeBitArray.html)
-`UnsafeBitArray`        | Arbitrary sized array of bits, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeBitArray.html)
-`NativeHashMap`         | Unordered associative array, a collection of keys and values. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeHashMap-2.html)
-`UnsafeHashMap`         | Unordered associative array, a collection of keys and values, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeHashMap-2.html)
-`NativeHashSet`         | Set of values. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeHashSet-1.html)
-`UnsafeHashSet`         | Set of values, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeHashSet-1.html)
-`NativeList`            | An unmanaged, resizable list. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeList-1.html)
-`UnsafeList`            | An unmanaged, resizable list, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeList-1.html)
-`NativeMultiHashMap`    | Unordered associative array, a collection of keys and values. This container can store multiple values for every key. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeMultiHashMap-2.html)
-`UnsafeMultiHashMap`    | Unordered associative array, a collection of keys and values, without any thread safety check features. This container can store multiple values for every key. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeMultiHashMap-2.html)
-`NativeStream`          | A deterministic data streaming supporting parallel reading and parallel writing. Allows you to write different types or arrays into a single stream. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeStream.html)
-`UnsafeStream`          | A deterministic data streaming supporting parallel reading and parallel writings, without any thread safety check features. Allows you to write different types or arrays into a single stream. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeStream.html)
-`NativeReference`       | An unmanaged, reference container. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeReference-1.html)
-`UnsafeAppendBuffer`    | An unmanaged, untyped, buffer, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer.html)
-`UnsafeRingQueue`       | Fixed-size circular buffer, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue-1.html)
-`UnsafeAtomicCounter32` | 32-bit atomic counter. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter32.html)
-`UnsafeAtomicCounter64` | 64-bit atomic counter. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter64.html)
+Data structure               | Description | Documentation
+---------------------------- | ----------- | -------------
+`BitField32`                 | Fixed size 32-bit array of bits. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.BitField32.html)
+`BitField64`                 | Fixed size 64-bit array of bits. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.BitField64.html)
+`NativeBitArray`             | Arbitrary sized array of bits.   | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeBitArray.html)
+`UnsafeBitArray`             | Arbitrary sized array of bits, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeBitArray.html)
+`NativeList`                 | An unmanaged, resizable list. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeList-1.html)
+`UnsafeList`                 | An unmanaged, resizable list, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeList-1.html)
+`NativeParallelHashMap`      | Unordered associative array, a collection of keys and values. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeParallelHashMap-2.html)
+`UnsafeParallelHashMap`      | Unordered associative array, a collection of keys and values, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMap-2.html)
+`NativeParallelHashSet`      | Set of values. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeParallelHashSet-1.html)
+`UnsafeParallelHashSet`      | Set of values, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashSet-1.html)
+`NativeParallelMultiHashMap` | Unordered associative array, a collection of keys and values. This container can store multiple values for every key. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeParallelMultiHashMap-2.html)
+`UnsafeParallelMultiHashMap` | Unordered associative array, a collection of keys and values, without any thread safety check features. This container can store multiple values for every key. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeParallelMultiHashMap-2.html)
+`NativeStream`               | A deterministic data streaming supporting parallel reading and parallel writing. Allows you to write different types or arrays into a single stream. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeStream.html)
+`UnsafeStream`               | A deterministic data streaming supporting parallel reading and parallel writings, without any thread safety check features. Allows you to write different types or arrays into a single stream. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeStream.html)
+`NativeReference`            | An unmanaged, reference container. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.NativeReference-1.html)
+`UnsafeAppendBuffer`         | An unmanaged, untyped, buffer, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer.html)
+`UnsafeRingQueue`            | Fixed-size circular buffer, without any thread safety check features. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue-1.html)
+`UnsafeAtomicCounter32`      | 32-bit atomic counter. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter32.html)
+`UnsafeAtomicCounter64`      | 64-bit atomic counter. | [Documentation](https://docs.unity3d.com/Packages/com.unity.collections@0.14/api/Unity.Collections.LowLevel.Unsafe.UnsafeAtomicCounter64.html)
 [...](https://docs.unity3d.com/Packages/com.unity.collections@0.14/manual/index.html)
 
 The items in this package build upon the [NativeArray<T0>](https://docs.unity3d.com/ScriptReference/Unity.Collections.NativeArray_1),
@@ -64,8 +64,8 @@ sorting the container as a separate step or post-process it on a single thread.
 ## Known Issues
 
 All containers allocated with `Allocator.Temp` on the same thread use a shared
-`AtomicSafetyHandle` instance. This is problematic when using `NativeHashMap`,
-`NativeMultiHashMap`, `NativeHashSet` and `NativeList` together in situations
+`AtomicSafetyHandle` instance. This is problematic when using `NativeParallelHashMap`,
+`NativeParallelMultiHashMap`, `NativeParallelHashSet` and `NativeList` together in situations
 where their secondary safety handle is used. This means that operations that
 invalidate an enumerator for either of these collections (or the `NativeArray`
 returned by `NativeList.AsArray`) will also invalidate all other previously
@@ -79,7 +79,7 @@ list.Add(1);
 // shared between all Allocator.Temp allocations.
 var array = list.AsArray();
 
-var list2 = new NativeHashSet<int>(Allocator.Temp);
+var list2 = new NativeParallelHashSet<int>(Allocator.Temp);
 
 // This invalidates the secondary safety handle, which is also used
 // by the list above.

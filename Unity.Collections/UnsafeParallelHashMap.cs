@@ -61,7 +61,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
     [StructLayout(LayoutKind.Explicit)]
     [BurstCompatible]
-    internal unsafe struct UnsafeHashMapData
+    internal unsafe struct UnsafeParallelHashMapData
     {
         [FieldOffset(0)]
         internal byte* values;
@@ -111,14 +111,14 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label,
-            out UnsafeHashMapData* outBuf)
+            out UnsafeParallelHashMapData* outBuf)
             where TKey : struct
             where TValue : struct
         {
             CollectionHelper.CheckIsUnmanaged<TKey>();
             CollectionHelper.CheckIsUnmanaged<TValue>();
 
-            UnsafeHashMapData* data = (UnsafeHashMapData*)Memory.Unmanaged.Allocate(sizeof(UnsafeHashMapData), UnsafeUtility.AlignOf<UnsafeHashMapData>(), label);
+            UnsafeParallelHashMapData* data = (UnsafeParallelHashMapData*)Memory.Unmanaged.Allocate(sizeof(UnsafeParallelHashMapData), UnsafeUtility.AlignOf<UnsafeParallelHashMapData>(), label);
 
             bucketLength = math.ceilpow2(bucketLength);
 
@@ -137,7 +137,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void ReallocateHashMap<TKey, TValue>(UnsafeHashMapData* data, int newCapacity, int newBucketCapacity, AllocatorManager.AllocatorHandle label)
+        internal static void ReallocateHashMap<TKey, TValue>(UnsafeParallelHashMapData* data, int newCapacity, int newBucketCapacity, AllocatorManager.AllocatorHandle label)
             where TKey : struct
             where TValue : struct
         {
@@ -202,7 +202,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             data->bucketCapacityMask = newBucketCapacity - 1;
         }
 
-        internal static void DeallocateHashMap(UnsafeHashMapData* data, AllocatorManager.AllocatorHandle allocator)
+        internal static void DeallocateHashMap(UnsafeParallelHashMapData* data, AllocatorManager.AllocatorHandle allocator)
         {
             Memory.Unmanaged.Free(data->values, allocator);
             Memory.Unmanaged.Free(data, allocator);
@@ -230,7 +230,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return totalSize;
         }
 
-        internal static bool IsEmpty(UnsafeHashMapData* data)
+        internal static bool IsEmpty(UnsafeParallelHashMapData* data)
         {
             if (data->allocatedIndexLength <= 0)
             {
@@ -254,7 +254,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        internal static int GetCount(UnsafeHashMapData* data)
+        internal static int GetCount(UnsafeParallelHashMapData* data)
         {
             if (data->allocatedIndexLength <= 0)
             {
@@ -278,7 +278,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return math.min(data->keyCapacity, data->allocatedIndexLength) - freeListSize;
         }
 
-        internal static bool MoveNext(UnsafeHashMapData* data, ref int bucketIndex, ref int nextIndex, out int index)
+        internal static bool MoveNext(UnsafeParallelHashMapData* data, ref int bucketIndex, ref int nextIndex, out int index)
         {
             var bucketArray = (int*)data->buckets;
             var bucketNext = (int*)data->next;
@@ -312,7 +312,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal static void GetKeyArray<TKey>(UnsafeHashMapData* data, NativeArray<TKey> result)
+        internal static void GetKeyArray<TKey>(UnsafeParallelHashMapData* data, NativeArray<TKey> result)
             where TKey : struct
         {
             var bucketArray = (int*)data->buckets;
@@ -331,7 +331,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal static void GetValueArray<TValue>(UnsafeHashMapData* data, NativeArray<TValue> result)
+        internal static void GetValueArray<TValue>(UnsafeParallelHashMapData* data, NativeArray<TValue> result)
             where TValue : struct
         {
             var bucketArray = (int*)data->buckets;
@@ -353,7 +353,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void GetKeyValueArrays<TKey, TValue>(UnsafeHashMapData* data, NativeKeyValueArrays<TKey, TValue> result)
+        internal static void GetKeyValueArrays<TKey, TValue>(UnsafeParallelHashMapData* data, NativeKeyValueArrays<TKey, TValue> result)
             where TKey : struct
             where TValue : struct
         {
@@ -383,7 +383,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static void CheckHashMapReallocateDoesNotShrink(UnsafeHashMapData* data, int newCapacity)
+        static void CheckHashMapReallocateDoesNotShrink(UnsafeParallelHashMapData* data, int newCapacity)
         {
             if (data->keyCapacity > newCapacity)
                 throw new Exception("Shrinking a hash map is not supported");
@@ -392,10 +392,10 @@ namespace Unity.Collections.LowLevel.Unsafe
 
     [NativeContainer]
     [BurstCompatible]
-    internal unsafe struct UnsafeHashMapDataDispose
+    internal unsafe struct UnsafeParallelHashMapDataDispose
     {
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeHashMapData* m_Buffer;
+        internal UnsafeParallelHashMapData* m_Buffer;
         internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -404,14 +404,14 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         public void Dispose()
         {
-            UnsafeHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
+            UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
         }
     }
 
     [BurstCompile]
-    internal unsafe struct UnsafeHashMapDataDisposeJob : IJob
+    internal unsafe struct UnsafeParallelHashMapDataDisposeJob : IJob
     {
-        internal UnsafeHashMapDataDispose Data;
+        internal UnsafeParallelHashMapDataDispose Data;
 
         public void Execute()
         {
@@ -421,31 +421,31 @@ namespace Unity.Collections.LowLevel.Unsafe
 
     [StructLayout(LayoutKind.Sequential)]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-    internal struct UnsafeHashMapBase<TKey, TValue>
+    internal struct UnsafeParallelHashMapBase<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        internal static unsafe void Clear(UnsafeHashMapData* data)
+        internal static unsafe void Clear(UnsafeParallelHashMapData* data)
         {
             UnsafeUtility.MemSet(data->buckets, 0xff, (data->bucketCapacityMask + 1) * 4);
             UnsafeUtility.MemSet(data->next, 0xff, (data->keyCapacity) * 4);
 
             for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
             {
-                data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine] = -1;
+                data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = -1;
             }
 
             data->allocatedIndexLength = 0;
         }
 
-        internal static unsafe int AllocEntry(UnsafeHashMapData* data, int threadIndex)
+        internal static unsafe int AllocEntry(UnsafeParallelHashMapData* data, int threadIndex)
         {
             int idx;
             int* nextPtrs = (int*)data->next;
 
             do
             {
-                idx = data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine];
+                idx = data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine];
 
                 // Check if this thread has a free entry. Negative value means there is nothing free.
                 if (idx < 0)
@@ -455,7 +455,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                     // Indicate to other threads that we are refilling the cache.
                     // -2 means refilling cache.
                     // -1 means nothing free on this thread.
-                    Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine], -2);
+                    Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine], -2);
 
                     // If it failed try to get one from the never-allocated array
                     if (data->allocatedIndexLength < data->keyCapacity)
@@ -479,7 +479,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                             nextPtrs[idx] = -1;
 
                             // Set the TLS first free to the head of the list, which is the one after the entry we are returning.
-                            Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine], idx + 1);
+                            Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine], idx + 1);
 
                             return idx;
                         }
@@ -488,14 +488,14 @@ namespace Unity.Collections.LowLevel.Unsafe
                         {
                             // We tried to allocate more entries for this thread but we've already hit the key capacity,
                             // so we are in fact out of space. Record that this thread has no more entries.
-                            Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine], -1);
+                            Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine], -1);
 
                             return idx;
                         }
                     }
 
                     // If we reach here, then we couldn't allocate more entries for this thread, so it's completely empty.
-                    Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine], -1);
+                    Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine], -1);
 
                     // Failed to get any, try to get one from another free list
                     bool again = true;
@@ -511,7 +511,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                             // atomically.
                             do
                             {
-                                idx = data->firstFreeTLS[other * UnsafeHashMapData.IntsPerCacheLine];
+                                idx = data->firstFreeTLS[other * UnsafeParallelHashMapData.IntsPerCacheLine];
 
                                 if (idx < 0)
                                 {
@@ -519,7 +519,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                                 }
                             }
                             while (Interlocked.CompareExchange(
-                                ref data->firstFreeTLS[other * UnsafeHashMapData.IntsPerCacheLine]
+                                ref data->firstFreeTLS[other * UnsafeParallelHashMapData.IntsPerCacheLine]
                                 , nextPtrs[idx]
                                 , idx
                                    ) != idx
@@ -545,7 +545,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 CheckOutOfCapacity(idx, data->keyCapacity);
             }
             while (Interlocked.CompareExchange(
-                ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
+                ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine]
                 , nextPtrs[idx]
                 , idx
                    ) != idx
@@ -555,28 +555,28 @@ namespace Unity.Collections.LowLevel.Unsafe
             return idx;
         }
 
-        internal static unsafe void FreeEntry(UnsafeHashMapData* data, int idx, int threadIndex)
+        internal static unsafe void FreeEntry(UnsafeParallelHashMapData* data, int idx, int threadIndex)
         {
             int* nextPtrs = (int*)data->next;
             int next = -1;
 
             do
             {
-                next = data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine];
+                next = data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine];
                 nextPtrs[idx] = next;
             }
             while (Interlocked.CompareExchange(
-                ref data->firstFreeTLS[threadIndex * UnsafeHashMapData.IntsPerCacheLine]
+                ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine]
                 , idx
                 , next
                    ) != next
             );
         }
 
-        internal static unsafe bool TryAddAtomic(UnsafeHashMapData* data, TKey key, TValue item, int threadIndex)
+        internal static unsafe bool TryAddAtomic(UnsafeParallelHashMapData* data, TKey key, TValue item, int threadIndex)
         {
             TValue tempItem;
-            NativeMultiHashMapIterator<TKey> tempIt;
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
             if (TryGetFirstValueAtomic(data, key, out tempItem, out tempIt))
             {
                 return false;
@@ -623,7 +623,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        internal static unsafe void AddAtomicMulti(UnsafeHashMapData* data, TKey key, TValue item, int threadIndex)
+        internal static unsafe void AddAtomicMulti(UnsafeParallelHashMapData* data, TKey key, TValue item, int threadIndex)
         {
             // Allocate an entry from the free list
             int idx = AllocEntry(data, threadIndex);
@@ -646,10 +646,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             while (Interlocked.CompareExchange(ref buckets[bucket], idx, nextPtr) != nextPtr);
         }
 
-        internal static unsafe bool TryAdd(UnsafeHashMapData* data, TKey key, TValue item, bool isMultiHashMap, AllocatorManager.AllocatorHandle allocation)
+        internal static unsafe bool TryAdd(UnsafeParallelHashMapData* data, TKey key, TValue item, bool isMultiHashMap, AllocatorManager.AllocatorHandle allocation)
         {
             TValue tempItem;
-            NativeMultiHashMapIterator<TKey> tempIt;
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
             if (!isMultiHashMap && TryGetFirstValueAtomic(data, key, out tempItem, out tempIt))
             {
                 return false;
@@ -663,11 +663,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 for (int tls = 1; tls < JobsUtility.MaxJobThreadCount; ++tls)
                 {
-                    if (data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine] >= 0)
+                    if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
                     {
-                        idx = data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine];
+                        idx = data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine];
                         nextPtrs = (int*)data->next;
-                        data->firstFreeTLS[tls * UnsafeHashMapData.IntsPerCacheLine] = nextPtrs[idx];
+                        data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = nextPtrs[idx];
                         nextPtrs[idx] = -1;
                         data->firstFreeTLS[0] = idx;
                         break;
@@ -676,8 +676,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (data->firstFreeTLS[0] < 0)
                 {
-                    int newCap = UnsafeHashMapData.GrowCapacity(data->keyCapacity);
-                    UnsafeHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeHashMapData.GetBucketSize(newCap), allocation);
+                    int newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
+                    UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap), allocation);
                 }
             }
 
@@ -708,7 +708,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        internal static unsafe int Remove(UnsafeHashMapData* data, TKey key, bool isMultiHashMap)
+        internal static unsafe int Remove(UnsafeParallelHashMapData* data, TKey key, bool isMultiHashMap)
         {
             if (data->keyCapacity == 0)
             {
@@ -762,7 +762,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return removed;
         }
 
-        internal static unsafe void Remove(UnsafeHashMapData* data, NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe void Remove(UnsafeParallelHashMapData* data, NativeParallelMultiHashMapIterator<TKey> it)
         {
             // First find the slot based on the hash
             int* buckets = (int*)data->buckets;
@@ -796,7 +796,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal static unsafe void RemoveKeyValue<TValueEQ>(UnsafeHashMapData* data, TKey key, TValueEQ value)
+        internal static unsafe void RemoveKeyValue<TValueEQ>(UnsafeParallelHashMapData* data, TKey key, TValueEQ value)
             where TValueEQ : struct, IEquatable<TValueEQ>
         {
             if (data->keyCapacity == 0)
@@ -838,7 +838,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             while ((uint)entryIdx < keyCapacity);
         }
 
-        internal static unsafe bool TryGetFirstValueAtomic(UnsafeHashMapData* data, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe bool TryGetFirstValueAtomic(UnsafeParallelHashMapData* data, TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             it.key = key;
 
@@ -856,7 +856,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return TryGetNextValueAtomic(data, out item, ref it);
         }
 
-        internal static unsafe bool TryGetNextValueAtomic(UnsafeHashMapData* data, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe bool TryGetNextValueAtomic(UnsafeParallelHashMapData* data, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             int entryIdx = it.NextEntryIndex;
             it.NextEntryIndex = -1;
@@ -886,7 +886,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        internal static unsafe bool SetValue(UnsafeHashMapData* data, ref NativeMultiHashMapIterator<TKey> it, ref TValue item)
+        internal static unsafe bool SetValue(UnsafeParallelHashMapData* data, ref NativeParallelMultiHashMapIterator<TKey> it, ref TValue item)
         {
             int entryIdx = it.EntryIndex;
             if (entryIdx < 0 || entryIdx >= data->keyCapacity)
@@ -908,7 +908,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        static unsafe void CheckIndexOutOfBounds(UnsafeHashMapData* data, int idx)
+        static unsafe void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
         {
             if (idx < 0 || idx >= data->keyCapacity)
                 throw new InvalidOperationException("Internal HashMap error");
@@ -939,7 +939,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
-        internal UnsafeHashMapData* m_Buffer;
+        internal UnsafeParallelHashMapData* m_Buffer;
         internal int m_Index;
         internal int m_Next;
 
@@ -1003,15 +1003,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-    internal unsafe struct UnsafeHashMapDataEnumerator
+    internal unsafe struct UnsafeParallelHashMapDataEnumerator
     {
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeHashMapData* m_Buffer;
+        internal UnsafeParallelHashMapData* m_Buffer;
         internal int m_Index;
         internal int m_BucketIndex;
         internal int m_NextIndex;
 
-        internal unsafe UnsafeHashMapDataEnumerator(UnsafeHashMapData* data)
+        internal unsafe UnsafeParallelHashMapDataEnumerator(UnsafeParallelHashMapData* data)
         {
             m_Buffer = data;
             m_Index = -1;
@@ -1021,7 +1021,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal bool MoveNext()
         {
-            return UnsafeHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, ref m_NextIndex, out m_Index);
+            return UnsafeParallelHashMapData.MoveNext(m_Buffer, ref m_BucketIndex, ref m_NextIndex, out m_Index);
         }
 
         internal void Reset()
@@ -1057,16 +1057,16 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerDisplay("Count = {Count()}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
-    [DebuggerTypeProxy(typeof(UnsafeHashMapDebuggerTypeProxy<,>))]
+    [DebuggerTypeProxy(typeof(UnsafeParallelHashMapDebuggerTypeProxy<,>))]
     [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-    public unsafe struct UnsafeHashMap<TKey, TValue>
+    public unsafe struct UnsafeParallelHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeHashMapData* m_Buffer;
+        internal UnsafeParallelHashMapData* m_Buffer;
         internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
@@ -1074,14 +1074,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public UnsafeParallelHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             CollectionHelper.CheckIsUnmanaged<TKey>();
             CollectionHelper.CheckIsUnmanaged<TValue>();
 
             m_AllocatorLabel = allocator;
             // Bucket size if bigger to reduce collisions
-            UnsafeHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, allocator, out m_Buffer);
+            UnsafeParallelHashMapData.AllocateHashMap<TKey, TValue>(capacity, capacity * 2, allocator, out m_Buffer);
 
             Clear();
         }
@@ -1090,13 +1090,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this hash map is empty.
         /// </summary>
         /// <value>True if this hash map is empty or the hash map has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || UnsafeHashMapData.IsEmpty(m_Buffer);
+        public bool IsEmpty => !IsCreated || UnsafeParallelHashMapData.IsEmpty(m_Buffer);
 
         /// <summary>
         /// The current number of key-value pairs in this hash map.
         /// </summary>
         /// <returns>The current number of key-value pairs in this hash map.</returns>
-        public int Count() => UnsafeHashMapData.GetCount(m_Buffer);
+        public int Count() => UnsafeParallelHashMapData.GetCount(m_Buffer);
 
         /// <summary>
         /// The number of key-value pairs that fit in the current allocation.
@@ -1108,14 +1108,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             get
             {
-                UnsafeHashMapData* data = m_Buffer;
+                UnsafeParallelHashMapData* data = m_Buffer;
                 return data->keyCapacity;
             }
 
             set
             {
-                UnsafeHashMapData* data = m_Buffer;
-                UnsafeHashMapData.ReallocateHashMap<TKey, TValue>(data, value, UnsafeHashMapData.GetBucketSize(value), m_AllocatorLabel);
+                UnsafeParallelHashMapData* data = m_Buffer;
+                UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, value, UnsafeParallelHashMapData.GetBucketSize(value), m_AllocatorLabel);
             }
         }
 
@@ -1125,7 +1125,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
-            UnsafeHashMapBase<TKey, TValue>.Clear(m_Buffer);
+            UnsafeParallelHashMapBase<TKey, TValue>.Clear(m_Buffer);
         }
 
         /// <summary>
@@ -1137,7 +1137,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the key-value pair was added.</returns>
         public bool TryAdd(TKey key, TValue item)
         {
-            return UnsafeHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
         }
 
         /// <summary>
@@ -1159,7 +1159,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if a key-value pair was removed.</returns>
         public bool Remove(TKey key)
         {
-            return UnsafeHashMapBase<TKey, TValue>.Remove(m_Buffer, key, false) != 0;
+            return UnsafeParallelHashMapBase<TKey, TValue>.Remove(m_Buffer, key, false) != 0;
         }
 
         /// <summary>
@@ -1170,8 +1170,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the key was present.</returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
-            NativeMultiHashMapIterator<TKey> tempIt;
-            return UnsafeHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out tempIt);
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out tempIt);
         }
 
         /// <summary>
@@ -1181,7 +1181,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the key was present.</returns>
         public bool ContainsKey(TKey key)
         {
-            return UnsafeHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var tempValue, out var tempIt);
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var tempValue, out var tempIt);
         }
 
         /// <summary>
@@ -1202,13 +1202,13 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             set
             {
-                if (UnsafeHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var item, out var iterator))
+                if (UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out var item, out var iterator))
                 {
-                    UnsafeHashMapBase<TKey, TValue>.SetValue(m_Buffer, ref iterator, ref value);
+                    UnsafeParallelHashMapBase<TKey, TValue>.SetValue(m_Buffer, ref iterator, ref value);
                 }
                 else
                 {
-                    UnsafeHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, value, false, m_AllocatorLabel);
+                    UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, value, false, m_AllocatorLabel);
                 }
             }
         }
@@ -1224,7 +1224,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
-            UnsafeHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
+            UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
             m_Buffer = null;
         }
 
@@ -1236,7 +1236,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new UnsafeHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
+            var jobHandle = new UnsafeParallelHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
             m_Buffer = null;
             return jobHandle;
         }
@@ -1248,8 +1248,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
         public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = CollectionHelper.CreateNativeArray<TKey>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeHashMapData.GetKeyArray(m_Buffer, result);
+            var result = CollectionHelper.CreateNativeArray<TKey>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyArray(m_Buffer, result);
             return result;
         }
 
@@ -1260,8 +1260,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
         public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = CollectionHelper.CreateNativeArray<TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeHashMapData.GetValueArray(m_Buffer, result);
+            var result = CollectionHelper.CreateNativeArray<TValue>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetValueArray(m_Buffer, result);
             return result;
         }
 
@@ -1273,8 +1273,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
         public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = new NativeKeyValueArrays<TKey, TValue>(UnsafeHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
-            UnsafeHashMapData.GetKeyValueArrays(m_Buffer, result);
+            var result = new NativeKeyValueArrays<TKey, TValue>(UnsafeParallelHashMapData.GetCount(m_Buffer), allocator, NativeArrayOptions.UninitializedMemory);
+            UnsafeParallelHashMapData.GetKeyValueArrays(m_Buffer, result);
             return result;
         }
 
@@ -1291,17 +1291,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// A parallel writer for a NativeHashMap.
+        /// A parallel writer for a UnsafeParallelHashMap.
         /// </summary>
         /// <remarks>
-        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeHashMap.
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a UnsafeParallelHashMap.
         /// </remarks>
         [NativeContainerIsAtomicWriteOnly]
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeHashMapData* m_Buffer;
+            internal UnsafeParallelHashMapData* m_Buffer;
 
             [NativeSetThreadIndex]
             internal int m_ThreadIndex;
@@ -1314,7 +1314,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 get
                 {
-                    UnsafeHashMapData* data = m_Buffer;
+                    UnsafeParallelHashMapData* data = m_Buffer;
                     return data->keyCapacity;
                 }
             }
@@ -1329,7 +1329,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             public bool TryAdd(TKey key, TValue item)
             {
                 Assert.IsTrue(m_ThreadIndex >= 0);
-                return UnsafeHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, m_ThreadIndex);
+                return UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, m_ThreadIndex);
             }
         }
 
@@ -1339,7 +1339,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
         public Enumerator GetEnumerator()
         {
-            return new Enumerator { m_Enumerator = new UnsafeHashMapDataEnumerator(m_Buffer) };
+            return new Enumerator { m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Buffer) };
         }
 
         /// <summary>
@@ -1371,7 +1371,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public struct Enumerator : IEnumerator<KeyValue<TKey, TValue>>
         {
-            internal UnsafeHashMapDataEnumerator m_Enumerator;
+            internal UnsafeParallelHashMapDataEnumerator m_Enumerator;
 
             /// <summary>
             /// Does nothing.
@@ -1400,26 +1400,26 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     [BurstCompile]
-    internal unsafe struct UnsafeHashMapDisposeJob : IJob
+    internal unsafe struct UnsafeParallelHashMapDisposeJob : IJob
     {
         [NativeDisableUnsafePtrRestriction]
-        public UnsafeHashMapData* Data;
+        public UnsafeParallelHashMapData* Data;
         public AllocatorManager.AllocatorHandle Allocator;
 
         public void Execute()
         {
-            UnsafeHashMapData.DeallocateHashMap(Data, Allocator);
+            UnsafeParallelHashMapData.DeallocateHashMap(Data, Allocator);
         }
     }
 
-    sealed internal class UnsafeHashMapDebuggerTypeProxy<TKey, TValue>
+    sealed internal class UnsafeParallelHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : struct, IEquatable<TKey>
         where TValue : struct
     {
 #if !NET_DOTS
-        UnsafeHashMap<TKey, TValue> m_Target;
+        UnsafeParallelHashMap<TKey, TValue> m_Target;
 
-        public UnsafeHashMapDebuggerTypeProxy(UnsafeHashMap<TKey, TValue> target)
+        public UnsafeParallelHashMapDebuggerTypeProxy(UnsafeParallelHashMap<TKey, TValue> target)
         {
             m_Target = target;
         }
@@ -1445,11 +1445,12 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// For internal use only.
     /// </summary>
-    public unsafe struct UntypedUnsafeHashMap
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct UntypedUnsafeParallelHashMap
     {
 #pragma warning disable 169
         [NativeDisableUnsafePtrRestriction]
-        UnsafeHashMapData* m_Buffer;
+        UnsafeParallelHashMapData* m_Buffer;
         AllocatorManager.AllocatorHandle m_AllocatorLabel;
 #pragma warning restore 169
     }

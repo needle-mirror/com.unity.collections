@@ -1,14 +1,32 @@
 # Changelog
 
-## [1.2.4] - 2022-05-31
+## [1.3.1] - 2022-06-13
+
+* Minor fixes to changelog
+
+
+## [1.3.0] - 2022-05-16
+
+### Added
+
 
 ### Changed
 
 * Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
+* Reset `m_best` in RewindableAllocator rewind.
+* Renamed `UnsafeHashSet` to `UnsafeParallelHashSet`.
+* Renamed `NativeHashSet` to `NativeParallelHashSet`.
+* Renamed `UnsafeHashMap` to `UnsafeParallelHashMap`.
+* Renamed `NativeHashMap` to `NativeParallelHashMap`.
+* Renamed `UnsafeMultiHashMap` to `UnsafeParallelMultiHashMap`.
+* Renamed `NativeMultiHashMap` to `NativeParallelMultiHashMap`.
+* Updated package `com.unity.burst` to `1.6.6`
 
 ### Fixed
 
 * Added an assembly definition file for sample code in the package to avoid spurious warnings when adding the package
+
+
 
 ## [1.2.3] - 2022-03-18
 

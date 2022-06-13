@@ -44,7 +44,7 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
         enqueue.Complete();
 
         Assert.AreEqual(queueSize, queue.Count, "Job enqueued the wrong number of values");
-        var allValues = new NativeHashSet<int>(queueSize, Allocator.Persistent);
+        var allValues = new NativeParallelHashSet<int>(queueSize, Allocator.Persistent);
         for (int i = 0; i < queueSize; ++i)
         {
             Assert.AreEqual(1, writeStatus[i], "Job failed to enqueue value");
@@ -164,7 +164,7 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
         jobHandle.Complete();
 
         Assert.AreEqual(queueSize, queue.Count, "Job enqueued the wrong number of values");
-        var allValues = new NativeHashSet<int>(queueSize, Allocator.Persistent);
+        var allValues = new NativeParallelHashSet<int>(queueSize, Allocator.Persistent);
         for (int i = 0; i < queueSize; ++i)
         {
             Assert.AreEqual(1, writeStatus[i], "Job failed to enqueue value");

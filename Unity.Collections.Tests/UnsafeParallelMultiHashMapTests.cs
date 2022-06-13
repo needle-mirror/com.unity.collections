@@ -6,12 +6,12 @@ using Unity.Collections.Tests;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
-internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
+internal class UnsafeParallelMultiHashMapTests : CollectionsTestCommonBase
 {
     [BurstCompile(CompileSynchronously = true)]
-    public struct UnsafeMultiHashMapAddJob : IJobParallelFor
+    public struct UnsafeParallelMultiHashMapAddJob : IJobParallelFor
     {
-        public UnsafeMultiHashMap<int, int>.ParallelWriter Writer;
+        public UnsafeParallelMultiHashMap<int, int>.ParallelWriter Writer;
 
         public void Execute(int index)
         {
@@ -20,11 +20,11 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeMultiHashMap_AddJob()
+    public void UnsafeParallelMultiHashMap_AddJob()
     {
-        var container = new UnsafeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle);
+        var container = new UnsafeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle);
 
-        var job = new UnsafeMultiHashMapAddJob()
+        var job = new UnsafeParallelMultiHashMapAddJob()
         {
             Writer = container.AsParallelWriter(),
         };
@@ -40,16 +40,16 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     [Test]
     public void UnsafeHashMap_RemoveOnEmptyMap_DoesNotThrow()
     {
-        var container = new UnsafeHashMap<int, int>(0, Allocator.Temp);
+        var container = new UnsafeParallelHashMap<int, int>(0, Allocator.Temp);
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
         container.Dispose();
     }
 
     [Test]
-    public void UnsafeMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    public void UnsafeParallelMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
     {
-        var container = new UnsafeMultiHashMap<int, int>(0, Allocator.Temp);
+        var container = new UnsafeParallelMultiHashMap<int, int>(0, Allocator.Temp);
 
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
@@ -60,11 +60,11 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeMultiHashMap_ForEach_FixedStringInHashMap()
+    public void UnsafeParallelMultiHashMap_ForEach_FixedStringInHashMap()
     {
         using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new UnsafeMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
+            var container = new UnsafeParallelMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {
@@ -86,11 +86,11 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeMultiHashMap_ForEach([Values(10, 1000)]int n)
+    public void UnsafeParallelMultiHashMap_ForEach([Values(10, 1000)]int n)
     {
         var seenKeys = new NativeArray<int>(n, Allocator.Temp);
         var seenValues = new NativeArray<int>(n * 2, Allocator.Temp);
-        using (var container = new UnsafeMultiHashMap<int, int>(1, Allocator.Temp))
+        using (var container = new UnsafeParallelMultiHashMap<int, int>(1, Allocator.Temp))
         {
             for (int i = 0; i < n; ++i)
             {
@@ -127,9 +127,9 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeMultiHashMap_GetKeys()
+    public void UnsafeParallelMultiHashMap_GetKeys()
     {
-        var container = new UnsafeMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new UnsafeParallelMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
             container.Add(i, 2 * i);
@@ -154,14 +154,14 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeMultiHashMap_CustomAllocatorTest()
+    public void UnsafeParallelMultiHashMap_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
         ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
-        using (var container = new UnsafeMultiHashMap<int, int>(1, allocator.Handle))
+        using (var container = new UnsafeParallelMultiHashMap<int, int>(1, allocator.Handle))
         {
         }
 
@@ -181,7 +181,7 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
         {
             unsafe
             {
-                using (var container = new UnsafeMultiHashMap<int, int>(1, Allocator->Handle))
+                using (var container = new UnsafeParallelMultiHashMap<int, int>(1, Allocator->Handle))
                 {
                 }
             }
@@ -189,7 +189,7 @@ internal class UnsafeMultiHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public unsafe void UnsafeMultiHashMap_BurstedCustomAllocatorTest()
+    public unsafe void UnsafeParallelMultiHashMap_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);

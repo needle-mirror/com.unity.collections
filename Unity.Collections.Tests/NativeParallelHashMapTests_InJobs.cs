@@ -6,12 +6,12 @@ using Unity.Burst;
 using Unity.Collections;
 using Assert = FastAssert;
 
-internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
+internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFixture
 {
     [Test]
-    public void NativeHashMap_Read_And_Write()
+    public void NativeParallelHashMap_Read_And_Write()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -46,9 +46,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
     [Test]
     [IgnoreInPortableTests("The hash map exception is fatal.")]
-    public void NativeHashMap_Read_And_Write_Full()
+    public void NativeParallelHashMap_Read_And_Write_Full()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -92,9 +92,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void NativeHashMap_Key_Collisions()
+    public void NativeParallelHashMap_Key_Collisions()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -140,7 +140,7 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     [BurstCompile(CompileSynchronously = true)]
     struct Clear : IJob
     {
-        public NativeHashMap<int, int> hashMap;
+        public NativeParallelHashMap<int, int> hashMap;
 
         public void Execute()
         {
@@ -150,9 +150,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
 
     [Test]
     [IgnoreInPortableTests("Hash map throws when full.")]
-    public void NativeHashMap_Clear_And_Write()
+    public void NativeParallelHashMap_Clear_And_Write()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
         var clearJob = new Clear
@@ -177,14 +177,14 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void NativeHashMap_DisposeJob()
+    public void NativeParallelHashMap_DisposeJob()
     {
-        var container0 = new NativeHashMap<int, int>(1, Allocator.Persistent);
+        var container0 = new NativeParallelHashMap<int, int>(1, Allocator.Persistent);
         Assert.True(container0.IsCreated);
         Assert.DoesNotThrow(() => { container0.Add(0, 1); });
         Assert.True(container0.ContainsKey(0));
 
-        var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
+        var container1 = new NativeParallelMultiHashMap<int, int>(1, Allocator.Persistent);
         Assert.True(container1.IsCreated);
         Assert.DoesNotThrow(() => { container1.Add(1, 2); });
         Assert.True(container1.ContainsKey(1));
@@ -203,9 +203,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
+    public void NativeParallelHashMap_DisposeJobWithMissingDependencyThrows()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var deps = new Clear { hashMap = hashMap }.Schedule();
         Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
         deps.Complete();
@@ -213,9 +213,9 @@ internal class NativeHashMapTests_InJobs : NativeHashMapTestsFixture
     }
 
     [Test]
-    public void NativeHashMap_DisposeJobCantBeScheduled()
+    public void NativeParallelHashMap_DisposeJobCantBeScheduled()
     {
-        var hashMap = new NativeHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var deps = hashMap.Dispose(default);
         Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
         deps.Complete();

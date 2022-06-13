@@ -8,13 +8,13 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 
-internal class NativeHashSetTestsGenerated : CollectionsTestFixture
+internal class NativeParallelHashSetTestsGenerated : CollectionsTestFixture
 {
 <#
 {
     foreach (var ContainerType in new[] {
-        ( "NativeHashSet" ),
-        ( "UnsafeHashSet" ),
+        ( "NativeParallelHashSet" ),
+        ( "UnsafeParallelHashSet" ),
     }) {
 #>
     static void ExpectedCount<T>(ref <#=ContainerType#><T> container, int expected)
@@ -26,8 +26,8 @@ internal class NativeHashSetTestsGenerated : CollectionsTestFixture
 
 <#
     foreach (var OtherContainerType in new[] {
-        ( "NativeHashSet" ),
-        ( "UnsafeHashSet" ),
+        ( "NativeParallelHashSet" ),
+        ( "UnsafeParallelHashSet" ),
         ( "NativeList" ),
         ( "UnsafeList" ),
     }) {
