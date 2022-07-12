@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Unity.Burst.Tests")]
 [assembly: InternalsVisibleTo("Unity.Collections.BurstCompatibilityTestCodeGen")]
+[assembly: InternalsVisibleTo("Unity.Collections.CodeGen")]
 [assembly: InternalsVisibleTo("Unity.Collections.Tests")]
 [assembly: InternalsVisibleTo("Unity.Entities")]
 [assembly: InternalsVisibleTo("Unity.Entities.CodeGen")]

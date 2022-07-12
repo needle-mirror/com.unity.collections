@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.0] - 2022-07-12
+
+### Changed
+* The com.unity.jobs package has been merged into com.unity.collections to resolve circular dependency issues that can occur when using Unity 2022.2+.
+
+## [1.3.2] - 2022-06-27
+
+### Changed
+* updated minimum compatible version of Unity to 2020.3.30f1
+
 ## [1.3.1] - 2022-06-13
 
 * Minor fixes to changelog

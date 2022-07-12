@@ -1,4 +1,6 @@
 # [Collections Overview](index.md)
 # [Collection types](collection-types.md)
+# [Custom job types](jobs/custom_job_types.md)
+# [Scheduling jobs from jobs](jobs/scheduling_a_job_from_a_job.md)
 # [Using unmanaged memory](allocation.md)
 # [Known issues](issues.md)

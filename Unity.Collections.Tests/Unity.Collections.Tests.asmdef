@@ -20,7 +20,14 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines":
+    [
+        {
+            "name": "com.unity.jobs",
+            "expression": "[0.0.0,0.70.0-preview.1)",
+            "define": "UNITY_JOBS_LESS_THAN_0_7"
+        }
+    ],
     "noEngineReferences": false,
     "optionalUnityReferences": [
         "TestAssemblies"
