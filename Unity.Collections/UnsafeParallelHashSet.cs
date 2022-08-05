@@ -12,8 +12,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     /// <typeparam name="T">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
-    [DebuggerTypeProxy(typeof(UnsafeHashSetDebuggerTypeProxy<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [DebuggerTypeProxy(typeof(UnsafeParallelHashSetDebuggerTypeProxy<>))]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct UnsafeParallelHashSet<T>
         : INativeDisposable
         , IEnumerable<T>  // Used by collection initializers.
@@ -22,7 +22,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal UnsafeParallelHashMap<T, bool> m_Data;
 
         /// <summary>
-        /// Initializes and returns an instance of UnsafeHashSet.
+        /// Initializes and returns an instance of UnsafeParallelHashSet.
         /// </summary>
         /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
@@ -67,7 +67,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
         /// <returns>The handle of a new job that will dispose this set.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps) => m_Data.Dispose(inputDeps);
 
         /// <summary>
@@ -114,13 +113,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// A parallel writer for an UnsafeHashSet.
+        /// A parallel writer for an UnsafeParallelHashSet.
         /// </summary>
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a set.
         /// </remarks>
         [NativeContainerIsAtomicWriteOnly]
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public struct ParallelWriter
         {
             internal UnsafeParallelHashMap<T, bool>.ParallelWriter m_Data;
@@ -203,15 +202,117 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             object IEnumerator.Current => Current;
         }
+
+        /// <summary>
+        /// Returns a readonly version of this UnsafeParallelHashSet instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the UnsafeParallelHashSet it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(ref this);
+        }
+
+        /// <summary>
+        /// A read-only alias for the value of a UnsafeParallelHashSet. Does not have its own allocated storage.
+        /// </summary>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public struct ReadOnly
+            : IEnumerable<T>
+        {
+            internal UnsafeParallelHashMap<T, bool> m_Data;
+
+            internal ReadOnly(ref UnsafeParallelHashSet<T> data)
+            {
+                m_Data = data.m_Data;
+            }
+
+            /// <summary>
+            /// Whether this hash set is empty.
+            /// </summary>
+            /// <value>True if this hash set is empty or if the map has not been constructed.</value>
+            public bool IsEmpty => !m_Data.IsCreated || m_Data.IsEmpty;
+
+            /// <summary>
+            /// The current number of items in this hash set.
+            /// </summary>
+            /// <returns>The current number of items in this hash set.</returns>
+            public int Count() => m_Data.Count();
+
+            /// <summary>
+            /// The number of items that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of items that fit in the current allocation.</value>
+            public int Capacity => m_Data.Capacity;
+
+            /// <summary>
+            /// Returns true if a given item is present in this hash set.
+            /// </summary>
+            /// <param name="item">The item to look up.</param>
+            /// <returns>True if the item was present.</returns>
+            public bool Contains(T item)
+            {
+                return m_Data.ContainsKey(item);
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash set's items (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash set's items (in no particular order).</returns>
+            public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_Data.GetKeyArray(allocator);
+            }
+            /// <summary>
+            /// Whether this hash set has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash set has been allocated (and not yet deallocated).</value>
+            public bool IsCreated => m_Data.IsCreated;
+
+            /// <summary>
+            /// Returns an enumerator over the items of this hash set.
+            /// </summary>
+            /// <returns>An enumerator over the items of this hash set.</returns>
+            public Enumerator GetEnumerator()
+            {
+                return new Enumerator
+                {
+                    m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_Data.m_Buffer),
+                };
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 
-    sealed internal class UnsafeHashSetDebuggerTypeProxy<T>
+    sealed internal class UnsafeParallelHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
 #if !NET_DOTS
         UnsafeParallelHashSet<T> Data;
 
-        public UnsafeHashSetDebuggerTypeProxy(UnsafeParallelHashSet<T> data)
+        public UnsafeParallelHashSetDebuggerTypeProxy(UnsafeParallelHashSet<T> data)
         {
             Data = data;
         }

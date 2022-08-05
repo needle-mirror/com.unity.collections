@@ -323,9 +323,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
         var str = new FixedString128Bytes("aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ");
 
-        AtomicSafetyHandle ash;
-        DisposeSentinel ds;
-        DisposeSentinel.Create(out ash, out ds, 1, Allocator.Temp);
+        AtomicSafetyHandle ash = CollectionHelper.CreateSafetyHandle(Allocator.Temp);
 
         var test0 = NativeBitArrayUnsafeUtility.ConvertExistingDataToNativeBitArray(&str.bytes.offset0000, 64, Allocator.None);
         NativeBitArrayUnsafeUtility.SetAtomicSafetyHandle(ref test0, ash);
@@ -555,28 +553,27 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
-    struct NativeBitArrayTestParallelReader : IJob
+    struct NativeBitArrayTestReadOnly : IJob
     {
-        [ReadOnly]
-        public NativeBitArray reader;
+        public NativeBitArray.ReadOnly reader;
 
         public void Execute()
         {
             var rd = reader;
-            Assert.Throws<InvalidOperationException>(() => { rd.Set(7, false); });
             Assert.True(reader.IsSet(7));
+            Assert.AreEqual(1, reader.CountBits(0, reader.Length));
         }
     }
 
     [Test]
-    public void NativeBitArray_ParallelReader()
+    public void NativeBitArray_ReadOnly()
     {
         var numBits = 256;
 
         var reader = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         reader.Set(7, true);
 
-        var readerJob = new NativeBitArrayTestParallelReader { reader = reader }.Schedule();
+        var readerJob = new NativeBitArrayTestReadOnly { reader = reader.AsReadOnly() }.Schedule();
 
         var from = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         Assert.Throws<InvalidOperationException>(() => { reader.Copy(7, ref from, 30, 10); } /* attempt to write into reader after job is scheduled */);

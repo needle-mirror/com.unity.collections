@@ -51,7 +51,7 @@ namespace Unity.Collections
             return (U*)Allocate(ref t, UnsafeUtility.SizeOf<U>(), UnsafeUtility.AlignOf<U>(), items);
         }
 
-        internal static unsafe void* AllocateStruct<T, U>(ref this T t, U u, int items) where T : unmanaged, IAllocator where U : struct
+        internal static unsafe void* AllocateStruct<T, U>(ref this T t, U u, int items) where T : unmanaged, IAllocator where U : unmanaged
         {
             return (void*)Allocate(ref t, UnsafeUtility.SizeOf<U>(), UnsafeUtility.AlignOf<U>(), items);
         }
@@ -185,6 +185,18 @@ namespace Unity.Collections
         /// Used for calling an allocator function.
         /// </summary>
         public delegate int TryFunction(IntPtr allocatorState, ref Block block);
+
+        /// <summary>
+        /// Convert an Allocator to an AllocatorHandle, keeping the Version.
+        /// </summary>
+        /// <param name="a">The Allocator to convert.</param>
+        /// <returns>The AllocatorHandle of an allocator.</returns>
+        public static AllocatorHandle ConvertToAllocatorHandle(Allocator a)
+        {
+            ushort index = (ushort)((uint)a & 0xFFFF);
+            ushort version = (ushort)((uint)a >> 16);
+            return new AllocatorHandle { Index = index, Version = version };
+        }
 
         /// <summary>
         /// Represents the allocator function used within an allocator.
@@ -386,12 +398,11 @@ namespace Unity.Collections
             // a use-before-free crash or a safety handle violation, both of which are likely to terminate the session before
             // anything can leak.
 
-            [NotBurstCompatible]
             internal void InvalidateDependents()
             {
-                if(!NeedsUseAfterFreeTracking())
+                if (!NeedsUseAfterFreeTracking())
                     return;
-                for(var i = 0; i < ChildSafetyHandles.Length; ++i)
+                for (var i = 0; i < ChildSafetyHandles.Length; ++i)
                 {
                     unsafe
                     {
@@ -401,16 +412,16 @@ namespace Unity.Collections
                     }
                 }
                 ChildSafetyHandles.Clear();
-                if(Parent.IsValid)
+                if (Parent.IsValid)
                     Parent.TryRemoveChildAllocator(this, IndexInParent);
                 Parent = default;
                 IndexInParent = InvalidChildAllocatorIndex;
-                for(var i = 0; i < ChildAllocators.Length; ++i)
+                for (var i = 0; i < ChildAllocators.Length; ++i)
                 {
                     unsafe
                     {
                         AllocatorHandle* handle = (AllocatorHandle*)ChildAllocators.Ptr + i;
-                        if(handle->IsValid)
+                        if (handle->IsValid)
                             handle->UnmanagedUnregister(); // see above comment
                     }
                 }
@@ -420,14 +431,14 @@ namespace Unity.Collections
 #endif
 
             /// <summary>
-            /// Returns the AllocatorHandle of an allocator.
+            /// Implicitly convert an Allocator to an AllocatorHandle with its Version being reset to 0.
             /// </summary>
-            /// <param name="a">The Allocator to copy.</param>
+            /// <param name="a">The Allocator to convert.</param>
             /// <returns>The AllocatorHandle of an allocator.</returns>
             public static implicit operator AllocatorHandle(Allocator a) => new AllocatorHandle
             {
                 Index = (ushort)((uint)a & 0xFFFF),
-                Version = (ushort)((uint)a >> 16)
+                Version = 0
             };
 
             /// <summary>
@@ -460,7 +471,7 @@ namespace Unity.Collections
             /// <param name="block">Outputs the allocated block.</param>
             /// <param name="items">The number of values to allocate for.</param>
             /// <returns>0 if successful. Otherwise, returns the error code from the allocator function.</returns>
-            public int TryAllocateBlock<T>(out Block block, int items) where T : struct
+            public int TryAllocateBlock<T>(out Block block, int items) where T : unmanaged
             {
                 block = new Block
                 {
@@ -479,7 +490,7 @@ namespace Unity.Collections
             /// <param name="items">The number of values to allocate for.</param>
             /// <returns>The allocated block.</returns>
             /// <exception cref="ArgumentException">Thrown if the allocator is not valid or if the allocation failed.</exception>
-            public Block AllocateBlock<T>(int items) where T : struct
+            public Block AllocateBlock<T>(int items) where T : unmanaged
             {
                 CheckValid(this);
                 var error = TryAllocateBlock<T>(out Block block, items);
@@ -828,7 +839,7 @@ namespace Unity.Collections
             tableEntry = block.Range.Allocator.TableEntry;
 
             var index = block.Range.Allocator.Handle.Index;
-            if (index >= Managed.kMaxNumCustomAllocator)
+            if (index >= MaxNumCustomAllocators)
             {
                 throw new ArgumentException("Allocator index into TryFunction delegate table exceeds maximum.");
             }
@@ -1130,10 +1141,9 @@ namespace Unity.Collections
         {
 #if !UNITY_IOS
             /// <summary>
-            /// Memory allocation status
+            /// Global delegate table to hold TryFunction delegates for managed callers
             /// </summary>
-            internal const int kMaxNumCustomAllocator = 32768;
-            internal static TryFunction[] TryFunctionDelegates = new TryFunction[kMaxNumCustomAllocator];
+            internal static TryFunction[] TryFunctionDelegates = new TryFunction[MaxNumCustomAllocators];
 #endif
 
             /// <summary>
@@ -1141,11 +1151,11 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="index">Index into the TryFunction delegates table.</param>
             /// <param name="function">TryFunction delegate to be registered.</param>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Uses managed delegate")]
             public static void RegisterDelegate(int index, TryFunction function)
             {
 #if !UNITY_IOS
-                if(index >= kMaxNumCustomAllocator)
+                if(index >= MaxNumCustomAllocators)
                 {
                     throw new ArgumentException("index to be registered in TryFunction delegate table exceeds maximum.");
                 }
@@ -1158,11 +1168,11 @@ namespace Unity.Collections
             /// Unregister TryFunction delegate
             /// </summary>
             /// <param name="int">Index into the TryFunction delegates table.</param>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Uses managed delegate")]
             public static void UnregisterDelegate(int index)
             {
 #if !UNITY_IOS
-                if (index >= kMaxNumCustomAllocator)
+                if (index >= MaxNumCustomAllocators)
                 {
                     throw new ArgumentException("index to be unregistered in TryFunction delegate table exceeds maximum.");
                 }
@@ -1222,11 +1232,27 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
         /// <param name="functionPointer">Function pointer to create or save in the function table.</param>
+        /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
+        /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
         /// <returns>Returns a handle to the newly registered allocator function.</returns>
-        internal static AllocatorHandle Register(IntPtr allocatorState, FunctionPointer<TryFunction> functionPointer)
+        internal static AllocatorHandle Register(IntPtr allocatorState, FunctionPointer<TryFunction> functionPointer, bool isGlobal = false, int globalIndex = 0)
         {
+            int error;
+            int offset;
+            if (isGlobal)
+            {
+                if (globalIndex < GlobalAllocatorBaseIndex)
+                {
+                    throw new ArgumentException($"Error: {globalIndex} is less than GlobalAllocatorBaseIndex");
+                }
+                error = ConcurrentMask.TryAllocate(ref SharedStatics.IsInstalled.Ref.Data, globalIndex, 1);
+                offset = globalIndex;
+            }
+            else
+            {
+                error = ConcurrentMask.TryAllocate(ref SharedStatics.IsInstalled.Ref.Data, out offset, (FirstUserIndex + 63) >> 6, (int)(GlobalAllocatorBaseIndex - 1), 1);
+            }
             var tableEntry = new TableEntry { state = allocatorState, function = functionPointer.Value };
-            var error = ConcurrentMask.TryAllocate(ref SharedStatics.IsInstalled.Ref.Data, out int offset, (FirstUserIndex+63)>>6, SharedStatics.IsInstalled.Ref.Data.Length, 1);
             AllocatorHandle handle = default;
             if(ConcurrentMask.Succeeded(error))
             {
@@ -1239,18 +1265,36 @@ namespace Unity.Collections
             return handle;
         }
 
+        static class AllocatorCache<T> where T : unmanaged, IAllocator
+        {
+            public static FunctionPointer<TryFunction> TryFunction;
+            public static TryFunction CachedFunction;
+        }
+
         /// <summary>
         /// Saves an allocator's function pointers in a free slot of the global function table. Thread safe.
         /// </summary>
         /// <typeparam name="T">The type of allocator to register.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
-        [NotBurstCompatible]
-        public static unsafe void Register<T>(ref this T t) where T : unmanaged, IAllocator
+        /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
+        /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
+        [ExcludeFromBurstCompatTesting("Uses managed delegate")]
+        public static unsafe void Register<T>(ref this T t, bool isGlobal = false, int globalIndex = 0) where T : unmanaged, IAllocator
         {
-            var functionPointer = (t.Function == null)
-                ? new FunctionPointer<TryFunction>(IntPtr.Zero)
-                : BurstCompiler.CompileFunctionPointer(t.Function);
-            t.Handle = Register((IntPtr)UnsafeUtility.AddressOf(ref t), functionPointer);
+            FunctionPointer<TryFunction> functionPointer;
+            var func = t.Function;
+            if (func == null)
+                functionPointer = new FunctionPointer<TryFunction>(IntPtr.Zero);
+            else
+            {
+                if (func != AllocatorCache<T>.CachedFunction)
+                {
+                    AllocatorCache<T>.TryFunction = BurstCompiler.CompileFunctionPointer(func);
+                    AllocatorCache<T>.CachedFunction = func;
+                }
+                functionPointer = AllocatorCache<T>.TryFunction;
+            }
+            t.Handle = Register((IntPtr)UnsafeUtility.AddressOf(ref t), functionPointer, isGlobal, globalIndex);
 
             Managed.RegisterDelegate(t.Handle.Index, t.Function);
 
@@ -1279,7 +1323,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of allocator to unregister.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Uses managed delegate")]
         public static void Unregister<T>(ref this T t) where T : unmanaged, IAllocator
         {
             if(t.Handle.IsInstalled)
@@ -1295,9 +1339,11 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of allocator to create.</typeparam>
         /// <param name="backingAllocator">Allocator used to allocate backing storage.</param>
+        /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
+        /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
         /// <returns>Returns reference to the newly created allocator.</returns>
-        [NotBurstCompatible]
-        internal static ref T CreateAllocator<T>(AllocatorHandle backingAllocator)
+        [ExcludeFromBurstCompatTesting("Register uses managed delegate")]
+        internal static ref T CreateAllocator<T>(AllocatorHandle backingAllocator, bool isGlobal = false, int globalIndex = 0)
             where T : unmanaged, IAllocator
         {
             unsafe
@@ -1305,7 +1351,7 @@ namespace Unity.Collections
                 var allocatorPtr = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>(), 16, backingAllocator);
                 *allocatorPtr = default;
                 ref T allocator = ref UnsafeUtility.AsRef<T>(allocatorPtr);
-                Register(ref allocator);
+                Register(ref allocator, isGlobal, globalIndex);
                 return ref allocator;
             }
         }
@@ -1316,7 +1362,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of allocator to destroy.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
         /// <param name="backingAllocator">Allocator used in allocating the backing storage.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Registration uses managed delegates")]
         internal static void DestroyAllocator<T>(ref this T t, AllocatorHandle backingAllocator)
             where T : unmanaged, IAllocator
         {
@@ -1342,6 +1388,38 @@ namespace Unity.Collections
         /// <remarks>The indexes from 0 up to `FirstUserIndex` are reserved and so should not be used for your own allocators.</remarks>
         /// <value>Index in the global function table of the first user-defined allocator.</value>
         public const ushort FirstUserIndex = 64;
+
+        /// <summary>
+        /// Maximum number of user-defined allocators.
+        /// </summary>
+        public const ushort MaxNumCustomAllocators = 32768;
+
+        /// <summary>
+        /// Number of global scratchpad allocators reserved in the global function table.
+        /// </summary>
+        /// <remarks>Number of global scratchpad allocators reserved in the global function table. Make sure it is larger than or equals to MaxJobThreadCount + 1.</remarks>
+        internal const ushort NumGlobalScratchAllocators = JobsUtility.MaxJobThreadCount + 1;
+
+        /// <summary>
+        /// Max number of global allocators reserved in the global function table.
+        /// </summary>
+        /// <remarks>Max number of global allocators reserved in the global function table. Make sure it is larger than or equals to NumGlobalScratchAllocators.</remarks>
+        internal const ushort MaxNumGlobalAllocators = JobsUtility.MaxJobThreadCount + 1;
+
+        /// <summary>
+        /// Base index in the global function table for global allocators.
+        /// </summary>
+        /// <remarks>The indexes from `GlobalAllocatorBaseIndex` up to `MaxNumCustomAllocators` are reserved which
+        /// should not be used for your own allocators.</remarks>
+        /// <value>Base index in the global function table for global allocators.</value>
+        internal const uint GlobalAllocatorBaseIndex = MaxNumCustomAllocators - MaxNumGlobalAllocators;
+
+        /// <summary>
+        /// Index in the global function table of the first global scratchpad allocator.
+        /// </summary>
+        /// <remarks>The indexes from `GlobalAllocatorBaseIndex` up to `NumGlobalScratchAllocators` are reserved for global scratchpad allocators.</remarks>
+        /// <value>Index in the global function table of the first global scratchpad allocator.</value>
+        internal const uint FirstGlobalScratchpadAllocatorIndex = GlobalAllocatorBaseIndex;
 
         internal static bool IsCustomAllocator(AllocatorHandle allocator)
         {
@@ -1375,7 +1453,8 @@ namespace Unity.Collections
     /// <summary>
     /// Provides a wrapper for custom allocator.
     /// </summary>
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+    /// <typeparam name="T">The type of the allocator.</typeparam>
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
     public unsafe struct AllocatorHelper<T> : IDisposable
         where T : unmanaged, AllocatorManager.IAllocator
     {
@@ -1398,10 +1477,12 @@ namespace Unity.Collections
         /// Allocate the custom allocator from backingAllocator and register it.
         /// </summary>
         /// <param name="backingAllocator">Allocator used to allocate backing storage.</param>
-        [NotBurstCompatible]
-        public AllocatorHelper(AllocatorManager.AllocatorHandle backingAllocator)
+        /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
+        /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
+        [ExcludeFromBurstCompatTesting("CreateAllocator is unburstable")]
+        public AllocatorHelper(AllocatorManager.AllocatorHandle backingAllocator, bool isGlobal = false, int globalIndex = 0)
         {
-            ref var allocator = ref AllocatorManager.CreateAllocator<T>(backingAllocator);
+            ref var allocator = ref AllocatorManager.CreateAllocator<T>(backingAllocator, isGlobal, globalIndex);
             m_allocator = (T*)UnsafeUtility.AddressOf<T>(ref allocator);
             m_backingAllocator = backingAllocator;
         }
@@ -1409,7 +1490,7 @@ namespace Unity.Collections
         /// <summary>
         /// Dispose the custom allocator backing memory and unregister it.
         /// </summary>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("DestroyAllocator is unburstable")]
         public void Dispose()
         {
             ref var allocator = ref UnsafeUtility.AsRef<T>(m_allocator);

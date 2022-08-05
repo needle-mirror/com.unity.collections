@@ -18,7 +18,7 @@ namespace FixedStringTests
         }
 
         // NOTE: If you call this function from Mono and T is not marshalable - your app (Editor or the player built with Mono scripting backend) could/will crash.
-        bool IsMarshalable<T>() where T : struct
+        bool IsMarshalable<T>() where T : unmanaged
         {
             try
             {

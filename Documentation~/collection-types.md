@@ -26,6 +26,17 @@ See also @Unity.Collections.NativeArrayExtensions, @Unity.Collections.ListExtens
 
 ## Map and set types
 
+Suitable for single-threaded use, and lower memory overhead.
+
+Data structure                                                  | Description
+--------------------------------------------------------------- | -----------
+@Unity.Collections.NativeHashMap`2                              | An unordered associative array of key-value pairs. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeHashMap`2              | An unordered associative array of key-value pairs.
+@Unity.Collections.NativeHashSet`1                              | A set of unique values. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeHashSet`1              | A set of unique values.
+
+Suitable for multi-threaded use, with higher memory overhead.
+
 Data structure                                                  | Description
 --------------------------------------------------------------- | -----------
 @Unity.Collections.NativeParallelHashMap`2                      | An unordered associative array of key-value pairs. Has thread- and disposal-safety checks.

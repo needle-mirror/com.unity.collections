@@ -360,28 +360,6 @@ internal class NativeStreamTests : CollectionsTestFixture
         stream.Dispose();
     }
 
-#if !UNITY_DOTSRUNTIME  // managed issue
-    struct ManagedRef
-    {
-        string Value;
-    }
-    [Test]
-    public void WriteManagedThrows()
-    {
-        var stream = new NativeStream(1, Allocator.Temp);
-        var writer = stream.AsWriter();
-
-        writer.BeginForEachIndex(0);
-
-        Assert.Throws<ArgumentException>(() =>
-        {
-            writer.Write(new ManagedRef());
-        });
-
-        stream.Dispose();
-    }
-#endif
-
 #endif
 
     [Test]
@@ -474,4 +452,72 @@ internal class NativeStreamTests : CollectionsTestFixture
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    public struct NestedContainer
+    {
+        public NativeList<int> data;
+    }
+
+    [Test]
+    public void NativeStream_Nested()
+    {
+        var inner = new NativeList<int>(CommonRwdAllocator.Handle);
+        NestedContainer nestedStruct = new NestedContainer { data = inner };
+
+        var containerNestedStruct = new NativeStream(100, CommonRwdAllocator.Handle);
+        var containerNested = new NativeStream(100, CommonRwdAllocator.Handle);
+
+        var writer = containerNested.AsWriter();
+        writer.BeginForEachIndex(0);
+        writer.Write(inner);
+        writer.EndForEachIndex();
+        var writerStruct = containerNestedStruct.AsWriter();
+        writerStruct.BeginForEachIndex(0);
+        writerStruct.Write(nestedStruct);
+        writerStruct.EndForEachIndex();
+
+        containerNested.Dispose();
+        containerNestedStruct.Dispose();
+        inner.Dispose();
+    }
+
+// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
+#if !UNITY_DOTSRUNTIME
+    struct NestedContainerJob : IJob
+    {
+        public NativeStream nestedContainer;
+
+        public void Execute()
+        {
+            var writer = nestedContainer.AsWriter();
+            writer.BeginForEachIndex(0);
+            writer.Write(1);
+            writer.EndForEachIndex();
+        }
+    }
+
+    [Test]
+    public void NativeStream_NestedJob_Error()
+    {
+        var inner = new NativeList<int>(CommonRwdAllocator.Handle);
+        var container = new NativeStream(100, CommonRwdAllocator.Handle);
+
+        // This should mark the NativeStream as having nested containers and therefore should not be able to be scheduled
+        var writer = container.AsWriter();
+        writer.BeginForEachIndex(0);
+        writer.Write(inner);
+        writer.EndForEachIndex();
+
+        var nestedJob = new NestedContainerJob
+        {
+            nestedContainer = container
+        };
+
+        JobHandle job = default;
+        Assert.Throws<System.InvalidOperationException>(() => { job = nestedJob.Schedule(); });
+        job.Complete();
+
+        container.Dispose();
+    }
+#endif
 }

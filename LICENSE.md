@@ -1,4 +1,4 @@
-Unity.Collections © 2017 Unity Technologies
+Collections copyright © 2017 Unity Technologies
 
 Licensed under the Unity Companion License for Unity-dependent projects (see https://unity3d.com/legal/licenses/unity_companion_license).
 

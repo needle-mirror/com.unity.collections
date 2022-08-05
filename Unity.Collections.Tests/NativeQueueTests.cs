@@ -334,4 +334,26 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    public struct NestedContainer
+    {
+        public NativeQueue<int> data;
+    }
+
+    [Test]
+    public void NativeQueue_Nested()
+    {
+        var inner = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        NestedContainer nestedStruct = new NestedContainer { data = inner };
+
+        var containerNestedStruct = new NativeQueue<NestedContainer>(CommonRwdAllocator.Handle);
+        var containerNested = new NativeQueue<NativeQueue<int>>(CommonRwdAllocator.Handle);
+
+        containerNested.Enqueue(inner);
+        containerNestedStruct.Enqueue(nestedStruct);
+
+        containerNested.Dispose();
+        containerNestedStruct.Dispose();
+        inner.Dispose();
+    }
 }

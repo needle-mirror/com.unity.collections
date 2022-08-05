@@ -1,4 +1,3 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,10 +9,23 @@ namespace Unity.Jobs
     /// </summary>
     public class EarlyInitHelpers
     {
+        /// <summary>
+        /// Used by automatically generated code. Do not use in projects.
+        /// Delegate used for early initialization
+        /// </summary>
         public delegate void EarlyInitFunction();
 
         private static List<EarlyInitFunction> s_PendingDelegates;
 
+        static EarlyInitHelpers()
+        {
+            FlushEarlyInits();
+        }
+
+        /// <summary>
+        /// Used by automatically generated code. Do not use in projects.
+        /// Calls all EarlyInit delegates and clears the invocation list
+        /// </summary>
         public static void FlushEarlyInits()
         {
             while (s_PendingDelegates != null)
@@ -35,14 +47,25 @@ namespace Unity.Jobs
             }
         }
 
-        public static void AddEarlyInitFunction(EarlyInitFunction f)
+        /// <summary>
+        /// Used by automatically generated code. Do not use in projects.
+        /// Adds an EarlyInit helper function to invocation list.
+        /// </summary>
+        /// <param name="func">EarlyInitFunction add to early call list</param>
+        public static void AddEarlyInitFunction(EarlyInitFunction func)
         {
             if (s_PendingDelegates == null)
                 s_PendingDelegates = new List<EarlyInitFunction>();
 
-            s_PendingDelegates.Add(f);
+            s_PendingDelegates.Add(func);
         }
 
+        /// <summary>
+        /// Used by automatically generated code. Do not use in projects.
+        /// This methods is called when JobReflectionData cannot be created during EarlyInit.
+        /// </summary>
+        /// <param name="ex">Exception type to throw</param>
+        /// <param name="jobType">Job type involved in exeception</param>
         public static void JobReflectionDataCreationFailed(Exception ex, Type jobType)
         {
             Debug.LogError($"Failed to create job reflection data for type ${jobType}:");
@@ -51,4 +74,3 @@ namespace Unity.Jobs
     }
 
 }
-#endif

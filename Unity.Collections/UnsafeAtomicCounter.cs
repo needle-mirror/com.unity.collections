@@ -7,7 +7,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// A 32-bit atomic counter.
     /// </summary>
     /// <remarks>Rather than have its own int, a counter *points* to an int. This arrangement lets counters in different jobs share reference to the same underlying int.</remarks>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct UnsafeAtomicCounter32
     {
         /// <summary>
@@ -98,7 +98,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// A 64-bit atomic counter.
     /// </summary>
     /// <remarks>Rather than have its own long, a counter *points* to a long. This arrangement lets counters in different jobs share reference to the same underlying long.</remarks>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct UnsafeAtomicCounter64
     {
         /// <summary>

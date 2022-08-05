@@ -1,4 +1,3 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 #if !UNITY_DOTSRUNTIME
 using UnityEngine.Scripting.APIUpdating;
@@ -18,8 +17,15 @@ namespace Unity.Jobs
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public class RegisterGenericJobTypeAttribute : Attribute
     {
+        /// <summary>
+        /// Fully closed generic job type to register with the job system
+        /// </summary>
         public Type ConcreteType;
 
+        /// <summary>
+        /// Registers a fully closed generic job type with the job system
+        /// </summary>
+        /// <param name="type"></param>
         public RegisterGenericJobTypeAttribute(Type type)
         {
             ConcreteType = type;
@@ -30,4 +36,3 @@ namespace Unity.Jobs
     internal class DOTSCompilerGeneratedAttribute : Attribute
     {}
 }
-#endif

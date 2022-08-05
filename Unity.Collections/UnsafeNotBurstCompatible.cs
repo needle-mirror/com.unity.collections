@@ -28,7 +28,7 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
         /// <remarks>The length of the string is written as an int to the buffer before the characters are written.</remarks>
         /// <param name="buffer">The buffer to which to add the string.</param>
         /// <param name="value">The string to copy.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static unsafe void AddNBC(ref this UnsafeAppendBuffer buffer, string value)
         {
             if (value != null)
@@ -50,7 +50,7 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
         /// </summary>
         /// <param name="buffer">This buffer.</param>
         /// <returns>An unmanaged byte array with a copy of this buffer's contents.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public static unsafe byte[] ToBytesNBC(ref this UnsafeAppendBuffer buffer)
         {
             var dst = new byte[buffer.Length];
@@ -67,7 +67,7 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
         /// </summary>
         /// <param name="value">Outputs the string.</param>
         /// <param name="reader">This reader.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Managed string out argument")]
         public static unsafe void ReadNextNBC(ref this UnsafeAppendBuffer.Reader reader, out string value)
         {
             int length;

@@ -7,21 +7,21 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
-    internal struct Long8 
+    internal struct Long8
     {
         internal long f0,f1,f2,f3,f4,f5,f6,f7;
     }
-    
-    internal struct Long64 
+
+    internal struct Long64
     {
         internal Long8 f0,f1,f2,f3,f4,f5,f6,f7;
-    }       
+    }
 
-    internal struct Long512 
+    internal struct Long512
     {
         internal Long64 f0,f1,f2,f3,f4,f5,f6,f7;
-    }       
-              
+    }
+
     internal struct Long1024 : IIndexable<long>
     {
         internal Long512 f0,f1;
@@ -32,10 +32,36 @@ namespace Unity.Collections
                 return ref UnsafeUtility.AsRef<long>((long*)p + index);
             } }
         }
-    }    
-    
+    }
+
     internal class ConcurrentMask
     {
+        internal static long AtomicOr(ref long destination, long source)
+        {
+            var readValue = Interlocked.Read(ref destination);
+            long oldReadValue, writtenValue;
+            do
+            {
+                writtenValue = readValue | source;
+                oldReadValue = readValue;
+                readValue = Interlocked.CompareExchange(ref destination, writtenValue, oldReadValue);
+            } while(readValue != oldReadValue);
+            return writtenValue;
+        }
+
+        internal static long AtomicAnd(ref long destination, long source)
+        {
+            var readValue = Interlocked.Read(ref destination);
+            long oldReadValue, writtenValue;
+            do
+            {
+                writtenValue = readValue & source;
+                oldReadValue = readValue;
+                readValue = Interlocked.CompareExchange(ref destination, writtenValue, oldReadValue);
+            } while(readValue != oldReadValue);
+            return writtenValue;
+        }
+
         internal static void longestConsecutiveOnes(long value, out int offset, out int count)
         {
             count = 0;
@@ -48,7 +74,7 @@ namespace Unity.Collections
             }
             offset = math.tzcnt(value);
         }
-                
+
         internal static bool foundAtLeastThisManyConsecutiveOnes(long value, int minimum, out int offset, out int count)
         {
             if(minimum == 1)
@@ -56,26 +82,27 @@ namespace Unity.Collections
                 offset = math.tzcnt(value); // find offset of first 1 bit
                 count = 1;
                 return offset != 64;
-            }            
+            }
             longestConsecutiveOnes(value, out offset, out count);
             return count >= minimum;
         }
-        
+
         internal static bool foundAtLeastThisManyConsecutiveZeroes(long value, int minimum, out int offset, out int count)
         {
             return foundAtLeastThisManyConsecutiveOnes(~value, minimum, out offset, out count);
-        }        
-                           
+        }
+
         internal const int ErrorFailedToFree = -1;
         internal const int ErrorFailedToAllocate = -2;
-        internal const int EmptyBeforeAllocation = 0;            
-        internal const int EmptyAfterFree = 0;            
-                
+        internal const int ErrorAllocationCrossesWordBoundary = -3;
+        internal const int EmptyBeforeAllocation = 0;
+        internal const int EmptyAfterFree = 0;
+
         internal static bool Succeeded(int error)
         {
             return error >= 0;
         }
-                
+
         internal static long MakeMask(int offset, int bits)
         {
             return (long)(~0UL >> (64-bits)) << offset;
@@ -90,13 +117,13 @@ namespace Unity.Collections
             {
                 if((readValue & mask) != 0)
                     return ErrorFailedToAllocate;
-                writtenValue = readValue | mask;            
+                writtenValue = readValue | mask;
                 oldReadValue = readValue;
                 readValue = Interlocked.CompareExchange(ref l, writtenValue, oldReadValue);
             } while(readValue != oldReadValue);
             return math.countbits(readValue); // how many bits were set, before i allocated? sometimes if 0, do something special (allocate chunk?)
         }
-        
+
         internal static int TryFree(ref long l, int offset, int bits)
         {
             var mask = MakeMask(offset, bits);
@@ -106,13 +133,13 @@ namespace Unity.Collections
             {
                 if((readValue & mask) != mask)
                     return ErrorFailedToFree;
-                writtenValue = readValue & ~mask;            
+                writtenValue = readValue & ~mask;
                 oldReadValue = readValue;
                 readValue = Interlocked.CompareExchange(ref l, writtenValue, oldReadValue);
             } while(readValue != oldReadValue);
             return math.countbits(writtenValue); // how many bits are set, after i freed? sometimes if 0, do something special (free chunk?)
         }
-        
+
         internal static int TryAllocate(ref long l, out int offset, int bits)
         {
             var readValue = Interlocked.Read(ref l);
@@ -128,24 +155,30 @@ namespace Unity.Collections
             } while(readValue != oldReadValue);
             return math.countbits(readValue); // how many bits were set, before i allocated? sometimes if 0, do something special (allocate chunk?)
         }
-                
+
         internal static int TryAllocate<T>(ref T t, int offset, int bits) where T : IIndexable<long>
         {
             var wordOffset = offset >> 6;
             var bitOffset = offset & 63;
-            return TryAllocate(ref t.ElementAt(wordOffset), bitOffset, bits);        
+            if(bitOffset + bits > 64)
+                return ErrorAllocationCrossesWordBoundary;
+            return TryAllocate(ref t.ElementAt(wordOffset), bitOffset, bits);
         }
-        
+
         internal static int TryFree<T>(ref T t, int offset, int bits) where T : IIndexable<long>
         {
             var wordOffset = offset >> 6;
             var bitOffset = offset & 63;
             return TryFree(ref t.ElementAt(wordOffset), bitOffset, bits);
-        }    
-        
+        }
+
         internal static int TryAllocate<T>(ref T t, out int offset, int begin, int end, int bits) where T : IIndexable<long>
         {
-            for(var wordOffset = begin; wordOffset < end; ++wordOffset)
+            var wordOffset = begin;
+            for(; wordOffset < end; ++wordOffset)
+                if(t.ElementAt(wordOffset) != ~0L)
+                    break;
+            for(; wordOffset < end; ++wordOffset)
             {
                 int error, bitOffset;
                 error = TryAllocate(ref t.ElementAt(wordOffset), out bitOffset, bits);
@@ -159,10 +192,18 @@ namespace Unity.Collections
             return ErrorFailedToAllocate;
         }
 
+        internal static int TryAllocate<T>(ref T t, out int offset, int begin, int bits) where T : IIndexable<long>
+        {
+            var error = TryAllocate(ref t, out offset, begin, t.Length, bits);
+            if(Succeeded(error))
+                return error;
+            return TryAllocate(ref t, out offset, 0, begin, bits);
+        }
+
         internal static int TryAllocate<T>(ref T t, out int offset, int bits) where T : IIndexable<long>
         {
             return TryAllocate(ref t, out offset, 0, t.Length, bits);
         }
-        
-    }    
+
+    }
 }

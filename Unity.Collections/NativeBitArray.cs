@@ -16,20 +16,13 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct NativeBitArray
         : INativeDisposable
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeBitArray>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
-
 #endif
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeBitArray m_BitArray;
@@ -41,28 +34,10 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public NativeBitArray(int numBits, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
-            : this(numBits, allocator, options, 2)
-        {
-        }
-
-        NativeBitArray(int numBits, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options, int disposeSentinelStackDepth)
         {
             CollectionHelper.CheckAllocator(allocator);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                m_Safety = AtomicSafetyHandle.Create();
-                m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
-            }
-#endif
-
             CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeBitArray");
 #endif
             m_BitArray = new UnsafeBitArray(numBits, allocator, options);
@@ -80,11 +55,7 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
 
             m_BitArray.Dispose();
@@ -95,19 +66,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
         /// <returns>The handle of a new job that will dispose this array. The new job depends upon inputDeps.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-            // will check that no jobs are writing to the container).
-            DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-#endif
             var jobHandle = m_BitArray.Dispose(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -146,7 +106,7 @@ namespace Unity.Collections
         /// <exception cref="InvalidOperationException">Thrown if the number of bits in this array
         /// is not evenly divisible by the size of T in bits (`sizeof(T) * 8`).</exception>
         /// <returns>A native array that aliases the content of this array.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public NativeArray<T> AsNativeArray<T>() where T : unmanaged
         {
             CheckReadBounds<T>();
@@ -362,6 +322,171 @@ namespace Unity.Collections
             return m_BitArray.CountBits(pos, numBits);
         }
 
+        /// <summary>
+        /// Returns a readonly version of this NativeBitArray instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the NativeBitArray it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(ref this);
+        }
+
+        /// <summary>
+        /// A read-only alias for the value of a UnsafeBitArray. Does not have its own allocated storage.
+        /// </summary>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        public struct ReadOnly
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ReadOnly>();
+#endif
+            [NativeDisableUnsafePtrRestriction]
+            internal UnsafeBitArray.ReadOnly m_BitArray;
+
+            internal ReadOnly(ref NativeBitArray data)
+            {
+                m_BitArray = data.m_BitArray.AsReadOnly();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                m_Safety = data.m_Safety;
+                CollectionHelper.SetStaticSafetyId<ReadOnly>(ref m_Safety, ref s_staticSafetyId.Data);
+#endif
+            }
+
+            /// <summary>
+            /// Returns the number of bits.
+            /// </summary>
+            /// <value>The number of bits.</value>
+            public int Length
+            {
+                get
+                {
+                    CheckRead();
+                    return CollectionHelper.AssumePositive(m_BitArray.Length);
+                }
+            }
+
+            /// <summary>
+            /// Returns a ulong which has bits copied from this array.
+            /// </summary>
+            /// <remarks>
+            /// The source bits in this array run from index pos up to (but not including) `pos + numBits`.
+            /// No exception is thrown if `pos + numBits` exceeds the length.
+            ///
+            /// The first source bit is copied to the lowest bit of the ulong; the second source bit is copied to the second-lowest bit of the ulong; and so forth. Any remaining bits in the ulong will be 0.
+            /// </remarks>
+            /// <param name="pos">Index of the first bit to get.</param>
+            /// <param name="numBits">Number of bits to get (must be between 1 and 64).</param>
+            /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
+            /// <returns>A ulong which has bits copied from this array.</returns>
+            public ulong GetBits(int pos, int numBits = 1)
+            {
+                CheckRead();
+                return m_BitArray.GetBits(pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if the bit at an index is 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit to test.</param>
+            /// <returns>True if the bit at the index is 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds.</exception>
+            public bool IsSet(int pos)
+            {
+                CheckRead();
+                return m_BitArray.IsSet(pos);
+            }
+
+            /// <summary>
+            /// Finds the first length-*N* contiguous sequence of 0 bits in this bit array.
+            /// </summary>
+            /// <param name="pos">Index at which to start searching.</param>
+            /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+            /// <returns>The index in this array where the sequence is found. The index will be greater than or equal to `pos`.
+            /// Returns -1 if no occurrence is found.</returns>
+            public int Find(int pos, int numBits)
+            {
+                CheckRead();
+                return m_BitArray.Find(pos, numBits);
+            }
+
+            /// <summary>
+            /// Finds the first length-*N* contiguous sequence of 0 bits in this bit array. Searches only a subsection.
+            /// </summary>
+            /// <param name="pos">Index at which to start searching.</param>
+            /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+            /// <param name="count">Number of bits to search.</param>
+            /// <returns>The index in this array where the sequence is found. The index will be greater than or equal to `pos` but less than `pos + count`.
+            /// Returns -1 if no occurrence is found.</returns>
+            public int Find(int pos, int count, int numBits)
+            {
+                CheckRead();
+                return m_BitArray.Find(pos, count, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if none of the bits in a range are 1 (*i.e.* all bits in the range are 0).
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>Returns true if none of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestNone(int pos, int numBits = 1)
+            {
+                CheckRead();
+                return m_BitArray.TestNone(pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if at least one of the bits in a range is 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>True if one ore more of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestAny(int pos, int numBits = 1)
+            {
+                CheckRead();
+                return m_BitArray.TestAny(pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if all of the bits in a range are 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>True if all of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestAll(int pos, int numBits = 1)
+            {
+                CheckRead();
+                return m_BitArray.TestAll(pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns the number of bits in a range that are 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>The number of bits in a range of bits that are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public int CountBits(int pos, int numBits = 1)
+            {
+                CheckRead();
+                return m_BitArray.CountBits(pos, numBits);
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckRead()
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+#endif
+            }
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         void CheckRead()
         {
@@ -403,7 +528,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// Unsafe helper methods for NativeBitArray.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static class NativeBitArrayUnsafeUtility
     {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -412,7 +537,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="container">Array from which to get an AtomicSafetyHandle.</param>
         /// <returns>This array's atomic safety handle.</returns>
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)]
         public static AtomicSafetyHandle GetAtomicSafetyHandle(in NativeBitArray container)
         {
             return container.m_Safety;
@@ -423,7 +548,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="container">Array which the AtomicSafetyHandle is for.</param>
         /// <param name="safety">Atomic safety handle for this array.</param>
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)]
         public static void SetAtomicSafetyHandle(ref NativeBitArray container, AtomicSafetyHandle safety)
         {
             container.m_Safety = safety;

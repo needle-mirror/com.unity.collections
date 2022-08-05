@@ -18,7 +18,7 @@ internal class NativeContainderTests_ValidateTypes_JobDebugger : NativeContainer
     [BurstCompile(CompileSynchronously = true)]
     struct ReadWriteMultiHashMapParallelForJob : IJobParallelFor
     {
-        NativeParallelMultiHashMap<int, int> value;
+        NativeMultiHashMap<int, int> value;
 
         public void Execute(int index) {}
     }

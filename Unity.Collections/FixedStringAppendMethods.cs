@@ -5,7 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedString*N*Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static partial class FixedStringMethods
     {
         /// <summary>
@@ -15,9 +15,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="rune">A Unicode.Rune to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             var len = fs.Length;
             var runeLen = rune.LengthInUtf8Bytes();
@@ -33,9 +33,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="ch">A char to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, char ch)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             return fs.Append((Unicode.Rune) ch);
         }
@@ -50,9 +50,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="a">A byte to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError AppendRawByte<T>(ref this T fs, byte a)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             var origLength = fs.Length;
             if (!fs.TryResize(origLength + 1, NativeArrayOptions.UninitializedMemory))
@@ -69,9 +69,9 @@ namespace Unity.Collections
         /// <param name="rune">A Unicode.Rune to append some number of times.</param>
         /// <param name="count">The number of times to append the rune.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, Unicode.Rune rune, int count)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             var origLength = fs.Length;
 
@@ -98,9 +98,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A long integer to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, long input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             const int maximumDigits = 20;
             var temp = stackalloc byte[maximumDigits];
@@ -137,9 +137,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">An int to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, int input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             return fs.Append((long)input);
         }
@@ -151,9 +151,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A ulong integer to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, ulong input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             const int maximumDigits = 20;
             var temp = stackalloc byte[maximumDigits];
@@ -176,9 +176,9 @@ namespace Unity.Collections
         /// <param name="fs">A FixedString*N*Bytes.</param>
         /// <param name="input">A uint to append to the string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, uint input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             return fs.Append((ulong)input);
         }
@@ -191,9 +191,9 @@ namespace Unity.Collections
         /// <param name="input">A float to append to the string.</param>
         /// <param name="decimalSeparator">The character to use as the decimal separator. Defaults to a period ('.').</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static FormatError Append<T>(ref this T fs, float input, char decimalSeparator = '.')
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             FixedStringUtils.UintFloatUnion ufu = new FixedStringUtils.UintFloatUnion();
             ufu.floatValue = input;
@@ -290,10 +290,10 @@ namespace Unity.Collections
         /// <param name="fs">The destination string.</param>
         /// <param name="input">The source string.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static FormatError Append<T,T2>(ref this T fs, in T2 input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var inputRef = ref UnsafeUtilityExtensions.AsRef(input);
             return fs.Append(inputRef.GetUnsafePtr(), inputRef.Length);
@@ -310,10 +310,10 @@ namespace Unity.Collections
         /// <param name="fs">The destination string.</param>
         /// <param name="input">The source string.</param>
         /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
         public static CopyError CopyFrom<T, T2>(ref this T fs, in T2 input)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             fs.Length = 0;
             var fe = Append(ref fs, input);
@@ -335,9 +335,9 @@ namespace Unity.Collections
         /// <param name="utf8Bytes">The bytes to append.</param>
         /// <param name="utf8BytesLength">The number of bytes to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public unsafe static FormatError Append<T>(ref this T fs, byte* utf8Bytes, int utf8BytesLength)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             var origLength = fs.Length;
             if (!fs.TryResize(origLength + utf8BytesLength, NativeArrayOptions.UninitializedMemory))
@@ -356,9 +356,9 @@ namespace Unity.Collections
         /// <param name="fs">The destination string.</param>
         /// <param name="s">The string to append.</param>
         /// <returns>FormatError.None if successful. Returns FormatError.Overflow if the capacity of the destination string is exceeded.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public unsafe static FormatError Append<T>(ref this T fs, string s)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             // we don't know how big the expansion from UTF16 to UTF8 will be, so we account for worst case.
             int worstCaseCapacity = s.Length * 4;
@@ -379,6 +379,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// Copies another string to this string (making the two strings equal).
+        /// Replaces any existing content of the FixedString.
         /// </summary>
         /// <remarks>
         /// When the method returns an error, the destination string is not modified.
@@ -387,9 +388,9 @@ namespace Unity.Collections
         /// <param name="fs">The destination string.</param>
         /// <param name="s">The source string.</param>
         /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static CopyError CopyFrom<T>(ref this T fs, string s)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             fs.Length = 0;
             var fe = Append(ref fs, s);
@@ -400,20 +401,44 @@ namespace Unity.Collections
 
         /// <summary>
         /// Copies another string to this string. If the string exceeds the capacity it will be truncated.
+        /// Replaces any existing content of the FixedString.
         /// </summary>
         /// <typeparam name="T">The type of the destination string.</typeparam>
         /// <param name="fs">The destination string.</param>
         /// <param name="s">The source string.</param>
-        [NotBurstCompatible]
-        public static void CopyFromTruncated<T>(ref this T fs, string s)
-            where T : struct, INativeList<byte>, IUTF8Bytes
+        /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        public static CopyError CopyFromTruncated<T>(ref this T fs, string s)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             int utf8Len;
             fixed (char* chars = s)
             {
-                UTF8ArrayUnsafeUtility.Copy(fs.GetUnsafePtr(), out utf8Len, fs.Capacity, chars, s.Length);
+                var error = UTF8ArrayUnsafeUtility.Copy(fs.GetUnsafePtr(), out utf8Len, fs.Capacity, chars, s.Length);
                 fs.Length = utf8Len;
+                return error;
             }
+        }
+
+        /// <summary>
+        /// Copies another string to this string. If the string exceeds the capacity it will be truncated.
+        /// </summary>
+        /// <remarks>
+        /// When the method returns an error, the destination string is not modified.
+        /// </remarks>
+        /// <typeparam name="T">The type of the destination string.</typeparam>
+        /// <typeparam name="T2">The type of the source string.</typeparam>
+        /// <param name="fs">The destination string.</param>
+        /// <param name="input">The source string.</param>
+        /// <returns>CopyError.None if successful. Returns CopyError.Truncation if the source string is too large to fit in the destination.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
+        public static CopyError CopyFromTruncated<T, T2>(ref this T fs, in T2 input)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var error = UTF8ArrayUnsafeUtility.Copy(fs.GetUnsafePtr(), out int utf8Len, fs.Capacity, input.GetUnsafePtr(), input.Length);
+            fs.Length = utf8Len;
+            return error;
         }
     }
 }

@@ -3,14 +3,14 @@ using Unity.Collections;
 using Unity.Burst;
 using Unity.Collections.Tests;
 
-internal class NativeParallelMultiHashMapTestsFixture : CollectionsTestFixture
+internal class NativeMultiHashMapTestsFixture : CollectionsTestFixture
 {
     protected const int hashMapSize = 10 * 1024;
 
     [BurstCompile(CompileSynchronously = true)]
     public struct MultiHashMapSimpleWriteJob : IJob
     {
-        public NativeParallelMultiHashMap<int, int>.ParallelWriter hashMap;
+        public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
 
         public void Execute()
         {
@@ -22,7 +22,7 @@ internal class NativeParallelMultiHashMapTestsFixture : CollectionsTestFixture
     // [BurstCompile(CompileSynchronously = true)]
     public struct MultiHashMapWriteParallelForJob : IJobParallelFor
     {
-        public NativeParallelMultiHashMap<int, int>.ParallelWriter hashMap;
+        public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
         public NativeArray<int> status;
 
         public int keyMod;
@@ -45,7 +45,7 @@ internal class NativeParallelMultiHashMapTestsFixture : CollectionsTestFixture
     public struct MultiHashMapReadParallelForJob : IJobParallelFor
     {
         [ReadOnly]
-        public NativeParallelMultiHashMap<int, int> hashMap;
+        public NativeMultiHashMap<int, int> hashMap;
         public NativeArray<int> values;
 
         public int keyMod;
@@ -53,7 +53,7 @@ internal class NativeParallelMultiHashMapTestsFixture : CollectionsTestFixture
         {
             int iSquared;
             values[i] = -1;
-            NativeParallelMultiHashMapIterator<int> it;
+            NativeMultiHashMapIterator<int> it;
             if (hashMap.TryGetFirstValue(i % keyMod, out iSquared, out it))
             {
                 int count = 0;

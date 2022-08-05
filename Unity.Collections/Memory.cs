@@ -7,12 +7,12 @@ using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections
 {
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     unsafe internal struct Memory
     {
         internal const long k_MaximumRamSizeInBytes = 1L << 40; // a terabyte
 
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         internal struct Unmanaged
         {
             internal static void* Allocate(long size, int align, AllocatorManager.AllocatorHandle allocator)
@@ -27,13 +27,13 @@ namespace Unity.Collections
                 Array.Resize(pointer, 1, 0, allocator, 1, 1);
             }
 
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             internal static T* Allocate<T>(AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 return Array.Resize<T>(null, 0, 1, allocator);
             }
 
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             internal static void Free<T>(T* pointer, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 if (pointer == null)
@@ -41,7 +41,7 @@ namespace Unity.Collections
                 Array.Resize(pointer, 1, 0, allocator);
             }
 
-            [BurstCompatible]
+            [GenerateTestsForBurstCompatibility]
             internal struct Array
             {
                 static bool IsCustom(AllocatorManager.AllocatorHandle allocator)
@@ -90,20 +90,20 @@ namespace Unity.Collections
                     return newPointer;
                 }
 
-                [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+                [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
                 internal static T* Resize<T>(T* oldPointer, long oldCount, long newCount, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
                 {
                     return (T*)Resize((byte*)oldPointer, oldCount, newCount, allocator, UnsafeUtility.SizeOf<T>(), UnsafeUtility.AlignOf<T>());
                 }
 
-                [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+                [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
                 internal static T* Allocate<T>(long count, AllocatorManager.AllocatorHandle allocator)
                     where T : unmanaged
                 {
                     return Resize<T>(null, 0, count, allocator);
                 }
 
-                [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+                [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
                 internal static void Free<T>(T* pointer, long count, AllocatorManager.AllocatorHandle allocator)
                     where T : unmanaged
                 {
@@ -114,10 +114,10 @@ namespace Unity.Collections
             }
         }
 
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         internal struct Array
         {
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             internal static void Set<T>(T* pointer, long count, T t = default) where T : unmanaged
             {
                 long bytesToSet = count * UnsafeUtility.SizeOf<T>();
@@ -126,7 +126,7 @@ namespace Unity.Collections
                     pointer[i] = t;
             }
 
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             internal static void Clear<T>(T* pointer, long count) where T : unmanaged
             {
                 long bytesToClear = count * UnsafeUtility.SizeOf<T>();
@@ -134,7 +134,7 @@ namespace Unity.Collections
                 UnsafeUtility.MemClear(pointer, bytesToClear);
             }
 
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             internal static void Copy<T>(T* dest, T* src, long count) where T : unmanaged
             {
                 long bytesToCopy = count * UnsafeUtility.SizeOf<T>();
@@ -147,9 +147,9 @@ namespace Unity.Collections
         internal static void CheckByteCountIsReasonable(long size)
         {
             if (size < 0)
-                throw new InvalidOperationException("Attempted to operate on {size} bytes of memory: nonsensical");
+                throw new InvalidOperationException($"Attempted to operate on {size} bytes of memory: negative size");
             if (size > k_MaximumRamSizeInBytes)
-                throw new InvalidOperationException("Attempted to operate on {size} bytes of memory: too big");
+                throw new InvalidOperationException($"Attempted to operate on {size} bytes of memory: size too big");
         }
 
     }

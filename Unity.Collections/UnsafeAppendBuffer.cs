@@ -11,7 +11,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <remarks>
     /// The values written to an individual append buffer can be of different types.
     /// </remarks>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct UnsafeAppendBuffer
         : INativeDisposable
     {
@@ -114,7 +114,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
         /// <returns>The handle of a new job that will dispose this append buffer. The new job depends upon inputDeps.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -182,8 +181,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">The type of the element.</typeparam>
         /// <param name="value">The value to be appended.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Add<T>(T value) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public void Add<T>(T value) where T : unmanaged
         {
             var structSize = UnsafeUtility.SizeOf<T>();
 
@@ -212,8 +211,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>The values themselves are stored, not their pointers.</remarks>
         /// <param name="ptr">A pointer to the buffer whose values will be appended.</param>
         /// <param name="length">The number of elements to append.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddArray<T>(void* ptr, int length) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public void AddArray<T>(void* ptr, int length) where T : unmanaged
         {
             Add(length);
 
@@ -226,25 +225,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="value">The array whose elements will all be appended.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Add<T>(NativeArray<T> value) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public void Add<T>(NativeArray<T> value) where T : unmanaged
         {
             Add(value.Length);
             Add(NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(value), UnsafeUtility.SizeOf<T>() * value.Length);
         }
-
-        /// <summary>
-        /// Appends the content of a string as UTF-16 to the end of this append buffer.
-        /// </summary>
-        /// <remarks>Because some Unicode characters require two chars in UTF-16, each character is written as one or two chars (two or four bytes).
-        ///
-        /// The length of the string is itself appended before adding the first character. If the string is null, appends the int `-1` but no character data.
-        ///
-        /// A null terminator is not appended after the character data.</remarks>
-        /// <param name="value">The string to append.</param>
-        [NotBurstCompatible /* Deprecated */]
-        [Obsolete("Please use `AddNBC` from `Unity.Collections.LowLevel.Unsafe.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
-        public void Add(string value) => NotBurstCompatible.Extensions.AddNBC(ref this, value);
 
         /// <summary>
         /// Removes and returns the last element of this append buffer.
@@ -252,8 +238,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the element to remove.</typeparam>
         /// <remarks>It is your responsibility to specify the correct type. Do not pop when the append buffer is empty.</remarks>
         /// <returns>The element removed from the end of this append buffer.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public T Pop<T>() where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public T Pop<T>() where T : unmanaged
         {
             int structSize = UnsafeUtility.SizeOf<T>();
             long ptr = (long)Ptr;
@@ -282,14 +268,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Copies this append buffer to a managed array of bytes.
-        /// </summary>
-        /// <returns>A managed array of bytes.</returns>
-        [NotBurstCompatible /* Deprecated */]
-        [Obsolete("Please use `ToBytesNBC` from `Unity.Collections.LowLevel.Unsafe.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
-        public byte[] ToBytes() => NotBurstCompatible.Extensions.ToBytesNBC(ref this);
-
-        /// <summary>
         /// Returns a reader for this append buffer.
         /// </summary>
         /// <returns>A reader for the append buffer.</returns>
@@ -301,7 +279,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// A reader for UnsafeAppendBuffer.
         /// </summary>
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public unsafe struct Reader
         {
             /// <summary>
@@ -358,8 +336,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>Advances the reader's offset by the size of T.</remarks>
             /// <typeparam name="T">The type of element to read.</typeparam>
             /// <param name="value">Output for the element read.</param>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void ReadNext<T>(out T value) where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public void ReadNext<T>(out T value) where T : unmanaged
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
@@ -374,8 +352,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>Advances the reader's offset by the size of T.</remarks>
             /// <typeparam name="T">The type of element to read.</typeparam>
             /// <returns>The element read.</returns>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public T ReadNext<T>() where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public T ReadNext<T>() where T : unmanaged
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
@@ -407,8 +385,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T">The type of element to read.</typeparam>
             /// <param name="value">Outputs a new array with length of 1. The read element is copied to the single index of this array.</param>
             /// <param name="allocator">The allocator to use.</param>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 var length = ReadNext<int>();
                 value = CollectionHelper.CreateNativeArray<T>(length, allocator);
@@ -430,27 +408,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T">The type of elements in the array to read.</typeparam>
             /// <param name="length">Output which is the number of elements in the read array.</param>
             /// <returns>A pointer to where the first element of the read array resides in the append buffer.</returns>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void* ReadNextArray<T>(out int length) where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public void* ReadNextArray<T>(out int length) where T : unmanaged
             {
                 length = ReadNext<int>();
                 return (length == 0) ? null : ReadNext(length * UnsafeUtility.SizeOf<T>());
             }
-
-#if !NET_DOTS
-            /// <summary>
-            /// Reads a UTF-16 string from the append buffer.
-            /// </summary>
-            /// <remarks>Because some Unicode characters require two chars in UTF-16, each character is either one or two chars (two or four bytes).
-            ///
-            /// Assumes the string does not have a null terminator.
-            ///
-            /// Advances the reader's offset by the size of the string (in bytes).</remarks>
-            /// <param name="value">Outputs the string read from the append buffer.</param>
-            [NotBurstCompatible /* Deprecated */]
-            [Obsolete("Please use `ReadNextNBC` from `Unity.Collections.LowLevel.Unsafe.NotBurstCompatible` namespace instead. (RemovedAfter 2021-06-22)", false)]
-            public void ReadNext(out string value) => NotBurstCompatible.Extensions.ReadNextNBC(ref this, out value);
-#endif
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
             void CheckBounds(int structSize)

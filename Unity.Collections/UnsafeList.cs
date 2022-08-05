@@ -32,8 +32,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         public int m_length;
         public int m_capacity;
         public AllocatorManager.AllocatorHandle Allocator;
-        internal int obsolete_length;
-        internal int obsolete_capacity;
 #pragma warning restore 169
     }
 
@@ -44,7 +42,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeListTDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafeList<T>
         : INativeDisposable
         , INativeList<T>
@@ -75,12 +73,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The allocator used to create the internal buffer.
         /// </summary>
         public AllocatorManager.AllocatorHandle Allocator;
-
-        [Obsolete("Use Length property (UnityUpgradable) -> Length", true)]
-        public int length;
-
-        [Obsolete("Use Capacity property (UnityUpgradable) -> Capacity", true)]
-        public int capacity;
 
         /// <summary>
         /// The number of elements.
@@ -192,7 +184,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
         internal void Initialize<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
         {
             Ptr = null;
@@ -202,7 +194,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Initialize(initialCapacity, ref allocator, options);
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
         internal static UnsafeList<T> New<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
         {
             UnsafeList<T> instance = default;
@@ -210,7 +202,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return instance;
         }
 
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
         internal static UnsafeList<T>* Create<U>(int initialCapacity, ref U allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory) where U : unmanaged, AllocatorManager.IAllocator
         {
             UnsafeList<T>* listData = allocator.Allocate(default(UnsafeList<T>), 1);
@@ -233,7 +225,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return listData;
         }
 
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
         internal static void Destroy<U>(UnsafeList<T>* listData, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             CheckNull(listData);
@@ -280,7 +272,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>True if this list has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
 
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
         internal void Dispose<U>(ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             allocator.Free(Ptr, m_length);
@@ -310,7 +302,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The dependency for the new job.</param>
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -471,7 +462,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
         /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public void AddRangeNoResize(UnsafeList<T> list)
         {
             AddRangeNoResize(list.Ptr, CollectionHelper.AssumePositive(list.m_length));
@@ -533,10 +524,30 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// The length is increased by the length of the other list. Increases the capacity if necessary.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public void AddRange(UnsafeList<T> list)
         {
             AddRange(list.Ptr, list.Length);
+        }
+
+        /// <summary>
+        /// Appends value count times to the end of this list.
+        /// </summary>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
+        /// <remarks>
+        /// Length is incremented by count. If necessary, the capacity is increased.
+        /// </remarks>
+        public void AddReplicate(in T value, int count)
+        {
+            var idx = m_length;
+            if (m_length + count > Capacity)
+                Resize(m_length + count);
+            else
+                m_length += count;
+
+            fixed (void* ptr = &value)
+                UnsafeUtility.MemCpyReplicate(Ptr + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
         }
 
         /// <summary>
@@ -559,7 +570,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
         public void InsertRangeWithBeginEnd(int begin, int end)
         {
-            CheckBeginEnd(begin, end);
+            CheckBeginEndNoLength(begin, end);
+
+            // Because we've checked begin and end in `CheckBeginEnd` above, we can now
+            // assume they are positive.
+            begin = CollectionHelper.AssumePositive(begin);
+            end = CollectionHelper.AssumePositive(end);
 
             int items = end - begin;
             if (items < 1)
@@ -597,6 +613,26 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
+
+        /// <summary>
         /// Copies the last element of this list to the specified index. Decrements the length by 1.
         /// </summary>
         /// <remarks>Useful as a cheap way to remove an element from this list when you don't care about preserving order.</remarks>
@@ -623,6 +659,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             CheckIndexCount(index, count);
 
+            index = CollectionHelper.AssumePositive(index);
+            count = CollectionHelper.AssumePositive(count);
+
             if (count > 0)
             {
                 int copyFrom = math.max(m_length - count, index + count);
@@ -631,36 +670,6 @@ namespace Unity.Collections.LowLevel.Unsafe
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
                 UnsafeUtility.MemCpy(dst, src, (m_length - copyFrom) * sizeOf);
                 m_length -= count;
-            }
-        }
-
-        /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <remarks>
-        /// Copies the last `end - begin` elements to the indexes `begin` up to `end`.
-        ///
-        /// Useful as a cheap way to remove elements from a list when you don't care about preserving order.
-        ///
-        /// Does nothing if `end - begin` is less than 1.
-        /// </remarks>
-        /// <param name="begin">The index of the first element to overwrite.</param>
-        /// <param name="end">The index one greater than the last element to overwrite.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end)
-        {
-            CheckBeginEnd(begin, end);
-
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
-            {
-                int copyFrom = math.max(m_length - itemsToRemove, end);
-                var sizeOf = sizeof(T);
-                void* dst = (byte*)Ptr + begin * sizeOf;
-                void* src = (byte*)Ptr + copyFrom * sizeOf;
-                UnsafeUtility.MemCpy(dst, src, (m_length - copyFrom) * sizeOf);
-                m_length -= itemsToRemove;
             }
         }
 
@@ -683,7 +692,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="index">The index of the first element to remove.</param>
         /// <param name="count">The number of elements to remove.</param>
         /// <remarks>
-        /// If you don't care about preserving the order of the elements, <see cref="RemoveRangeSwapBackWithBeginEnd"/>
+        /// If you don't care about preserving the order of the elements, `RemoveRangeSwapBackWithBeginEnd`
         /// is a more efficient way to remove elements.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
@@ -691,6 +700,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void RemoveRange(int index, int count)
         {
             CheckIndexCount(index, count);
+
+            index = CollectionHelper.AssumePositive(index);
+            count = CollectionHelper.AssumePositive(count);
 
             if (count > 0)
             {
@@ -704,29 +716,38 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Removes *N* elements in a range, shifting everything above it down by *N*. Decrements the length by *N*.
+        /// Returns a read only of this list.
         /// </summary>
-        /// <param name="begin">The index of the first element to remove.</param>
-        /// <param name="end">The index one greater than the last element to remove.</param>
-        /// <remarks>
-        /// If you don't care about preserving the order of the elements, <see cref="RemoveRangeSwapBackWithBeginEnd"/> is a more efficient way to remove elements.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end)
+        /// <returns>A read only of this list.</returns>
+        public ReadOnly AsReadOnly()
         {
-            CheckBeginEnd(begin, end);
+            return new ReadOnly(Ptr, Length);
+        }
 
-            int itemsToRemove = end - begin;
-            if (itemsToRemove > 0)
+        /// <summary>
+        /// A read only for an UnsafeList&lt;T&gt;.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsReadOnly"/> to create a read only for a list.
+        /// </remarks>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe struct ReadOnly
+        {
+            /// <summary>
+            /// The internal buffer of the list.
+            /// </summary>
+            [NativeDisableUnsafePtrRestriction]
+            public readonly T* Ptr;
+
+            /// <summary>
+            /// The number of elements.
+            /// </summary>
+            public readonly int Length;
+
+            internal ReadOnly(T* ptr, int length)
             {
-                int copyFrom = math.min(begin + itemsToRemove, m_length);
-                var sizeOf = sizeof(T);
-                void* dst = (byte*)Ptr + begin * sizeOf;
-                void* src = (byte*)Ptr + copyFrom * sizeOf;
-                UnsafeUtility.MemCpy(dst, src, (m_length - copyFrom) * sizeOf);
-                m_length -= itemsToRemove;
+                Ptr = ptr;
+                Length = length;
             }
         }
 
@@ -734,6 +755,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Returns a parallel reader of this list.
         /// </summary>
         /// <returns>A parallel reader of this list.</returns>
+//        [Obsolete("'AsParallelReader' has been deprecated; use 'AsReadOnly' instead. (UnityUpgradable) -> AsReadOnly")]
         public ParallelReader AsParallelReader()
         {
             return new ParallelReader(Ptr, Length);
@@ -745,7 +767,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+//        [Obsolete("'ParallelReader' has been deprecated; use 'ReadOnly' instead. (UnityUpgradable) -> ReadOnly")]
         public unsafe struct ParallelReader
         {
             /// <summary>
@@ -781,7 +804,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a list.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
@@ -808,7 +831,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
-            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddNoResize(T value)
             {
                 var idx = Interlocked.Increment(ref ListData->m_length) - 1;
@@ -825,7 +848,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by `count`. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddRangeNoResize(void* ptr, int count)
             {
                 var idx = Interlocked.Add(ref ListData->m_length, count) - count;
@@ -842,7 +865,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
             /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
-            [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddRangeNoResize(UnsafeList<T> list)
             {
                 AddRangeNoResize(list.Ptr, list.Length);
@@ -957,14 +980,14 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new ArgumentOutOfRangeException($"Value for index {index} is out of bounds.");
             }
 
-            if (index+count > Length)
+            if (index + count > Length)
             {
                 throw new ArgumentOutOfRangeException($"Value for count {count} is out of bounds.");
             }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckBeginEnd(int begin, int end)
+        void CheckBeginEndNoLength(int begin, int end)
         {
             if (begin > end)
             {
@@ -975,6 +998,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 throw new ArgumentOutOfRangeException($"Value for begin {begin} must be positive.");
             }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        void CheckBeginEnd(int begin, int end)
+        {
+            CheckBeginEndNoLength(begin, end);
 
             if (begin > Length)
             {
@@ -1006,7 +1035,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// Provides extension methods for UnsafeList.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class UnsafeListExtensions
     {
         /// <summary>
@@ -1017,7 +1046,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">This list.</param>
         /// <param name="value">A value to locate.</param>
         /// <returns>The zero-based index of the first occurrence of the value if it is found. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
@@ -1031,7 +1060,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">This list.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -1045,7 +1074,36 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">This reader of the list.</param>
         /// <param name="value">A value to locate.</param>
         /// <returns>The zero-based index of the first occurrence of the value if it is found. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public static int IndexOf<T, U>(this UnsafeList<T>.ReadOnly list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
+        }
+
+        /// <summary>
+        /// Returns true if a particular value is present in the list.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This reader of the list.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True if the value is present in the list.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public static bool Contains<T, U>(this UnsafeList<T>.ReadOnly list, U value) where T : unmanaged, IEquatable<U>
+        {
+            return list.IndexOf(value) != -1;
+        }
+
+        /// <summary>
+        /// Finds the index of the first occurrence of a particular value in the list.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The type of value to locate.</typeparam>
+        /// <param name="list">This reader of the list.</param>
+        /// <param name="value">A value to locate.</param>
+        /// <returns>The zero-based index of the first occurrence of the value if it is found. Returns -1 if no occurrence is found.</returns>
+//        [Obsolete("'UnsafeList<T>.ParallelReader' has been deprecated; use 'UnsafeList<T>.ReadOnly' instead.")]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Ptr, list.Length, value);
@@ -1059,7 +1117,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="list">This reader of the list.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in the list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+//        [Obsolete("'UnsafeList<T>.ParallelReader' has been deprecated; use 'UnsafeList<T>.ReadOnly' instead.")]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this UnsafeList<T>.ParallelReader list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -1073,7 +1132,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="array">The array to compare for equality.</param>
         /// <param name="other">The other array to compare for equality.</param>
         /// <returns>True if the arrays have equal length and content.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static bool ArraysEqual<T>(this UnsafeList<T> array, UnsafeList<T> other) where T : unmanaged, IEquatable<T>
         {
             if (array.Length != other.Length)
@@ -1123,7 +1182,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafePtrListTDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafePtrList<T>
         : INativeDisposable
         // IIndexable<T> and INativeList<T> can't be implemented because this[index] and ElementAt return T* instead of T.
@@ -1150,12 +1209,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// The allocator used to create the internal buffer.
         /// </summary>
         public readonly AllocatorManager.AllocatorHandle Allocator;
-
-        [Obsolete("Use Length property (UnityUpgradable) -> Length", true)]
-        public int length;
-
-        [Obsolete("Use Capacity property (UnityUpgradable) -> Capacity", true)]
-        public int capacity;
 
         /// <summary>
         /// The number of elements.
@@ -1318,7 +1371,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The dependency for the new job.</param>
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps) => this.ListData().Dispose(inputDeps);
 
         /// <summary>
@@ -1487,22 +1539,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void RemoveRangeSwapBack(int index, int count) => this.ListData().RemoveRangeSwapBack(index, count);
 
         /// <summary>
-        /// Copies the last *N* pointers of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <remarks>
-        /// Copies the last `end - begin` pointers to the indexes `begin` up to `end`.
-        ///
-        /// Useful as a cheap way to remove pointers from a list when you don't care about preserving order.
-        ///
-        /// Does nothing if `end - begin` is less than 1.
-        /// </remarks>
-        /// <param name="begin">The index of the first pointers to overwrite.</param>
-        /// <param name="end">The index one greater than the last pointers to overwrite.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => this.ListData().RemoveRangeSwapBackWithBeginEnd(begin, end);
-
-        /// <summary>
         /// Removes the pointer at an index, shifting everything above it down by one. Decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the pointer to remove.</param>
@@ -1518,25 +1554,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="index">The index of the first pointer to remove.</param>
         /// <param name="count">The number of pointers to remove.</param>
         /// <remarks>
-        /// If you don't care about preserving the order of the pointers, <see cref="RemoveRangeSwapBackWithBeginEnd"/>
+        /// If you don't care about preserving the order of the pointers, `RemoveRangeSwapBackWithBeginEnd`
         /// is a more efficient way to remove pointers.
         /// </remarks>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
         /// or `index + count` exceeds the length.</exception>
         public void RemoveRange(int index, int count) => this.ListData().RemoveRange(index, count);
-
-        /// <summary>
-        /// Removes *N* pointers in a range, shifting everything above it down by *N*. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The index of the first pointer to remove.</param>
-        /// <param name="end">The index one greater than the last pointer to remove.</param>
-        /// <remarks>
-        /// If you don't care about preserving the order of the pointers, <see cref="RemoveRangeSwapBackWithBeginEnd"/> is a more efficient way to remove pointers.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if `end &lt; begin`.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `begin` or `end` are out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => this.ListData().RemoveRangeWithBeginEnd(begin, end);
 
         /// <summary>
         /// This method is not implemented. It will throw NotImplementedException if it is used.
@@ -1561,9 +1584,70 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Returns a read only of this list.
+        /// </summary>
+        /// <returns>A read only of this list.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(Ptr, Length);
+        }
+
+        /// <summary>
+        /// A read only for an UnsafePtrList&lt;T&gt;.
+        /// </summary>
+        /// <remarks>
+        /// Use <see cref="AsReadOnly"/> to create a read only for a list.
+        /// </remarks>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public unsafe struct ReadOnly
+        {
+            /// <summary>
+            /// The internal buffer of the list.
+            /// </summary>
+            [NativeDisableUnsafePtrRestriction]
+            public readonly T** Ptr;
+
+            /// <summary>
+            /// The number of elements.
+            /// </summary>
+            public readonly int Length;
+
+            internal ReadOnly(T** ptr, int length)
+            {
+                Ptr = ptr;
+                Length = length;
+            }
+
+            /// <summary>
+            /// Returns the index of the first occurrence of a specific pointer in the list.
+            /// </summary>
+            /// <param name="ptr">The pointer to search for in the list.</param>
+            /// <returns>The index of the first occurrence of the pointer. Returns -1 if it is not found in the list.</returns>
+            public int IndexOf(void* ptr)
+            {
+                for (int i = 0; i < Length; ++i)
+                {
+                    if (Ptr[i] == ptr) return i;
+                }
+                return -1;
+            }
+
+            /// <summary>
+            /// Returns true if the list contains at least one occurrence of a specific pointer.
+            /// </summary>
+            /// <param name="ptr">The pointer to search for in the list.</param>
+            /// <returns>True if the list contains at least one occurrence of the pointer.</returns>
+            public bool Contains(void* ptr)
+            {
+                return IndexOf(ptr) != -1;
+            }
+        }
+
+        /// <summary>
         /// Returns a parallel reader of this list.
         /// </summary>
         /// <returns>A parallel reader of this list.</returns>
+//        [Obsolete("'AsParallelReader' has been deprecated; use 'AsReadOnly' instead. (UnityUpgradable) -> AsReadOnly")]
         public ParallelReader AsParallelReader()
         {
             return new ParallelReader(Ptr, Length);
@@ -1575,7 +1659,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+//        [Obsolete("'ParallelReader' has been deprecated; use 'ReadOnly' instead. (UnityUpgradable) -> ReadOnly")]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelReader
         {
             /// <summary>
@@ -1635,7 +1720,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a list.
         /// </remarks>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             /// <summary>
@@ -1689,10 +1774,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal static class UnsafePtrListTExtensions
     {
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public static ref UnsafeList<IntPtr> ListData<T>(ref this UnsafePtrList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafePtrList<T>, UnsafeList<IntPtr>>(ref from);
     }
 

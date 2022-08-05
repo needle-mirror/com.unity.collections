@@ -19,7 +19,7 @@ namespace FixedStringTests
 internal static class FixedStringTestUtils
 {
     internal unsafe static void Junk<T>(ref this T fs)
-        where T : struct, INativeList<byte>, IUTF8Bytes
+        where T : unmanaged, INativeList<byte>, IUTF8Bytes
     {
         var bytes = fs.GetUnsafePtr();
         var cap = fs.Capacity;
@@ -28,7 +28,7 @@ internal static class FixedStringTestUtils
     }
 
     internal unsafe static void AssertNullTerminated<T>(this T fs)
-        where T : struct, INativeList<byte>, IUTF8Bytes
+        where T : unmanaged, INativeList<byte>, IUTF8Bytes
     {
         Assert.AreEqual(0, fs.GetUnsafePtr()[fs.Length]);
     }

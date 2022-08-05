@@ -1,4 +1,3 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -294,4 +293,3 @@ namespace Unity.Jobs.CodeGen
         }
     }
 }
-#endif

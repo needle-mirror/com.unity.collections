@@ -52,7 +52,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(42);
         list.Add(2);
 
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
 
         Assert.AreEqual(2, array.Length);
         Assert.AreEqual(42, array[0]);
@@ -71,7 +71,7 @@ internal class NativeListTests : CollectionsTestFixture
         list.Capacity = 2;
         list.Add(42);
 
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
 
         list.Add(1000);
 
@@ -88,7 +88,7 @@ internal class NativeListTests : CollectionsTestFixture
         var list = new NativeList<int>(Allocator.Persistent);
         list.Add(42);
 
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
 
         ExpectedLength(ref list, 1);
         list.Capacity = 10;
@@ -105,7 +105,7 @@ internal class NativeListTests : CollectionsTestFixture
     {
         var list = new NativeList<int>(Allocator.Persistent);
         list.Add(42);
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
         list.Dispose();
 
         Assert.Throws<ObjectDisposedException>(
@@ -121,7 +121,7 @@ internal class NativeListTests : CollectionsTestFixture
         var list = new NativeList<int>(Allocator.Persistent);
         list.Add(42);
 
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
         Assert.DoesNotThrow(() => { array.Dispose(); });
         list.Dispose();
     }
@@ -217,7 +217,7 @@ internal class NativeListTests : CollectionsTestFixture
         var list = new NativeList<int>(Allocator.Persistent);
         list.Add(1);
 
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
         Assert.DoesNotThrow(() => { array.Dispose(); });
 
         list.Dispose();
@@ -393,17 +393,71 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(0);
         list.Add(3);
         list.Add(4);
+        Assert.AreEqual(3, list.Length);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
-        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(0, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
 
         Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
+        Assert.AreEqual(5, list.Length);
 
         list[1] = 1;
         list[2] = 2;
 
-        for (var i = 0; i < 5; ++i)
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(5, 8));
+        Assert.AreEqual(8, list.Length);
+
+        list[5] = 5;
+        list[6] = 6;
+        list[7] = 7;
+
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        list.Dispose();
+    }
+
+    [Test]
+    public void NativeList_InsertRange()
+    {
+        var list = new NativeList<byte>(3, Allocator.Persistent);
+        list.Add(0);
+        list.Add(3);
+        list.Add(4);
+        Assert.AreEqual(3, list.Length);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, 8));
+        Assert.Throws<ArgumentException>(() => list.InsertRange(3, -1));
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(3, list.Length);
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 2));
+        Assert.AreEqual(5, list.Length);
+
+        list[1] = 1;
+        list[2] = 2;
+
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.DoesNotThrow(() => list.InsertRange(5, 3));
+        Assert.AreEqual(8, list.Length);
+
+        list[5] = 5;
+        list[6] = 6;
+        list[7] = 7;
+
+        for (var i = 0; i < list.Length; ++i)
         {
             Assert.AreEqual(i, list[i]);
         }
@@ -508,6 +562,45 @@ internal class NativeListTests : CollectionsTestFixture
             Assert.AreNotEqual(list.Capacity, 0);
 
             list.Clear();
+        }
+    }
+
+    public struct NestedContainer
+    {
+        public NativeList<int> data;
+    }
+
+    [Test]
+    public void NativeList_Nested()
+    {
+        var inner = new NativeList<int>(CommonRwdAllocator.Handle);
+        NestedContainer nestedStruct = new NestedContainer { data = inner };
+
+        var containerNestedStruct = new NativeList<NestedContainer>(CommonRwdAllocator.Handle);
+        var containerNested = new NativeList<NativeList<int>>(CommonRwdAllocator.Handle);
+
+        containerNested.Add(inner);
+        containerNestedStruct.Add(nestedStruct);
+
+        containerNested.Dispose();
+        containerNestedStruct.Dispose();
+        inner.Dispose();
+    }
+
+    [Test]
+    public void NativeList_AddReplicate()
+    {
+        using (var list = new NativeList<int>(32, Allocator.Persistent))
+        {
+            list.AddReplicate(value: 42, count: 10);
+            Assert.AreEqual(10, list.Length);
+            foreach (var item in list)
+                Assert.AreEqual(42, item);
+
+            list.AddReplicate(value: 42, count: 100);
+            Assert.AreEqual(110, list.Length);
+            foreach (var item in list)
+                Assert.AreEqual(42, item);
         }
     }
 }

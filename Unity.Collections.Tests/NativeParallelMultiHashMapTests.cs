@@ -12,16 +12,16 @@ using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 #endif
 
-internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
+internal class NativeMultiHashMapTests : CollectionsTestFixture
 {
     // These tests require:
     // - JobsDebugger support for static safety IDs (added in 2020.1)
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test, DotsRuntimeIgnore]
-    public void NativeParallelMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
+    public void NativeMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
-        var container = new NativeParallelMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
+        var container = new NativeMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container.Add(0, 123);
         container.Dispose();
         Assert.That(() => container.ContainsKey(0),
@@ -30,11 +30,11 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [BurstCompile(CompileSynchronously = true)]
-    struct NativeParallelMultiHashMap_CreateAndUseAfterFreeBurst : IJob
+    struct NativeMultiHashMap_CreateAndUseAfterFreeBurst : IJob
     {
         public void Execute()
         {
-            var container = new NativeParallelMultiHashMap<int, int>(10, Allocator.Temp);
+            var container = new NativeMultiHashMap<int, int>(10, Allocator.Temp);
             container.Add(0, 17);
             container.Dispose();
             container.Add(1, 42);
@@ -42,13 +42,13 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test, DotsRuntimeIgnore]
-    public void NativeParallelMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
+    public void NativeMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
-        var container = new NativeParallelMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
+        var container = new NativeMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
         container.Dispose();
 
-        var job = new NativeParallelMultiHashMap_CreateAndUseAfterFreeBurst
+        var job = new NativeMultiHashMap_CreateAndUseAfterFreeBurst
         {
         };
 
@@ -63,9 +63,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 #endif
 
     [Test]
-    public void NativeParallelMultiHashMap_IsEmpty()
+    public void NativeMultiHashMap_IsEmpty()
     {
-        var container = new NativeParallelMultiHashMap<int, int>(0, Allocator.Persistent);
+        var container = new NativeMultiHashMap<int, int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
 
         container.Add(0, 0);
@@ -84,9 +84,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_CountValuesForKey()
+    public void NativeMultiHashMap_CountValuesForKey()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         hashMap.Add(5, 7);
         hashMap.Add(6, 9);
         hashMap.Add(6, 10);
@@ -99,9 +99,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_RemoveKeyAndValue()
+    public void NativeMultiHashMap_RemoveKeyAndValue()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, long>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, long>(1, Allocator.Temp);
         hashMap.Add(10, 0);
         hashMap.Add(10, 1);
         hashMap.Add(10, 2);
@@ -128,9 +128,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ValueIterator()
+    public void NativeMultiHashMap_ValueIterator()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         hashMap.Add(5, 0);
         hashMap.Add(5, 1);
         hashMap.Add(5, 2);
@@ -155,9 +155,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_RemoveKeyValueDoesntDeallocate()
+    public void NativeMultiHashMap_RemoveKeyValueDoesntDeallocate()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp) { { 5, 1 } };
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp) { { 5, 1 } };
 
         hashMap.Remove(5, 5);
         GCAllocRecorder.ValidateNoGCAllocs(() =>
@@ -170,26 +170,26 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_Double_Deallocate_Throws()
+    public void NativeMultiHashMap_Double_Deallocate_Throws()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(16, CommonRwdAllocator.Handle);
+        var hashMap = new NativeMultiHashMap<int, int>(16, CommonRwdAllocator.Handle);
         hashMap.Dispose();
         Assert.Throws<ObjectDisposedException>(
             () => { hashMap.Dispose(); });
     }
 
-    static void ExpectedCount<TKey, TValue>(ref NativeParallelMultiHashMap<TKey, TValue> container, int expected)
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+    static void ExpectedCount<TKey, TValue>(ref NativeMultiHashMap<TKey, TValue> container, int expected)
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         Assert.AreEqual(expected == 0, container.IsEmpty);
         Assert.AreEqual(expected, container.Count());
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
+    public void NativeMultiHashMap_RemoveOnEmptyMap_DoesNotThrow()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(0, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(0, Allocator.Temp);
 
         Assert.DoesNotThrow(() => hashMap.Remove(0));
         Assert.DoesNotThrow(() => hashMap.Remove(-425196));
@@ -200,9 +200,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_RemoveFromMultiHashMap()
+    public void NativeMultiHashMap_RemoveFromMultiHashMap()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(16, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(16, Allocator.Temp);
         int iSquared;
         // Make sure inserting values work
         for (int i = 0; i < 8; ++i)
@@ -213,7 +213,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         // Make sure reading the inserted values work
         for (int i = 0; i < 8; ++i)
         {
-            NativeParallelMultiHashMapIterator<int> it;
+            NativeMultiHashMapIterator<int> it;
             Assert.IsTrue(hashMap.TryGetFirstValue(i, out iSquared, out it), "Failed get value from hash table");
             Assert.AreEqual(iSquared, i, "Got the wrong value from the hash table");
             Assert.IsTrue(hashMap.TryGetNextValue(out iSquared, ref it), "Failed get value from hash table");
@@ -222,7 +222,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         for (int rm = 0; rm < 8; ++rm)
         {
             Assert.AreEqual(2, hashMap.Remove(rm));
-            NativeParallelMultiHashMapIterator<int> it;
+            NativeMultiHashMapIterator<int> it;
             Assert.IsFalse(hashMap.TryGetFirstValue(rm, out iSquared, out it), "Failed to remove value from hash table");
             for (int i = rm + 1; i < 8; ++i)
             {
@@ -241,7 +241,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         hashMap.Dispose();
     }
 
-    void ExpectValues(NativeParallelMultiHashMap<int, long> hashMap, int key, long[] expectedValues)
+    void ExpectValues(NativeMultiHashMap<int, long> hashMap, int key, long[] expectedValues)
     {
         var list = new NativeList<long>(CommonRwdAllocator.Handle);
         foreach (var value in hashMap.GetValuesForKey(key))
@@ -253,9 +253,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_GetKeys()
+    public void NativeMultiHashMap_GetKeys()
     {
-        var container = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
             container.Add(i, 2 * i);
@@ -281,9 +281,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 
 #if !UNITY_DOTSRUNTIME
     [Test]
-    public void NativeParallelMultiHashMap_GetUniqueKeysEmpty()
+    public void NativeMultiHashMap_GetUniqueKeysEmpty()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         var keys = hashMap.GetUniqueKeyArray(Allocator.Temp);
 
         Assert.AreEqual(0, keys.Item1.Length);
@@ -291,9 +291,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_GetUniqueKeys()
+    public void NativeMultiHashMap_GetUniqueKeys()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
             hashMap.Add(i, 2 * i);
@@ -312,9 +312,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 #endif
 
     [Test]
-    public void NativeParallelMultiHashMap_GetValues()
+    public void NativeMultiHashMap_GetValues()
     {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var hashMap = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
             hashMap.Add(i, 30 + i);
@@ -333,11 +333,11 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach_FixedStringInHashMap()
+    public void NativeMultiHashMap_ForEach_FixedStringInHashMap()
     {
         using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
         {
-            var container = new NativeParallelMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
+            var container = new NativeMultiHashMap<FixedString128Bytes, float>(50, Allocator.Temp);
             var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
             foreach (var str in stringList)
             {
@@ -359,11 +359,11 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach([Values(10, 1000)]int n)
+    public void NativeMultiHashMap_ForEach([Values(10, 1000)]int n)
     {
         var seenKeys = new NativeArray<int>(n, Allocator.Temp);
         var seenValues = new NativeArray<int>(n * 2, Allocator.Temp);
-        using (var container = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp))
+        using (var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp))
         {
             for (int i = 0; i < n; ++i)
             {
@@ -399,10 +399,10 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         }
     }
 
-    struct NativeParallelMultiHashMap_ForEach_Job : IJob
+    struct NativeMultiHashMap_ForEach_Job : IJob
     {
         [ReadOnly]
-        public NativeParallelMultiHashMap<int, int> Input;
+        public NativeMultiHashMap<int, int> Input;
 
         [ReadOnly]
         public int Num;
@@ -444,9 +444,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach_From_Job([Values(10, 1000)] int n)
+    public void NativeMultiHashMap_ForEach_From_Job([Values(10, 1000)] int n)
     {
-        using (var container = new NativeParallelMultiHashMap<int, int>(1, CommonRwdAllocator.Handle))
+        using (var container = new NativeMultiHashMap<int, int>(1, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < n; ++i)
             {
@@ -454,7 +454,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
                 container.Add(i, i + n);
             }
 
-            new NativeParallelMultiHashMap_ForEach_Job
+            new NativeMultiHashMap_ForEach_Job
             {
                 Input = container,
                 Num = n,
@@ -464,9 +464,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach_Throws_When_Modified()
+    public void NativeMultiHashMap_ForEach_Throws_When_Modified()
     {
-        using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             for (int i = 0; i < 30; ++i)
             {
@@ -492,10 +492,10 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         }
     }
 
-    struct NativeParallelMultiHashMap_ForEachIterator : IJob
+    struct NativeMultiHashMap_ForEachIterator : IJob
     {
         [ReadOnly]
-        public NativeParallelMultiHashMap<int, int>.KeyValueEnumerator Iter;
+        public NativeMultiHashMap<int, int>.KeyValueEnumerator Iter;
 
         public void Execute()
         {
@@ -506,11 +506,11 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach_Throws_Job_Iterator()
+    public void NativeMultiHashMap_ForEach_Throws_Job_Iterator()
     {
-        using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
-            var jobHandle = new NativeParallelMultiHashMap_ForEachIterator
+            var jobHandle = new NativeMultiHashMap_ForEachIterator
             {
                 Iter = container.GetEnumerator()
 
@@ -525,7 +525,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     struct ParallelWriteToMultiHashMapJob : IJobParallelFor
     {
         [WriteOnly]
-        public NativeParallelMultiHashMap<int, int>.ParallelWriter Writer;
+        public NativeMultiHashMap<int, int>.ParallelWriter Writer;
 
         public void Execute(int index)
         {
@@ -534,9 +534,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_ForEach_Throws_When_Modified_From_Job()
+    public void NativeMultiHashMap_ForEach_Throws_When_Modified_From_Job()
     {
-        using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
+        using (var container = new NativeMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
         {
             var iter = container.GetEnumerator();
 
@@ -559,9 +559,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 
 #if !UNITY_PORTABLE_TEST_RUNNER    // https://unity3d.atlassian.net/browse/DOTSR-1432
     [Test]
-    public void NativeParallelMultiHashMap_GetKeysAndValues()
+    public void NativeMultiHashMap_GetKeysAndValues()
     {
-        var container = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         for (int i = 0; i < 30; ++i)
         {
             container.Add(i, 30 + i);
@@ -607,9 +607,9 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 #endif
 
     [Test]
-    public void NativeParallelMultiHashMap_ContainsKeyMultiHashMap()
+    public void NativeMultiHashMap_ContainsKeyMultiHashMap()
     {
-        var container = new NativeParallelMultiHashMap<int, int>(1, Allocator.Temp);
+        var container = new NativeMultiHashMap<int, int>(1, Allocator.Temp);
         container.Add(5, 7);
 
         container.Add(6, 9);
@@ -623,14 +623,14 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeParallelMultiHashMap_CustomAllocatorTest()
+    public void NativeMultiHashMap_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
         ref var allocator = ref allocatorHelper.Allocator;
         allocator.Initialize();
 
-        using (var container = new NativeParallelMultiHashMap<int, int>(1, allocator.Handle))
+        using (var container = new NativeMultiHashMap<int, int>(1, allocator.Handle))
         {
         }
 
@@ -650,7 +650,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         {
             unsafe
             {
-                using (var container = new NativeParallelMultiHashMap<int, int>(1, Allocator->Handle))
+                using (var container = new NativeMultiHashMap<int, int>(1, Allocator->Handle))
                 {
                 }
             }
@@ -658,7 +658,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
-    public unsafe void NativeParallelMultiHashMap_BurstedCustomAllocatorTest()
+    public unsafe void NativeMultiHashMap_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
@@ -676,5 +676,27 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         allocator.Dispose();
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
+    }
+
+    public struct NestedHashMap
+    {
+        public NativeMultiHashMap<int, int> map;
+    }
+
+    [Test]
+    public void NativeMultiHashMap_Nested()
+    {
+        var mapInner = new NativeMultiHashMap<int, int>(16, CommonRwdAllocator.Handle);
+        NestedHashMap mapStruct = new NestedHashMap { map = mapInner };
+
+        var mapNestedStruct = new NativeMultiHashMap<int, NestedHashMap>(16, CommonRwdAllocator.Handle);
+        var mapNested = new NativeMultiHashMap<int, NativeMultiHashMap<int, int>>(16, CommonRwdAllocator.Handle);
+
+        mapNested.Add(14, mapInner);
+        mapNestedStruct.Add(17, mapStruct);
+
+        mapNested.Dispose();
+        mapNestedStruct.Dispose();
+        mapInner.Dispose();
     }
 }

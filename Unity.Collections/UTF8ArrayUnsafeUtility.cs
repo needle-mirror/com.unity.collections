@@ -5,7 +5,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides methods for copying and encoding Unicode text.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static unsafe class UTF8ArrayUnsafeUtility
     {
 
@@ -278,7 +278,7 @@ namespace Unity.Collections
         /// <returns>True if the content of both strings is identical.</returns>
         public static bool EqualsUTF8Bytes(byte* aBytes, int aLength, byte* bBytes, int bLength)
         {
-            return StrCmp(aBytes, aLength, bBytes, bLength) == 0;
+            return aLength == bLength && StrCmp(aBytes, aLength, bBytes, bLength) == 0;
         }
 
         /// <summary>Compares a UTF-8 buffer and a UTF-16 buffer for relative equality.</summary>

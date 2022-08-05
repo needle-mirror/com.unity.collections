@@ -15,7 +15,8 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 #pragma warning restore
 
-    private NativeArray<T> MakeTestArray<T>(params T[] data) where T : struct
+    private NativeArray<T> MakeTestArray<T>(params T[] data)
+        where T : unmanaged
     {
         return CollectionHelper.CreateNativeArray<T>(data, CommonRwdAllocator.Handle);
     }

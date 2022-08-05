@@ -18,11 +18,11 @@ namespace Unity.Collections
     /// but a NativeKeyValueArrays does not have its own safety handles.</remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     /// <typeparam name="TValue">The type of the values.</typeparam>
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public struct NativeKeyValueArrays<TKey, TValue>
         : INativeDisposable
-        where TKey : struct
-        where TValue : struct
+        where TKey : unmanaged
+        where TValue : unmanaged
     {
         /// <summary>
         /// The keys.
@@ -68,7 +68,6 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
         /// <returns>The handle of a new job that will dispose this collection's key and value arrays.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return Keys.Dispose(Values.Dispose(inputDeps));
@@ -84,24 +83,18 @@ namespace Unity.Collections
     [NativeContainer]
     [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(NativeParallelHashMapDebuggerTypeProxy<,>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
     public unsafe struct NativeParallelHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeParallelHashMap<TKey, TValue>>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
 #endif
 
         /// <summary>
@@ -110,32 +103,18 @@ namespace Unity.Collections
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeParallelHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
-            : this(capacity, allocator, 2)
         {
-        }
-
-        NativeParallelHashMap(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
-        {
-            m_HashMapData = new UnsafeParallelHashMap<TKey, TValue>(capacity, allocator);
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (AllocatorManager.IsCustomAllocator(allocator.ToAllocator))
-            {
-                m_Safety = AtomicSafetyHandle.Create();
-                m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
-            }
-#endif
+
+            if (UnsafeUtility.IsNativeContainerType<TKey>() || UnsafeUtility.IsNativeContainerType<TValue>())
+                AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
 
             CollectionHelper.SetStaticSafetyId<NativeParallelHashMap<TKey, TValue>>(ref m_Safety, ref s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
+
+            m_HashMapData = new UnsafeParallelHashMap<TKey, TValue>(capacity, allocator);
         }
 
         /// <summary>
@@ -306,11 +285,7 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
             m_HashMapData.Dispose();
         }
@@ -320,19 +295,9 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-            // will check that no jobs are writing to the container).
-            DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-
             var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);
@@ -394,6 +359,238 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Returns a readonly version of this NativeParallelHashMap instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the NativeParallelHashMap it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var ash = m_Safety;
+            return new ReadOnly(m_HashMapData, ash);
+#else
+            return new ReadOnly(m_HashMapData);
+#endif
+        }
+
+        /// <summary>
+        /// A read-only alias for the value of a NativeParallelHashMap. Does not have its own allocated storage.
+        /// </summary>
+        [NativeContainer]
+        [NativeContainerIsReadOnly]
+        [DebuggerTypeProxy(typeof(NativeParallelHashMapDebuggerTypeProxy<,>))]
+        [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        public struct ReadOnly
+        : IEnumerable<KeyValue<TKey, TValue>>
+        {
+            internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle m_Safety;
+            internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ReadOnly>();
+
+            [GenerateTestsForBurstCompatibility(CompileTarget = GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)]
+            internal ReadOnly(UnsafeParallelHashMap<TKey, TValue> hashMapData, AtomicSafetyHandle safety)
+            {
+                m_HashMapData = hashMapData;
+                m_Safety = safety;
+                CollectionHelper.SetStaticSafetyId<ReadOnly>(ref m_Safety, ref s_staticSafetyId.Data);
+            }
+#else
+            internal ReadOnly(UnsafeParallelHashMap<TKey, TValue> hashMapData)
+            {
+                m_HashMapData = hashMapData;
+            }
+#endif
+
+            /// <summary>
+            /// Whether this hash map is empty.
+            /// </summary>
+            /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+            public bool IsEmpty
+            {
+                get
+                {
+                    if (!IsCreated)
+                    {
+                        return true;
+                    }
+
+                    CheckRead();
+                    return m_HashMapData.IsEmpty;
+                }
+            }
+
+            /// <summary>
+            /// The current number of key-value pairs in this hash map.
+            /// </summary>
+            /// <returns>The current number of key-value pairs in this hash map.</returns>
+            public int Count()
+            {
+                CheckRead();
+                return m_HashMapData.Count();
+            }
+
+            /// <summary>
+            /// The number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public int Capacity
+            {
+                get
+                {
+                    CheckRead();
+                    return m_HashMapData.Capacity;
+                }
+            }
+
+            /// <summary>
+            /// Returns the value associated with a key.
+            /// </summary>
+            /// <param name="key">The key to look up.</param>
+            /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+            /// <returns>True if the key was present.</returns>
+            public bool TryGetValue(TKey key, out TValue item)
+            {
+                CheckRead();
+                return m_HashMapData.TryGetValue(key, out item);
+            }
+
+            /// <summary>
+            /// Returns true if a given key is present in this hash map.
+            /// </summary>
+            /// <param name="key">The key to look up.</param>
+            /// <returns>True if the key was present.</returns>
+            public bool ContainsKey(TKey key)
+            {
+                CheckRead();
+                return m_HashMapData.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Gets values by key.
+            /// </summary>
+            /// <remarks>Getting a key that is not present will throw.</remarks>
+            /// <param name="key">The key to look up.</param>
+            /// <value>The value associated with the key.</value>
+            /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
+            public TValue this[TKey key]
+            {
+                get
+                {
+                    CheckRead();
+
+                    TValue res;
+
+                    if (m_HashMapData.TryGetValue(key, out res))
+                    { 
+                        return res;
+                    }
+
+                    ThrowKeyNotPresent(key);
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public bool IsCreated => m_HashMapData.IsCreated;
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's keys (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+            public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                CheckRead();
+                return m_HashMapData.GetKeyArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's values (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+            public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                CheckRead();
+                return m_HashMapData.GetValueArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
+            /// </summary>
+            /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+            public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+            {
+                CheckRead();
+                return m_HashMapData.GetKeyValueArrays(allocator);
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckRead()
+            {
+    #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+    #endif
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void ThrowKeyNotPresent(TKey key)
+            {
+                throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
+            }
+
+            /// <summary>
+            /// Returns an enumerator over the key-value pairs of this hash map.
+            /// </summary>
+            /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+            public Enumerator GetEnumerator()
+            {
+    #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
+                var ash = m_Safety;
+                AtomicSafetyHandle.UseSecondaryVersion(ref ash);
+    #endif
+                return new Enumerator
+                {
+    #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    m_Safety = ash,
+    #endif
+                    m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_HashMapData.m_Buffer),
+                };
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+        }
+
+        /// <summary>
         /// A parallel writer for a NativeParallelHashMap.
         /// </summary>
         /// <remarks>
@@ -402,7 +599,7 @@ namespace Unity.Collections
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
         [DebuggerDisplay("Capacity = {m_Writer.Capacity}")]
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
             internal UnsafeParallelHashMap<TKey, TValue>.ParallelWriter m_Writer;
@@ -573,13 +770,18 @@ namespace Unity.Collections
     }
 
     internal sealed class NativeParallelHashMapDebuggerTypeProxy<TKey, TValue>
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
 #if !NET_DOTS
         UnsafeParallelHashMap<TKey, TValue> m_Target;
 
         public NativeParallelHashMapDebuggerTypeProxy(NativeParallelHashMap<TKey, TValue> target)
+        {
+            m_Target = target.m_HashMapData;
+        }
+
+        internal NativeParallelHashMapDebuggerTypeProxy(NativeParallelHashMap<TKey, TValue>.ReadOnly target)
         {
             m_Target = target.m_HashMapData;
         }

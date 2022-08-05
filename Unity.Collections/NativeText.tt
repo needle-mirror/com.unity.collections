@@ -44,7 +44,7 @@ namespace Unity.Collections
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
     [DebuggerDisplay("Length = {Length}")]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe partial struct NativeText
         : INativeList<byte>
         , INativeDisposable
@@ -66,12 +66,6 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
         internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeText>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        internal DisposeSentinel m_DisposeSentinel;
-#endif
 #endif
         // NOTE! This Length is always > 0, because we have a null terminating byte.
         // We hide this byte from NativeText users.
@@ -83,7 +77,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public NativeText(String source, Allocator allocator) : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
@@ -93,7 +87,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public NativeText(String source, AllocatorManager.AllocatorHandle allocator) : this(source.Length * 2, allocator)
         {
             Length = source.Length * 2;
@@ -122,35 +116,6 @@ namespace Unity.Collections
 #endif
         }
 
-        private NativeText(int capacity, AllocatorManager.AllocatorHandle allocator, int disposeSentinelStackDepth)
-        {
-            this = default;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-            CollectionHelper.CheckAllocator(allocator);
-
-#if REMOVE_DISPOSE_SENTINEL
-            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                m_Safety = AtomicSafetyHandle.Create();
-                m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, disposeSentinelStackDepth, allocator.ToAllocator);
-            }
-#endif
-
-            CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeText");
-
-            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
-#endif
-            var ptr = allocator.Allocate(sizeof(UnsafeText), 16, 1);
-            m_Data = (UnsafeText*)ptr;
-            *m_Data = new UnsafeText(capacity, allocator);
-        }
-
         /// <summary>
         /// Initializes and returns an instance of NativeText.
         /// </summary>
@@ -165,8 +130,20 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="capacity">The initial capacity in bytes.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeText(int capacity, AllocatorManager.AllocatorHandle allocator) : this(capacity, allocator, 2)
+        public NativeText(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CollectionHelper.CheckAllocator(allocator);
+
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+
+            CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeText");
+
+            AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
+#endif
+            var ptr = allocator.Allocate(sizeof(UnsafeText), 16, 1);
+            m_Data = (UnsafeText*)ptr;
+            *m_Data = new UnsafeText(capacity, allocator);
         }
 
         /// <summary>
@@ -310,7 +287,7 @@ namespace Unity.Collections
         /// Returns a pointer to this string's character buffer.
         /// </summary>
         /// <remarks>
-        /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="`Capacity`"/>.
+        /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="Capacity"/>.
         /// </remarks>
         /// <returns>A pointer to this string's character buffer.</returns>
         public unsafe byte* GetUnsafePtr()
@@ -444,11 +421,7 @@ namespace Unity.Collections
         {
             CheckNull(m_Data);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
             var allocator = m_Data->m_UntypedListData.Allocator;
             m_Data->Dispose();
@@ -460,19 +433,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">The dependency for the new job.</param>
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and releases all resources (memory and safety handles) of this NativeText.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-            // will check that no jobs are writing to the container).
-            DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-#endif
             var jobHandle = m_Data->Dispose(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -490,7 +452,7 @@ namespace Unity.Collections
         /// <value>A copy of this string as a managed string.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -607,7 +569,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other.<br/>
         /// +1 denotes that this string should be sorted to follow the other.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -619,7 +581,7 @@ namespace Unity.Collections
         /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if the two strings are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             return ToString().Equals(other);
@@ -699,7 +661,7 @@ namespace Unity.Collections
         /// Returns a managed string copy of this string.
         /// </summary>
         /// <returns>A managed string copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             if (m_Data == null)
@@ -726,7 +688,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="other">Another string to compare with.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object other)
         {
             if(ReferenceEquals(null, other)) return false;
@@ -792,6 +754,9 @@ namespace Unity.Collections
             throw new ArgumentException($"NativeText: {error} while copying \"{source}\"");
         }
 
+        /// <summary>
+        /// A read-only alias for the value of a NativeText. Does not have its own allocated storage.
+        /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
         public unsafe struct ReadOnly
@@ -945,7 +910,7 @@ namespace Unity.Collections
             /// Returns a pointer to this string's character buffer.
             /// </summary>
             /// <remarks>
-            /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="`Capacity`"/>.
+            /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="Capacity"/>.
             /// </remarks>
             /// <returns>A pointer to this string's character buffer.</returns>
             public byte* GetUnsafePtr()
@@ -1004,7 +969,7 @@ namespace Unity.Collections
             /// -1 denotes that this string should be sorted to precede the other.<br/>
             /// +1 denotes that this string should be sorted to follow the other.<br/>
             /// </returns>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Takes managed string")]
             public int CompareTo(String other)
             {
                 CheckNull(m_Data);
@@ -1018,7 +983,7 @@ namespace Unity.Collections
             /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
             /// <param name="other">Another string to compare with.</param>
             /// <returns>True if the two strings are equal.</returns>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Takes managed string")]
             public bool Equals(String other)
             {
                 CheckNull(m_Data);
@@ -1160,7 +1125,7 @@ namespace Unity.Collections
             /// Returns a managed string copy of this string.
             /// </summary>
             /// <returns>A managed string copy of this string.</returns>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Returns managed string")]
             public override String ToString()
             {
                 if (m_Data == null)
@@ -1188,7 +1153,7 @@ namespace Unity.Collections
             /// Two strings are equal if they have equal length and all their characters match.</remarks>
             /// <param name="other">Another string to compare with.</param>
             /// <returns>True if this string and the object are equal.</returns>
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Takes managed object")]
             public override bool Equals(object other)
             {
                 if(ReferenceEquals(null, other)) return false;
@@ -1215,7 +1180,7 @@ namespace Unity.Collections
             /// <value>A copy of this string as a managed string.</value>
             [CreateProperty]
             [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-            [NotBurstCompatible]
+            [ExcludeFromBurstCompatTesting("Returns managed string")]
             public string Value => ToString();
 
             /// <summary>

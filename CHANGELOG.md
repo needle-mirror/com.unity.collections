@@ -1,41 +1,96 @@
 # Changelog
 
+## [2.1.0-exp.4] - 2022-08-05
+
+### Added
+
+* `Native/Unsafe/FixedList.InsertRange` with index/count arguments.
+* StreamCompressionModel moved from com.unity.transport
+* DataStreamReader moved from com.unity.transport
+* DataStreamWriter moved from com.unity.transport
+* Job types depending on collections have been moved here
+* Burst compiled delegates for allocators are now cached, which avoids a costly re-compilation
+* `DataStreamReader` can now be passed to a job
+* `DataStreamReader` can now be passed to a job.
+* IJobParallelForBatch from com.unity.jobs
+* `Unsafe/NativeHashMap/Set` suitable for single-threaded use cases.
+* `Native/UnsafeHashSet.ReadOnly` and `Native/UnsafeParallelHashSet.ReadOnly`.
+* `ConvertExistingDataToNativeArray` in `CollectionHelper` for custom allocators.
+* `Native/UnsafeBitArray.ReadOnly`.
+* CopyFromTruncated for one FixedStringXXXBytes to another FixedStringYYYBytes
+* New method `AddReplicate` to `NativeList`, `UnsafeList` and all `FixedList`, which will add a value `count` times to the list.
+* `CollectionHelper.CreateSafetyHandle` and `CollectionHelper.DisposeSafetyHandle` are public APIs now.
+
+### Changed
+
+* T constraint on all containers from `struct` to `unmanaged`
+* Add the missing string interpolation operator in two memory exception messages and make the message clearer.
+* Awareness of newly supported nested containers
+* Faster FixedString comparison
+* Reset `m_best` in RewindableAllocator rewind.
+* IJobParallelForFilter renamed to IJobFilter to better reflect functionality
+* Ensure lazy initialization of IJob types
+* Change Bool type, `m_enableBlockFree`  in `RewindableAllocator` to Byte type.
+* Change the growth rate of memory block size in RewindableAllocator.
+* FixedList methods `AddRange` and `AddRangeNoResize` will no longer append elements if they would exceed capacity.
+
+### Fixed
+
+* Some `AssumePositive` assumptions that should have been after some safety checks but weren't.
+* `Native/UnsafeList.InsertRangeWithBeginEnd` to allow end argument to resize list.
+* Fixed a race condition in the parallel hashmap when using `ParallelWriter` with hashmaps that operate close to their capacity
+* Update documentation on existing DataStream structs and helper methods.
+* Don't cache `DataStreamWriter.IsLittleEndian`, as the cache could not be properly populated if its shared static was not 0-initialized.
+
+### Removed
+
+* DisposeSentinel usage in containers.
+* deprecated code untyped `UnsafeList`, and `WordStorage`.
+* All deprecated code.
+* Temporary NativeArray placeholder
+
+### Deprecated
+
+* NetworkCompressionModel. New type StreamCompressionModel is no longer IDisposable and all usage of this should use the SharedStatic reference instead.
+* Packed read and write methods that take NetworkCompressionModel as a parameter. New versions taking StreamCompressionModel as an argument should be used instead.
+* `UnsafeList.ParallelReader` replaced by `UnsafeList.ReadOnly`.
+* `NativeList.AsParallelReader()` replaced by `NativeList.AsReadOnly()`.
+* Implicit cast operator from `NativeList<T>` to `NativeArray<T>`. Explicit cast method `NativeList<T>.AsArray()` should be used instead.
+
+
 ## [1.4.0] - 2022-07-12
 
 ### Changed
+
 * The com.unity.jobs package has been merged into com.unity.collections to resolve circular dependency issues that can occur when using Unity 2022.2+.
+
 
 ## [1.3.2] - 2022-06-27
 
-### Changed
 * updated minimum compatible version of Unity to 2020.3.30f1
+
 
 ## [1.3.1] - 2022-06-13
 
-* Minor fixes to changelog
+* Minor Fixes to changelog
 
 
 ## [1.3.0] - 2022-05-16
 
-### Added
-
-
 ### Changed
 
 * Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
-* Reset `m_best` in RewindableAllocator rewind.
 * Renamed `UnsafeHashSet` to `UnsafeParallelHashSet`.
 * Renamed `NativeHashSet` to `NativeParallelHashSet`.
 * Renamed `UnsafeHashMap` to `UnsafeParallelHashMap`.
 * Renamed `NativeHashMap` to `NativeParallelHashMap`.
 * Renamed `UnsafeMultiHashMap` to `UnsafeParallelMultiHashMap`.
 * Renamed `NativeMultiHashMap` to `NativeParallelMultiHashMap`.
-* Updated package `com.unity.burst` to `1.6.6`
+* Updated `com.unity.burst` to `1.6.6`
 
 ### Fixed
 
 * Added an assembly definition file for sample code in the package to avoid spurious warnings when adding the package
-
 
 
 ## [1.2.3] - 2022-03-18
@@ -44,11 +99,13 @@
 
 * Minor fixes to changelog
 
+
 ## [1.2.3-pre.1] - 2022-03-04
 
 ### Changed
 
 * Updated package dependencies
+
 
 ## [1.2.2] - 2022-03-03
 
@@ -75,6 +132,27 @@
 * `Native/UnsafeMultiHashMap.GetUniqueKeyArrayNBC` extension methods from `Unity.Collections.NotBurstCompatible` are not necessary anymore. Burst supports tuple. Original methods `Native/UnsafeMultiHashMap.GetUniqueKeyArray` are now available again.
 * Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
 * Static safety ID created for all types containing a uniquely represented AtomicSafetyHandle
+
+
+## [1.2.0] - 2022-01-18
+
+### Fixed
+
+* Shutdown the WordStorage with application exit to ensure memory is freed.
+* `NativeList.AsDeferredJobArray` allocator label is changed to `Allocator.Invalid` to infer that the array is in list mode.
+
+### Added
+
+* Added FixedStringMethods.CopyFromTruncated to copy a string to a FixedString explicitly allowing truncation
+* Added `NativeText.ReadOnly` type which provides a readonly, lightweight copy of a `NativeText` or `UnsafeText` type.
+* New public API AllocatorHandle.UnmanagedUnregister, which unregisters an allocator without using managed code.
+
+### Changed
+
+* `Native/UnsafeMultiHashMap.GetUniqueKeyArrayNBC` extension methods from `Unity.Collections.NotBurstCompatible` are not necessary anymore. Burst supports tuple. Original methods `Native/UnsafeMultiHashMap.GetUniqueKeyArray` are now available again.
+* Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
+* Static safety ID created for all types containing a uniquely represented AtomicSafetyHandle
+
 
 
 ## [1.1.0] - 2021-10-27

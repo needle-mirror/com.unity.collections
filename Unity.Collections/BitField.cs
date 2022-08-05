@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal unsafe struct Bitwise
     {
         internal static int AlignDown(int value, int alignPow2)
@@ -336,7 +336,7 @@ namespace Unity.Collections
             var bits = (byte*)ptr;
 
             byte beginMask = (byte)~(0xff << (beginBit & 7));
-            byte endMask = (byte)~(0xff >> ((8-(endBit & 7) & 7)));
+            byte endMask = (byte)~(0xff >> ((8 - (endBit & 7) & 7)));
 
             var mask = 1 << numBits - 1;
 
@@ -353,7 +353,7 @@ namespace Unity.Collections
 
                 for (int pos = i * 8, posEnd = pos + 7; pos < posEnd; ++pos)
                 {
-                    var tz = tzcnt((byte)(test^0xff));
+                    var tz = tzcnt((byte)(test ^ 0xff));
                     test >>= tz;
 
                     pos += tz;
@@ -446,6 +446,163 @@ namespace Unity.Collections
         }
 
         internal static int Find(ulong* ptr, int pos, int count, int numBits) => FindWithBeginEnd(ptr, pos, pos + count, numBits);
+
+        internal static bool TestNone(ulong* ptr, int length, int pos, int numBits = 1)
+        {
+            var end = math.min(pos + numBits, length);
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+            var idxE = (end - 1) >> 6;
+            var shiftE = end & 0x3f;
+            var maskB = 0xfffffffffffffffful << shiftB;
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+
+            if (idxB == idxE)
+            {
+                var mask = maskB & maskE;
+                return 0ul == (ptr[idxB] & mask);
+            }
+
+            if (0ul != (ptr[idxB] & maskB))
+            {
+                return false;
+            }
+
+            for (var idx = idxB + 1; idx < idxE; ++idx)
+            {
+                if (0ul != ptr[idx])
+                {
+                    return false;
+                }
+            }
+
+            return 0ul == (ptr[idxE] & maskE);
+        }
+
+        internal static bool TestAny(ulong* ptr, int length, int pos, int numBits = 1)
+        {
+            var end = math.min(pos + numBits, length);
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+            var idxE = (end - 1) >> 6;
+            var shiftE = end & 0x3f;
+            var maskB = 0xfffffffffffffffful << shiftB;
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+
+            if (idxB == idxE)
+            {
+                var mask = maskB & maskE;
+                return 0ul != (ptr[idxB] & mask);
+            }
+
+            if (0ul != (ptr[idxB] & maskB))
+            {
+                return true;
+            }
+
+            for (var idx = idxB + 1; idx < idxE; ++idx)
+            {
+                if (0ul != ptr[idx])
+                {
+                    return true;
+                }
+            }
+
+            return 0ul != (ptr[idxE] & maskE);
+        }
+
+        internal static bool TestAll(ulong* ptr, int length, int pos, int numBits = 1)
+        {
+            var end = math.min(pos + numBits, length);
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+            var idxE = (end - 1) >> 6;
+            var shiftE = end & 0x3f;
+            var maskB = 0xfffffffffffffffful << shiftB;
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+
+            if (idxB == idxE)
+            {
+                var mask = maskB & maskE;
+                return mask == (ptr[idxB] & mask);
+            }
+
+            if (maskB != (ptr[idxB] & maskB))
+            {
+                return false;
+            }
+
+            for (var idx = idxB + 1; idx < idxE; ++idx)
+            {
+                if (0xfffffffffffffffful != ptr[idx])
+                {
+                    return false;
+                }
+            }
+
+            return maskE == (ptr[idxE] & maskE);
+        }
+
+        internal static int CountBits(ulong* ptr, int length, int pos, int numBits = 1)
+        {
+            var end = math.min(pos + numBits, length);
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+            var idxE = (end - 1) >> 6;
+            var shiftE = end & 0x3f;
+            var maskB = 0xfffffffffffffffful << shiftB;
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+
+            if (idxB == idxE)
+            {
+                var mask = maskB & maskE;
+                return math.countbits(ptr[idxB] & mask);
+            }
+
+            var count = math.countbits(ptr[idxB] & maskB);
+
+            for (var idx = idxB + 1; idx < idxE; ++idx)
+            {
+                count += math.countbits(ptr[idx]);
+            }
+
+            count += math.countbits(ptr[idxE] & maskE);
+
+            return count;
+        }
+
+        internal static bool IsSet(ulong* ptr, int pos)
+        {
+            var idx = pos >> 6;
+            var shift = pos & 0x3f;
+            var mask = 1ul << shift;
+            return 0ul != (ptr[idx] & mask);
+        }
+
+        internal static ulong GetBits(ulong* ptr, int length, int pos, int numBits = 1)
+        {
+            var idxB = pos >> 6;
+            var shiftB = pos & 0x3f;
+
+            if (shiftB + numBits <= 64)
+            {
+                var mask = 0xfffffffffffffffful >> (64 - numBits);
+                return Bitwise.ExtractBits(ptr[idxB], shiftB, mask);
+            }
+
+            var end = math.min(pos + numBits, length);
+            var idxE = (end - 1) >> 6;
+            var shiftE = end & 0x3f;
+
+            var maskB = 0xfffffffffffffffful >> shiftB;
+            ulong valueB = Bitwise.ExtractBits(ptr[idxB], shiftB, maskB);
+
+            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+            ulong valueE = Bitwise.ExtractBits(ptr[idxE], 0, maskE);
+
+            return (valueE << (64 - shiftB)) | valueB;
+        }
+
     }
 
     /// <summary>
@@ -455,7 +612,7 @@ namespace Unity.Collections
     /// Stack allocated, so it does not require thread safety checks or disposal.
     /// </remarks>
     [DebuggerTypeProxy(typeof(BitField32DebugView))]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct BitField32
     {
         /// <summary>
@@ -639,7 +796,7 @@ namespace Unity.Collections
     /// Stack allocated, so it does not require thread safety checks or disposal.
     /// </remarks>
     [DebuggerTypeProxy(typeof(BitField64DebugView))]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct BitField64
     {
         /// <summary>

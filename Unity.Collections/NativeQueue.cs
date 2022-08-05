@@ -16,7 +16,7 @@ namespace Unity.Collections
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal unsafe struct NativeQueueBlockPoolData
     {
         internal IntPtr m_FirstBlock;
@@ -146,7 +146,7 @@ namespace Unity.Collections
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal unsafe struct NativeQueueData
     {
         public IntPtr m_FirstBlock;
@@ -167,8 +167,8 @@ namespace Unity.Collections
             *data = currentWriteBlock;
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public static NativeQueueBlockHeader* AllocateWriteBlockMT<T>(NativeQueueData* data, NativeQueueBlockPoolData* pool, int threadIndex) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public static NativeQueueBlockHeader* AllocateWriteBlockMT<T>(NativeQueueData* data, NativeQueueBlockPoolData* pool, int threadIndex) where T : unmanaged
         {
             NativeQueueBlockHeader* currentWriteBlock = data->GetCurrentWriteBlockTLS(threadIndex);
 
@@ -200,8 +200,8 @@ namespace Unity.Collections
             return currentWriteBlock;
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public unsafe static void AllocateQueue<T>(AllocatorManager.AllocatorHandle label, out NativeQueueData* outBuf) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public unsafe static void AllocateQueue<T>(AllocatorManager.AllocatorHandle label, out NativeQueueData* outBuf) where T : unmanaged
         {
             var queueDataSize = CollectionHelper.Align(UnsafeUtility.SizeOf<NativeQueueData>(), JobsUtility.CacheLineSize);
 
@@ -248,10 +248,10 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeQueue<T>
         : INativeDisposable
-        where T : struct
+        where T : unmanaged
     {
         [NativeDisableUnsafePtrRestriction]
         NativeQueueData* m_Buffer;
@@ -263,12 +263,6 @@ namespace Unity.Collections
         AtomicSafetyHandle m_Safety;
 
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeQueue<T>>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
 #endif
 
         AllocatorManager.AllocatorHandle m_AllocatorLabel;
@@ -279,36 +273,23 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         public NativeQueue(AllocatorManager.AllocatorHandle allocator)
         {
-            CollectionHelper.CheckIsUnmanaged<T>();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
+
+            CollectionHelper.InitNativeContainer<T>(m_Safety);
+            CollectionHelper.SetStaticSafetyId<NativeQueue<T>>(ref m_Safety, ref s_staticSafetyId.Data);
+#endif
 
             m_QueuePool = NativeQueueBlockPool.GetQueueBlockPool();
             m_AllocatorLabel = allocator;
 
             NativeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
-
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-            m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                m_Safety = AtomicSafetyHandle.Create();
-                m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out m_Safety, out m_DisposeSentinel, 0, allocator.ToAllocator);
-            }
-#endif
-
-            CollectionHelper.SetStaticSafetyId<NativeQueue<T>>(ref m_Safety, ref s_staticSafetyId.Data);
-#endif
         }
 
         /// <summary>
         /// Returns true if this queue is empty.
         /// </summary>
-        /// <value>True if this queue has no items or if the queue has not been constructed.</value>
+        /// <returns>True if this queue has no items or if the queue has not been constructed.</returns>
         public bool IsEmpty()
         {
             if (!IsCreated)
@@ -528,11 +509,7 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
             NativeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
             m_Buffer = null;
@@ -543,18 +520,9 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">The dependency for the new job.</param>
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and releases all resources (memory and safety handles) of this queue.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-            // will check that no jobs are writing to the container).
-            DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
             var jobHandle = new NativeQueueDisposeJob { Data = new NativeQueueDispose { m_Buffer = m_Buffer, m_QueuePool = m_QueuePool, m_AllocatorLabel = m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
             AtomicSafetyHandle.Release(m_Safety);
@@ -593,7 +561,7 @@ namespace Unity.Collections
         /// </remarks>
         [NativeContainer]
         [NativeContainerIsAtomicWriteOnly]
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ParallelWriter
         {
             [NativeDisableUnsafePtrRestriction]
@@ -659,7 +627,7 @@ namespace Unity.Collections
     }
 
     [NativeContainer]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal unsafe struct NativeQueueDispose
     {
         [NativeDisableUnsafePtrRestriction]

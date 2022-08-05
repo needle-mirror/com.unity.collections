@@ -5,7 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
 {
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static partial class xxHash3
     {
         internal static unsafe void Avx2HashLongInternalLoop(ulong* acc, byte* input, byte* dest, long length, byte* secret, int isHash64)

@@ -8,6 +8,36 @@ using Assert = FastAssert;
 
 internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFixture
 {
+// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
+#if !UNITY_DOTSRUNTIME
+    struct NestedMapJob : IJob
+    {
+        public NativeParallelHashMap<int, NativeParallelHashMap<int, int>> nestedMap;
+
+        public void Execute()
+        {
+            nestedMap.Clear();
+        }
+    }
+
+    [Test]
+    public void NativeParallelHashMap_NestedJob_Error()
+    {
+        var map = new NativeParallelHashMap<int, NativeParallelHashMap<int, int>>(hashMapSize, CommonRwdAllocator.Handle);
+
+        var nestedJob = new NestedMapJob
+        {
+            nestedMap = map
+        };
+
+        JobHandle job = default;
+        Assert.Throws<InvalidOperationException>(() => { job = nestedJob.Schedule(); }); 
+        job.Complete();
+
+        map.Dispose();
+    }
+#endif
+
     [Test]
     public void NativeParallelHashMap_Read_And_Write()
     {
@@ -184,7 +214,7 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
         Assert.DoesNotThrow(() => { container0.Add(0, 1); });
         Assert.True(container0.ContainsKey(0));
 
-        var container1 = new NativeParallelMultiHashMap<int, int>(1, Allocator.Persistent);
+        var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
         Assert.True(container1.IsCreated);
         Assert.DoesNotThrow(() => { container1.Add(1, 2); });
         Assert.True(container1.ContainsKey(1));

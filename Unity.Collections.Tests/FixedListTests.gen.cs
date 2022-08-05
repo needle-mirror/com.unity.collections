@@ -158,12 +158,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList32Byte_GenericAdd()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_GenericAddRange()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_GenericAddNoResize()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_GenericAddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Byte_GenericAddReplicate()
+    {
+        var list = new FixedList32Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Byte_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Byte_GenericInsertRange()
+    {
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -318,12 +424,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList64Byte_GenericAdd()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_GenericAddRange()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_GenericAddNoResize()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_GenericAddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Byte_GenericAddReplicate()
+    {
+        var list = new FixedList64Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Byte_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Byte_GenericInsertRange()
+    {
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -478,12 +690,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList128Byte_GenericAdd()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_GenericAddRange()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_GenericAddNoResize()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_GenericAddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Byte_GenericAddReplicate()
+    {
+        var list = new FixedList128Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Byte_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Byte_GenericInsertRange()
+    {
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -626,12 +944,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList32Byte_Add()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_AddRange()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_AddNoResize()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_AddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Byte_AddReplicate()
+    {
+        var list = new FixedList32Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Byte_InsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Byte_InsertRange()
+    {
+        var list = new FixedList32Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -788,12 +1212,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList64Byte_Add()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_AddRange()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_AddNoResize()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_AddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Byte_AddReplicate()
+    {
+        var list = new FixedList64Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Byte_InsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Byte_InsertRange()
+    {
+        var list = new FixedList64Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -948,12 +1478,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList128Byte_Add()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_AddRange()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_AddNoResize()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((byte)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_AddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<byte>();
+        var capacity = list.Capacity;
+        var items = stackalloc byte[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (byte)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Byte_AddReplicate()
+    {
+        var list = new FixedList128Bytes<byte>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Byte_InsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Byte_InsertRange()
+    {
+        var list = new FixedList128Bytes<byte>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1118,12 +1754,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList32Int_GenericAdd()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_GenericAddRange()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_GenericAddNoResize()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_GenericAddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Int_GenericAddReplicate()
+    {
+        var list = new FixedList32Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Int_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Int_GenericInsertRange()
+    {
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1278,12 +2020,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList64Int_GenericAdd()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_GenericAddRange()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_GenericAddNoResize()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_GenericAddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Int_GenericAddReplicate()
+    {
+        var list = new FixedList64Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Int_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Int_GenericInsertRange()
+    {
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1438,12 +2286,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList128Int_GenericAdd()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_GenericAddRange()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_GenericAddNoResize()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_GenericAddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Int_GenericAddReplicate()
+    {
+        var list = new FixedList128Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Int_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Int_GenericInsertRange()
+    {
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1586,12 +2540,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList32Int_Add()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_AddRange()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_AddNoResize()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_AddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Int_AddReplicate()
+    {
+        var list = new FixedList32Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Int_InsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Int_InsertRange()
+    {
+        var list = new FixedList32Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1748,12 +2808,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList64Int_Add()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_AddRange()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_AddNoResize()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_AddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Int_AddReplicate()
+    {
+        var list = new FixedList64Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Int_InsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Int_InsertRange()
+    {
+        var list = new FixedList64Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -1908,12 +3074,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList128Int_Add()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_AddRange()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_AddNoResize()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((int)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_AddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<int>();
+        var capacity = list.Capacity;
+        var items = stackalloc int[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (int)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Int_AddReplicate()
+    {
+        var list = new FixedList128Bytes<int>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Int_InsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<int>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Int_InsertRange()
+    {
+        var list = new FixedList128Bytes<int>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2078,12 +3350,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList32Float_GenericAdd()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_GenericAddRange()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_GenericAddNoResize()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_GenericAddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Float_GenericAddReplicate()
+    {
+        var list = new FixedList32Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Float_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Float_GenericInsertRange()
+    {
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2238,12 +3616,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList64Float_GenericAdd()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_GenericAddRange()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_GenericAddNoResize()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_GenericAddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Float_GenericAddReplicate()
+    {
+        var list = new FixedList64Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Float_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Float_GenericInsertRange()
+    {
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2398,12 +3882,118 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
+    public unsafe void FixedList128Float_GenericAdd()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_GenericAddRange()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_GenericAddNoResize()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_GenericAddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Float_GenericAddReplicate()
+    {
+        var list = new FixedList128Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Float_GenericInsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Float_GenericInsertRange()
+    {
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2546,12 +4136,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList32Float_Add()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_AddRange()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_AddNoResize()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_AddRangeNoResize()
+    {
+        var list = new FixedList32Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList32Float_AddReplicate()
+    {
+        var list = new FixedList32Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList32Float_InsertRangeWithBeginEnd()
     {
         var list = new FixedList32Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList32Float_InsertRange()
+    {
+        var list = new FixedList32Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2708,12 +4404,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList64Float_Add()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_AddRange()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_AddNoResize()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_AddRangeNoResize()
+    {
+        var list = new FixedList64Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList64Float_AddReplicate()
+    {
+        var list = new FixedList64Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList64Float_InsertRangeWithBeginEnd()
     {
         var list = new FixedList64Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList64Float_InsertRange()
+    {
+        var list = new FixedList64Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }
@@ -2868,12 +4670,118 @@ internal class FixedListTests : CollectionsTestFixture
 #endif
 
     [Test]
+    public unsafe void FixedList128Float_Add()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.Add((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_AddRange()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRange(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_AddNoResize()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        for (var i = 0; i < capacity; ++i)
+        {
+            list.AddNoResize((float)i);
+            Assert.AreEqual(i + 1, list.Length);
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+        Assert.AreEqual(capacity, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_AddRangeNoResize()
+    {
+        var list = new FixedList128Bytes<float>();
+        var capacity = list.Capacity;
+        var items = stackalloc float[capacity];
+        for (var i = 0; i < capacity; ++i)
+            items[i] = (float)i;
+
+        var half = capacity / 2;
+        list.AddRangeNoResize(items, half);
+        Assert.AreEqual(half, list.Length);
+        for (var i = 0; i < half; ++i)
+            Assert.AreEqual(i, list[i]);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+        Assert.AreEqual(half, list.Length); // Verify length didn't change
+    }
+
+    [Test]
+    public void FixedList128Float_AddReplicate()
+    {
+        var list = new FixedList128Bytes<float>();
+        list.AddReplicate(42, 2);
+        Assert.AreEqual(2, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        list.AddReplicate(42, 3);
+        Assert.AreEqual(5, list.Length);
+        foreach (var item in list)
+            Assert.AreEqual(42, item);
+
+        Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+        Assert.AreEqual(5, list.Length); // Verify length didn't change
+    }
+
+    [Test]
     public void FixedList128Float_InsertRangeWithBeginEnd()
     {
         var list = new FixedList128Bytes<float>() { 0, 3, 4 };
         list.InsertRangeWithBeginEnd(1,3);
         list[1] = 1;
         list[2] = 2;
+        for(var i = 0; i < 5; ++i)
+            Assert.AreEqual(i, list[i]);
+    }
+
+    [Test]
+    public void FixedList128Float_InsertRange()
+    {
+        var list = new FixedList128Bytes<float>() { 0, 3, 4 };
+        Assert.AreEqual(3, list.Length);
+
+        list.InsertRange(1, 2);
+        Assert.AreEqual(5, list.Length);
+        list[1] = 1;
+        list[2] = 2;
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(5, list.Length);
+
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
     }

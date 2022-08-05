@@ -37,7 +37,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes16
     {
         /// <summary>
@@ -133,7 +133,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=30)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes30
     {
         /// <summary>
@@ -212,8 +212,6 @@ namespace Unity.Collections
         [FieldOffset(29)] public byte byte0029;
 
     }
-    [Obsolete("Renamed to FixedString32Bytes (UnityUpgradable) -> FixedString32Bytes", true)]
-    public partial struct FixedString32 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 32-byte struct.
@@ -230,7 +228,7 @@ namespace Unity.Collections
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=32)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public partial struct FixedString32Bytes
         : INativeList<byte>
         , IUTF8Bytes
@@ -266,7 +264,7 @@ namespace Unity.Collections
         /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -521,7 +519,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other string.<br/>
         /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -532,7 +530,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A string to compare for equality.</param>
         /// <returns>True if this string and the other have the same length and all the same characters.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             unsafe {
@@ -547,7 +545,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedList32Bytes<byte> representation of this string.
+        /// Returns a reference to a FixedList32Bytes&lt;byte&gt; representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte32 is the very same bytes as the original FixedString32Bytes,
@@ -563,35 +561,24 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public FixedString32Bytes(String source)
         {
             this = default;
             var error = Initialize(source);
-            CheckCopyError((CopyError)error, source);
+            CheckCopyError(error, source);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        [NotBurstCompatible]
-        internal int Initialize(String source)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, only the portion that fits is copied in and CopyError.Truncation is returned.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        internal CopyError Initialize(String source)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe
-            {
-                fixed (char* sourceptr = source)
-                {
-                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if(error != CopyError.None)
-                        return (int)error;
-                    this.Length = utf8LengthInBytes;
-                }
-            }
-            return 0;
+            return this.CopyFromTruncated(source);
         }
 
         /// <summary>
@@ -610,13 +597,57 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(Unicode.Rune rune, int count = 1)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        internal FormatError Initialize(Unicode.Rune rune, int count = 1)
         {
             this = default;
-            return (int)this.Append(rune, count);
+            return this.Append(rune, count);
         }
 
+        /// <summary>
+        /// Initializes an instance of FixedString32Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="srcBytes">The source buffer.</param>
+        /// <param name="srcLength">The number of bytes to read from the source.</param>
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(byte* srcBytes, int srcLength)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            unsafe {
+                int len = 0;
+                byte* dstBytes = GetUnsafePtr();
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                if(error != FormatError.None)
+                    return error;
+                this.Length = len;
+            }
+            return FormatError.None;
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        unsafe public FixedString32Bytes(NativeText.ReadOnly other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The UnsafeText to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        unsafe public FixedString32Bytes(in UnsafeText other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
 
         /// <summary>
         /// Returns the lexicographical sort order of this string relative to another.
@@ -637,34 +668,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         public FixedString32Bytes(in FixedString32Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString32Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString32Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -729,34 +748,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         public FixedString32Bytes(in FixedString64Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString64Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString64Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -806,7 +813,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString32Bytes to copy.</param>
         /// <returns>A new FixedString64Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public static implicit operator FixedString64Bytes(in FixedString32Bytes fs) => new FixedString64Bytes(in fs);
 
 
@@ -829,34 +836,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         public FixedString32Bytes(in FixedString128Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString128Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString128Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -906,7 +901,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString32Bytes to copy.</param>
         /// <returns>A new FixedString128Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public static implicit operator FixedString128Bytes(in FixedString32Bytes fs) => new FixedString128Bytes(in fs);
 
 
@@ -929,34 +924,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         public FixedString32Bytes(in FixedString512Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString512Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString512Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -1006,7 +989,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString32Bytes to copy.</param>
         /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public static implicit operator FixedString512Bytes(in FixedString32Bytes fs) => new FixedString512Bytes(in fs);
 
 
@@ -1029,34 +1012,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
         public FixedString32Bytes(in FixedString4096Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString32Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString4096Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString4096Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -1106,7 +1077,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString32Bytes to copy.</param>
         /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public static implicit operator FixedString4096Bytes(in FixedString32Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
@@ -1114,15 +1085,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">A string to copy.</param>
         /// <returns>A new FixedString32Bytes that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString32Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static implicit operator FixedString32Bytes(string b) => new FixedString32Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
         /// </summary>
         /// <returns>A new managed string that is a copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -1147,7 +1118,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -1210,7 +1181,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=62)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes62
     {
         /// <summary>
@@ -1299,8 +1270,6 @@ namespace Unity.Collections
         [FieldOffset(61)] public byte byte0061;
 
     }
-    [Obsolete("Renamed to FixedString64Bytes (UnityUpgradable) -> FixedString64Bytes", true)]
-    public partial struct FixedString64 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 64-byte struct.
@@ -1317,7 +1286,7 @@ namespace Unity.Collections
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=64)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public partial struct FixedString64Bytes
         : INativeList<byte>
         , IUTF8Bytes
@@ -1353,7 +1322,7 @@ namespace Unity.Collections
         /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -1608,7 +1577,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other string.<br/>
         /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -1619,7 +1588,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A string to compare for equality.</param>
         /// <returns>True if this string and the other have the same length and all the same characters.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             unsafe {
@@ -1634,7 +1603,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedList64Bytes<byte> representation of this string.
+        /// Returns a reference to a FixedList64Bytes&lt;byte&gt; representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte64 is the very same bytes as the original FixedString64Bytes,
@@ -1650,35 +1619,24 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public FixedString64Bytes(String source)
         {
             this = default;
             var error = Initialize(source);
-            CheckCopyError((CopyError)error, source);
+            CheckCopyError(error, source);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        [NotBurstCompatible]
-        internal int Initialize(String source)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, only the portion that fits is copied in and CopyError.Truncation is returned.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        internal CopyError Initialize(String source)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe
-            {
-                fixed (char* sourceptr = source)
-                {
-                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if(error != CopyError.None)
-                        return (int)error;
-                    this.Length = utf8LengthInBytes;
-                }
-            }
-            return 0;
+            return this.CopyFromTruncated(source);
         }
 
         /// <summary>
@@ -1697,13 +1655,57 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(Unicode.Rune rune, int count = 1)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        internal FormatError Initialize(Unicode.Rune rune, int count = 1)
         {
             this = default;
-            return (int)this.Append(rune, count);
+            return this.Append(rune, count);
         }
 
+        /// <summary>
+        /// Initializes an instance of FixedString64Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="srcBytes">The source buffer.</param>
+        /// <param name="srcLength">The number of bytes to read from the source.</param>
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(byte* srcBytes, int srcLength)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            unsafe {
+                int len = 0;
+                byte* dstBytes = GetUnsafePtr();
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                if(error != FormatError.None)
+                    return error;
+                this.Length = len;
+            }
+            return FormatError.None;
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        unsafe public FixedString64Bytes(NativeText.ReadOnly other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The UnsafeText to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        unsafe public FixedString64Bytes(in UnsafeText other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
 
         /// <summary>
         /// Returns the lexicographical sort order of this string relative to another.
@@ -1724,34 +1726,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public FixedString64Bytes(in FixedString32Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString32Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString32Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -1816,34 +1806,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public FixedString64Bytes(in FixedString64Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString64Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString64Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -1908,34 +1886,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public FixedString64Bytes(in FixedString128Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString128Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString128Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -1985,7 +1951,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString64Bytes to copy.</param>
         /// <returns>A new FixedString128Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public static implicit operator FixedString128Bytes(in FixedString64Bytes fs) => new FixedString128Bytes(in fs);
 
 
@@ -2008,34 +1974,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public FixedString64Bytes(in FixedString512Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString512Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString512Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -2085,7 +2039,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString64Bytes to copy.</param>
         /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public static implicit operator FixedString512Bytes(in FixedString64Bytes fs) => new FixedString512Bytes(in fs);
 
 
@@ -2108,34 +2062,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
         public FixedString64Bytes(in FixedString4096Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString64Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString4096Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString4096Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -2185,7 +2127,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString64Bytes to copy.</param>
         /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public static implicit operator FixedString4096Bytes(in FixedString64Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
@@ -2193,15 +2135,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">A string to copy.</param>
         /// <returns>A new FixedString64Bytes that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString64Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static implicit operator FixedString64Bytes(string b) => new FixedString64Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
         /// </summary>
         /// <returns>A new managed string that is a copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -2226,7 +2168,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -2289,7 +2231,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=126)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes126
     {
         /// <summary>
@@ -2398,8 +2340,6 @@ namespace Unity.Collections
         [FieldOffset(125)] public byte byte0125;
 
     }
-    [Obsolete("Renamed to FixedString128Bytes (UnityUpgradable) -> FixedString128Bytes", true)]
-    public partial struct FixedString128 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 128-byte struct.
@@ -2416,7 +2356,7 @@ namespace Unity.Collections
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=128)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public partial struct FixedString128Bytes
         : INativeList<byte>
         , IUTF8Bytes
@@ -2452,7 +2392,7 @@ namespace Unity.Collections
         /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -2707,7 +2647,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other string.<br/>
         /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -2718,7 +2658,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A string to compare for equality.</param>
         /// <returns>True if this string and the other have the same length and all the same characters.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             unsafe {
@@ -2733,7 +2673,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedList128Bytes<byte> representation of this string.
+        /// Returns a reference to a FixedList128Bytes&lt;byte&gt; representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte128 is the very same bytes as the original FixedString128Bytes,
@@ -2749,35 +2689,24 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public FixedString128Bytes(String source)
         {
             this = default;
             var error = Initialize(source);
-            CheckCopyError((CopyError)error, source);
+            CheckCopyError(error, source);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        [NotBurstCompatible]
-        internal int Initialize(String source)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, only the portion that fits is copied in and CopyError.Truncation is returned.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        internal CopyError Initialize(String source)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe
-            {
-                fixed (char* sourceptr = source)
-                {
-                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if(error != CopyError.None)
-                        return (int)error;
-                    this.Length = utf8LengthInBytes;
-                }
-            }
-            return 0;
+            return this.CopyFromTruncated(source);
         }
 
         /// <summary>
@@ -2796,13 +2725,57 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(Unicode.Rune rune, int count = 1)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        internal FormatError Initialize(Unicode.Rune rune, int count = 1)
         {
             this = default;
-            return (int)this.Append(rune, count);
+            return this.Append(rune, count);
         }
 
+        /// <summary>
+        /// Initializes an instance of FixedString128Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="srcBytes">The source buffer.</param>
+        /// <param name="srcLength">The number of bytes to read from the source.</param>
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(byte* srcBytes, int srcLength)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            unsafe {
+                int len = 0;
+                byte* dstBytes = GetUnsafePtr();
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                if(error != FormatError.None)
+                    return error;
+                this.Length = len;
+            }
+            return FormatError.None;
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        unsafe public FixedString128Bytes(NativeText.ReadOnly other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The UnsafeText to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        unsafe public FixedString128Bytes(in UnsafeText other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
 
         /// <summary>
         /// Returns the lexicographical sort order of this string relative to another.
@@ -2823,34 +2796,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public FixedString128Bytes(in FixedString32Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString32Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString32Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -2915,34 +2876,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public FixedString128Bytes(in FixedString64Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString64Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString64Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -3007,34 +2956,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public FixedString128Bytes(in FixedString128Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString128Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString128Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -3099,34 +3036,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public FixedString128Bytes(in FixedString512Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString512Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString512Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -3176,7 +3101,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString128Bytes to copy.</param>
         /// <returns>A new FixedString512Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public static implicit operator FixedString512Bytes(in FixedString128Bytes fs) => new FixedString512Bytes(in fs);
 
 
@@ -3199,34 +3124,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
         public FixedString128Bytes(in FixedString4096Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString128Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString4096Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString4096Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -3276,7 +3189,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString128Bytes to copy.</param>
         /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public static implicit operator FixedString4096Bytes(in FixedString128Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
@@ -3284,15 +3197,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">A string to copy.</param>
         /// <returns>A new FixedString128Bytes that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString128Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static implicit operator FixedString128Bytes(string b) => new FixedString128Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
         /// </summary>
         /// <returns>A new managed string that is a copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -3317,7 +3230,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -3380,7 +3293,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=510)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes510
     {
         /// <summary>
@@ -3609,8 +3522,6 @@ namespace Unity.Collections
         [FieldOffset(509)] public byte byte0509;
 
     }
-    [Obsolete("Renamed to FixedString512Bytes (UnityUpgradable) -> FixedString512Bytes", true)]
-    public partial struct FixedString512 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 512-byte struct.
@@ -3627,7 +3538,7 @@ namespace Unity.Collections
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=512)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public partial struct FixedString512Bytes
         : INativeList<byte>
         , IUTF8Bytes
@@ -3663,7 +3574,7 @@ namespace Unity.Collections
         /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -3918,7 +3829,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other string.<br/>
         /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -3929,7 +3840,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A string to compare for equality.</param>
         /// <returns>True if this string and the other have the same length and all the same characters.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             unsafe {
@@ -3944,7 +3855,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedList512Bytes<byte> representation of this string.
+        /// Returns a reference to a FixedList512Bytes&lt;byte&gt; representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte512 is the very same bytes as the original FixedString512Bytes,
@@ -3960,35 +3871,24 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public FixedString512Bytes(String source)
         {
             this = default;
             var error = Initialize(source);
-            CheckCopyError((CopyError)error, source);
+            CheckCopyError(error, source);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        [NotBurstCompatible]
-        internal int Initialize(String source)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, only the portion that fits is copied in and CopyError.Truncation is returned.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        internal CopyError Initialize(String source)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe
-            {
-                fixed (char* sourceptr = source)
-                {
-                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if(error != CopyError.None)
-                        return (int)error;
-                    this.Length = utf8LengthInBytes;
-                }
-            }
-            return 0;
+            return this.CopyFromTruncated(source);
         }
 
         /// <summary>
@@ -4007,13 +3907,57 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(Unicode.Rune rune, int count = 1)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        internal FormatError Initialize(Unicode.Rune rune, int count = 1)
         {
             this = default;
-            return (int)this.Append(rune, count);
+            return this.Append(rune, count);
         }
 
+        /// <summary>
+        /// Initializes an instance of FixedString512Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="srcBytes">The source buffer.</param>
+        /// <param name="srcLength">The number of bytes to read from the source.</param>
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(byte* srcBytes, int srcLength)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            unsafe {
+                int len = 0;
+                byte* dstBytes = GetUnsafePtr();
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                if(error != FormatError.None)
+                    return error;
+                this.Length = len;
+            }
+            return FormatError.None;
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        unsafe public FixedString512Bytes(NativeText.ReadOnly other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The UnsafeText to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        unsafe public FixedString512Bytes(in UnsafeText other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
 
         /// <summary>
         /// Returns the lexicographical sort order of this string relative to another.
@@ -4034,34 +3978,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public FixedString512Bytes(in FixedString32Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString32Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString32Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -4126,34 +4058,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public FixedString512Bytes(in FixedString64Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString64Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString64Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -4218,34 +4138,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public FixedString512Bytes(in FixedString128Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString128Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString128Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -4310,34 +4218,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public FixedString512Bytes(in FixedString512Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString512Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString512Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -4402,34 +4298,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
         public FixedString512Bytes(in FixedString4096Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString512Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString4096Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString4096Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -4479,7 +4363,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="fs">A FixedString512Bytes to copy.</param>
         /// <returns>A new FixedString4096Bytes that is a copy of the other string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public static implicit operator FixedString4096Bytes(in FixedString512Bytes fs) => new FixedString4096Bytes(in fs);
 
         /// <summary>
@@ -4487,15 +4371,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">A string to copy.</param>
         /// <returns>A new FixedString512Bytes that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString512Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static implicit operator FixedString512Bytes(string b) => new FixedString512Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
         /// </summary>
         /// <returns>A new managed string that is a copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -4520,7 +4404,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;
@@ -4583,7 +4467,7 @@ namespace Unity.Collections
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=4094)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public struct FixedBytes4094
     {
         /// <summary>
@@ -5932,8 +5816,6 @@ namespace Unity.Collections
         [FieldOffset(4093)] public byte byte4093;
 
     }
-    [Obsolete("Renamed to FixedString4096Bytes (UnityUpgradable) -> FixedString4096Bytes", true)]
-    public partial struct FixedString4096 {}
 
     /// <summary>
     /// An unmanaged UTF-8 string whose content is stored directly in the 4096-byte struct.
@@ -5950,7 +5832,7 @@ namespace Unity.Collections
     /// </remarks>
     [Serializable]
     [StructLayout(LayoutKind.Sequential, Size=4096)]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public partial struct FixedString4096Bytes
         : INativeList<byte>
         , IUTF8Bytes
@@ -5986,7 +5868,7 @@ namespace Unity.Collections
         /// <value>For internal use only. Use <see cref="ToString"/> instead.</value>
         [CreateProperty]
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public string Value => ToString();
 
         /// <summary>
@@ -6241,7 +6123,7 @@ namespace Unity.Collections
         /// -1 denotes that this string should be sorted to precede the other string.<br/>
         /// +1 denotes that this string should be sorted to follow the other string.<br/>
         /// </returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public int CompareTo(String other)
         {
             return ToString().CompareTo(other);
@@ -6252,7 +6134,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A string to compare for equality.</param>
         /// <returns>True if this string and the other have the same length and all the same characters.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public bool Equals(String other)
         {
             unsafe {
@@ -6267,7 +6149,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a reference to a FixedList4096Bytes<byte> representation of this string.
+        /// Returns a reference to a FixedList4096Bytes&lt;byte&gt; representation of this string.
         /// </summary>
         /// <remarks>
         /// The referenced FixedListByte4096 is the very same bytes as the original FixedString4096Bytes,
@@ -6283,35 +6165,24 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public FixedString4096Bytes(String source)
         {
             this = default;
             var error = Initialize(source);
-            CheckCopyError((CopyError)error, source);
+            CheckCopyError(error, source);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes with the characters copied from a string.
         /// </summary>
         /// <param name="source">The source string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        [NotBurstCompatible]
-        internal int Initialize(String source)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, only the portion that fits is copied in and CopyError.Truncation is returned.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        internal CopyError Initialize(String source)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe
-            {
-                fixed (char* sourceptr = source)
-                {
-                    var error = UTF8ArrayUnsafeUtility.Copy(GetUnsafePtr(), out utf8LengthInBytes, utf8MaxLengthInBytes, sourceptr, source.Length);
-                    if(error != CopyError.None)
-                        return (int)error;
-                    this.Length = utf8LengthInBytes;
-                }
-            }
-            return 0;
+            return this.CopyFromTruncated(source);
         }
 
         /// <summary>
@@ -6330,13 +6201,57 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="rune">The Unicode.Rune to repeat.</param>
         /// <param name="count">The number of times to repeat the character. Default is 1.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(Unicode.Rune rune, int count = 1)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        internal FormatError Initialize(Unicode.Rune rune, int count = 1)
         {
             this = default;
-            return (int)this.Append(rune, count);
+            return this.Append(rune, count);
         }
 
+        /// <summary>
+        /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="srcBytes">The source buffer.</param>
+        /// <param name="srcLength">The number of bytes to read from the source.</param>
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(byte* srcBytes, int srcLength)
+        {
+            bytes = default;
+            utf8LengthInBytes = 0;
+            unsafe {
+                int len = 0;
+                byte* dstBytes = GetUnsafePtr();
+                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
+                if(error != FormatError.None)
+                    return error;
+                this.Length = len;
+            }
+            return FormatError.None;
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The string to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        unsafe public FixedString4096Bytes(NativeText.ReadOnly other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
+
+        /// <summary>
+        /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
+        /// </summary>
+        /// <param name="other">The UnsafeText to copy.</param>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        unsafe public FixedString4096Bytes(in UnsafeText other)
+        {
+            this = default;
+            var error = Initialize(other.GetUnsafePtr(), other.Length);
+            CheckFormatError(error);
+        }
 
         /// <summary>
         /// Returns the lexicographical sort order of this string relative to another.
@@ -6357,34 +6272,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public FixedString4096Bytes(in FixedString32Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString32Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString32Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -6449,34 +6352,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public FixedString4096Bytes(in FixedString64Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString64Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString64Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -6541,34 +6432,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public FixedString4096Bytes(in FixedString128Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString128Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString128Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -6633,34 +6512,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public FixedString4096Bytes(in FixedString512Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString512Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString512Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -6725,34 +6592,22 @@ namespace Unity.Collections
         /// Initializes and returns an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
         public FixedString4096Bytes(in FixedString4096Bytes other)
         {
             this = default;
             var error = Initialize(other);
-            CheckFormatError((FormatError)error);
+            CheckFormatError(error);
         }
 
         /// <summary>
         /// Initializes an instance of FixedString4096Bytes that is a copy of another string.
         /// </summary>
         /// <param name="other">The string to copy.</param>
-        /// <returns>zero on success, or non-zero on error.</returns>
-        internal int Initialize(in FixedString4096Bytes other)
+        /// <returns>If the length of the source string exceeds this fixed string's UTF8 capacity, the entire write operation will fail, and FormatError.Overflow is returned.</returns>
+        unsafe internal FormatError Initialize(in FixedString4096Bytes other)
         {
-            bytes = default;
-            utf8LengthInBytes = 0;
-            unsafe {
-                int len = 0;
-                byte* dstBytes = GetUnsafePtr();
-                byte* srcBytes = (byte*) UnsafeUtilityExtensions.AddressOf(other.bytes);
-                var srcLength = other.utf8LengthInBytes;
-                var error = UTF8ArrayUnsafeUtility.AppendUTF8Bytes(dstBytes, ref len, utf8MaxLengthInBytes, srcBytes, srcLength);
-                if(error != FormatError.None)
-                    return (int)error;
-                this.Length = len;
-            }
-            return 0;
+            return Initialize((byte*) UnsafeUtilityExtensions.AddressOf(other.bytes), other.utf8LengthInBytes);
         }
 
         /// <summary>
@@ -6802,15 +6657,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="b">A string to copy.</param>
         /// <returns>A new FixedString4096Bytes that is a copy of another string.</returns>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
-        [NotBurstCompatible]
+        /// <exception cref="ArgumentException">Thrown if the string to copy's length exceeds the capacity of FixedString4096Bytes.</exception>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
         public static implicit operator FixedString4096Bytes(string b) => new FixedString4096Bytes(b);
 
         /// <summary>
         /// Returns a new managed string that is a copy of this string.
         /// </summary>
         /// <returns>A new managed string that is a copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override String ToString()
         {
             return this.ConvertToString();
@@ -6835,7 +6690,7 @@ namespace Unity.Collections
         /// Two strings are equal if they have equal length and all their characters match.</remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if this string and the object are equal.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(ReferenceEquals(null, obj)) return false;

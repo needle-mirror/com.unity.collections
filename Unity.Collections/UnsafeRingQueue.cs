@@ -5,7 +5,7 @@ using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     internal struct RingControl
     {
         internal RingControl(int capacity)
@@ -82,7 +82,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <typeparam name="T">The type of the elements.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [DebuggerTypeProxy(typeof(UnsafeRingQueueDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct UnsafeRingQueue<T>
         : INativeDisposable
         where T : unmanaged
@@ -178,7 +178,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
         /// <returns>The handle of a new job that will dispose this queue. The new job depends upon inputDeps.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))

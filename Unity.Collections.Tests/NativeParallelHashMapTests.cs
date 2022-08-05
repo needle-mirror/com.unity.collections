@@ -40,20 +40,9 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 #endif
 #pragma warning restore 0649
 
-#if !UNITY_PORTABLE_TEST_RUNNER
-    [Test, DotsRuntimeIgnore]
-    public void NativeParallelHashMap_Non_Blittable_Throws()
-    {
-#pragma warning disable 0219 // assigned but its value is never used
-        Assert.Throws<System.ArgumentException>(() => { var hashMap = new NativeParallelHashMap<NonBlittableStruct, int>(16, Allocator.Temp); });
-        Assert.Throws<System.ArgumentException>(() => { var hashMap = new NativeParallelHashMap<int, NonBlittableStruct>(16, Allocator.Temp); });
-#pragma warning restore 0219
-    }
-#endif
-
     static void ExpectedCount<TKey, TValue>(ref NativeParallelHashMap<TKey, TValue> container, int expected)
-        where TKey : struct, IEquatable<TKey>
-        where TValue : struct
+        where TKey : unmanaged, IEquatable<TKey>
+        where TValue : unmanaged
     {
         Assert.AreEqual(expected == 0, container.IsEmpty);
         Assert.AreEqual(expected, container.Count());
@@ -703,8 +692,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
     struct NativeParallelHashMap_ForEach_Job : IJob
     {
-        [ReadOnly]
-        public NativeParallelHashMap<int, int> Input;
+        public NativeParallelHashMap<int, int>.ReadOnly Input;
 
         [ReadOnly]
         public int Num;
@@ -748,7 +736,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
             new NativeParallelHashMap_ForEach_Job
             {
-                Input = container,
+                Input = container.AsReadOnly(),
                 Num = n,
 
             }.Run();
@@ -964,5 +952,39 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         allocator.Dispose();
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
+    }
+
+    public struct NestedHashMap
+    {
+        public NativeParallelHashMap<int, int> map;
+    }
+
+    [Test]
+    public void NativeParallelHashMap_Nested()
+    {
+        var mapInner = new NativeParallelHashMap<int, int>(16, CommonRwdAllocator.Handle);
+        NestedHashMap mapStruct = new NestedHashMap { map = mapInner };
+
+        var mapNestedStruct = new NativeParallelHashMap<int, NestedHashMap>(16, CommonRwdAllocator.Handle);
+        var mapNested = new NativeParallelHashMap<int, NativeParallelHashMap<int, int>>(16, CommonRwdAllocator.Handle);
+
+        mapNested[14] = mapInner;
+        mapNestedStruct[17] = mapStruct;
+
+        mapNested.Dispose();
+        mapNestedStruct.Dispose();
+        mapInner.Dispose();
+    }
+
+    [Test]
+    public void NativeParallelHashMap_IndexerAdd_ResizesContainer()
+    {
+        var container = new NativeParallelHashMap<int, int>(8, Allocator.Persistent);
+        for (int i = 0; i < 1024; i++)
+        {
+            container[i] = i;
+        }
+        Assert.AreEqual(1024, container.Count());
+        container.Dispose();
     }
 }

@@ -25,7 +25,7 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         var Version = (ushort)v;
         AllocatorManager.AllocatorHandle srcHandle = new AllocatorManager.AllocatorHandle{ Index = Index, Version = Version };
         Allocator srcAllocator = srcHandle.ToAllocator;
-        AllocatorManager.AllocatorHandle destHandle = srcAllocator;
+        AllocatorManager.AllocatorHandle destHandle = AllocatorManager.ConvertToAllocatorHandle(srcAllocator);
         Assert.AreEqual(srcHandle.Index, destHandle.Index);
         Assert.AreEqual(srcHandle.Version, destHandle.Version);
         Allocator destAllocator = destHandle.ToAllocator;

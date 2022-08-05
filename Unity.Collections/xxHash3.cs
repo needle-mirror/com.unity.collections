@@ -29,7 +29,7 @@ namespace Unity.Collections
     ///    (*) Only when the hashing size justifies such transition.
     /// </remarks>
     [BurstCompile]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static partial class xxHash3
     {
         #region Public API
@@ -55,7 +55,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The input type.</typeparam>
         /// <param name="input">The input struct that will be hashed</param>
         /// <returns>The hash result</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe uint2 Hash64<T>(in T input) where T : unmanaged
         {
             return Hash64(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());
@@ -97,7 +97,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The input type.</typeparam>
         /// <param name="input">The input struct that will be hashed</param>
         /// <returns>The hash result</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe uint4 Hash128<T>(in T input) where T : unmanaged
         {
             return Hash128(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());

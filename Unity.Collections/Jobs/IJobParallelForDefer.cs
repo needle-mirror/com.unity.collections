@@ -1,9 +1,7 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs.LowLevel.Unsafe;
-using UnityEngine.Scripting;
 using System.Diagnostics;
 using Unity.Burst;
 
@@ -29,13 +27,16 @@ namespace Unity.Jobs
         void Execute(int index);
     }
 
+    /// <summary>
+    /// Extension class for the IJobParallelForDefer job type providing custom overloads for scheduling and running.
+    /// </summary>
     public static class IJobParallelForDeferExtensions
     {
         internal struct JobParallelForDeferProducer<T> where T : struct, IJobParallelForDefer
         {
             internal static readonly SharedStatic<IntPtr> jobReflectionData = SharedStatic<IntPtr>.GetOrCreate<JobParallelForDeferProducer<T>>();
 
-            [Preserve]
+            [BurstDiscard]
             internal static void Initialize()
             {
                 if (jobReflectionData.Data == IntPtr.Zero)
@@ -54,27 +55,30 @@ namespace Unity.Jobs
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     JobsUtility.PatchBufferMinMaxRanges(bufferRangePatchData, UnsafeUtility.AddressOf(ref jobData), begin, end - begin);
 #endif
-                    for (var i = begin; i < end; ++i)
+
+                    // Cache the end value to make it super obvious to the
+                    // compiler that `end` will never change during the loops
+                    // iteration.
+                    var endThatCompilerCanSeeWillNeverChange = end;
+                    for (var i = begin; i < endThatCompilerCanSeeWillNeverChange; ++i)
                         jobData.Execute(i);
                 }
             }
         }
 
         /// <summary>
-        /// This method is only to be called by automatically generated setup code.
+        /// Gathers and caches reflection data for the internal job system's managed bindings. Unity is responsible for calling this method - don't call it yourself.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <remarks>
+        /// When the Jobs package is included in the project, Unity generates code to call EarlyJobInit at startup. This allows Burst compiled code to schedule jobs because the reflection part of initialization, which is not compatible with burst compiler constraints, has already happened in EarlyJobInit.
+        /// 
+        /// __Note__: While the Jobs package code generator handles this automatically for all closed job types, you must register those with generic arguments (like IJobParallelForDefer&amp;lt;MyJobType&amp;lt;T&amp;gt;&amp;gt;) manually for each specialization with [[Unity.Jobs.RegisterGenericJobTypeAttribute]].
+        /// </remarks>
         public static void EarlyJobInit<T>()
             where T : struct, IJobParallelForDefer
         {
             JobParallelForDeferProducer<T>.Initialize();
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        private static void CheckReflectionDataCorrect(IntPtr reflectionData)
-        {
-            if (reflectionData == IntPtr.Zero)
-                throw new InvalidOperationException("Reflection data was not set up by a call to Initialize()");
         }
 
         /// <summary>
@@ -87,6 +91,8 @@ namespace Unity.Jobs
         /// <param name="innerloopBatchCount">Granularity in which workstealing is performed. A value of 32, means the job queue will steal 32 iterations and then perform them in an efficient inner loop.</param>
         /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
         /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        /// <typeparam name="U">List element type</typeparam>
         public static unsafe JobHandle Schedule<T, U>(this T jobData, NativeList<U> list, int innerloopBatchCount,
             JobHandle dependsOn = new JobHandle())
             where T : struct, IJobParallelForDefer
@@ -116,6 +122,8 @@ namespace Unity.Jobs
         /// <param name="innerloopBatchCount">Granularity in which workstealing is performed. A value of 32, means the job queue will steal 32 iterations and then perform them in an efficient inner loop.</param>
         /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
         /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        /// <typeparam name="U">List element type</typeparam>
         public static unsafe JobHandle ScheduleByRef<T, U>(this ref T jobData, NativeList<U> list, int innerloopBatchCount,
             JobHandle dependsOn = new JobHandle())
             where T : struct, IJobParallelForDefer
@@ -144,7 +152,7 @@ namespace Unity.Jobs
         /// <param name="innerloopBatchCount">Granularity in which workstealing is performed. A value of 32, means the job queue will steal 32 iterations and then perform them in an efficient inner loop.</param>
         /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
         /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Job type</typeparam>
         /// <returns></returns>
         public static unsafe JobHandle Schedule<T>(this T jobData, int* forEachCount, int innerloopBatchCount,
             JobHandle dependsOn = new JobHandle())
@@ -181,11 +189,11 @@ namespace Unity.Jobs
             void *atomicSafetyHandlePtr,
             JobHandle dependsOn) where T : struct, IJobParallelForDefer
         {
+            JobParallelForDeferProducer<T>.Initialize();
             var reflectionData = JobParallelForDeferProducer<T>.jobReflectionData.Data;
-            CheckReflectionDataCorrect(reflectionData);
+            CollectionHelper.CheckReflectionDataCorrect<T>(reflectionData);
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), reflectionData, dependsOn, ScheduleMode.Parallel);
             return JobsUtility.ScheduleParallelForDeferArraySize(ref scheduleParams, innerloopBatchCount, forEachListPtr, atomicSafetyHandlePtr);
         }
     }
 }
-#endif

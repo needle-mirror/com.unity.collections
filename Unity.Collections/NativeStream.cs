@@ -31,7 +31,7 @@ namespace Unity.Collections
     /// that the code reading from a particular buffer knows what to expect to read from it.
     /// </remarks>
     [NativeContainer]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct NativeStream : IDisposable
     {
         UnsafeStream m_Stream;
@@ -39,12 +39,6 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         AtomicSafetyHandle m_Safety;
         internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeStream>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
 #endif
 
         /// <summary>
@@ -72,7 +66,7 @@ namespace Unity.Collections
         /// <param name="dependency">A job handle. The new job will depend upon this handle.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public static JobHandle ScheduleConstruct<T>(out NativeStream stream, NativeList<T> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
             where T : unmanaged
         {
@@ -95,7 +89,6 @@ namespace Unity.Collections
         /// <param name="dependency">A job handle. The new job will depend upon this handle.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>The handle of the new job.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public static JobHandle ScheduleConstruct(out NativeStream stream, NativeArray<int> bufferCount, JobHandle dependency, AllocatorManager.AllocatorHandle allocator)
         {
             AllocateBlock(out stream, allocator);
@@ -172,8 +165,8 @@ namespace Unity.Collections
         /// <typeparam name="T">The type of values in the array.</typeparam>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A new NativeArray copy of this stream's data.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public NativeArray<T> ToNativeArray<T>(AllocatorManager.AllocatorHandle allocator) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public NativeArray<T> ToNativeArray<T>(AllocatorManager.AllocatorHandle allocator) where T : unmanaged
         {
             CheckReadAccess();
             return m_Stream.ToNativeArray<T>(allocator);
@@ -185,11 +178,7 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-            DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
             m_Stream.Dispose();
         }
@@ -199,19 +188,8 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">A job handle which the newly scheduled job will depend upon.</param>
         /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this stream.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-            // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-            // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-            // will check that no jobs are writing to the container).
-            DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-#endif
             var jobHandle = m_Stream.Dispose(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -256,19 +234,7 @@ namespace Unity.Collections
             UnsafeStream.AllocateBlock(out stream.m_Stream, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             stream.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                stream.m_Safety = AtomicSafetyHandle.Create();
-                stream.m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out stream.m_Safety, out stream.m_DisposeSentinel, 0, allocator.ToAllocator);
-            }
-#endif
 
             CollectionHelper.SetStaticSafetyId(ref stream.m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeStream");
 #endif
@@ -293,7 +259,7 @@ namespace Unity.Collections
         /// Do not create more than one writer for an individual buffer.</remarks>
         [NativeContainer]
         [NativeContainerSupportsMinMaxWriteRestriction]
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public unsafe struct Writer
         {
             UnsafeStream.Writer m_Writer;
@@ -387,8 +353,8 @@ namespace Unity.Collections
             /// with <see cref="BeginForEachIndex"/>.</remarks>
             /// <typeparam name="T">The type of value to write.</typeparam>
             /// <param name="value">The value to write.</param>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void Write<T>(T value) where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public void Write<T>(T value) where T : unmanaged
             {
                 ref T dst = ref Allocate<T>();
                 dst = value;
@@ -401,10 +367,13 @@ namespace Unity.Collections
             /// with <see cref="BeginForEachIndex"/>.</remarks>
             /// <typeparam name="T">The type of value to allocate space for.</typeparam>
             /// <returns>A reference to the allocation.</returns>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public ref T Allocate<T>() where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public ref T Allocate<T>() where T : unmanaged
             {
-                CollectionHelper.CheckIsUnmanaged<T>();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                if (UnsafeUtility.IsNativeContainerType<T>())
+                    AtomicSafetyHandle.SetNestedContainer(m_Safety, true);
+#endif
                 int size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtility.AsRef<T>(Allocate(size));
             }
@@ -508,7 +477,7 @@ namespace Unity.Collections
         /// Do not create more than one reader for an individual buffer.</remarks>
         [NativeContainer]
         [NativeContainerIsReadOnly]
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public unsafe struct Reader
         {
             UnsafeStream.Reader m_Reader;
@@ -642,8 +611,8 @@ namespace Unity.Collections
             /// <typeparam name="T">The type of value to read.</typeparam>
             /// <returns>A reference to the next value from the buffer.</returns>
             /// <exception cref="ArgumentException">Thrown if the reader would advance past the end of the buffer.</exception>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public ref T Read<T>() where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public ref T Read<T>() where T : unmanaged
             {
                 int size = UnsafeUtility.SizeOf<T>();
                 return ref UnsafeUtility.AsRef<T>(ReadUnsafePtr(size));
@@ -655,8 +624,8 @@ namespace Unity.Collections
             /// <typeparam name="T">The type of value to read.</typeparam>
             /// <returns>A reference to the next value from the buffer.</returns>
             /// <exception cref="ArgumentException">Thrown if the read would go past the end of the buffer.</exception>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public ref T Peek<T>() where T : struct
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+            public ref T Peek<T>() where T : unmanaged
             {
                 int size = UnsafeUtility.SizeOf<T>();
                 CheckReadSize(size);

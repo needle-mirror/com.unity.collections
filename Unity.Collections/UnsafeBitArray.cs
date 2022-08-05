@@ -13,7 +13,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </remarks>
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct UnsafeBitArray
         : INativeDisposable
     {
@@ -96,7 +96,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
         /// <returns>The handle of a new job that will dispose this array. The new job depends upon inputDeps.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             if (CollectionHelper.ShouldDeallocate(Allocator))
@@ -126,17 +125,27 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Sets the bit at an index to 0 or 1.
         /// </summary>
+        /// <param name="ptr">pointer to the bit buffer</param>
+        /// <param name="pos">Index of the bit to set.</param>
+        /// <param name="value">True for 1, false for 0.</param>
+        public static void Set(ulong* ptr, int pos, bool value)
+        {
+            var idx = pos >> 6;
+            var shift = pos & 0x3f;
+            var mask = 1ul << shift;
+            var bits = (ptr[idx] & ~mask) | ((ulong)-Bitwise.FromBool(value) & mask);
+            ptr[idx] = bits;
+        }
+
+        /// <summary>
+        /// Sets the bit at an index to 0 or 1.
+        /// </summary>
         /// <param name="pos">Index of the bit to set.</param>
         /// <param name="value">True for 1, false for 0.</param>
         public void Set(int pos, bool value)
         {
             CheckArgs(pos, 1);
-
-            var idx = pos >> 6;
-            var shift = pos & 0x3f;
-            var mask = 1ul << shift;
-            var bits = (Ptr[idx] & ~mask) | ((ulong)-Bitwise.FromBool(value) & mask);
-            Ptr[idx] = bits;
+            Set(Ptr, pos, value);
         }
 
         /// <summary>
@@ -243,27 +252,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public ulong GetBits(int pos, int numBits = 1)
         {
             CheckArgsUlong(pos, numBits);
-
-            var idxB = pos >> 6;
-            var shiftB = pos & 0x3f;
-
-            if (shiftB + numBits <= 64)
-            {
-                var mask = 0xfffffffffffffffful >> (64 - numBits);
-                return Bitwise.ExtractBits(Ptr[idxB], shiftB, mask);
-            }
-
-            var end = math.min(pos + numBits, Length);
-            var idxE = (end - 1) >> 6;
-            var shiftE = end & 0x3f;
-
-            var maskB = 0xfffffffffffffffful >> shiftB;
-            ulong valueB = Bitwise.ExtractBits(Ptr[idxB], shiftB, maskB);
-
-            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
-            ulong valueE = Bitwise.ExtractBits(Ptr[idxE], 0, maskE);
-
-            return (valueE << (64 - shiftB)) | valueB;
+            return Bitwise.GetBits(Ptr, Length, pos, numBits);
         }
 
         /// <summary>
@@ -275,11 +264,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool IsSet(int pos)
         {
             CheckArgs(pos, 1);
-
-            var idx = pos >> 6;
-            var shift = pos & 0x3f;
-            var mask = 1ul << shift;
-            return 0ul != (Ptr[idx] & mask);
+            return Bitwise.IsSet(Ptr, pos);
         }
 
         internal void CopyUlong(int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits) => SetBits(dstPos, srcBitArray.GetBits(srcPos, numBits), numBits);
@@ -436,35 +421,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool TestNone(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
-
-            var end = math.min(pos + numBits, Length);
-            var idxB = pos >> 6;
-            var shiftB = pos & 0x3f;
-            var idxE = (end - 1) >> 6;
-            var shiftE = end & 0x3f;
-            var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
-
-            if (idxB == idxE)
-            {
-                var mask = maskB & maskE;
-                return 0ul == (Ptr[idxB] & mask);
-            }
-
-            if (0ul != (Ptr[idxB] & maskB))
-            {
-                return false;
-            }
-
-            for (var idx = idxB + 1; idx < idxE; ++idx)
-            {
-                if (0ul != Ptr[idx])
-                {
-                    return false;
-                }
-            }
-
-            return 0ul == (Ptr[idxE] & maskE);
+            return Bitwise.TestNone(Ptr, Length, pos, numBits);
         }
 
         /// <summary>
@@ -477,35 +434,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool TestAny(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
-
-            var end = math.min(pos + numBits, Length);
-            var idxB = pos >> 6;
-            var shiftB = pos & 0x3f;
-            var idxE = (end - 1) >> 6;
-            var shiftE = end & 0x3f;
-            var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
-
-            if (idxB == idxE)
-            {
-                var mask = maskB & maskE;
-                return 0ul != (Ptr[idxB] & mask);
-            }
-
-            if (0ul != (Ptr[idxB] & maskB))
-            {
-                return true;
-            }
-
-            for (var idx = idxB + 1; idx < idxE; ++idx)
-            {
-                if (0ul != Ptr[idx])
-                {
-                    return true;
-                }
-            }
-
-            return 0ul != (Ptr[idxE] & maskE);
+            return Bitwise.TestAny(Ptr, Length, pos, numBits);
         }
 
         /// <summary>
@@ -518,35 +447,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
-
-            var end = math.min(pos + numBits, Length);
-            var idxB = pos >> 6;
-            var shiftB = pos & 0x3f;
-            var idxE = (end - 1) >> 6;
-            var shiftE = end & 0x3f;
-            var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
-
-            if (idxB == idxE)
-            {
-                var mask = maskB & maskE;
-                return mask == (Ptr[idxB] & mask);
-            }
-
-            if (maskB != (Ptr[idxB] & maskB))
-            {
-                return false;
-            }
-
-            for (var idx = idxB + 1; idx < idxE; ++idx)
-            {
-                if (0xfffffffffffffffful != Ptr[idx])
-                {
-                    return false;
-                }
-            }
-
-            return maskE == (Ptr[idxE] & maskE);
+            return Bitwise.TestAll(Ptr, Length, pos, numBits);
         }
 
         /// <summary>
@@ -559,31 +460,199 @@ namespace Unity.Collections.LowLevel.Unsafe
         public int CountBits(int pos, int numBits = 1)
         {
             CheckArgs(pos, numBits);
+            return Bitwise.CountBits(Ptr, Length, pos, numBits);
+        }
 
-            var end = math.min(pos + numBits, Length);
-            var idxB = pos >> 6;
-            var shiftB = pos & 0x3f;
-            var idxE = (end - 1) >> 6;
-            var shiftE = end & 0x3f;
-            var maskB = 0xfffffffffffffffful << shiftB;
-            var maskE = 0xfffffffffffffffful >> (64 - shiftE);
+        /// <summary>
+        /// Returns a readonly version of this UnsafeBitArray instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the UnsafeBitArray it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(Ptr, Length);
+        }
 
-            if (idxB == idxE)
+        /// <summary>
+        /// A read-only alias for the value of a UnsafeBitArray. Does not have its own allocated storage.
+        /// </summary>
+        public struct ReadOnly
+        {
+            /// <summary>
+            /// Pointer to the data.
+            /// </summary>
+            /// <value>Pointer to the data.</value>
+            [NativeDisableUnsafePtrRestriction]
+            public ulong* Ptr;
+
+            /// <summary>
+            /// The number of bits.
+            /// </summary>
+            /// <value>The number of bits.</value>
+            public int Length;
+
+            internal ReadOnly(ulong* ptr, int length)
             {
-                var mask = maskB & maskE;
-                return math.countbits(Ptr[idxB] & mask);
+                Ptr = ptr;
+                Length = length;
             }
 
-            var count = math.countbits(Ptr[idxB] & maskB);
-
-            for (var idx = idxB + 1; idx < idxE; ++idx)
+            /// <summary>
+            /// Returns a ulong which has bits copied from this array.
+            /// </summary>
+            /// <remarks>
+            /// The source bits in this array run from index `pos` up to (but not including) `pos + numBits`.
+            /// No exception is thrown if `pos + numBits` exceeds the length.
+            ///
+            /// The first source bit is copied to the lowest bit of the ulong; the second source bit is copied to the second-lowest bit of the ulong; and so forth. Any remaining bits in the ulong will be 0.
+            /// </remarks>
+            /// <param name="pos">Index of the first bit to get.</param>
+            /// <param name="numBits">Number of bits to get (must be between 1 and 64).</param>
+            /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
+            /// <returns>A ulong which has bits copied from this array.</returns>
+            public ulong GetBits(int pos, int numBits = 1)
             {
-                count += math.countbits(Ptr[idx]);
+                CheckArgsUlong(pos, numBits);
+                return Bitwise.GetBits(Ptr, Length, pos, numBits);
             }
 
-            count += math.countbits(Ptr[idxE] & maskE);
+            /// <summary>
+            /// Returns true if the bit at an index is 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit to test.</param>
+            /// <returns>True if the bit at the index is 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds.</exception>
+            public bool IsSet(int pos)
+            {
+                CheckArgs(pos, 1);
+                return Bitwise.IsSet(Ptr, pos);
+            }
 
-            return count;
+            /// <summary>
+            /// Returns the index of the first occurrence in this array of *N* contiguous 0 bits.
+            /// </summary>
+            /// <remarks>The search is linear.</remarks>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns -1 if no occurrence is found.</returns>
+            public int Find(int pos, int numBits)
+            {
+                var count = Length - pos;
+                CheckArgsPosCount(pos, count, numBits);
+                return Bitwise.Find(Ptr, pos, count, numBits);
+            }
+
+            /// <summary>
+            /// Returns the index of the first occurrence in this array of a given number of contiguous 0 bits.
+            /// </summary>
+            /// <remarks>The search is linear.</remarks>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
+            /// <param name="count">Number of indexes to consider as the return value.</param>
+            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns -1 if no occurrence is found.</returns>
+            public int Find(int pos, int count, int numBits)
+            {
+                CheckArgsPosCount(pos, count, numBits);
+                return Bitwise.Find(Ptr, pos, count, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if none of the bits in a range are 1 (*i.e.* all bits in the range are 0).
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>Returns true if none of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestNone(int pos, int numBits = 1)
+            {
+                CheckArgs(pos, numBits);
+                return Bitwise.TestNone(Ptr, pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if at least one of the bits in a range is 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>True if one or more of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestAny(int pos, int numBits = 1)
+            {
+                CheckArgs(pos, numBits);
+                return Bitwise.TestAny(Ptr, Length, pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns true if all of the bits in a range are 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>True if all of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public bool TestAll(int pos, int numBits = 1)
+            {
+                CheckArgs(pos, numBits);
+                return Bitwise.TestAll(Ptr, Length, pos, numBits);
+            }
+
+            /// <summary>
+            /// Returns the number of bits in a range that are 1.
+            /// </summary>
+            /// <param name="pos">Index of the bit at which to start searching.</param>
+            /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
+            /// <returns>The number of bits in a range of bits that are 1.</returns>
+            /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
+            public int CountBits(int pos, int numBits = 1)
+            {
+                CheckArgs(pos, numBits);
+                return Bitwise.CountBits(Ptr, Length, pos, numBits);
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckArgs(int pos, int numBits)
+            {
+                if (pos < 0
+                    || pos >= Length
+                    || numBits < 1)
+                {
+                    throw new ArgumentException($"BitArray invalid arguments: pos {pos} (must be 0-{Length - 1}), numBits {numBits} (must be greater than 0).");
+                }
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckArgsPosCount(int begin, int count, int numBits)
+            {
+                if (begin < 0 || begin >= Length)
+                {
+                    throw new ArgumentException($"BitArray invalid argument: begin {begin} (must be 0-{Length - 1}).");
+                }
+
+                if (count < 0 || count > Length)
+                {
+                    throw new ArgumentException($"BitArray invalid argument: count {count} (must be 0-{Length}).");
+                }
+
+                if (numBits < 1 || count < numBits)
+                {
+                    throw new ArgumentException($"BitArray invalid argument: numBits {numBits} (must be greater than 0).");
+                }
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            void CheckArgsUlong(int pos, int numBits)
+            {
+                CheckArgs(pos, numBits);
+
+                if (numBits < 1 || numBits > 64)
+                {
+                    throw new ArgumentException($"BitArray invalid arguments: numBits {numBits} (must be 1-64).");
+                }
+
+                if (pos + numBits > Length)
+                {
+                    throw new ArgumentException($"BitArray invalid arguments: Out of bounds pos {pos}, numBits {numBits}, Length {Length}.");
+                }
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

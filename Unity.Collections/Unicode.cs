@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using UnityEngine.Assertions;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Unity.Collections
@@ -17,6 +15,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// The target storage does not have sufficient capacity.
+        /// Note that the format's write failed. It did not truncate.
         /// </summary>
         Overflow,
     }
@@ -38,6 +37,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// The number exceeds the range of the target type.
+        /// The number was either truncated, or failed to write entirely.
         /// </summary>
         Overflow,
 
@@ -59,6 +59,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// The target storage does not have sufficient capacity.
+        /// Unless stated in the API comment, assume that the write operation was partially applied.
         /// </summary>
         Truncation,
     }
@@ -75,6 +76,7 @@ namespace Unity.Collections
 
         /// <summary>
         /// The target storage does not have sufficient capacity.
+        /// For copy operations; the value was either truncated into the target storage, or failed to write entirely.
         /// </summary>
         Overflow,
 
@@ -92,13 +94,13 @@ namespace Unity.Collections
     /// <summary>
     /// Provides utility methods for UTF-8, UTF-16, UCS-4 (a.k.a. UTF-32), and WTF-8.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct Unicode
     {
         /// <summary>
         /// Representation of a Unicode character as a code point.
         /// </summary>
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public struct Rune
         {
             /// <summary>

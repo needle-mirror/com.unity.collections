@@ -1,15 +1,68 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
+using System;
 using UnityEditor;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs.LowLevel.Unsafe;
+using UnityEngine;
 
 class JobsMenu
 {
     private static int savedJobWorkerCount = JobsUtility.JobWorkerCount;
 
-    const string kUseJobThreads = "Jobs/Use Job Threads";
+    [SettingsProvider]
+    private static SettingsProvider JobsPreferencesItem()
+    {
+        var provider = new SettingsProvider("Preferences/Jobs", SettingsScope.User)
+        {
+            label = "Jobs",
+            keywords = new[]{"Jobs"},
+            guiHandler = (searchContext) =>
+            {
+                var originalWidth = EditorGUIUtility.labelWidth;
+                EditorGUIUtility.labelWidth = 200f;
+                EditorGUILayout.BeginVertical();
 
-    [MenuItem(kUseJobThreads, false)]
+                GUILayout.BeginVertical();
+                EditorGUILayout.LabelField("For safety, these values are reset on editor restart.");
+                bool oldval = (JobsUtility.JobWorkerCount > 0);
+                 
+                bool newval = EditorGUILayout.Toggle(new GUIContent("Use Job Threads:"), oldval);
+                if (newval != oldval)
+                    SwitchUseJobThreads();
+
+                JobsUtility.JobDebuggerEnabled = EditorGUILayout.Toggle(new GUIContent("Enable Jobs Debugger"),
+                    JobsUtility.JobDebuggerEnabled);
+
+                var previousMode = NativeLeakDetection.Mode;
+
+                var newMode =
+                    (NativeLeakDetectionMode)EditorGUILayout.EnumPopup(new GUIContent("Leak Detection Level"),
+                        previousMode);
+                if (newMode != previousMode)
+                {
+                    switch (newMode)
+                    {
+                        case NativeLeakDetectionMode.Disabled:
+                            SwitchLeaksOff();
+                            break;
+                        case NativeLeakDetectionMode.Enabled:
+                            SwitchLeaksOn();
+                            break;
+                        case NativeLeakDetectionMode.EnabledWithStackTrace:
+                            SwitchLeaksFull();
+                            break;
+                    }
+                }
+                GUILayout.EndVertical();
+                EditorGUILayout.EndVertical();
+
+                EditorGUIUtility.labelWidth = originalWidth;
+            }
+
+        };
+        return provider;
+    }
+
     static void SwitchUseJobThreads()
     {
         if (JobsUtility.JobWorkerCount > 0)
@@ -21,7 +74,7 @@ class JobsMenu
             }
             catch (System.ArgumentOutOfRangeException e) when (e.ParamName == "JobWorkerCount")
             {
-                UnityEngine.Debug.LogWarning("Disabling Job Threads requires Unity Version 2020.1.a15 or newer");
+                Debug.LogWarning("Disabling Job Threads requires Unity Version 2020.1.a15 or newer");
             }
         }
         else
@@ -34,58 +87,25 @@ class JobsMenu
         }
     }
 
-    [MenuItem(kUseJobThreads, true)]
-    static bool SwitchUseJobThreadsValidate()
-    {
-        Menu.SetChecked(kUseJobThreads, (JobsUtility.JobWorkerCount > 0));
-
-        return true;
-    }
-
-    const string kDebuggerMenu = "Jobs/JobsDebugger";
-
-    [MenuItem(kDebuggerMenu, false)]
-    static void SwitchJobsDebugger()
-    {
-        JobsUtility.JobDebuggerEnabled = !JobsUtility.JobDebuggerEnabled;
-    }
-
-    [MenuItem(kDebuggerMenu, true)]
-    static bool SwitchJobsDebuggerValidate()
-    {
-        Menu.SetChecked(kDebuggerMenu, JobsUtility.JobDebuggerEnabled);
-        return true;
-    }
-
-    const string kLeakOff = "Jobs/Leak Detection/Off";
-    const string kLeakOn = "Jobs/Leak Detection/On";
-    const string kLeakDetectionFull = "Jobs/Leak Detection/Full Stack Traces (Expensive)";
-
-    [MenuItem(kLeakOff)]
     static void SwitchLeaksOff()
     {
+        // In the case where someone enables, disables, then re-enables leak checking, we might miss some frees
+        // while disabled. So to avoid spurious leak warnings, just forgive the leaks every time someone disables
+        // leak checking through the menu.
+        UnsafeUtility.ForgiveLeaks();
         NativeLeakDetection.Mode = NativeLeakDetectionMode.Disabled;
+        Debug.LogWarning("Leak detection has been disabled. Leak warnings will not be generated, and all leaks up to now are forgotten.");
     }
 
-    [MenuItem(kLeakOn)]
     static void SwitchLeaksOn()
     {
         NativeLeakDetection.Mode = NativeLeakDetectionMode.Enabled;
+        Debug.Log("Leak detection has been enabled. Leak warnings will be generated upon exiting play mode.");
     }
 
-    [MenuItem(kLeakDetectionFull)]
     static void SwitchLeaksFull()
     {
         NativeLeakDetection.Mode = NativeLeakDetectionMode.EnabledWithStackTrace;
-    }
-
-    [MenuItem(kLeakOff, true)]
-    static bool SwitchLeaksOffValidate()
-    {
-        Menu.SetChecked(kLeakOff, NativeLeakDetection.Mode == NativeLeakDetectionMode.Disabled);
-        Menu.SetChecked(kLeakOn, NativeLeakDetection.Mode == NativeLeakDetectionMode.Enabled);
-        Menu.SetChecked(kLeakDetectionFull, NativeLeakDetection.Mode == NativeLeakDetectionMode.EnabledWithStackTrace);
-        return true;
+        Debug.Log("Leak detection with stack traces has been enabled. Leak warnings will be generated upon exiting play mode.");
     }
 }
-#endif

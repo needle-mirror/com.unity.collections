@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 
+
 namespace Unity.Collections
 {
     /// <summary>
@@ -15,7 +16,7 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of value.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeReference<T>
         : INativeDisposable
         , IEquatable<NativeReference<T>>
@@ -28,12 +29,6 @@ namespace Unity.Collections
         internal AtomicSafetyHandle m_Safety;
 
         static readonly SharedStatic<int> s_SafetyId = SharedStatic<int>.GetOrCreate<NativeReference<T>>();
-
-#if REMOVE_DISPOSE_SENTINEL
-#else
-        [NativeSetClassTypeToNullOnSchedule]
-        DisposeSentinel m_DisposeSentinel;
-#endif
 #endif
 
         internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
@@ -72,20 +67,9 @@ namespace Unity.Collections
             reference.m_AllocatorLabel = allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
             reference.m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
-#else
-            if (allocator.IsCustomAllocator)
-            {
-                reference.m_Safety = AtomicSafetyHandle.Create();
-                reference.m_DisposeSentinel = null;
-            }
-            else
-            {
-                DisposeSentinel.Create(out reference.m_Safety, out reference.m_DisposeSentinel, 1, allocator.ToAllocator);
-            }
-#endif
 
+            CollectionHelper.InitNativeContainer<T>(reference.m_Safety);
             CollectionHelper.SetStaticSafetyId<NativeQueue<T>>(ref reference.m_Safety, ref s_SafetyId.Data);
 #endif
         }
@@ -130,12 +114,7 @@ namespace Unity.Collections
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-
-#if REMOVE_DISPOSE_SENTINEL
                 CollectionHelper.DisposeSafetyHandle(ref m_Safety);
-#else
-                DisposeSentinel.Dispose(ref m_Safety, ref m_DisposeSentinel);
-#endif
 #endif
                 Memory.Unmanaged.Free(m_Data, m_AllocatorLabel);
                 m_AllocatorLabel = Allocator.Invalid;
@@ -149,23 +128,12 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="inputDeps">A job handle. The newly scheduled job will depend upon this handle.</param>
         /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this reference.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             CheckNotDisposed();
 
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#if REMOVE_DISPOSE_SENTINEL
-#else
-                // [DeallocateOnJobCompletion] is not supported, but we want the deallocation
-                // to happen in a thread. DisposeSentinel needs to be cleared on main thread.
-                // AtomicSafetyHandle can be destroyed after the job was scheduled (Job scheduling
-                // will check that no jobs are writing to the container).
-                DisposeSentinel.Clear(ref m_DisposeSentinel);
-#endif
-#endif
                 var jobHandle = new NativeReferenceDisposeJob
                 {
                     Data = new NativeReferenceDispose
@@ -216,7 +184,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="other">A reference to compare with.</param>
         /// <returns>True if the value stored in this reference is equal to the value stored in another reference.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Equals boxes because Value does not implement IEquatable<T>")]
         public bool Equals(NativeReference<T> other)
         {
             return Value.Equals(other.Value);
@@ -228,7 +196,7 @@ namespace Unity.Collections
         /// <remarks>Can only be equal if the object is itself a NativeReference.</remarks>
         /// <param name="obj">An object to compare with.</param>
         /// <returns>True if the value stored in this reference is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -298,11 +266,20 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Returns a read-only native reference that aliases the content of a native reference.
+        /// </summary>
+        /// <param name="nativeReference">NativeReference to alias.</param>
+        /// <returns>A read-only native reference that aliases the content of a native reference.</returns>
+        public static implicit operator ReadOnly(NativeReference<T> nativeReference)
+        {
+            return nativeReference.AsReadOnly();
+        }
+        /// <summary>
         /// A read-only alias for the value of a NativeReference. Does not have its own allocated storage.
         /// </summary>
         [NativeContainer]
         [NativeContainerIsReadOnly]
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe struct ReadOnly
         {
             [NativeDisableUnsafePtrRestriction]
@@ -312,7 +289,7 @@ namespace Unity.Collections
             AtomicSafetyHandle m_Safety;
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<ReadOnly>();
 
-            [BurstCompatible(CompileTarget = BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)]
+            [GenerateTestsForBurstCompatibility(CompileTarget = GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)]
             internal ReadOnly(void* data, ref AtomicSafetyHandle safety)
             {
                 m_Data = data;
@@ -385,7 +362,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <summary>
     /// Provides extension methods for NativeReference.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static class NativeReferenceUnsafeUtility
     {
         /// <summary>
@@ -395,7 +372,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafePtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
@@ -412,7 +389,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
@@ -429,7 +406,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the value.</typeparam>
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static unsafe void* GetUnsafePtrWithoutChecks<T>(this NativeReference<T> reference)
             where T : unmanaged
         {

@@ -22,7 +22,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// <remarks>
     /// The string is always null-terminated, meaning a zero byte always immediately follows the last character.
     /// </remarks>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct UnsafeText : INativeDisposable, IUTF8Bytes, INativeList<byte>
@@ -64,7 +64,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="inputDeps">The handle of a job which the new job will depend upon.</param>
         /// <returns>The handle of a new job that will dispose this string. The new job depends upon inputDeps.</returns>
-        [NotBurstCompatible /* This is not burst compatible because of IJob's use of a static IntPtr. Should switch to IJobBurstSchedulable in the future */]
         public JobHandle Dispose(JobHandle inputDeps)
         {
             return this.AsUnsafeListOfBytes().Dispose(inputDeps);
@@ -123,7 +122,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Returns a pointer to this string's character buffer.
         /// </summary>
         /// <remarks>
-        /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="`Capacity`"/>.
+        /// The pointer is made invalid by operations that reallocate the character buffer, such as setting <see cref="Capacity"/>.
         /// </remarks>
         /// <returns>A pointer to this string's character buffer.</returns>
         public byte* GetUnsafePtr()
@@ -183,7 +182,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Returns a managed string copy of this string.
         /// </summary>
         /// <returns>A managed string copy of this string.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed string")]
         public override string ToString()
         {
             if (!IsCreated)

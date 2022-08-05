@@ -154,6 +154,23 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
+    public void UnsafeListT_AddReplicate()
+    {
+        using (var list = new UnsafeList<int>(32, Allocator.Persistent))
+        {
+            list.AddReplicate(value: 42, count: 10);
+            Assert.AreEqual(10, list.Length);
+            foreach (var item in list)
+                Assert.AreEqual(42, item);
+
+            list.AddReplicate(value: 42, count: 100);
+            Assert.AreEqual(110, list.Length);
+            foreach (var item in list)
+                Assert.AreEqual(42, item);
+        }
+    }
+
+    [Test]
     public unsafe void UnsafeListT_AddNoResize()
     {
         var list = new UnsafeList<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -354,9 +371,9 @@ internal class UnsafeListTests : CollectionsTestCommonBase
 
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
-    struct UnsafeListParallelReader : IJob
+    struct UnsafeListAsReadOnly : IJob
     {
-        public UnsafeList<int>.ParallelReader list;
+        public UnsafeList<int>.ReadOnly list;
 
         public void Execute()
         {
@@ -365,14 +382,14 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeListT_ParallelReader()
+    public void UnsafeListT_AsReadOnly()
     {
         var list = new UnsafeList<int>(10, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         list.Add(123);
 
-        var job = new UnsafeListParallelReader
+        var job = new UnsafeListAsReadOnly
         {
-            list = list.AsParallelReader(),
+            list = list.AsReadOnly(),
         };
 
         list.Dispose(job.Schedule()).Complete();
@@ -479,17 +496,71 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.Add(0);
         list.Add(3);
         list.Add(4);
+        Assert.AreEqual(3, list.Length);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
-        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(0, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
 
         Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
+        Assert.AreEqual(5, list.Length);
 
         list[1] = 1;
         list[2] = 2;
 
-        for (var i = 0; i < 5; ++i)
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(5, 8));
+        Assert.AreEqual(8, list.Length);
+
+        list[5] = 5;
+        list[6] = 6;
+        list[7] = 7;
+
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        list.Dispose();
+    }
+
+    [Test]
+    public void UnsafeListT_InsertRange()
+    {
+        var list = new UnsafeList<byte>(3, Allocator.Persistent);
+        list.Add(0);
+        list.Add(3);
+        list.Add(4);
+        Assert.AreEqual(3, list.Length);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, 8));
+        Assert.Throws<ArgumentException>(() => list.InsertRange(3, -1));
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 0));
+        Assert.AreEqual(3, list.Length);
+
+        Assert.DoesNotThrow(() => list.InsertRange(1, 2));
+        Assert.AreEqual(5, list.Length);
+
+        list[1] = 1;
+        list[2] = 2;
+
+        for (var i = 0; i < list.Length; ++i)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+
+        Assert.DoesNotThrow(() => list.InsertRange(5, 3));
+        Assert.AreEqual(8, list.Length);
+
+        list[5] = 5;
+        list[6] = 6;
+        list[7] = 7;
+
+        for (var i = 0; i < list.Length; ++i)
         {
             Assert.AreEqual(i, list[i]);
         }
@@ -586,7 +657,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     void IIndexableTest<T>(T container)
-        where T : struct, IIndexable<int>
+        where T : unmanaged, IIndexable<int>
     {
         var length = container.Length;
 
@@ -602,7 +673,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     void INativeListTest<T>(T container)
-        where T : struct, INativeList<int>
+        where T : unmanaged, INativeList<int>
     {
         var length = container.Length;
 
@@ -622,7 +693,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     private unsafe void TestInterfaces<T>(T container)
-        where T : struct, IIndexable<int>, INativeList<int>
+        where T : unmanaged, IIndexable<int>, INativeList<int>
 	{
         container.Length = 4;
         Assert.DoesNotThrow(() => { for (int i = 0, len = container.Length; i < len; ++i) { container.ElementAt(i) = i; } });
@@ -631,7 +702,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         INativeListTest(container);
     }
     private unsafe void TestInterfacesDispose<T>(T container)
-        where T : struct, IIndexable<int>, INativeList<int>, IDisposable
+        where T : unmanaged, IIndexable<int>, INativeList<int>, IDisposable
     {
         TestInterfaces(container);
         container.Dispose();

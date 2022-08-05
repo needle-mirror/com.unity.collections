@@ -3,6 +3,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
+using Unity.Jobs.LowLevel.Unsafe;
 
 #if !UNITY_DOTSRUNTIME && ENABLE_UNITY_COLLECTIONS_CHECKS
 internal class RewindableAllocatorTests
@@ -181,7 +182,39 @@ internal class RewindableAllocatorTests
         Assert.That(unrelatedList.Length, Is.EqualTo(2));
         Assert.That(unrelatedList[0], Is.EqualTo(0));
 
-        TriggerBug(allocatorHandle, unrelatedList);
+        TriggerBug(allocatorHandle, unrelatedList.AsArray());
+    }
+
+    [Test]
+    unsafe public void ExceedMaxBlockSize_BlockSizeLinearGrow()
+    {
+        AllocatorManager.AllocatorHandle allocatorHandle = RwdAllocator.Handle;
+
+        var allocationSizes = new NativeList<int>(Allocator.Persistent);
+        allocationSizes.Add(1);
+        allocationSizes.Add((int)RwdAllocator.MaxMemoryBlockSize + 256);
+        allocationSizes.Add(1);
+        allocationSizes.Add(RwdAllocator.InitialSizeInBytes);
+
+        int mask = JobsUtility.CacheLineSize - 1;
+
+        var expectedBlockSizes = new NativeList<int>(Allocator.Persistent);
+        expectedBlockSizes.Add(RwdAllocator.InitialSizeInBytes);
+        expectedBlockSizes.Add(RwdAllocator.InitialSizeInBytes + (((int)RwdAllocator.MaxMemoryBlockSize + 256 + mask) & ~mask));
+        expectedBlockSizes.Add(RwdAllocator.InitialSizeInBytes + (((int)RwdAllocator.MaxMemoryBlockSize + 256 + mask) & ~mask));
+        var expected = RwdAllocator.InitialSizeInBytes + (((int)RwdAllocator.MaxMemoryBlockSize + 256 + mask) & ~mask) +
+                            (((int)RwdAllocator.MaxMemoryBlockSize + 256 + mask) & ~mask) +(int)RwdAllocator.MaxMemoryBlockSize;
+        expectedBlockSizes.Add(expected);
+
+        for(int i = 0; i < allocationSizes.Length; i++)
+        {
+            AllocatorManager.Allocate(allocatorHandle, sizeof(byte), sizeof(byte), allocationSizes[i]);
+            int bytesUsed = (int)RwdAllocator.BytesAllocated;
+            Assert.AreEqual(bytesUsed, expectedBlockSizes[i]);
+        }
+
+        allocationSizes.Dispose();
+        expectedBlockSizes.Dispose();
     }
 }
 

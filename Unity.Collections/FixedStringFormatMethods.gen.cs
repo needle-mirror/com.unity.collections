@@ -37,11 +37,11 @@ namespace Unity.Collections
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/) })]
         public static unsafe void AppendFormat<T, U, T0>(ref this T dest, in U format, in T0 arg0)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -86,12 +86,12 @@ namespace Unity.Collections
         /// <param name="format">A string to be interpolated and appended.</param>
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -139,13 +139,13 @@ namespace Unity.Collections
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -196,14 +196,14 @@ namespace Unity.Collections
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -257,15 +257,15 @@ namespace Unity.Collections
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -322,16 +322,16 @@ namespace Unity.Collections
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T5 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -391,17 +391,17 @@ namespace Unity.Collections
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T5 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T6 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -464,18 +464,18 @@ namespace Unity.Collections
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T5 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T6 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T7 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -541,19 +541,19 @@ namespace Unity.Collections
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
-            where T8 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T5 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T6 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T7 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T8 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
@@ -622,20 +622,20 @@ namespace Unity.Collections
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg9">A FixedString*N*Bytes to interpolate into the format string.</param>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/), typeof(FixedString128Bytes /*T9*/) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/), typeof(FixedString128Bytes /*T9*/) })]
         public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
-            where T0 : struct, INativeList<byte>, IUTF8Bytes
-            where T1 : struct, INativeList<byte>, IUTF8Bytes
-            where T2 : struct, INativeList<byte>, IUTF8Bytes
-            where T3 : struct, INativeList<byte>, IUTF8Bytes
-            where T4 : struct, INativeList<byte>, IUTF8Bytes
-            where T5 : struct, INativeList<byte>, IUTF8Bytes
-            where T6 : struct, INativeList<byte>, IUTF8Bytes
-            where T7 : struct, INativeList<byte>, IUTF8Bytes
-            where T8 : struct, INativeList<byte>, IUTF8Bytes
-            where T9 : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T1 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T2 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T3 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T4 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T5 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T6 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T7 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T8 : unmanaged, INativeList<byte>, IUTF8Bytes
+            where T9 : unmanaged, INativeList<byte>, IUTF8Bytes
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;

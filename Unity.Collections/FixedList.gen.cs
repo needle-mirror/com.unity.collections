@@ -26,7 +26,7 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
     [Serializable]
     internal struct FixedList<T,U>
     : INativeList<T>
@@ -149,10 +149,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/> (because a fixed list is never resized).</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -160,35 +185,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -234,6 +259,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -290,17 +335,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Truncates the list by replacing the item at the specified index range with the items from the end the list. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -341,25 +375,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Truncates the list by removing the items at the specified index range, and shifting all remaining items to replace removed items. The list
-        /// is shortened by number of elements in range.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -388,30 +407,30 @@ namespace Unity.Collections
         }
     }
 
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     struct FixedList
     {
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        internal static int PaddingBytes<T>() where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        internal static int PaddingBytes<T>() where T : unmanaged
         {
             return math.max(0, math.min(6, (1 << math.tzcnt(UnsafeUtility.SizeOf<T>())) - 2));
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static int StorageBytes<BUFFER,T>() where BUFFER : struct where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        internal static int StorageBytes<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
             return UnsafeUtility.SizeOf<BUFFER>() - PaddingBytes<T>();
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static int Capacity<BUFFER,T>() where BUFFER : struct where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        internal static int Capacity<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
         }
 
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        internal static void CheckResize<BUFFER,T>(int newLength) where BUFFER : struct where T : struct
+        internal static void CheckResize<BUFFER,T>(int newLength) where BUFFER : unmanaged where T : unmanaged
         {
             var Capacity = Capacity<BUFFER,T>();
             if (newLength < 0 || newLength > Capacity)
@@ -419,16 +438,13 @@ namespace Unity.Collections
         }
     }
 
-    [Obsolete("Renamed to FixedList32Bytes<T> (UnityUpgradable) -> FixedList32Bytes<T>", true)]
-    public struct FixedList32<T> where T : unmanaged {}
-
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 32-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(FixedList32BytesDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public struct FixedList32Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -561,10 +577,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -572,35 +613,32 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -646,6 +684,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -702,16 +760,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -752,24 +800,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -1335,7 +1369,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if the list is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
@@ -1434,7 +1468,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedList32Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class FixedList32BytesExtensions
     {
         /// <summary>
@@ -1445,7 +1479,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -1459,7 +1493,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -1478,7 +1512,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -1505,7 +1539,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList32Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -1529,16 +1563,13 @@ namespace Unity.Collections
         }
         public T[] Items => m_List.ToArray();
     }
-    [Obsolete("Renamed to FixedList64Bytes<T> (UnityUpgradable) -> FixedList64Bytes<T>", true)]
-    public struct FixedList64<T> where T : unmanaged {}
-
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 64-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(FixedList64BytesDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public struct FixedList64Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -1671,10 +1702,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -1682,35 +1738,32 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -1756,6 +1809,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -1812,16 +1885,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -1862,24 +1925,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -2445,7 +2494,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if the list is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
@@ -2544,7 +2593,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedList64Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class FixedList64BytesExtensions
     {
         /// <summary>
@@ -2555,7 +2604,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -2569,7 +2618,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -2588,7 +2637,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -2615,7 +2664,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList64Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -2639,16 +2688,13 @@ namespace Unity.Collections
         }
         public T[] Items => m_List.ToArray();
     }
-    [Obsolete("Renamed to FixedList128Bytes<T> (UnityUpgradable) -> FixedList128Bytes<T>", true)]
-    public struct FixedList128<T> where T : unmanaged {}
-
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 128-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(FixedList128BytesDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public struct FixedList128Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -2781,10 +2827,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -2792,35 +2863,32 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -2866,6 +2934,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -2922,16 +3010,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -2972,24 +3050,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -3555,7 +3619,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if the list is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
@@ -3654,7 +3718,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedList128Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class FixedList128BytesExtensions
     {
         /// <summary>
@@ -3665,7 +3729,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -3679,7 +3743,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -3698,7 +3762,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -3725,7 +3789,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList128Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -3749,16 +3813,13 @@ namespace Unity.Collections
         }
         public T[] Items => m_List.ToArray();
     }
-    [Obsolete("Renamed to FixedList512Bytes<T> (UnityUpgradable) -> FixedList512Bytes<T>", true)]
-    public struct FixedList512<T> where T : unmanaged {}
-
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 512-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(FixedList512BytesDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public struct FixedList512Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -3891,10 +3952,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -3902,35 +3988,32 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -3976,6 +4059,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -4032,16 +4135,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -4082,24 +4175,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -4665,7 +4744,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if the list is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
@@ -4764,7 +4843,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedList512Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class FixedList512BytesExtensions
     {
         /// <summary>
@@ -4775,7 +4854,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -4789,7 +4868,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -4808,7 +4887,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -4835,7 +4914,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList512Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -4859,16 +4938,13 @@ namespace Unity.Collections
         }
         public T[] Items => m_List.ToArray();
     }
-    [Obsolete("Renamed to FixedList4096Bytes<T> (UnityUpgradable) -> FixedList4096Bytes<T>", true)]
-    public struct FixedList4096<T> where T : unmanaged {}
-
     /// <summary>
     /// An unmanaged, resizable list whose content is all stored directly in the 4096-byte struct. Useful for small lists.
     /// </summary>
     /// <typeparam name="T">The type of the elements.</typeparam>
     [Serializable]
     [DebuggerTypeProxy(typeof(FixedList4096BytesDebugView<>))]
-    [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public struct FixedList4096Bytes<T>
     : INativeList<T>
     , IEnumerable<T> // Used by collection initializers.
@@ -5001,10 +5077,35 @@ namespace Unity.Collections
         /// <summary>
         /// Appends an element to the end of this list. Increments the length by 1.
         /// </summary>
-        /// <remarks>The same as <see cref="AddNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// The same as <see cref="AddNoResize"/>. Included only for consistency with the other list types.
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void Add(in T item)
+        public void Add(in T item) => AddNoResize(in item);
+
+        /// <summary>
+        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
+        /// </summary>
+        /// <remarks>
+        /// The same as <see cref="AddRangeNoResize"/>. Included only for consistency with the other list types.
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="ptr">A buffer.</param>
+        /// <param name="length">The number of elements from the buffer to append.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public unsafe void AddRange(void* ptr, int length) => AddRangeNoResize(ptr, length);
+
+        /// <summary>
+        /// Appends an element to the end of this list. Increments the length by 1.
+        /// </summary>
+        /// <remarks>
+        /// If the element exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
+        /// <param name="item">The element to append at the end of the list.</param>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        public void AddNoResize(in T item)
         {
             this[Length++] = item;
         }
@@ -5012,35 +5113,32 @@ namespace Unity.Collections
         /// <summary>
         /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
         /// </summary>
-        /// <remarks>The same as <see cref="AddRangeNoResize"/>. Remember that a fixed list is never resized.</remarks>
+        /// <remarks>
+        /// If the elements exceeds the capacity, throws cref="IndexOutOfRangeException", and the list is unchanged.
+        /// </remarks>
         /// <param name="ptr">A buffer.</param>
         /// <param name="length">The number of elements from the buffer to append.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRange(void* ptr, int length)
+        public unsafe void AddRangeNoResize(void* ptr, int length)
         {
-            T* data = (T*)ptr;
-            for (var i = 0; i < length; ++i)
-            {
-                this[Length++] = data[i];
-            }
+            var idx = Length;
+            Length += length;
+            UnsafeUtility.MemCpy((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>() * length);
         }
 
         /// <summary>
-        /// Appends an element to the end of this list. Increments the length by 1.
+        /// Appends value count times to the end of this list.
         /// </summary>
-        /// <remarks>The same as <see cref="Add"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="item">The element to append at the end of the list.</param>
+        /// <param name="value">The value to add to the end of this list.</param>
+        /// <param name="count">The number of times to replicate the value.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public void AddNoResize(in T item) => Add(item);
-
-        /// <summary>
-        /// Appends elements from a buffer to the end of this list. Increments the length by the number of appended elements.
-        /// </summary>
-        /// <remarks>The same as <see cref="AddRange"/>. Included only for consistency with the other list types.</remarks>
-        /// <param name="ptr">A buffer.</param>
-        /// <param name="length">The number of elements from the buffer to append.</param>
-        /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
-        public unsafe void AddRangeNoResize(void* ptr, int length) => AddRange(ptr, length);
+        public unsafe void AddReplicate(in T value, int count)
+        {
+            var idx = Length;
+            Length += count;
+            fixed (T* ptr = &value)
+                UnsafeUtility.MemCpyReplicate((T*)Buffer + idx, ptr, UnsafeUtility.SizeOf<T>(), count);
+        }
 
         /// <summary>
         /// Sets the length to 0.
@@ -5086,6 +5184,26 @@ namespace Unity.Collections
                 UnsafeUtility.MemMove(dest, src, bytesToCopy);
             }
         }
+
+        /// <summary>
+        /// Shifts elements toward the end of this list, increasing its length.
+        /// </summary>
+        /// <remarks>
+        /// Right-shifts elements in the list so as to create 'free' slots at the beginning or in the middle.
+        ///
+        /// The length is increased by `count`. If necessary, the capacity will be increased accordingly.
+        ///
+        /// If `count` equals `0`, the method does nothing.
+        ///
+        /// The element at index `index` will be copied to index `index + count`, the element at index `index + 1` will be copied to `index + count + 1`, and so forth.
+        ///
+        /// The indexes `index` up to `index + count` are not cleared: they will contain whatever values they held prior.
+        /// </remarks>
+        /// <param name="index">The index of the first element that will be shifted up.</param>
+        /// <param name="count">The number of elements to insert.</param>
+        /// <exception cref="ArgumentException">Thrown if `count` is negative.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        public void InsertRange(int index, int count) => InsertRangeWithBeginEnd(index, index + count);
 
         /// <summary>
         /// Inserts a single element at an index. Increments the length by 1.
@@ -5142,16 +5260,6 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copies the last *N* elements of this list to a range in this list. Decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeSwapBackWithBeginEnd(begin, end) is deprecated, use RemoveRangeSwapBack(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeSwapBackWithBeginEnd(int begin, int end) => RemoveRangeSwapBack(begin, end - begin);
-
-        /// <summary>
         /// Removes the element at an index. Shifts everything above the index down by one and decrements the length by 1.
         /// </summary>
         /// <param name="index">The index of the element to remove.</param>
@@ -5192,24 +5300,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes *N* elements of a range. Shifts everything above the range down by *N* and decrements the length by *N*.
-        /// </summary>
-        /// <param name="begin">The first index of the item to remove.</param>
-        /// <param name="end">The index past-the-last item to remove.</param>
-        /// <remarks>
-        /// This method of removing item(s) is useful only in case when list is ordered and user wants to preserve order
-        /// in list after removal In majority of cases is not important and user should use more performant `RemoveRangeSwapBackWithBeginEnd`.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown if end argument is less than begin argument.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if begin or end arguments are not positive or out of bounds.</exception>
-        [Obsolete("RemoveRangeWithBeginEnd(begin, end) is deprecated, use RemoveRange(index, count) instead. (RemovedAfter 2021-06-02)", false)]
-        public void RemoveRangeWithBeginEnd(int begin, int end) => RemoveRange(begin, end - begin);
-
-        /// <summary>
         /// Returns a managed array that is a copy of this list.
         /// </summary>
         /// <returns>A managed array that is a copy of this list.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Returns managed array")]
         public T[] ToArray()
         {
             var result = new T[Length];
@@ -5775,7 +5869,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="obj">An object to compare for equality.</param>
         /// <returns>True if the list is equal to the object.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Takes managed object")]
         public override bool Equals(object obj)
         {
             if(obj is FixedList32Bytes<T> aFixedList32Bytes) return Equals(aFixedList32Bytes);
@@ -5874,7 +5968,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides extension methods for FixedList4096Bytes.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe static class FixedList4096BytesExtensions
     {
         /// <summary>
@@ -5885,7 +5979,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>The index of the first occurrence of the value. Returns -1 if no occurrence is found.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return NativeArrayExtensions.IndexOf<T, U>(list.Buffer, list.Length, value);
@@ -5899,7 +5993,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate.</param>
         /// <returns>True if the value is present in this list.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             return list.IndexOf(value) != -1;
@@ -5918,7 +6012,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>True if the value was found and removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Remove<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             int index = list.IndexOf(value);
@@ -5945,7 +6039,7 @@ namespace Unity.Collections
         /// <param name="list">The list to search.</param>
         /// <param name="value">The value to locate and remove.</param>
         /// <returns>Returns true if the item is removed.</returns>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool RemoveSwapBack<T, U>(this ref FixedList4096Bytes<T> list, U value) where T : unmanaged, IEquatable<U>
         {
             var index = list.IndexOf(value);
@@ -5971,320 +6065,35 @@ namespace Unity.Collections
     }
 
 
-    /// <summary>
-    /// An unmanaged, resizable list of byte that does not allocate memory.
-    /// It is 32 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=32)]
-    [Obsolete("FixedListByte32 is deprecated, please use FixedList32Bytes<byte> instead. (UnityUpgradable) -> FixedList32Bytes<byte>", true)]
-    public struct FixedListByte32 {}
-    
 
-    [Obsolete("FixedListByte32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<byte>", true)]
-    sealed class FixedListByte32DebugView
-    {
-        FixedList32Bytes<byte> m_List;
-        public FixedListByte32DebugView(FixedList32Bytes<byte> list)
-        {
-            m_List = list;
-        }
-        public byte[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of byte that does not allocate memory.
-    /// It is 64 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=64)]
-    [Obsolete("FixedListByte64 is deprecated, please use FixedList64Bytes<byte> instead. (UnityUpgradable) -> FixedList64Bytes<byte>", true)]
-    public struct FixedListByte64 {}
-    
 
-    [Obsolete("FixedListByte64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<byte>", true)]
-    sealed class FixedListByte64DebugView
-    {
-        FixedList64Bytes<byte> m_List;
-        public FixedListByte64DebugView(FixedList64Bytes<byte> list)
-        {
-            m_List = list;
-        }
-        public byte[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of byte that does not allocate memory.
-    /// It is 128 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=128)]
-    [Obsolete("FixedListByte128 is deprecated, please use FixedList128Bytes<byte> instead. (UnityUpgradable) -> FixedList128Bytes<byte>", true)]
-    public struct FixedListByte128 {}
-    
 
-    [Obsolete("FixedListByte128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<byte>", true)]
-    sealed class FixedListByte128DebugView
-    {
-        FixedList128Bytes<byte> m_List;
-        public FixedListByte128DebugView(FixedList128Bytes<byte> list)
-        {
-            m_List = list;
-        }
-        public byte[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of byte that does not allocate memory.
-    /// It is 512 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=512)]
-    [Obsolete("FixedListByte512 is deprecated, please use FixedList512Bytes<byte> instead. (UnityUpgradable) -> FixedList512Bytes<byte>", true)]
-    public struct FixedListByte512 {}
-    
 
-    [Obsolete("FixedListByte512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<byte>", true)]
-    sealed class FixedListByte512DebugView
-    {
-        FixedList512Bytes<byte> m_List;
-        public FixedListByte512DebugView(FixedList512Bytes<byte> list)
-        {
-            m_List = list;
-        }
-        public byte[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of byte that does not allocate memory.
-    /// It is 4096 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [Obsolete("FixedListByte4096 is deprecated, please use FixedList4096Bytes<byte> instead. (UnityUpgradable) -> FixedList4096Bytes<byte>", true)]
-    public struct FixedListByte4096 {}
-    
 
-    [Obsolete("FixedListByte4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<byte>", true)]
-    sealed class FixedListByte4096DebugView
-    {
-        FixedList4096Bytes<byte> m_List;
-        public FixedListByte4096DebugView(FixedList4096Bytes<byte> list)
-        {
-            m_List = list;
-        }
-        public byte[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of int that does not allocate memory.
-    /// It is 32 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=32)]
-    [Obsolete("FixedListInt32 is deprecated, please use FixedList32Bytes<int> instead. (UnityUpgradable) -> FixedList32Bytes<int>", true)]
-    public struct FixedListInt32 {}
-    
 
-    [Obsolete("FixedListInt32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<int>", true)]
-    sealed class FixedListInt32DebugView
-    {
-        FixedList32Bytes<int> m_List;
-        public FixedListInt32DebugView(FixedList32Bytes<int> list)
-        {
-            m_List = list;
-        }
-        public int[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of int that does not allocate memory.
-    /// It is 64 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=64)]
-    [Obsolete("FixedListInt64 is deprecated, please use FixedList64Bytes<int> instead. (UnityUpgradable) -> FixedList64Bytes<int>", true)]
-    public struct FixedListInt64 {}
-    
 
-    [Obsolete("FixedListInt64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<int>", true)]
-    sealed class FixedListInt64DebugView
-    {
-        FixedList64Bytes<int> m_List;
-        public FixedListInt64DebugView(FixedList64Bytes<int> list)
-        {
-            m_List = list;
-        }
-        public int[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of int that does not allocate memory.
-    /// It is 128 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=128)]
-    [Obsolete("FixedListInt128 is deprecated, please use FixedList128Bytes<int> instead. (UnityUpgradable) -> FixedList128Bytes<int>", true)]
-    public struct FixedListInt128 {}
-    
 
-    [Obsolete("FixedListInt128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<int>", true)]
-    sealed class FixedListInt128DebugView
-    {
-        FixedList128Bytes<int> m_List;
-        public FixedListInt128DebugView(FixedList128Bytes<int> list)
-        {
-            m_List = list;
-        }
-        public int[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of int that does not allocate memory.
-    /// It is 512 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=512)]
-    [Obsolete("FixedListInt512 is deprecated, please use FixedList512Bytes<int> instead. (UnityUpgradable) -> FixedList512Bytes<int>", true)]
-    public struct FixedListInt512 {}
-    
 
-    [Obsolete("FixedListInt512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<int>", true)]
-    sealed class FixedListInt512DebugView
-    {
-        FixedList512Bytes<int> m_List;
-        public FixedListInt512DebugView(FixedList512Bytes<int> list)
-        {
-            m_List = list;
-        }
-        public int[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of int that does not allocate memory.
-    /// It is 4096 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [Obsolete("FixedListInt4096 is deprecated, please use FixedList4096Bytes<int> instead. (UnityUpgradable) -> FixedList4096Bytes<int>", true)]
-    public struct FixedListInt4096 {}
-    
 
-    [Obsolete("FixedListInt4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<int>", true)]
-    sealed class FixedListInt4096DebugView
-    {
-        FixedList4096Bytes<int> m_List;
-        public FixedListInt4096DebugView(FixedList4096Bytes<int> list)
-        {
-            m_List = list;
-        }
-        public int[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of float that does not allocate memory.
-    /// It is 32 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=32)]
-    [Obsolete("FixedListFloat32 is deprecated, please use FixedList32Bytes<float> instead. (UnityUpgradable) -> FixedList32Bytes<float>", true)]
-    public struct FixedListFloat32 {}
-    
 
-    [Obsolete("FixedListFloat32DebugView is deprecated. (UnityUpgradable) -> FixedList32BytesDebugView<float>", true)]
-    sealed class FixedListFloat32DebugView
-    {
-        FixedList32Bytes<float> m_List;
-        public FixedListFloat32DebugView(FixedList32Bytes<float> list)
-        {
-            m_List = list;
-        }
-        public float[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of float that does not allocate memory.
-    /// It is 64 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=64)]
-    [Obsolete("FixedListFloat64 is deprecated, please use FixedList64Bytes<float> instead. (UnityUpgradable) -> FixedList64Bytes<float>", true)]
-    public struct FixedListFloat64 {}
-    
 
-    [Obsolete("FixedListFloat64DebugView is deprecated. (UnityUpgradable) -> FixedList64BytesDebugView<float>", true)]
-    sealed class FixedListFloat64DebugView
-    {
-        FixedList64Bytes<float> m_List;
-        public FixedListFloat64DebugView(FixedList64Bytes<float> list)
-        {
-            m_List = list;
-        }
-        public float[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of float that does not allocate memory.
-    /// It is 128 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=128)]
-    [Obsolete("FixedListFloat128 is deprecated, please use FixedList128Bytes<float> instead. (UnityUpgradable) -> FixedList128Bytes<float>", true)]
-    public struct FixedListFloat128 {}
-    
 
-    [Obsolete("FixedListFloat128DebugView is deprecated. (UnityUpgradable) -> FixedList128BytesDebugView<float>", true)]
-    sealed class FixedListFloat128DebugView
-    {
-        FixedList128Bytes<float> m_List;
-        public FixedListFloat128DebugView(FixedList128Bytes<float> list)
-        {
-            m_List = list;
-        }
-        public float[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of float that does not allocate memory.
-    /// It is 512 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=512)]
-    [Obsolete("FixedListFloat512 is deprecated, please use FixedList512Bytes<float> instead. (UnityUpgradable) -> FixedList512Bytes<float>", true)]
-    public struct FixedListFloat512 {}
-    
 
-    [Obsolete("FixedListFloat512DebugView is deprecated. (UnityUpgradable) -> FixedList512BytesDebugView<float>", true)]
-    sealed class FixedListFloat512DebugView
-    {
-        FixedList512Bytes<float> m_List;
-        public FixedListFloat512DebugView(FixedList512Bytes<float> list)
-        {
-            m_List = list;
-        }
-        public float[] Items => m_List.ToArray();
-    }
 
-    /// <summary>
-    /// An unmanaged, resizable list of float that does not allocate memory.
-    /// It is 4096 bytes in size, and contains all the memory it needs.
-    /// </summary>
-    [Serializable]
-    [StructLayout(LayoutKind.Explicit, Size=4096)]
-    [Obsolete("FixedListFloat4096 is deprecated, please use FixedList4096Bytes<float> instead. (UnityUpgradable) -> FixedList4096Bytes<float>", true)]
-    public struct FixedListFloat4096 {}
-    
 
-    [Obsolete("FixedListFloat4096DebugView is deprecated. (UnityUpgradable) -> FixedList4096BytesDebugView<float>", true)]
-    sealed class FixedListFloat4096DebugView
-    {
-        FixedList4096Bytes<float> m_List;
-        public FixedListFloat4096DebugView(FixedList4096Bytes<float> list)
-        {
-            m_List = list;
-        }
-        public float[] Items => m_List.ToArray();
-    }
     /// <summary>
     /// Provides extension methods for FixedList*N*.
     /// </summary>
@@ -6296,7 +6105,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref FixedList32Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
@@ -6317,7 +6126,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref FixedList32Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
@@ -6338,7 +6147,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref FixedList64Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
@@ -6359,7 +6168,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref FixedList64Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
@@ -6380,7 +6189,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref FixedList128Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
@@ -6401,7 +6210,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref FixedList128Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
@@ -6422,7 +6231,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref FixedList512Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
@@ -6443,7 +6252,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref FixedList512Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>
@@ -6464,7 +6273,7 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public static void Sort<T>(this ref FixedList4096Bytes<T> list)
         where T : unmanaged, IComparable<T>
         {
@@ -6485,7 +6294,7 @@ namespace Unity.Collections
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) })]
         public static void Sort<T, U>(this ref FixedList4096Bytes<T> list, U comp)
         where T : unmanaged, IComparable<T>
         where U : IComparer<T>

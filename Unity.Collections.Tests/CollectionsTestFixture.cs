@@ -11,22 +11,35 @@ namespace Unity.Collections.Tests
         protected AllocatorHelper<RewindableAllocator> CommonRwdAllocatorHelper => rwdAllocatorHelper;
         protected ref RewindableAllocator CommonRwdAllocator => ref rwdAllocatorHelper.Allocator;
 
-        [SetUp]
-        public virtual void Setup()
+        [OneTimeSetUp]
+        public void OneTimeSetup()
         {
             rwdAllocatorHelper = new AllocatorHelper<RewindableAllocator>(Allocator.Persistent);
             CommonRwdAllocator.Initialize(128 * 1024, true);
+        }
 
+        [SetUp]
+        public virtual void Setup()
+        {
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.EnterScope();
 #endif
         }
 
-        [TearDown]
-        public virtual void TearDown()
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
         {
             CommonRwdAllocator.Dispose();
             rwdAllocatorHelper.Dispose();
+        }
+
+        [TearDown]
+        public virtual void TearDown()
+        {
+            CommonRwdAllocator.Rewind();
+            // This is test only behavior for determinism.  Rewind twice such that all
+            // tests start with an allocator containing only one memory block.
+            CommonRwdAllocator.Rewind();
 
 #if UNITY_DOTSRUNTIME
             Unity.Runtime.TempMemoryScope.ExitScope();

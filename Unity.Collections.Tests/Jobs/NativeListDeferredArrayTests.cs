@@ -1,12 +1,12 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Jobs.Tests.ManagedJobs;
 
-public class NativeListDeferredArrayTests
+internal class NativeListDeferredArrayTests : JobTestsFixtureBasic
 {
     private bool JobsDebuggerWasEnabled;
     struct AliasJob : IJob
@@ -59,7 +59,7 @@ public class NativeListDeferredArrayTests
     }
 
     [SetUp]
-    public void Setup()
+    public void NativeListDeferredArrayTestsSetup()
     {
         // Many ECS tests will only pass if the Jobs Debugger enabled;
         // force it enabled for all tests, and restore the original value at teardown.
@@ -76,7 +76,7 @@ public class NativeListDeferredArrayTests
     [Test]
     public void ResizedListToDeferredJobArray([Values(0, 1, 2, 3, 4, 5, 6, 42, 97, 1023)] int length)
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
 
         var setLengthJob = new SetListLengthJob { list = list, ResizeLength = length };
         var jobHandle = setLengthJob.Schedule();
@@ -87,8 +87,6 @@ public class NativeListDeferredArrayTests
         Assert.AreEqual(length, list.Length);
         for (int i = 0; i != list.Length; i++)
             Assert.AreEqual(length, list[i]);
-
-        list.Dispose();
     }
 
     [Test]
@@ -96,24 +94,21 @@ public class NativeListDeferredArrayTests
     {
         int length = 10;
 
-        var lengthValue = new NativeArray<int>(1, Allocator.TempJob);
+        var lengthValue = CollectionHelper.CreateNativeArray<int>(1, RwdAllocator.ToAllocator);
         lengthValue[0] = length;
-        var array = new NativeArray<int>(length, Allocator.TempJob);
+        var array = CollectionHelper.CreateNativeArray<int>(length, RwdAllocator.ToAllocator);
 
         var setValuesJob = new SetArrayValuesJobParallel { array = array };
         setValuesJob.Schedule((int*)lengthValue.GetUnsafePtr(), 3).Complete();
 
         for (int i = 0; i != array.Length; i++)
             Assert.AreEqual(length, array[i]);
-
-        lengthValue.Dispose();
-        array.Dispose();
     }
 
     [Test]
     public void ResizeListBeforeSchedule([Values(5)] int length)
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
 
         var setLengthJob = new SetListLengthJob { list = list, ResizeLength = length }.Schedule();
         var setValuesJob = new SetArrayValuesJobParallel { array = list.AsDeferredJobArray() };
@@ -124,15 +119,13 @@ public class NativeListDeferredArrayTests
         Assert.AreEqual(length, list.Length);
         for (int i = 0; i != list.Length; i++)
             Assert.AreEqual(length, list[i]);
-
-        list.Dispose();
     }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]
     public void ResizedListToDeferredJobArray()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
         list.Add(1);
 
         var array = list.AsDeferredJobArray();
@@ -140,14 +133,12 @@ public class NativeListDeferredArrayTests
         Assert.Throws<IndexOutOfRangeException>(() => { var value = array[0]; });
 #pragma warning restore 0219
         Assert.AreEqual(0, array.Length);
-
-        list.Dispose();
     }
 
     [Test]
     public void ResizeListWhileJobIsRunning()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
         list.Resize(42, NativeArrayOptions.UninitializedMemory);
 
         var setValuesJob = new GetArrayValuesJobParallel { array = list.AsDeferredJobArray() };
@@ -156,35 +147,30 @@ public class NativeListDeferredArrayTests
         Assert.Throws<InvalidOperationException>(() => list.Resize(1, NativeArrayOptions.UninitializedMemory));
 
         jobHandle.Complete();
-        list.Dispose();
     }
 
     [Test]
     public void AliasArrayThrows()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
 
         var aliasJob = new AliasJob { list = list, array = list.AsDeferredJobArray() };
         Assert.Throws<InvalidOperationException>(() => aliasJob.Schedule());
-
-        list.Dispose();
     }
 
     [Test]
     public void DeferredListMustExistInJobData()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
 
         var job = new ParallelForWithoutList();
         Assert.Throws<InvalidOperationException>(() => job.Schedule(list, 64));
-
-        list.Dispose();
     }
 
     [Test]
     public void DeferredListCantBeDeletedWhileJobIsRunning()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
         list.Resize(42, NativeArrayOptions.UninitializedMemory);
 
         var setValuesJob = new GetArrayValuesJobParallel { array = list.AsDeferredJobArray() };
@@ -193,23 +179,18 @@ public class NativeListDeferredArrayTests
         Assert.Throws<InvalidOperationException>(() => list.Dispose());
 
         jobHandle.Complete();
-
-        // Actually clean up memory to avoid DisposeSentinel complaint
-        list.Dispose();
     }
 
     [Test]
     public void DeferredArrayCantBeAccessedOnMainthread()
     {
-        var list = new NativeList<int>(Allocator.TempJob);
+        var list = new NativeList<int>(RwdAllocator.ToAllocator);
         list.Add(1);
 
         var defer = list.AsDeferredJobArray();
 
         Assert.AreEqual(0, defer.Length);
         Assert.Throws<IndexOutOfRangeException>(() => defer[0] = 5);
-
-        list.Dispose();
     }
 #endif
 
@@ -225,4 +206,3 @@ public class NativeListDeferredArrayTests
 #endif
     }
 }
-#endif

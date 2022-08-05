@@ -37,13 +37,43 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
     }
 
+// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
+#if !UNITY_DOTSRUNTIME
+    struct NestedContainerJob : IJob
+    {
+        public NativeList<NativeList<int>> nestedContainer;
+
+        public void Execute()
+        {
+            nestedContainer.Clear();
+        }
+    }
+
+    [Test]
+    public void NativeList_NestedJob_Error()
+    {
+        var container = new NativeList<NativeList<int>>(CommonRwdAllocator.Handle);
+
+        var nestedJob = new NestedContainerJob
+        {
+            nestedContainer = container
+        };
+
+        JobHandle job = default;
+        Assert.Throws<InvalidOperationException>(() => { job = nestedJob.Schedule(); });
+        job.Complete();
+
+        container.Dispose();
+    }
+#endif
+
     [Test]
     public void AddElementToListFromJobInvalidatesArray()
     {
         var list = new NativeList<int>(CommonRwdAllocator.Handle);
         list.Add(0);
 
-        NativeArray<int> arrayBeforeSchedule = list;
+        NativeArray<int> arrayBeforeSchedule = list.AsArray();
         Assert.AreEqual(list.Length, 1);
 
         var jobData = new NativeListAddJob(list);
@@ -53,7 +83,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             () => {
                 int readVal = arrayBeforeSchedule[0];
             });
-        Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list; Debug.Log(array.Length); });
+        Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list.AsArray(); Debug.Log(array.Length); });
         Assert.Throws<InvalidOperationException>(() => { int readVal = list.Capacity; });
         Assert.Throws<InvalidOperationException>(() => { list.Dispose(); });
         Assert.Throws<InvalidOperationException>(() => { int readVal = list[0]; });
@@ -70,7 +100,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         Assert.AreEqual(0, list[0]);
         Assert.AreEqual(1, list[1]);
 
-        NativeArray<int> arrayAfter = list;
+        NativeArray<int> arrayAfter = list.AsArray();
         Assert.AreEqual(2, arrayAfter.Length);
         Assert.AreEqual(0, arrayAfter[0]);
         Assert.AreEqual(1, arrayAfter[1]);
@@ -114,12 +144,12 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         var list = new NativeList<int>(1, Allocator.Persistent);
 
         // The scheduled job only receives a NativeArray thus it can't be resized
-        var writeJobHandle = new NativeArrayTest(list).Schedule();
+        var writeJobHandle = new NativeArrayTest(list.AsArray()).Schedule();
 
         // For that reason casting here is legal, as opposed to AddElementToListFromJobInvalidatesArray case where it is not legal
         // Since we NativeList is passed to the job
 #pragma warning disable 0219 // assigned but its value is never used
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
 #pragma warning restore 0219
 
         list.Dispose(writeJobHandle);
@@ -132,7 +162,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
 
         var addListJobHandle = new NativeListAddJob(list).Schedule();
 #pragma warning disable 0219 // assigned but its value is never used
-        Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list; });
+        Assert.Throws<InvalidOperationException>(() => { NativeArray<int> array = list.AsArray(); });
 #pragma warning restore 0219
 
         addListJobHandle.Complete();
@@ -143,7 +173,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     public void ScheduleDerivedArrayExceptions2()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
-        NativeArray<int> array = list;
+        NativeArray<int> array = list.AsArray();
 
         var addListJobHandle = new NativeListAddJob(list).Schedule();
         // The array previously cast should become invalid
@@ -190,7 +220,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Add(0);
         var arrayBeforeSchedule = list.AsArray();
 
-        var jobData = new NativeArrayTest(list);
+        var jobData = new NativeArrayTest(list.AsArray());
         var job = jobData.Schedule();
         job.Complete();
 
@@ -209,7 +239,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             list.Add(0);
             list.Add(0);
 
-            NativeArray<int> arr = list;
+            NativeArray<int> arr = list.AsArray();
             arr[0] = 1;
             arr[1] = 2;
         }
@@ -247,7 +277,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         for (int i = 0; i < 2; i++)
         {
             var writeJob = new WriteJob();
-            writeJob.output = list;
+            writeJob.output = list.AsArray();
             var writeJobHandle = writeJob.Schedule(list.Length, 1);
 
             Assert.Throws<InvalidOperationException>(() => { float val = writeJob.output[0]; });
@@ -286,8 +316,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         deps.Complete();
     }
 
-    // error BC1071: Unsupported assert type
-    // [BurstCompile(CompileSynchronously = true)]
     struct InvalidArrayAccessFromListJob : IJob
     {
         public NativeList<int> list;
@@ -295,7 +323,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         public void Execute()
         {
             list.Add(1);
-            NativeArray<int> array = list;
+            NativeArray<int> array = list.AsArray();
             list.Add(2);
 
             // Assert.Throws<InvalidOperationException>(() => { array[0] = 5; }); - temporarily commenting out updated assert checks to ensure editor version promotion succeeds
@@ -336,12 +364,28 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
     }
 
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
+    struct NativeArrayTestAsReadOnly : IJob
+    {
+        [ReadOnly]
+        NativeArray<int>.ReadOnly array;
+
+        public NativeArrayTestAsReadOnly(NativeArray<int>.ReadOnly array) { this.array = array; }
+
+        public void Execute()
+        {
+            var arr = array;
+            Assert.AreEqual(7, array[0]);
+        }
+    }
+
     [Test]
     public void ReadOnlyAliasedArrayThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
         list.Add(7);
-        new NativeArrayTestReadOnly(list).Schedule().Complete();
+        new NativeArrayTestReadOnly(list.AsArray()).Schedule().Complete();
 
         list.Dispose();
     }
@@ -386,9 +430,26 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 
+    [Test]
+    public void NativeList_AsReadOnly_Jobs()
+    {
+        var list = new NativeList<int>(Allocator.Persistent);
+        list.Add(0);
+
+        var writer = list.AsArray();
+        var writerJob = new NativeArrayTestWriteOnly(writer).Schedule();
+
+        var reader = list.AsReadOnly();
+        var readerJob = new NativeArrayTestAsReadOnly(reader).Schedule(writerJob);
+
+        readerJob.Complete();
+
+        list.Dispose();
+    }
+
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
-    struct NativeListTestParallelReader : IJob
+    struct NativeListTestReadOnly : IJob
     {
         [ReadOnly]
         public NativeArray<int>.ReadOnly reader;
@@ -401,7 +462,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeList_ParallelReader()
+    public void NativeList_AsReadOnly()
     {
         NativeList<int> list;
         JobHandle readerJob;
@@ -410,17 +471,17 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             list = new NativeList<int>(Allocator.Persistent);
             list.Add(7);
 
-            var reader = list.AsParallelReader();
+            var reader = list.AsReadOnly();
             list.Dispose(); // <- cause invalid use
-            Assert.Throws<InvalidOperationException>(() => { readerJob = new NativeListTestParallelReader { reader = reader }.Schedule(); });
+            Assert.Throws<InvalidOperationException>(() => { readerJob = new NativeListTestReadOnly { reader = reader }.Schedule(); });
         }
 
         {
             list = new NativeList<int>(Allocator.Persistent);
             list.Add(7);
 
-            var reader = list.AsParallelReader();
-            readerJob = new NativeListTestParallelReader { reader = reader }.Schedule();
+            var reader = list.AsReadOnly();
+            readerJob = new NativeListTestReadOnly { reader = reader }.Schedule();
         }
 
         list.Dispose(readerJob);
@@ -493,7 +554,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeList_ParallelReaderWriter()
+    public void NativeList_AsReadOnlyAndParallelWriter()
     {
         NativeList<int> list;
         JobHandle jobHandle;
@@ -501,9 +562,9 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list = new NativeList<int>(Allocator.Persistent);
         list.Add(7);
 
-        jobHandle = new NativeListTestParallelReader { reader = list.AsParallelReader() }.Schedule();
+        jobHandle = new NativeListTestReadOnly { reader = list.AsReadOnly() }.Schedule();
         jobHandle = new NativeListTestParallelWriter { writer = list.AsParallelWriter() }.Schedule(jobHandle);
-        jobHandle = new NativeListTestParallelReader { reader = list.AsParallelReader() }.Schedule(jobHandle);
+        jobHandle = new NativeListTestReadOnly { reader = list.AsReadOnly() }.Schedule(jobHandle);
         jobHandle = new NativeListTestParallelWriter { writer = list.AsParallelWriter() }.Schedule(jobHandle);
 
         list.Dispose(jobHandle);

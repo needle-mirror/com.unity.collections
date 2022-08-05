@@ -52,13 +52,13 @@ namespace Unity.Collections
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
         /// <#=ARGxDOCS#>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), <#=BCOMPAT#> })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), <#=BCOMPAT#> })]
         public static unsafe void AppendFormat<T, U, <#=TYPES#>>(ref this T dest, in U format, <#=PARAMS#>)
-            where T : struct, INativeList<byte>, IUTF8Bytes
-            where U : struct, INativeList<byte>, IUTF8Bytes
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
 <#
         for (var a = 0; a < ARGS; ++a)
-            WriteLine("            where T{0} : struct, INativeList<byte>, IUTF8Bytes", a);
+            WriteLine("            where T{0} : unmanaged, INativeList<byte>, IUTF8Bytes", a);
 #>
         {
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);

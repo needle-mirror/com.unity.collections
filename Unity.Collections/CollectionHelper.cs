@@ -29,7 +29,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides helper methods for collections.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static class CollectionHelper
     {
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
@@ -175,7 +175,7 @@ namespace Unity.Collections
             return (uint)hash;
         }
 
-        [NotBurstCompatible /* Used only for debugging. */]
+        [ExcludeFromBurstCompatTesting("Used only for debugging, and uses managed strings")]
         internal static void WriteLayout(Type type)
         {
 #if !NET_DOTS
@@ -213,15 +213,23 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        [BurstDiscard] // Must use BurstDiscard because UnsafeUtility.IsUnmanaged is not burstable.
-        [NotBurstCompatible  /* Used only for debugging. */]
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", GenericTypeArguments = new[] { typeof(NativeArray<int>) })]
         internal static void CheckIsUnmanaged<T>()
         {
-            if (!UnsafeUtility.IsValidNativeContainerElementType<T>())
+            if (!UnsafeUtility.IsUnmanaged<T>())
             {
-                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable, not primitive, or contains a type tagged as NativeContainer");
+                throw new ArgumentException($"{typeof(T)} used in native collection is not blittable or not primitive");
             }
         }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", GenericTypeArguments = new[] { typeof(NativeArray<int>) })]
+        internal static void InitNativeContainer<T>(AtomicSafetyHandle handle)
+        {
+            if (UnsafeUtility.IsNativeContainerType<T>())
+                AtomicSafetyHandle.SetNestedContainer(handle, true);
+        }
+#endif
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         internal static void CheckIntPositivePowerOfTwo(int value)
@@ -266,159 +274,296 @@ namespace Unity.Collections
         /// <summary>
         /// Create a NativeArray, using a provided allocator that implements IAllocator.
         /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <typeparam name="U">The type of allocator.</typeparam>
         /// <param name="length">The number of elements to allocate.</param>
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Options for allocation, such as whether to clear the memory.</param>
         /// <returns>Returns the NativeArray that was created.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
         public static NativeArray<T> CreateNativeArray<T, U>(int length, ref U allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
-            where T : struct
+            where T : unmanaged
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            NativeArray<T> container;
+            NativeArray<T> nativeArray;
             if (!allocator.IsCustomAllocator)
             {
-                container = new NativeArray<T>(length, allocator.ToAllocator, options);
+                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
             }
             else
             {
-                container = new NativeArray<T>();
-                container.Initialize(length, ref allocator, options);
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(length, ref allocator, options);
             }
-            return container;
+            return nativeArray;
         }
 
         /// <summary>
         /// Create a NativeArray, using a provided AllocatorHandle.
         /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="length">The number of elements to allocate.</param>
         /// <param name="allocator">The AllocatorHandle to use.</param>
         /// <param name="options">Options for allocation, such as whether to clear the memory.</param>
         /// <returns>Returns the NativeArray that was created.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public static NativeArray<T> CreateNativeArray<T>(int length, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
-            where T : struct
+            where T : unmanaged
         {
-            NativeArray<T> container;
+            NativeArray<T> nativeArray;
             if(!AllocatorManager.IsCustomAllocator(allocator))
             {
-                container = new NativeArray<T>(length, allocator.ToAllocator, options);
+                nativeArray = new NativeArray<T>(length, allocator.ToAllocator, options);
             }
             else
             {
-                container = new NativeArray<T>();
-                container.Initialize(length, allocator, options);
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(length, allocator, options);
             }
-            return container;
+            return nativeArray;
         }
 
         /// <summary>
         /// Create a NativeArray from another NativeArray, using a provided AllocatorHandle.
         /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="array">The NativeArray to make a copy of.</param>
         /// <param name="allocator">The AllocatorHandle to use.</param>
         /// <returns>Returns the NativeArray that was created.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public static NativeArray<T> CreateNativeArray<T>(NativeArray<T> array, AllocatorManager.AllocatorHandle allocator)
-            where T : struct
+            where T : unmanaged
         {
-            NativeArray<T> container;
+            NativeArray<T> nativeArray;
             if (!AllocatorManager.IsCustomAllocator(allocator))
             {
-                container = new NativeArray<T>(array, allocator.ToAllocator);
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                container = new NativeArray<T>();
-                container.Initialize(array.Length, allocator);
-                container.CopyFrom(array);
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, allocator);
+                nativeArray.CopyFrom(array);
             }
-            return container;
+            return nativeArray;
         }
 
         /// <summary>
         /// Create a NativeArray from a managed array, using a provided AllocatorHandle.
         /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="array">The managed array to make a copy of.</param>
         /// <param name="allocator">The AllocatorHandle to use.</param>
         /// <returns>Returns the NativeArray that was created.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Managed array")]
         public static NativeArray<T> CreateNativeArray<T>(T[] array, AllocatorManager.AllocatorHandle allocator)
-            where T : struct
+            where T : unmanaged
         {
-            NativeArray<T> container;
+            NativeArray<T> nativeArray;
             if (!AllocatorManager.IsCustomAllocator(allocator))
             {
-                container = new NativeArray<T>(array, allocator.ToAllocator);
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                container = new NativeArray<T>();
-                container.Initialize(array.Length, allocator);
-                container.CopyFrom(array);
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, allocator);
+                nativeArray.CopyFrom(array);
             }
-            return container;
+            return nativeArray;
         }
 
         /// <summary>
         /// Create a NativeArray from a managed array, using a provided Allocator.
         /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <typeparam name="U">The type of allocator.</typeparam>
         /// <param name="array">The managed array to make a copy of.</param>
         /// <param name="allocator">The Allocator to use.</param>
         /// <returns>Returns the NativeArray that was created.</returns>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Managed array")]
         public static NativeArray<T> CreateNativeArray<T, U>(T[] array, ref U allocator)
-            where T : struct
+            where T : unmanaged
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            NativeArray<T> container;
+            NativeArray<T> nativeArray;
             if (!allocator.IsCustomAllocator)
             {
-                container = new NativeArray<T>(array, allocator.ToAllocator);
+                nativeArray = new NativeArray<T>(array, allocator.ToAllocator);
             }
             else
             {
-                container = new NativeArray<T>();
-                container.Initialize(array.Length, ref allocator);
-                container.CopyFrom(array);
+                nativeArray = new NativeArray<T>();
+                nativeArray.Initialize(array.Length, ref allocator);
+                nativeArray.CopyFrom(array);
             }
-            return container;
+            return nativeArray;
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void CheckConvertArguments<T>(int length) where T : unmanaged
+        {
+            if (length < 0)
+                throw new ArgumentOutOfRangeException(nameof(length), "Length must be >= 0");
+
+            if (!UnsafeUtility.IsUnmanaged<T>())
+            {
+                throw new InvalidOperationException(
+                    $"{typeof(T)} used in NativeArray<{typeof(T)}> must be unmanaged (contain no managed types).");
+            }
+        }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        static void InitNestedNativeContainer<T>(AtomicSafetyHandle handle)
+            where T : unmanaged
+        {
+            if (UnsafeUtility.IsNativeContainerType<T>())
+            {
+                AtomicSafetyHandle.SetNestedContainer(handle, true);
+            }
+        }
+#endif
+
+        /// <summary>
+        /// Convert existing data into a NativeArray.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="dataPointer">Pointer to the data to be converted.</param>
+        /// <param name="length">The count of elements.</param>
+        /// <param name="allocator">The Allocator to use.</param>
+        /// <param name="setTempMemoryHandle">Use temporary memory atomic safety handle.</param>
+        /// <returns>Returns the NativeArray that was created.</returns>
+        /// <remarks>The caller is still the owner of the data.</remarks>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static unsafe NativeArray<T> ConvertExistingDataToNativeArray<T>(void* dataPointer, int length, AllocatorManager.AllocatorHandle allocator, bool setTempMemoryHandle = false)
+            where T : unmanaged
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            CheckConvertArguments<T>(length);
+#endif
+            NativeArray<T> nativeArray = default;
+
+            nativeArray.m_Buffer = dataPointer;
+            nativeArray.m_Length = length;
+            if (!allocator.IsCustomAllocator)
+            {
+                nativeArray.m_AllocatorLabel = allocator.ToAllocator;
+            }
+            else
+            {
+                nativeArray.m_AllocatorLabel = Allocator.None;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            nativeArray.m_MinIndex = 0;
+            nativeArray.m_MaxIndex = length - 1;
+            if (setTempMemoryHandle)
+            {
+                NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref nativeArray, AtomicSafetyHandle.GetTempMemoryHandle());
+            }
+#endif
+            return nativeArray;
         }
 
         /// <summary>
-        /// Create a NativeParallelHashMap from a managed array, using a provided Allocator.
+        /// Convert NativeList into a NativeArray.
         /// </summary>
-        /// <param name="length">The desired capacity of the NativeMultiHashMap.</param>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="nativeList">NativeList to be converted.</param>
+        /// <param name="length">The count of elements.</param>
         /// <param name="allocator">The Allocator to use.</param>
-        /// <returns>Returns the NativeMultiHashMap that was created.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
-        public static NativeParallelHashMap<TKey, TValue> CreateNativeParallelHashMap<TKey, TValue, U>(int length, ref U allocator)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
-            where U : unmanaged, AllocatorManager.IAllocator
+        /// <returns>Returns the NativeArray that was created.</returns>
+        /// <remarks>There is a caveat if users would like to transfer memory ownership from the NativeList to the converted NativeArray.
+        /// NativeList implementation includes two memory allocations, one holds its header, another holds the list data.
+        /// After convertion, the converted NativeArray holds the list data and dispose the array only free the list data.
+        /// Users need to manually free the list header to avoid memory leaks, for example after convertion call,
+        /// AllocatorManager.Free(allocator, nativeList.m_ListData); </remarks>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static unsafe NativeArray<T> ConvertExistingNativeListToNativeArray<T>(ref NativeList<T> nativeList, int length, AllocatorManager.AllocatorHandle allocator)
+            where T : unmanaged
         {
-            return new NativeParallelHashMap<TKey, TValue>();
+            NativeArray<T> nativeArray = ConvertExistingDataToNativeArray<T>(nativeList.GetUnsafePtr(), length, allocator);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safetyHandle = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref nativeList);
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle<T>(ref nativeArray, safetyHandle);
+            InitNestedNativeContainer<T>(nativeArray.m_Safety);
+#endif
+            return nativeArray;
         }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", CompileTarget = GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)]
+        internal static AtomicSafetyHandle GetNativeArraySafetyHandle<T>(ref NativeArray<T> nativeArray)
+            where T : unmanaged
+        {
+            return nativeArray.m_Safety;
+        }
+#endif
+
 
         /// <summary>
         /// Create a NativeMultiHashMap from a managed array, using a provided Allocator.
         /// </summary>
+        /// <typeparam name="TKey">The type of the keys.</typeparam>
+        /// <typeparam name="TValue">The type of the values.</typeparam>
+        /// <typeparam name="U">The type of allocator.</typeparam>
         /// <param name="length">The desired capacity of the NativeMultiHashMap.</param>
         /// <param name="allocator">The Allocator to use.</param>
         /// <returns>Returns the NativeMultiHashMap that was created.</returns>
-        [Obsolete("CreateNativeMultiHashMap is renamed to CreateNativeParallelHashMap. (UnityUpgradable) -> CreateNativeParallelHashMap<TKey, TValue, U>(*)", true)]
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
-        public static NativeHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
-            where TKey : struct, IEquatable<TKey>
-            where TValue : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
+        public static NativeMultiHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
+            where TKey : unmanaged, IEquatable<TKey>
+            where TValue : unmanaged
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            return new NativeHashMap<TKey, TValue> { };
+            var nativeMultiHashMap = new NativeMultiHashMap<TKey, TValue>();
+            nativeMultiHashMap.Initialize(length, ref allocator);
+            return nativeMultiHashMap;
+        }
+
+        /// <summary>
+        /// Empty job type used for Burst compilation testing
+        /// </summary>
+        [BurstCompile]
+        public struct DummyJob : IJob
+        {
+            /// <summary>
+            /// Empty job execute function used for Burst compilation testing
+            /// </summary>
+            public void Execute()
+            {
+            }
+        }
+
+        /// <summary>
+        /// Checks that reflection data was properly registered for a job.
+        /// </summary>
+        /// <remarks>This should be called before instantiating JobsUtility.JobScheduleParameters in order to report to the user if they need to take action.</remarks>
+        /// <param name="reflectionData">The reflection data pointer.</param>
+        /// <typeparam name="T">Job type</typeparam>
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS",
+            GenericTypeArguments = new[] { typeof(DummyJob) })]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        public static void CheckReflectionDataCorrect<T>(IntPtr reflectionData)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            bool burstCompiled = true;
+            CheckReflectionDataCorrectInternal<T>(reflectionData, ref burstCompiled);
+            if (burstCompiled && reflectionData == IntPtr.Zero)
+                throw new InvalidOperationException("Reflection data was not set up by an Initialize() call. For generic job types, please include [assembly: RegisterGenericJobType(typeof(MyJob<MyJobSpecialization>))] in your source file.");
+#endif
         }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static AtomicSafetyHandle CreateSafetyHandle(AllocatorManager.AllocatorHandle allocator)
+        /// <summary>
+        /// Creates a new AtomicSafetyHandle that is valid until [[CollectionHelper.DisposeSafetyHandle]] is called.
+        /// </summary>
+        /// <param name="allocator">The AllocatorHandle to use.</param>
+        /// <returns>Safety handle.</returns>
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        public static AtomicSafetyHandle CreateSafetyHandle(AllocatorManager.AllocatorHandle allocator)
         {
             if (allocator.IsCustomAllocator)
             {
@@ -428,19 +573,23 @@ namespace Unity.Collections
             return (allocator.ToAllocator == Allocator.Temp) ? AtomicSafetyHandle.GetTempMemoryHandle() : AtomicSafetyHandle.Create();
         }
 
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        internal static void DisposeSafetyHandle(ref AtomicSafetyHandle safety)
+        /// <summary>
+        /// Disposes a previously created AtomicSafetyHandle.
+        /// </summary>
+        /// <param name="handle">Safety handle.</param>
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        public static void DisposeSafetyHandle(ref AtomicSafetyHandle handle)
         {
-            AtomicSafetyHandle.CheckDeallocateAndThrow(safety);
+            AtomicSafetyHandle.CheckDeallocateAndThrow(handle);
             // If the safety handle is for a temp allocation, create a new safety handle for this instance which can be marked as invalid
             // Setting it to new AtomicSafetyHandle is not enough since the handle needs a valid node pointer in order to give the correct errors
-            if (AtomicSafetyHandle.IsTempMemoryHandle(safety))
+            if (AtomicSafetyHandle.IsTempMemoryHandle(handle))
             {
-                int staticSafetyId = safety.staticSafetyId;
-                safety = AtomicSafetyHandle.Create();
-                safety.staticSafetyId = staticSafetyId;
+                int staticSafetyId = handle.staticSafetyId;
+                handle = AtomicSafetyHandle.Create();
+                handle.staticSafetyId = staticSafetyId;
             }
-            AtomicSafetyHandle.Release(safety);
+            AtomicSafetyHandle.Release(handle);
         }
 
         static unsafe void CreateStaticSafetyIdInternal(ref int id, in FixedString512Bytes name)
@@ -455,19 +604,20 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a static safety id which better identifies resources in safety system messages.
+        /// Assigns the provided static safety ID to an [[AtomicSafetyHandle]]. The ID's owner type name and any custom error messages are used by the job debugger when reporting errors involving the target handle.
         /// </summary>
         /// <remarks>This is preferable to AtomicSafetyHandle.NewStaticSafetyId as it is compatible with burst.</remarks>
-        /// <param name="name">The name of the resource type.</param>
-        /// <returns>An int representing the static safety id for this resource.</returns>
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", GenericTypeArguments = new[] { typeof(NativeArray<int>) })]
+        /// <typeparam name="T">Type of container safety handle refers to.</typeparam>
+        /// <param name="handle">Safety handle.</param>
+        /// <param name="sharedStaticId">The static safety ID to associate with the provided handle. This ID must have been allocated with ::ref::NewStaticSafetyId.</param>
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS", GenericTypeArguments = new[] { typeof(NativeArray<int>) })]
         public static void SetStaticSafetyId<T>(ref AtomicSafetyHandle handle, ref int sharedStaticId)
         {
             if (sharedStaticId == 0)
             {
                 // This will eventually either work with burst supporting a subset of typeof()
                 // or something similar to Burst.BurstRuntime.GetTypeName() will be implemented
-                // JIRA issue https://jira.unity3d.com/browse/DOTS-5685
+                // JIRA issue DOTS-5685
 
                 CreateStaticSafetyIdInternal<T>(ref sharedStaticId);
             }
@@ -476,12 +626,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a static safety id which better identifies resources in safety system messages.
+        /// Assigns the provided static safety ID to an [[AtomicSafetyHandle]]. The ID's owner type name and any custom error messages are used by the job debugger when reporting errors involving the target handle.
         /// </summary>
         /// <remarks>This is preferable to AtomicSafetyHandle.NewStaticSafetyId as it is compatible with burst.</remarks>
+        /// <param name="handle">Safety handle.</param>
+        /// <param name="sharedStaticId">The static safety ID to associate with the provided handle. This ID must have been allocated with ::ref::NewStaticSafetyId.</param>
         /// <param name="name">The name of the resource type.</param>
-        /// <returns>An int representing the static safety id for this resource.</returns>
-        [BurstCompatible(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS")]
         public static unsafe void SetStaticSafetyId(ref AtomicSafetyHandle handle, ref int sharedStaticId, FixedString512Bytes name)
         {
             if (sharedStaticId == 0)
@@ -491,6 +642,16 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.SetStaticSafetyId(ref handle, sharedStaticId);
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [BurstDiscard]
+        static void CheckReflectionDataCorrectInternal<T>(IntPtr reflectionData, ref bool burstCompiled)
+        {
+            if (reflectionData == IntPtr.Zero)
+                throw new InvalidOperationException($"Reflection data was not set up by an Initialize() call. For generic job types, please include [assembly: RegisterGenericJobType(typeof({typeof(T)}))] in your source file.");
+            burstCompiled = false;
+        }
+
 #endif
     }
 }

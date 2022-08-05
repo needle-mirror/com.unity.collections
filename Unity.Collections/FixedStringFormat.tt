@@ -69,7 +69,7 @@ namespace Unity.Collections
     /// <summary>
     /// Provides formatting methods for FixedString*N*.
     /// </summary>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static class FixedString
     {
 <#
@@ -88,7 +88,7 @@ namespace Unity.Collections
 
         if (COMBO.Contains("string"))
         {
-            BCOMPAT = "[NotBurstCompatible]";
+            BCOMPAT = "[ExcludeFromBurstCompatTesting(\"Takes managed string\")]";
         }
 
         var GENERICSCONSTRAINT = new StringBuilder();
@@ -98,14 +98,14 @@ namespace Unity.Collections
             GENERICSPARAM = $"<{string.Join(",", Enumerable.Range(1, numFixedStringN).Select((n) => $"T{n}"))}>";
             if (!COMBO.Contains("string"))
             {
-                BCOMPAT = $"[BurstCompatible(GenericTypeArguments = new[] {{ {string.Join(", ", Enumerable.Range(1, numFixedStringN).Select((n) => $"typeof(FixedString32Bytes /*$T{n}*/)"))} }} )]";
+                BCOMPAT = $"[GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] {{ {string.Join(", ", Enumerable.Range(1, numFixedStringN).Select((n) => $"typeof(FixedString32Bytes /*$T{n}*/)"))} }} )]";
             }
 
             for (int i = 0; i < numFixedStringN; ++i)
             {
                 var index = COMBO.IndexOf("FixedStringN");
                 COMBO[index] = $"T{i + 1}";
-                GENERICSCONSTRAINT.Append($"            where T{i + 1} : struct, INativeList<byte>, IUTF8Bytes\n");
+                GENERICSCONSTRAINT.Append($"            where T{i + 1} : unmanaged, INativeList<byte>, IUTF8Bytes\n");
                 TxDOCS.Append($"        /// <typeparam name=\"T{i + 1}\"><undoc /></typeparam>\r\n");
             }
         }

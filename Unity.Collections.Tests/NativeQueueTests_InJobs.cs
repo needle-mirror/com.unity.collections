@@ -8,6 +8,36 @@ using Assert = FastAssert;
 
 internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 {
+// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
+#if !UNITY_DOTSRUNTIME
+    struct NestedContainerJob : IJob
+    {
+        public NativeQueue<NativeQueue<int>> nestedContainer;
+
+        public void Execute()
+        {
+            nestedContainer.Clear();
+        }
+    }
+
+    [Test]
+    public void NativeQueue_NestedJob_Error()
+    {
+        var container = new NativeQueue<NativeQueue<int>>(CommonRwdAllocator.Handle);
+
+        var nestedJob = new NestedContainerJob
+        {
+            nestedContainer = container
+        };
+
+        JobHandle job = default;
+        Assert.Throws<System.InvalidOperationException>(() => { job = nestedJob.Schedule(); });
+        job.Complete();
+
+        container.Dispose();
+    }
+#endif
+
     [BurstCompile(CompileSynchronously = true)]
     struct ConcurrentEnqueue : IJobParallelFor
     {

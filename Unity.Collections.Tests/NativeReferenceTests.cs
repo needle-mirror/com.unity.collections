@@ -244,4 +244,56 @@ class NativeReferenceTests : CollectionsTestCommonBase
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    public struct NestedContainer
+    {
+        public NativeReference<int> data;
+    }
+
+    [Test]
+    public void NativeReference_Nested()
+    {
+        var inner = new NativeReference<int>(CommonRwdAllocator.Handle);
+        NestedContainer nestedStruct = new NestedContainer { data = inner };
+
+        var containerNestedStruct = new NativeReference<NestedContainer>(CommonRwdAllocator.Handle);
+        var containerNested = new NativeReference<NativeReference<int>>(CommonRwdAllocator.Handle);
+
+        containerNested.Value = inner;
+        containerNestedStruct.Value = nestedStruct;
+
+        containerNested.Dispose();
+        containerNestedStruct.Dispose();
+        inner.Dispose();
+    }
+
+// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
+#if !UNITY_DOTSRUNTIME
+    struct NestedContainerJob : IJob
+    {
+        public NativeReference<NativeReference<int>> nestedContainer;
+
+        public void Execute()
+        {
+            nestedContainer.Value = default;
+        }
+    }
+
+    [Test]
+    public void NativeReference_NestedJob_Error()
+    {
+        var container = new NativeReference<NativeReference<int>>(CommonRwdAllocator.Handle);
+
+        var nestedJob = new NestedContainerJob
+        {
+            nestedContainer = container
+        };
+
+        JobHandle job = default;
+        Assert.Throws<System.InvalidOperationException>(() => { job = nestedJob.Schedule(); });
+        job.Complete();
+
+        container.Dispose();
+    }
+#endif
 }

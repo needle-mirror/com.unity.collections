@@ -8,7 +8,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     /// <remarks>Allocations from a scratch allocator are not individually deallocated.
     /// Instead, when you're done using all the allocations from a scratch allocator, you dispose the allocator as a whole.</remarks>
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public unsafe struct UnsafeScratchAllocator
     {
         void* m_Pointer;
@@ -63,8 +63,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="count">The number of elements to allocate space for. Defaults to 1.</param>
         /// <returns>A pointer to the new allocation.</returns>
         /// <exception cref="ArgumentException">Thrown if the new allocation would exceed the capacity of the allocator.</exception>
-        [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void* Allocate<T>(int count = 1) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        public void* Allocate<T>(int count = 1) where T : unmanaged
         {
             return Allocate(UnsafeUtility.SizeOf<T>() * count, UnsafeUtility.AlignOf<T>());
         }

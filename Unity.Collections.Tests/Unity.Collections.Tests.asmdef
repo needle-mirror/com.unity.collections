@@ -3,7 +3,6 @@
     "references": [
         "Unity.Collections",
         "Unity.Burst",
-        "Unity.Jobs",
         "Unity.Mathematics",
         "Unity.Collections.BurstCompatibilityGen"
     ],
@@ -20,14 +19,7 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines":
-    [
-        {
-            "name": "com.unity.jobs",
-            "expression": "[0.0.0,0.70.0-preview.1)",
-            "define": "UNITY_JOBS_LESS_THAN_0_7"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false,
     "optionalUnityReferences": [
         "TestAssemblies"

@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using Unity.Burst;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -34,18 +35,20 @@ namespace Unity.Collections.Tests
     /// 3. If you wish to test internal methods, you should make internals visible to the new asmdef you created in
     /// step 2.<para/> <para/>
     ///
-    /// 4. Create a new class and inherit BurstCompatibilityTests. Call the base constructor with the appropriate
-    /// arguments so BurstCompatibilityTests knows which assemblies to scan for the [BurstCompatible] attribute and
+    /// 4. Create a test scene (it can be empty) for the Burst compatibility tests to use when it builds a player.
+    ///
+    /// 5. Create a new class and inherit BurstCompatibilityTests. Call the base constructor with the appropriate
+    /// arguments so BurstCompatibilityTests knows which assemblies to scan for the [GenerateTestsForBurstCompatibility] attribute and
     /// where to put the generated Burst compatibility code. This new class should live in an editor only assembly and
     /// the generated Burst compatibility code should be a part of the multiplatform asmdef you created in step 2.
     /// <para/> <para/>
     ///
-    /// 5. If your generated code will live in your package directory, you may need to add the [EmbeddedPackageOnlyTest]
+    /// 6. If your generated code will live in your package directory, you may need to add the [EmbeddedPackageOnlyTest]
     /// attribute to your new class.<para/> <para/>
     ///
-    /// 6. Start adding [BurstCompatible] or [NotBurstCompatible] attributes to your types or methods.<para/> <para/>
+    /// 7. Start adding [GenerateTestsForBurstCompatibility] or [ExcludeFromBurstCompatTesting] attributes to your types or methods.<para/> <para/>
     ///
-    /// 7. In the test runner, run the test called CompatibilityTests that can be found nested under the name of your
+    /// 8. In the test runner, run the test called CompatibilityTests that can be found nested under the name of your
     /// new test class you implemented in step 4.<para/> <para/>
     /// </remarks>
     public abstract class BurstCompatibilityTests
@@ -54,6 +57,7 @@ namespace Unity.Collections.Tests
         private HashSet<string> m_AssembliesToVerify = new HashSet<string>();
         private string m_GeneratedCodeAssemblyName;
         private readonly string m_TempBurstCompatibilityPath;
+        private readonly string m_TestScenePath;
         private static readonly string s_GeneratedClassName = "_generated_burst_compat_tests";
 
         /// <summary>
@@ -62,8 +66,9 @@ namespace Unity.Collections.Tests
         /// <param name="assemblyNameToVerifyBurstCompatibility">Name of the assembly to verify Burst compatibility.</param>
         /// <param name="generatedCodePath">Destination path for the generated Burst compatibility code.</param>
         /// <param name="generatedCodeAssemblyName">Name of the assembly that will contain the generated Burst compatibility code.</param>
-        protected BurstCompatibilityTests(string assemblyNameToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName)
-        : this(new[] {assemblyNameToVerifyBurstCompatibility}, generatedCodePath, generatedCodeAssemblyName)
+        /// <param name="testScenePath">Path of the test scene to use when building a player.</param>
+        protected BurstCompatibilityTests(string assemblyNameToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName, string testScenePath)
+        : this(new[] {assemblyNameToVerifyBurstCompatibility}, generatedCodePath, generatedCodeAssemblyName, testScenePath)
         {
         }
 
@@ -78,7 +83,8 @@ namespace Unity.Collections.Tests
         /// <param name="assemblyNamesToVerifyBurstCompatibility">Names of the assemblies to verify Burst compatibility.</param>
         /// <param name="generatedCodePath">Destination path for the generated Burst compatibility code.</param>
         /// <param name="generatedCodeAssemblyName">Name of the assembly that will contain the generated Burst compatibility code.</param>
-        protected BurstCompatibilityTests(string[] assemblyNamesToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName)
+        /// <param name="testScenePath">Path of the test scene to use when building a player.</param>
+        protected BurstCompatibilityTests(string[] assemblyNamesToVerifyBurstCompatibility, string generatedCodePath, string generatedCodeAssemblyName, string testScenePath)
         {
             m_GeneratedCodePath = generatedCodePath;
 
@@ -89,6 +95,7 @@ namespace Unity.Collections.Tests
 
             m_GeneratedCodeAssemblyName = generatedCodeAssemblyName;
             m_TempBurstCompatibilityPath = Path.Combine("Temp", "BurstCompatibility", GetType().Name);
+            m_TestScenePath = testScenePath;
         }
 
         struct MethodData : IComparable<MethodData>
@@ -100,7 +107,7 @@ namespace Unity.Collections.Tests
             public Dictionary<string, Type> MethodGenericArgumentLookup;
             public Dictionary<string, Type> InstanceTypeGenericArgumentLookup;
             public string RequiredDefine;
-            public BurstCompatibleAttribute.BurstCompatibleCompileTarget CompileTarget;
+            public GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget CompileTarget;
 
             public int CompareTo(MethodData other)
             {
@@ -150,7 +157,7 @@ namespace Unity.Collections.Tests
 
                 if (MethodGenericArgumentLookup == null & InstanceTypeGenericArgumentLookup == null)
                 {
-                    throw new InvalidOperationException("For '{InstanceType.Name}.{Info.Name}', generic argument lookups are null! Did you forget to specify GenericTypeArguments in the [BurstCompatible] attribute?");
+                    throw new InvalidOperationException("For '{InstanceType.Name}.{Info.Name}', generic argument lookups are null! Did you forget to specify GenericTypeArguments in the [GenerateTestsForBurstCompatibility] attribute?");
                 }
 
                 bool hasMethodReplacement = MethodGenericArgumentLookup.ContainsKey(genericType.Name);
@@ -166,7 +173,7 @@ namespace Unity.Collections.Tests
                 }
                 else
                 {
-                    throw new ArgumentException($"'{genericType.Name}' in '{InstanceType.Name}.{methodBase.Name}' has no generic type replacement in the generic argument lookups! Did you forget to specify GenericTypeArguments in the [BurstCompatible] attribute?");
+                    throw new ArgumentException($"'{genericType.Name}' in '{InstanceType.Name}.{methodBase.Name}' has no generic type replacement in the generic argument lookups! Did you forget to specify GenericTypeArguments in the [GenerateTestsForBurstCompatibility] attribute?");
                 }
             }
         }
@@ -254,9 +261,9 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                     buf.AppendLine($"#if {methodData.RequiredDefine}");
                 }
 
-                if (methodData.CompileTarget == BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)
+                if (methodData.CompileTarget == GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)
                 {
-                    // Emit #if UNITY_EDITOR in case BurstCompatible attribute doesn't have any required
+                    // Emit #if UNITY_EDITOR in case GenerateTestsForBurstCompatibility attribute doesn't have any required
                     // unity defines. We want to be sure that we actually test the editor only code when
                     // we are actually in the editor.
                     buf.AppendLine("#if UNITY_EDITOR");
@@ -330,7 +337,9 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                     StringBuilder typeStringBuilder = new StringBuilder();
                     TypeToString(methodData.InstanceType, typeStringBuilder, methodData);
 
-                    if (typeStringBuilder.ToString() == "Unity.Entities.SystemState")
+                    // ref structs need special handling, can't be used as type arguments
+                    if (typeStringBuilder.ToString() == "Unity.Entities.SystemState" ||
+                        typeStringBuilder.ToString() == "Unity.Entities.EntityQueryBuilder")
                     {
                         buf.Append($"        ref var instance = ref *(");
                         buf.Append(typeStringBuilder);
@@ -437,7 +446,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 buf.AppendLine(";");
                 buf.AppendLine("    }");
 
-                if (methodData.CompileTarget == BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor)
+                if (methodData.CompileTarget == GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor)
                 {
                     // Closes #if UNITY_EDITOR that surrounds the actual method/property being tested.
                     buf.AppendLine("#endif");
@@ -446,8 +455,8 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 // Set up the call to BurstCompiler.CompileFunctionPointer only in the cases where it is necessary.
                 switch (methodData.CompileTarget)
                 {
-                    case BurstCompatibleAttribute.BurstCompatibleCompileTarget.PlayerAndEditor:
-                    case BurstCompatibleAttribute.BurstCompatibleCompileTarget.Editor:
+                    case GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.PlayerAndEditor:
+                    case GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget.Editor:
                     {
                         buf.AppendLine("#if UNITY_EDITOR");
                         buf.AppendLine($"    public static void BurstCompile_{safeName}()");
@@ -541,7 +550,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
         private static void GetFullTypeName(Type type, StringBuilder buf, in MethodData methodData)
         {
             // If we encounter a generic parameter (typically T) then we should replace it with a real one
-            // specified by [BurstCompatible(GenericTypeArguments = new [] { typeof(...) })].
+            // specified by [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(...) })].
             if (type.IsGenericParameter)
             {
                 GetFullTypeName(methodData.ReplaceGeneric(type), buf, methodData);
@@ -576,15 +585,15 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             {
                 var gt = type.GetGenericArguments();
 
-                // Avoid printing out the generic arguments for cases like UnsafeHashMap<TKey, TValue>.ParallelWriter.
+                // Avoid printing out the generic arguments for cases like UnsafeParallelHashMap<TKey, TValue>.ParallelWriter.
                 // ParallelWriter is considered to be a generic type and will have two generic parameters inherited
-                // from UnsafeHashMap. Because of this, if we don't do this check, we could code gen this:
+                // from UnsafeParallelHashMap. Because of this, if we don't do this check, we could code gen this:
                 //
-                // UnsafeHashMap<int, int>.ParallelWriter<int, int>
+                // UnsafeParallelHashMap<int, int>.ParallelWriter<int, int>
                 //
                 // But we want:
                 //
-                // UnsafeHashMap<int, int>.ParallelWriter
+                // UnsafeParallelHashMap<int, int>.ParallelWriter
                 //
                 // ParallelWriter doesn't actually have generic arguments you can give it directly so it's not correct
                 // to give it generic arguments. If the nested type has the same number of generic arguments as its
@@ -624,20 +633,20 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 Debug.LogError(message);
             }
 
-            void MaybeAddMethod(MethodBase m, Type[] methodGenericTypeArguments, Type[] declaredTypeGenericTypeArguments, string requiredDefine, MemberInfo attributeHolder, BurstCompatibleAttribute.BurstCompatibleCompileTarget compileTarget)
+            void MaybeAddMethod(MethodBase m, Type[] methodGenericTypeArguments, Type[] declaredTypeGenericTypeArguments, string requiredDefine, MemberInfo attributeHolder, GenerateTestsForBurstCompatibilityAttribute.BurstCompatibleCompileTarget compileTarget)
             {
                 if (m.IsPrivate)
                 {
-                    // Private methods that were explicitly tagged as [BurstCompatible] should generate an error to
+                    // Private methods that were explicitly tagged as [GenerateTestsForBurstCompatibility] should generate an error to
                     // avoid users thinking the method is being tested when it actually isn't.
-                    if (m.GetCustomAttribute<BurstCompatibleAttribute>() != null)
+                    if (m.GetCustomAttribute<GenerateTestsForBurstCompatibilityAttribute>() != null)
                     {
                         // Just return and avoiding printing duplicate errors if we've already seen this method.
                         if (seenMethods.Contains(m))
                             return;
 
                         seenMethods.Add(m);
-                        LogError($"BurstCompatibleAttribute cannot be used with private methods, but found on private method `{m.DeclaringType}.{m}`. Make method public, internal, or ensure that this method is called by another public/internal method that is tested.");
+                        LogError($"GenerateTestsForBurstCompatibilityAttribute cannot be used with private methods, but found on private method `{m.DeclaringType}.{m}`. Make method public, internal, or ensure that this method is called by another public/internal method that is tested.");
                     }
 
                     return;
@@ -654,8 +663,11 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
                 if (attributeHolder.GetCustomAttribute<ObsoleteAttribute>() != null)
                     return;
-                if (attributeHolder.GetCustomAttribute<NotBurstCompatibleAttribute>() != null)
+                if (attributeHolder.GetCustomAttribute<ExcludeFromBurstCompatTestingAttribute>() != null)
                     return;
+                if (attributeHolder.GetCustomAttribute<BurstDiscardAttribute>() != null)
+                    return;
+
                 // If this is not a property but still has a special name, ignore it.
                 if (attributeHolder is MethodInfo && m.IsSpecialName)
                     return;
@@ -666,7 +678,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 {
                     if (methodGenericTypeArguments == null)
                     {
-                        LogError($"Method `{m.DeclaringType}.{m}` is generic but doesn't have a type array in its BurstCompatible attribute");
+                        LogError($"Method `{m.DeclaringType}.{m}` is generic but doesn't have a type array in its GenerateTestsForBurstCompatibility attribute");
                         return;
                     }
 
@@ -674,7 +686,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
                     if (genericArguments.Length != methodGenericTypeArguments.Length)
                     {
-                        LogError($"Method `{m.DeclaringType}.{m}` is generic with {genericArguments.Length} generic parameters but BurstCompatible attribute has {methodGenericTypeArguments.Length} types, they must be the same length!");
+                        LogError($"Method `{m.DeclaringType}.{m}` is generic with {genericArguments.Length} generic parameters but GenerateTestsForBurstCompatibility attribute has {methodGenericTypeArguments.Length} types, they must be the same length!");
                         return;
                     }
 
@@ -717,13 +729,13 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
                     if (declaredTypeGenericTypeArguments == null)
                     {
-                        LogError($"Type `{m.DeclaringType}` is generic but doesn't have a type array in its BurstCompatible attribute");
+                        LogError($"Type `{m.DeclaringType}` is generic but doesn't have a type array in its GenerateTestsForBurstCompatibility attribute");
                         return;
                     }
 
                     if (instanceGenericArguments.Length != declaredTypeGenericTypeArguments.Length)
                     {
-                        LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but BurstCompatible attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
+                        LogError($"Type `{instanceType}` is generic with {instanceGenericArguments.Length} generic parameters but GenerateTestsForBurstCompatibility attribute has {declaredTypeGenericTypeArguments.Length} types, they must be the same length!");
                         return;
                     }
 
@@ -779,22 +791,22 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
 
             var declaredTypeGenericArguments = new Dictionary<Type, Type[]>();
 
-            // Go through types tagged with [BurstCompatible] and their methods before performing the direct method
+            // Go through types tagged with [GenerateTestsForBurstCompatibility] and their methods before performing the direct method
             // search (below this loop) to ensure that we get the declared type generic arguments.
             //
             // If we were to run the direct method search first, it's possible we would add the method to the seen list
             // and then by the time we execute this loop we might skip it because we think we have seen the method
             // already but we haven't grabbed the declared type generic arguments yet.
-            foreach (var t in TypeCache.GetTypesWithAttribute<BurstCompatibleAttribute>())
+            foreach (var t in TypeCache.GetTypesWithAttribute<GenerateTestsForBurstCompatibilityAttribute>())
             {
                 if (!m_AssembliesToVerify.Contains(t.Assembly.GetName().Name))
                     continue;
 
-                foreach (var typeAttr in t.GetCustomAttributes<BurstCompatibleAttribute>())
+                foreach (var typeAttr in t.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>())
                 {
-                    // As we go through all the types with [BurstCompatible] on them, remember their GenericTypeArguments
+                    // As we go through all the types with [GenerateTestsForBurstCompatibility] on them, remember their GenericTypeArguments
                     // in case we encounter the type again when we do the direct method search later. When we do the
-                    // direct method search, we don't have as easy access to the [BurstCompatible] attribute on the
+                    // direct method search, we don't have as easy access to the [GenerateTestsForBurstCompatibility] attribute on the
                     // type so just remember this now to make life easier.
                     declaredTypeGenericArguments[t] = typeAttr.GenericTypeArguments;
 
@@ -802,7 +814,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                                                BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
                     foreach (var c in t.GetConstructors(flags))
                     {
-                        var attributes = c.GetCustomAttributes<BurstCompatibleAttribute>().ToArray();
+                        var attributes = c.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>().ToArray();
 
                         if (attributes.Length == 0)
                         {
@@ -828,7 +840,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                             Debug.Assert(attributeHolder != null, $"Failed to find property for {m.Name} in {m.DeclaringType.Name}");
                         }
 
-                        var attributes = attributeHolder.GetCustomAttributes<BurstCompatibleAttribute>().ToArray();
+                        var attributes = attributeHolder.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>().ToArray();
 
                         if (attributes.Length == 0)
                         {
@@ -846,18 +858,18 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             }
 
             // Direct method search.
-            foreach (var m in TypeCache.GetMethodsWithAttribute<BurstCompatibleAttribute>())
+            foreach (var m in TypeCache.GetMethodsWithAttribute<GenerateTestsForBurstCompatibilityAttribute>())
             {
                 if (!m_AssembliesToVerify.Contains(m.DeclaringType.Assembly.GetName().Name))
                     continue;
 
                 // Look up the GenericTypeArguments on the declaring type that we probably got earlier. If the key
-                // doesn't exist then it means [BurstCompatible] was only on the method and not the type, which is fine
-                // but if [BurstCompatible] was on the type we should go ahead and use whatever GenericTypeArguments
+                // doesn't exist then it means [GenerateTestsForBurstCompatibility] was only on the method and not the type, which is fine
+                // but if [GenerateTestsForBurstCompatibility] was on the type we should go ahead and use whatever GenericTypeArguments
                 // it may have had.
                 var typeGenericArguments = declaredTypeGenericArguments.ContainsKey(m.DeclaringType) ? declaredTypeGenericArguments[m.DeclaringType] : EmptyGenericTypeArguments;
 
-                foreach (var attr in m.GetCustomAttributes<BurstCompatibleAttribute>())
+                foreach (var attr in m.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>())
                 {
                     MaybeAddMethod(m, attr.GenericTypeArguments, typeGenericArguments, attr.RequiredUnityDefine, m, attr.CompileTarget);
                 }
@@ -964,14 +976,23 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 compileFunctionPointerTime = stopwatch.Elapsed;
 
                 var buildOptions = new BuildPlayerOptions();
+                buildOptions.scenes = new[] { m_TestScenePath };
                 buildOptions.target = EditorUserBuildSettings.activeBuildTarget;
                 buildOptions.locationPathName = FileUtil.GetUniqueTempPathInProject();
-                // TODO: https://unity3d.atlassian.net/browse/DOTS-4886
+                // TODO: DOTS-4886
                 // Remove when fixed
                 // Made a development build due to a bug in the Editor causing Debug.isDebugBuild to be false
                 // on the next Domain reload after this build is made
                 buildOptions.options = BuildOptions.IncludeTestAssemblies | BuildOptions.Development;
+
+                // Temporary hack to work around issue where headless no-graphics CI pass would spit out
+                // `RenderTexture.Create with shadow sampling failed` error, causing this test to fail.
+                // Feature has been requested to NOT log this error when running headless.
+                var ignoreFailingMessagesCache = LogAssert.ignoreFailingMessages;
+                LogAssert.ignoreFailingMessages = true;
                 var buildReport = BuildPipeline.BuildPlayer(buildOptions);
+                LogAssert.ignoreFailingMessages = ignoreFailingMessagesCache;
+
                 playerBuildSucceeded = buildReport.summary.result == BuildResult.Succeeded;
                 playerBuildTime = buildReport.summary.totalTime;
             }

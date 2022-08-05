@@ -7,11 +7,11 @@ using Unity.Collections.Tests;
 using System;
 using Unity.Burst;
 
-internal class UnsafeHashMapTests : CollectionsTestCommonBase
+internal class UnsafeParallelHashMapTests : CollectionsTestCommonBase
 {
     // Burst error BC1071: Unsupported assert type
     // [BurstCompile(CompileSynchronously = true)]
-    public struct UnsafeHashMapAddJob : IJob
+    public struct UnsafeParallelHashMapAddJob : IJob
     {
         public UnsafeParallelHashMap<int, int>.ParallelWriter Writer;
 
@@ -22,11 +22,11 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashMap_AddJob()
+    public void UnsafeParallelHashMap_AddJob()
     {
         var container = new UnsafeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle);
 
-        var job = new UnsafeHashMapAddJob()
+        var job = new UnsafeParallelHashMapAddJob()
         {
             Writer = container.AsParallelWriter(),
         };
@@ -39,7 +39,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeHashMap_ForEach([Values(10, 1000)]int n)
+    public void UnsafeParallelHashMap_ForEach([Values(10, 1000)]int n)
     {
         var seen = new NativeArray<int>(n, Allocator.Temp);
         using (var container = new UnsafeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -71,7 +71,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
 
 #if !NET_DOTS // Array.Sort is not supported
     [Test]
-    public void UnsafeHashSet_ToArray()
+    public void UnsafeParallelHashSet_ToArray()
     {
         using (var set = new UnsafeParallelHashSet<int>(8, CommonRwdAllocator.Handle) { 0, 1, 2, 3, 4, 5 })
         {
@@ -86,7 +86,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
 #endif
 
     [Test]
-    public void UnsafeHashMap_CustomAllocatorTest()
+    public void UnsafeParallelHashMap_CustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
@@ -121,7 +121,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public unsafe void UnsafeHashMap_BurstedCustomAllocatorTest()
+    public unsafe void UnsafeParallelHashMap_BurstedCustomAllocatorTest()
     {
         AllocatorManager.Initialize();
         var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
@@ -139,5 +139,17 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
         allocator.Dispose();
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
+    }
+
+    [Test]
+    public void UnsafeParallelHashMap_IndexerAdd_ResizesContainer()
+    {
+        var container = new UnsafeParallelHashMap<int, int>(8, Allocator.Persistent);
+        for (int i = 0; i < 1024; i++)
+        {
+            container[i] = i;
+        }
+        Assert.AreEqual(1024, container.Count());
+        container.Dispose();
     }
 }

@@ -1,6 +1,7 @@
 using AOT;
 using System;
 using System.Threading;
+using UnityEngine.Assertions;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs.LowLevel.Unsafe;
@@ -31,6 +32,7 @@ namespace Unity.Collections
     {
         IntPtr m_pointer;
         int m_length;
+        public int Length => m_length;
         AllocatorManager.AllocatorHandle m_allocator;
         public UnmanagedArray(int length, AllocatorManager.AllocatorHandle allocator)
         {
@@ -65,7 +67,7 @@ namespace Unity.Collections
     [BurstCompile]
     public struct RewindableAllocator : AllocatorManager.IAllocator
     {
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         internal unsafe struct MemoryBlock : IDisposable
         {
             public const int kMaximumAlignment = 16384; // can't align any coarser than this many bytes
@@ -76,6 +78,7 @@ namespace Unity.Collections
             public MemoryBlock(long bytes)
             {
                 m_pointer = (byte*)Memory.Unmanaged.Allocate(bytes, kMaximumAlignment, Allocator.Persistent);
+                Assert.IsTrue(m_pointer != null, "Memory block allocation failed, system out of memory");
                 m_bytes = bytes;
                 m_current = 0;
                 m_allocations = 0;
@@ -94,30 +97,16 @@ namespace Unity.Collections
                 m_allocations = 0;
             }
 
-            public int TryAllocate(ref AllocatorManager.Block block)
+            public int TryAllocate(ref AllocatorManager.Block block, long alignedSize, long alignmentMask)
             {
-                // Make the alignment multiple of cacheline size
-                var alignment = math.max(JobsUtility.CacheLineSize, block.Alignment);
-                var extra = alignment != JobsUtility.CacheLineSize ? 1 : 0;
-                var cachelineMask = JobsUtility.CacheLineSize - 1;
-                if (extra == 1)
-                {
-                    alignment = (alignment + cachelineMask) & ~cachelineMask;
-                }
-
-                // Adjust the size to be multiple of alignment, add extra alignment
-                // to size if alignment is more than cacheline size
-                var mask = alignment - 1L;
-                var size = (block.Bytes + extra * alignment + mask) & ~mask;
-
                 var readValue = Interlocked.Read(ref m_current);
                 long oldReadValue;
                 long writtenValue;
                 long begin;
                 do
                 {
-                    writtenValue = readValue + size;
-                    begin = (readValue + mask) & ~mask;
+                    writtenValue = readValue + alignedSize;
+                    begin = (readValue + alignmentMask) & ~alignmentMask;
                     if (begin + block.Bytes > m_bytes)
                     {
                         return AllocatorManager.kErrorBufferOverflow;
@@ -142,34 +131,47 @@ namespace Unity.Collections
             }
         };
 
+        /// Maximum memory block size.  Can exceed maximum memory block size if user requested more.
+        const long kMaxMemoryBlockSize = 64 * 1024 * 1024;  // 64MB
+
+        /// Minimum memory block size, 128KB.
+        const long kMinMemoryBlockSize = 128 * 1024;
+
+        /// Maximum number of memory blocks.
+        const int kMaxNumBlocks = 64;
+
         Spinner m_spinner;
         AllocatorManager.AllocatorHandle m_handle;
         UnmanagedArray<MemoryBlock> m_block;
-        int m_best; // block we expect is best to allocate from next
-        int m_last; // highest-index block that has memory to allocate from
-        int m_used; // highest-index block that we actually allocated from, since last rewind
-        bool m_enableBlockFree; // flag indicating if allocator enables individual block free
+        int m_last;                 // highest-index block that has memory to allocate from
+        int m_used;                 // highest-index block that we actually allocated from, since last rewind
+        byte m_enableBlockFree;     // flag indicating if allocator enables individual block free
+        byte m_reachMaxBlockSize;   // flag indicating if reach maximum block size
 
         /// <summary>
         /// Initializes the allocator. Must be called before first use.
         /// </summary>
         /// <param name="initialSizeInBytes">The initial capacity of the allocator, in bytes</param>
+        /// <param name="enableBlockFree">A flag indicating if allocator enables individual block free</param>
         public void Initialize(int initialSizeInBytes, bool enableBlockFree = false)
         {
             m_spinner = default;
-            m_block = new UnmanagedArray<MemoryBlock>(64, Allocator.Persistent);
-            m_block[0] = new MemoryBlock(initialSizeInBytes);
-            m_last = m_used = m_best = 0;
-            m_enableBlockFree = enableBlockFree;
+            m_block = new UnmanagedArray<MemoryBlock>(kMaxNumBlocks, Allocator.Persistent);
+            // Initial block size should be larger than min block size
+            var blockSize = initialSizeInBytes > kMinMemoryBlockSize ? initialSizeInBytes : kMinMemoryBlockSize;
+            m_block[0] = new MemoryBlock(blockSize);
+            m_last = m_used = 0;
+            m_enableBlockFree = enableBlockFree ? (byte)1 : (byte)0;
+            m_reachMaxBlockSize = (initialSizeInBytes >= kMaxMemoryBlockSize) ? (byte)1 : (byte)0;
         }
 
         /// <summary>
-        /// Property to get and set enable block free flag, a flag indicating whether allocator enables individual block free.
+        /// Property to get and set enable block free flag, a flag indicating whether the allocator should enable individual block to be freed.
         /// </summary>
         public bool EnableBlockFree
         {
-            get => m_enableBlockFree;
-            set => m_enableBlockFree = value;
+            get => m_enableBlockFree != 0;
+            set => m_enableBlockFree = value ? (byte)1 : (byte)0;
         }
 
         /// <summary>
@@ -181,6 +183,27 @@ namespace Unity.Collections
         /// Retrieves the size of the initial memory block, as requested in the Initialize function.
         /// </summary>
         public int InitialSizeInBytes => (int)(m_block[0].m_bytes);
+
+        /// <summary>
+        /// Retrieves the maximum memory block size.
+        /// </summary>
+        internal long MaxMemoryBlockSize => kMaxMemoryBlockSize;
+
+        /// <summary>
+        /// Retrieves the total bytes of the memory blocks allocated by this allocator.
+        /// </summary>
+        internal long BytesAllocated
+        {
+            get
+            {
+                long totalBytes = 0;
+                for(int i = 0; i <= m_last; i++)
+                {
+                    totalBytes += m_block[i].m_bytes;
+                }
+                return totalBytes;
+            }
+        }
 
         /// <summary>
         /// Rewind the allocator; invalidate all allocations made from it, and potentially also free memory blocks
@@ -196,7 +219,6 @@ namespace Unity.Collections
             while (m_used > 0) // simply *rewind* all blocks we used in this update, to avoid allocating again, every update.
                 m_block[m_used--].Rewind();
             m_block[0].Rewind();
-            m_best = 0;
         }
 
         /// <summary>
@@ -210,13 +232,13 @@ namespace Unity.Collections
             Rewind();
             m_block[0].Dispose();
             m_block.Dispose();
-            m_last = m_used = m_best = 0;
+            m_last = m_used = 0;
         }
 
         /// <summary>
         /// All allocators must implement this property, in order to be installed in the custom allocator table.
         /// </summary>
-        [NotBurstCompatible]
+        [ExcludeFromBurstCompatTesting("Uses managed delegate")]
         public AllocatorManager.TryFunction Function => Try;
 
         /// <summary>
@@ -224,33 +246,57 @@ namespace Unity.Collections
         /// is not generally called by the user.
         /// </summary>
         /// <param name="block">The memory block to allocate, free, or reallocate</param>
+        /// <returns>0 if successful. Otherwise, returns the error code from the allocator function.</returns>
         public int Try(ref AllocatorManager.Block block)
         {
             if (block.Range.Pointer == IntPtr.Zero)
             {
-                // first, try to allocate from the block that succeeded last time, which we expect is likely to succeed again.
-                var error = m_block[m_best].TryAllocate(ref block);
-                if (error == AllocatorManager.kErrorNone)
-                    return error;
-                // if that fails, check all the blocks to see if any of them have enough memory
+                // Make the alignment multiple of cacheline size
+                var alignment = math.max(JobsUtility.CacheLineSize, block.Alignment);
+                var extra = alignment != JobsUtility.CacheLineSize ? 1 : 0;
+                var cachelineMask = JobsUtility.CacheLineSize - 1;
+                if (extra == 1)
+                {
+                    alignment = (alignment + cachelineMask) & ~cachelineMask;
+                }
+
+                // Adjust the size to be multiple of alignment, add extra alignment
+                // to size if alignment is more than cacheline size
+                var mask = alignment - 1L;
+                var size = (block.Bytes + extra * alignment + mask) & ~mask;
+
+                // Check all the blocks to see if any of them have enough memory
                 m_spinner.Lock();
                 int best;
+                int error;
                 for (best = 0; best <= m_last; ++best)
                 {
-                    error = m_block[best].TryAllocate(ref block);
+                    error = m_block[best].TryAllocate(ref block, size, mask);
                     if (error == AllocatorManager.kErrorNone)
                     {
                         m_used = best > m_used ? best : m_used;
-                        m_best = best;
                         m_spinner.Unlock();
                         return error;
                     }
                 }
-                // if that fails, allocate another block that's guaranteed big enough, and allocate from it.
-                var bytes = math.max(m_block[0].m_bytes << best, math.ceilpow2(block.Bytes)); // if user suddenly asks for 1GB, skip smaller sizes
+
+                // If that fails, allocate another block that's guaranteed big enough, and allocate from it.
+                // Allocate twice as much as last time until it reaches MaxMemoryBlockSize, after that, increase
+                // the block size by MaxMemoryBlockSize.
+                long bytes;
+                if (m_reachMaxBlockSize == 0)
+                {
+                    bytes = m_block[m_last].m_bytes << 1;
+                }
+                else
+                {
+                    bytes = m_block[m_last].m_bytes + kMaxMemoryBlockSize;
+                }
+                // if user asks more, skip smaller sizes
+                bytes = math.max(bytes, size);
+                m_reachMaxBlockSize = (bytes >= kMaxMemoryBlockSize) ? (byte)1 : (byte)0;
                 m_block[best] = new MemoryBlock(bytes);
-                error = m_block[best].TryAllocate(ref block);
-                m_best = best;
+                error = m_block[best].TryAllocate(ref block, size, mask);
                 m_used = best;
                 m_last = best;
                 m_spinner.Unlock();
@@ -260,12 +306,20 @@ namespace Unity.Collections
             // To free memory, no-op unless allocator enables individual block to be freed
             if (block.Range.Items == 0)
             {
-                if (m_enableBlockFree)
+                if (m_enableBlockFree != 0)
                 {
                     m_spinner.Lock();
-                    if (m_block[m_best].Contains(block.Range.Pointer))
-                        if (0 == Interlocked.Decrement(ref m_block[m_best].m_allocations))
-                            m_block[m_best].Rewind();
+                    for (int blockIndex = 0; blockIndex <= m_last; ++blockIndex)
+                    {
+                        if (m_block[blockIndex].Contains(block.Range.Pointer))
+                        {
+                            if (0 == Interlocked.Decrement(ref m_block[blockIndex].m_allocations))
+                            {
+                                m_block[blockIndex].Rewind();
+                                break;
+                            }
+                        }
+                    }
                     m_spinner.Unlock();
                 }
                 return 0; // we could check to see if the pointer belongs to us, if we want to be strict about it.
@@ -309,8 +363,8 @@ namespace Unity.Collections
         /// <typeparam name="T">The element type of the NativeArray to allocate.</typeparam>
         /// <param name="length">The length of the NativeArray to allocate, measured in elements.</param>
         /// <returns>The NativeArray allocated by this function.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
-        public NativeArray<T> AllocateNativeArray<T>(int length) where T : struct
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public NativeArray<T> AllocateNativeArray<T>(int length) where T : unmanaged
         {
             var container = new NativeArray<T>();
             unsafe
@@ -323,10 +377,6 @@ namespace Unity.Collections
             container.m_MinIndex = 0;
             container.m_MaxIndex = length - 1;
             container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            container.m_DisposeSentinel = null;
-#endif
             CollectionHelper.SetStaticSafetyId<NativeArray<T>>(ref container.m_Safety, ref NativeArrayExtensions.NativeArrayStaticId<T>.s_staticSafetyId.Data);
             Handle.AddSafetyHandle(container.m_Safety);
 #endif
@@ -343,7 +393,7 @@ namespace Unity.Collections
         /// <typeparam name="T">The element type of the NativeList to allocate.</typeparam>
         /// <param name="capacity">The capacity of the NativeList to allocate, measured in elements.</param>
         /// <returns>The NativeList allocated by this function.</returns>
-        [BurstCompatible(GenericTypeArguments = new[] { typeof(int) })]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public NativeList<T> AllocateNativeList<T>(int capacity) where T : unmanaged
         {
             var container = new NativeList<T>();
@@ -355,13 +405,8 @@ namespace Unity.Collections
                 container.m_ListData->m_length = 0;
                 container.m_ListData->Allocator = Allocator.None;
             }
-            container.m_DeprecatedAllocator = Allocator.None;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);
-#if REMOVE_DISPOSE_SENTINEL
-#else
-            container.m_DisposeSentinel = null;
-#endif
             CollectionHelper.SetStaticSafetyId<NativeList<T>>(ref container.m_Safety, ref NativeList<T>.s_staticSafetyId.Data);
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(container.m_Safety, true);
             Handle.AddSafetyHandle(container.m_Safety);

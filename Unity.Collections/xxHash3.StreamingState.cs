@@ -10,7 +10,7 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
-    [BurstCompatible]
+    [GenerateTestsForBurstCompatibility]
     public static partial class xxHash3
     {
         /// <summary>
@@ -20,7 +20,7 @@ namespace Unity.Collections
         /// Allow to feed the internal hashing accumulators with data through multiple calls to <see cref="Update"/>, then retrieving the final hash value using <see cref="DigestHash64"/> or <see cref="DigestHash128"/>.
         /// More info about how to use this class in its constructor.
         /// </remarks>
-        [BurstCompatible]
+        [GenerateTestsForBurstCompatibility]
         public struct StreamingState
         {
             #region Public API
@@ -141,7 +141,7 @@ namespace Unity.Collections
             /// <typeparam name="T">The input type.</typeparam>
             /// <param name="input">The input struct that will be hashed</param>
             /// <remarks>This API allows you to feed very small data to be hashed, avoiding you to accumulate them in a big buffer, then computing the hash value from.</remarks>
-            [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
+            [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             public unsafe void Update<T>(in T input) where T : unmanaged
             {
                 Update(UnsafeUtilityExtensions.AddressOf(input), UnsafeUtility.SizeOf<T>());

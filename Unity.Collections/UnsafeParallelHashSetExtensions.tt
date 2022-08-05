@@ -15,12 +15,16 @@ namespace Unity.Collections.LowLevel.Unsafe
 <#
 {
     foreach (var ContainerType in new[] {
-        ( "NativeParallelHashSet" ),
+        ( new[] { "NativeHashSet", "Count" } ),
+        ( new[] { "NativeParallelHashSet", "Count()" } ),
     }) {
 
     foreach (var OtherContainerType in new[] {
-        ( "UnsafeParallelHashSet" ),
-        ( "UnsafeList" ),
+        ( "UnsafeHashSet<T>" ),
+        ( "UnsafeHashSet<T>.ReadOnly" ),
+        ( "UnsafeParallelHashSet<T>" ),
+        ( "UnsafeParallelHashSet<T>.ReadOnly" ),
+        ( "UnsafeList<T>" ),
     }) {
 #>
         /// <summary>
@@ -29,7 +33,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void ExceptWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -44,10 +48,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void IntersectWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
-            var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
+            var result = new UnsafeList<T>(container.<#=ContainerType[1]#>, Allocator.Temp);
 
             foreach (var item in other)
             {
@@ -69,7 +73,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void UnionWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -82,20 +86,27 @@ namespace Unity.Collections.LowLevel.Unsafe
 <#
 {
     foreach (var ContainerType in new[] {
-        ( "UnsafeParallelHashSet" ),
+        ( new[] { "UnsafeHashSet", "Count" } ),
+        ( new[] { "UnsafeParallelHashSet", "Count()" } ),
     }) {
 
     foreach (var OtherContainerType in new[] {
-        ( "FixedList128Bytes" ),
-        ( "FixedList32Bytes" ),
-        ( "FixedList4096Bytes" ),
-        ( "FixedList512Bytes" ),
-        ( "FixedList64Bytes" ),
-        ( "NativeArray" ),
-        ( "NativeParallelHashSet" ),
-        ( "NativeList" ),
-        ( "UnsafeParallelHashSet" ),
-        ( "UnsafeList" ),
+        ( "FixedList128Bytes<T>" ),
+        ( "FixedList32Bytes<T>" ),
+        ( "FixedList4096Bytes<T>" ),
+        ( "FixedList512Bytes<T>" ),
+        ( "FixedList64Bytes<T>" ),
+        ( "NativeArray<T>" ),
+        ( "NativeHashSet<T>" ),
+        ( "NativeHashSet<T>.ReadOnly" ),
+        ( "UnsafeHashSet<T>"),
+        ( "UnsafeHashSet<T>.ReadOnly"),
+        ( "NativeParallelHashSet<T>" ),
+        ( "NativeParallelHashSet<T>.ReadOnly" ),
+        ( "UnsafeParallelHashSet<T>" ),
+        ( "UnsafeParallelHashSet<T>.ReadOnly" ),
+        ( "NativeList<T>" ),
+        ( "UnsafeList<T>" ),
     }) {
 #>
         /// <summary>
@@ -104,7 +115,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void ExceptWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void ExceptWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)
@@ -119,10 +130,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to remove values from.</param>
         /// <param name="other">The collection to compare with.</param>
-        public static void IntersectWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void IntersectWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
-            var result = new UnsafeList<T>(container.Count(), Allocator.Temp);
+            var result = new UnsafeList<T>(container.<#=ContainerType[1]#>, Allocator.Temp);
 
             foreach (var item in other)
             {
@@ -144,7 +155,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of values.</typeparam>
         /// <param name="container">The set to add values to.</param>
         /// <param name="other">The collection to copy values from.</param>
-        public static void UnionWith<T>(this <#=ContainerType#><T> container, <#=OtherContainerType#><T> other)
+        public static void UnionWith<T>(this ref <#=ContainerType[0]#><T> container, <#=OtherContainerType#> other)
             where T : unmanaged, IEquatable<T>
         {
             foreach (var item in other)

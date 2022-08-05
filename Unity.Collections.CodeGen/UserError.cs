@@ -1,4 +1,3 @@
-#if !UNITY_JOBS_LESS_THAN_0_7
 using System;
 #if !UNITY_DOTSRUNTIME
 using System.IO;
@@ -47,4 +46,3 @@ namespace Unity.Jobs.CodeGen
         }
     }
 }
-#endif

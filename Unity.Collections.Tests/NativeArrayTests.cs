@@ -110,4 +110,86 @@ internal class NativeArrayTests : CollectionsTestFixture
         Assert.Throws<InvalidOperationException>(() => { new NativeArrayPokeJob(array).Schedule(deps); });
         deps.Complete();
     }
+
+    [Test]
+    unsafe public void NativeArray_ConvertExistingDataToNativeArray()
+    {
+        AllocatorManager.Initialize();
+        var allocatorHelper = new AllocatorHelper<RewindableAllocator>(AllocatorManager.Persistent);
+        allocatorHelper.Allocator.Initialize(64 * 1024);
+
+        var nativeList = new NativeList<int>(allocatorHelper.Allocator.Handle);
+        for(int i = 0; i < 20; i++)
+        {
+            nativeList.Add(i);
+        }
+
+        var nativeArray = CollectionHelper.ConvertExistingDataToNativeArray<int>(nativeList.GetUnsafePtr(), nativeList.Length, allocatorHelper.Allocator.Handle);
+
+        var listSafety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref nativeList);
+        NativeArrayUnsafeUtility.SetAtomicSafetyHandle<int>(ref nativeArray, listSafety);
+
+        for (int i = 0; i < 20; i++)
+        {
+            Assert.AreEqual(nativeArray[i], i);
+        }
+
+        nativeArray.Dispose();
+
+        allocatorHelper.Allocator.Dispose();
+        allocatorHelper.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    [Test]
+    unsafe public void NativeArray_ConvertExistingDataToNativeArray_SetTempMemoryHandle()
+    {
+        var nativeList = new NativeList<int>(Allocator.Temp);
+        for (int i = 0; i < 20; i++)
+        {
+            nativeList.Add(i);
+        }
+
+        var nativeArray = CollectionHelper.ConvertExistingDataToNativeArray<int>(nativeList.GetUnsafePtr(), nativeList.Length, Allocator.Temp, true);
+
+        for (int i = 0; i < 20; i++)
+        {
+            Assert.AreEqual(nativeArray[i], i);
+        }
+
+        nativeArray.Dispose();
+    }
+
+    [Test]
+    unsafe public void NativeArray_ConvertExistingNativeListToNativeArray()
+    {
+        AllocatorManager.Initialize();
+        var allocatorHelper = new AllocatorHelper<RewindableAllocator>(AllocatorManager.Persistent);
+        allocatorHelper.Allocator.Initialize(64 * 1024);
+
+        var nativeList = new NativeList<int>(allocatorHelper.Allocator.Handle);
+        for (int i = 0; i < 20; i++)
+        {
+            nativeList.Add(i);
+        }
+
+        var nativeArray = CollectionHelper.ConvertExistingNativeListToNativeArray<int>(ref nativeList, nativeList.Length, allocatorHelper.Allocator.Handle);
+
+        for (int i = 0; i < 20; i++)
+        {
+            Assert.AreEqual(nativeArray[i], i);
+        }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        var listSafety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref nativeList);
+        var arraySafety = CollectionHelper.GetNativeArraySafetyHandle(ref nativeArray);
+        Assert.AreEqual(listSafety, arraySafety);
+#endif
+
+        nativeArray.Dispose();
+
+        allocatorHelper.Allocator.Dispose();
+        allocatorHelper.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

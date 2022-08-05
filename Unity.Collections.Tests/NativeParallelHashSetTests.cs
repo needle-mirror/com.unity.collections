@@ -6,6 +6,11 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.NotBurstCompatible;
 using Unity.Jobs;
 using Unity.Collections.Tests;
+using UnityEngine;
+using UnityEngine.TestTools;
+#if !UNITY_PORTABLE_TEST_RUNNER
+using System.Text.RegularExpressions;
+#endif
 
 internal class NativeParallelHashSetTests: CollectionsTestFixture
 {
@@ -38,7 +43,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeHashSet_Capacity()
+    public void UnsafeParallelHashSet_Capacity()
     {
         var container = new NativeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
@@ -176,17 +181,51 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
             hashSet.Add(42);
             new ReadHashSetJob
             {
-                Input = hashSet,
+                Input = hashSet.AsReadOnly(),
                 Output = result,
             }.Run();
             Assert.AreEqual(42, result.Value);
         }
     }
 
+    struct TempHashSet : IJob
+    {
+        public void Execute()
+        {
+            using (var stringList = new NativeList<FixedString32Bytes>(10, Allocator.Persistent) { "Hello", ",", "World", "!" })
+            {
+                var container = new NativeParallelHashSet<FixedString128Bytes>(50, Allocator.Temp);
+                var seen = new NativeArray<int>(stringList.Length, Allocator.Temp);
+                foreach (var str in stringList)
+                {
+                    container.Add(str);
+                }
+
+                foreach (var value in container)
+                {
+                    int index = stringList.IndexOf(value);
+                    Assert.AreEqual(stringList[index], value.ToString());
+                    seen[index] = seen[index] + 1;
+                }
+
+                for (int i = 0; i < stringList.Length; i++)
+                {
+                    Assert.AreEqual(1, seen[i], $"Incorrect value count {stringList[i]}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void NativeParallelHashSet_TempHashSetInJob()
+    {
+        new TempHashSet { }.Schedule().Complete();
+    }
+
     struct ReadHashSetJob : IJob
     {
         [ReadOnly]
-        public NativeParallelHashSet<int> Input;
+        public NativeParallelHashSet<int>.ReadOnly Input;
 
         public NativeReference<int> Output;
         public void Execute()
@@ -256,7 +295,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
     struct NativeParallelHashSet_ForEach_Job : IJob
     {
         [ReadOnly]
-        public NativeParallelHashSet<int> Input;
+        public NativeParallelHashSet<int>.ReadOnly Input;
 
         [ReadOnly]
         public int Num;
@@ -295,7 +334,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
 
             new NativeParallelHashSet_ForEach_Job
             {
-                Input = container,
+                Input = container.AsReadOnly(),
                 Num = n,
 
             }.Run();
