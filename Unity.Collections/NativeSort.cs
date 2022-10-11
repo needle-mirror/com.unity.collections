@@ -246,7 +246,41 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            return BinarySearch((T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array), array.Length, value, comp);
+            return BinarySearch((T*)NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(array), array.Length, value, comp);
+        }
+
+        /// <summary>
+        /// Finds a value in this sorted array by binary search.
+        /// </summary>
+        /// <remarks>If the array is not sorted, the value might not be found, even if it's present in this array.</remarks>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="array">The array to search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>If found, the index of the located value. If not found, the return value is negative.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static int BinarySearch<T>(this NativeArray<T>.ReadOnly array, T value)
+            where T : unmanaged, IComparable<T>
+        {
+            return array.BinarySearch(value, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Finds a value in this sorted array by binary search using a custom comparison.
+        /// </summary>
+        /// <remarks>If the array is not sorted, the value might not be found, even if it's present in this array.
+        /// </remarks>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <typeparam name="U">The comparer type.</typeparam>
+        /// <param name="array">The array to search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
+        /// <returns>If found, the index of the located value. If not found, the return value is negative.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        public unsafe static int BinarySearch<T, U>(this NativeArray<T>.ReadOnly array, T value, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return BinarySearch((T*)NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(array), array.Length, value, comp);
         }
 
         /// <summary>
@@ -319,7 +353,7 @@ namespace Unity.Collections
         public static int BinarySearch<T>(this NativeList<T> list, T value)
             where T : unmanaged, IComparable<T>
         {
-            return list.BinarySearch(value, new DefaultComparer<T>());
+            return list.AsReadOnly().BinarySearch(value, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -337,7 +371,7 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            return BinarySearch((T*)list.GetUnsafePtr(), list.Length, value, comp);
+            return list.AsReadOnly().BinarySearch(value, comp);
         }
 
         /// <summary>
@@ -521,7 +555,7 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            return BinarySearch((T*)slice.GetUnsafePtr(), slice.Length, value, comp);
+            return BinarySearch((T*)slice.GetUnsafeReadOnlyPtr(), slice.Length, value, comp);
         }
 
         /// -- Internals

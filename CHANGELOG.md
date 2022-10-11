@@ -1,4 +1,36 @@
-# Changelog
+## [2.1.0-pre.2] - 2022-10-11
+
+### Added
+
+* BinarySearch for `NativeArray<T>.ReadOnly`
+* `NativeArray<T>.CopyFrom` containers: `NativeList<T>`, `NativeHashSet<T>`, `UnsafeHashSet<T>`.
+* `NativeArray<T>.ArrayEquals` containers: `NativeList<T>`.
+* `NativeList<T>.CopyFrom` containers: `NativeArray<T>`, `NativeList<T>`, `UnsafeList<T>`.
+* `NativeList<T>.ArrayEquals` containers: `NativeArray<T>`, `NativeList<T>`, `UnsafeList<T>`.
+* Docs how to create/use/dispose a rewindable allocator.
+* Document how how to define a custom allocator from scratch.
+* `CollectionHelper.DisposeNativeArray` to dispose native array created from a custom allocator.
+* WriteDouble, WritePackedDouble, WritePackedDoubleDelta to DataStreamWriter
+* ReadDouble, ReadPackedDouble, ReadPackedDoubleDelta to DataStreamReader
+
+### Changed
+
+* Change the default `NativeArrayOptions` in `CollectionHelper.CreateNativeArray` to `UninitializedMemory`.
+
+### Deprecated
+
+
+### Removed
+
+* Move doc `allocator.md` into `allocator` folder in `Documentation~`.
+
+### Fixed
+
+* Don't cache `DataStreamWriter.IsLittleEndian`, as the cache could not be properly populated if its shared static was not 0-initialized.
+* BinarySearch is using read-only access.
+* Memory leak in `Native/UnsafeStream` due to orphaned block.
+* Debug visualizers display content even when safety handle is in write-only mode.
+
 
 ## [2.1.0-exp.4] - 2022-08-05
 
@@ -23,9 +55,16 @@
 
 ### Changed
 
+* Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
 * T constraint on all containers from `struct` to `unmanaged`
 * Add the missing string interpolation operator in two memory exception messages and make the message clearer.
 * Awareness of newly supported nested containers
+* Renamed `UnsafeHashSet` to `UnsafeParallelHashSet`.
+* Renamed `NativeHashSet` to `NativeParallelHashSet`.
+* Renamed `UnsafeHashMap` to `UnsafeParallelHashMap`.
+* Renamed `NativeHashMap` to `NativeParallelHashMap`.
+* Renamed `UnsafeMultiHashMap` to `UnsafeParallelMultiHashMap`.
+* Renamed `NativeMultiHashMap` to `NativeParallelMultiHashMap`.
 * Faster FixedString comparison
 * Reset `m_best` in RewindableAllocator rewind.
 * IJobParallelForFilter renamed to IJobFilter to better reflect functionality
@@ -36,11 +75,11 @@
 
 ### Fixed
 
+* Added an assembly definition file for sample code in the package to avoid spurious warnings when adding the package
 * Some `AssumePositive` assumptions that should have been after some safety checks but weren't.
 * `Native/UnsafeList.InsertRangeWithBeginEnd` to allow end argument to resize list.
 * Fixed a race condition in the parallel hashmap when using `ParallelWriter` with hashmaps that operate close to their capacity
 * Update documentation on existing DataStream structs and helper methods.
-* Don't cache `DataStreamWriter.IsLittleEndian`, as the cache could not be properly populated if its shared static was not 0-initialized.
 
 ### Removed
 
@@ -57,18 +96,15 @@
 * `NativeList.AsParallelReader()` replaced by `NativeList.AsReadOnly()`.
 * Implicit cast operator from `NativeList<T>` to `NativeArray<T>`. Explicit cast method `NativeList<T>.AsArray()` should be used instead.
 
-
 ## [1.4.0] - 2022-07-12
 
 ### Changed
 
 * The com.unity.jobs package has been merged into com.unity.collections to resolve circular dependency issues that can occur when using Unity 2022.2+.
 
-
 ## [1.3.2] - 2022-06-27
 
 * updated minimum compatible version of Unity to 2020.3.30f1
-
 
 ## [1.3.1] - 2022-06-13
 
@@ -80,13 +116,6 @@
 ### Changed
 
 * Reverted some NativeArray test changes that were introduced in 1.0.0-pre.4
-* Renamed `UnsafeHashSet` to `UnsafeParallelHashSet`.
-* Renamed `NativeHashSet` to `NativeParallelHashSet`.
-* Renamed `UnsafeHashMap` to `UnsafeParallelHashMap`.
-* Renamed `NativeHashMap` to `NativeParallelHashMap`.
-* Renamed `UnsafeMultiHashMap` to `UnsafeParallelMultiHashMap`.
-* Renamed `NativeMultiHashMap` to `NativeParallelMultiHashMap`.
-* Updated `com.unity.burst` to `1.6.6`
 
 ### Fixed
 

@@ -750,25 +750,29 @@ namespace Unity.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-#if !NET_DOTS
-        HashMapHelper<TKey>* m_Target;
+        HashMapHelper<TKey>* Data;
 
         public NativeHashMapDebuggerTypeProxy(NativeHashMap<TKey, TValue> target)
         {
-            m_Target = target.m_Data;
+            Data = target.m_Data;
         }
 
         public NativeHashMapDebuggerTypeProxy(NativeHashMap<TKey, TValue>.ReadOnly target)
         {
-            m_Target = target.m_Data;
+            Data = target.m_Data;
         }
 
         public List<Pair<TKey, TValue>> Items
         {
             get
             {
+                if (Data == null)
+                {
+                    return default;
+                }
+
                 var result = new List<Pair<TKey, TValue>>();
-                using (var kva = m_Target->GetKeyValueArrays<TValue>(Allocator.Temp))
+                using (var kva = Data->GetKeyValueArrays<TValue>(Allocator.Temp))
                 {
                     for (var i = 0; i < kva.Length; ++i)
                     {
@@ -778,6 +782,5 @@ namespace Unity.Collections
                 return result;
             }
         }
-#endif
     }
 }

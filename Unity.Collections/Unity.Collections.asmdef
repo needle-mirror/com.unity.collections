@@ -4,7 +4,8 @@
         "Unity.Burst",
         "Unity.Mathematics",
         "Unity.Properties",
-        "Unity.Collections.LowLevel.ILSupport"
+        "Unity.Collections.LowLevel.ILSupport",
+        "UnityEngine.UnityAnalyticsModule"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

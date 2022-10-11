@@ -2,82 +2,85 @@
 uid: collections-allocation
 ---
 
-# Using unmanaged memory
+# Use allocators to control unmanaged memory
 
-The `Native-` and `Unsafe-` collections in this package are allocated from unmanaged memory, meaning their existence is unknown to the garbage collector.
-You are responsible for deallocating any unmanaged memory that you no longer need. Failing to deallocate large or numerous allocations can lead to wasting more and more memory, which may eventually slow down or even crash your program.
+The Collections package allocates `Native-` and `Unsafe-` collections from unmanaged memory, which means that their existence is unknown to the garbage collector.
 
-## Allocators
+You are responsible for deallocating any unmanaged memory that you don't need. If you fail to deallocate large or numerous allocations, it can lead to wasting a lot of memory, which might slow down or crash your program.
 
-An *allocator* governs some unmanaged memory from which you can make allocations. Different allocators organize and track their memory in different ways. The three standard provided allocators are:
+## Allocator overview
 
-### `Allocator.Temp`
+An **allocator** governs some unmanaged memory from which you can make allocations. Different allocators organize and track their memory in different ways. The Collections package includes the following allocators:
 
-**The fastest allocator. For very short-lived allocations. Temp allocations *cannot* be passed into jobs.**
+* [`Allocator.Temp`](#allocatortemp): The fastest allocator, for short-lived allocations. You can't pass this allocator to a job.
+* [`Allocator.TempJob`](#allocatortempjob): A short-lived allocator that you can pass into jobs.
+* [`Allocator.Persistent`](#allocatorpersistent): The slowest allocator for indefinite lifetime allocations. You can pass this allocator to a job.
 
-Each frame, the main thread creates a Temp allocator which is deallocated in its entirety at the end of the frame. Each job also creates one Temp allocator per thread, and these are deallocated in their entireties at the end of the job. Because a Temp allocator gets discarded as a whole, you actually don't need to manually deallocate your Temp allocations (in fact, doing so is a no-op).
+### Allocator.Temp
 
-Temp allocations are only safe to use within the thread where they were allocated. So while Temp allocations can be made *within* a job, **main thread Temp allocations cannot be passed into a job**. For example, a NativeArray that's Temp allocated in the main thread cannot be passed into a job.
+Each frame, the main thread creates a Temp allocator which it deallocates in its entirety at the end of the frame. Each job also creates one Temp allocator per thread, and deallocates them in their entirety at the end of the job. Because a Temp allocator gets discarded as a whole, you don't need to manually deallocate Temp allocations, and doing so does nothing.
 
-### `Allocator.TempJob`
+Temp allocations are only safe to use within the thread and within the scope where they were allocated. While you can make Temp allocations within a job, you can't pass main thread Temp allocations into a job. For example, you can't pass a NativeArray that's Temp allocated in the main thread into a job.
 
-**The next fastest allocator. For short-lived allocations. TempJob allocations can be passed into jobs.**
+### Allocator.TempJob
 
-You are expected to deallocate your TempJob allocations within 4 frames of their creation. The number 4 was chosen because it's common to want allocations that last a couple frames: the limit of 4 accommodates this need with a comfortable extra margin.
+You must deallocate TempJob allocations within 4 frames of their creation. 4 frames is the limit so that you can have an allocation that lasts a couple of frames with some extra margin for error. 
 
-For the `Native-` collection types, the disposal safety checks will throw an exception if a TempJob allocation lives longer than 4 frames. For the `Unsafe-` collection types, you are still expected to deallocate them within 4 frames, but no safety checks are performed to ensure you do so.
+For `Native-` collection types, the disposal safety checks throw an exception if a TempJob allocation lasts longer than 4 frames. For `Unsafe-` collection types, you must deallocate them within 4 frames, but Unity doesn't perform any safety checks to ensure you do so.
    
-### `Allocator.Persistent`
+### Allocator.Persistent
 
-**The slowest allocator. For indefinite lifetime allocations. Persistent allocations can be passed into jobs.**
+Because Persistent allocations can remain indefinitely, safety checks can't detect if a Persistent allocation has outlived its intended lifetime. As such, you should be extra careful to deallocate a Persistent allocation when you no longer need it.
 
-Because Persistent allocations are allowed to live indefinitely, no safety check can detect if a Persistent allocation has outlived its intended lifetime. Consequently, you should be extra careful to deallocate a Persistent allocation when you no longer need it.
+## Deallocating an allocator
 
-## Disposal (deallocation)
+Each collection retains a reference to the allocator that allocated its memory. This is because you must specify the allocator to deallocate its memory.
 
-Each collection retains a reference to the allocator from which its memory was allocated because deallocation requires specifying the allocator.
+* An `Unsafe-` collection's `Dispose` method deallocates its memory.
+* A `Native-` collection's `Dispose` method deallocates its memory and frees the handles needed for safety checks. 
+* An enumerator's `Dispose` method does nothing. The method exists only to fulfill the `IEnumerator<T>` interface.
 
-- An `Unsafe-` collection's `Dispose` method deallocates its memory.
-- A `Native-` collection's `Dispose` method deallocates its memory and frees the handles needed for safety checks. 
-- An enumerator's `Dispose` method is a no-op. The method is included only to fulfill the `IEnumerator<T>` interface.
-
-We often want to dispose a collection after the jobs which need it have run. The `Dispose(JobHandle)` method creates and schedules a job which will dispose the collection, and this new job takes the input handle as its dependency. Effectively, the method differs disposal until after the dependency runs:
+To dispose a collection after the jobs which need it have run, you can use the `Dispose(JobHandle)` method. This creates and schedules a job which disposes of the collection, and this new job takes the input handle as its dependency. Effectively, the method defers disposal until after the dependency runs:
 
 [!code-cs[allocation_dispose_job](../DocCodeSamples.Tests/CollectionsAllocationExamples.cs#allocation_dispose_job)]
 
-### The `IsCreated` property
+### IsCreated property
 
-The `IsCreated` property of a collection is false only in two cases:
+The `IsCreated` property of a collection is false only in the following cases:
 
-1. Immediately after creating a collection with its default constructor.
-2. After `Dispose` has been called on the collection.
+* Immediately after creating a collection with its default constructor.
+* After `Dispose` has been called on the collection.
 
-Understand, however, that you're not intended to use a collections's default constructor. It's only made available because C# requires all structs to have a public default constructor.
+Understand, however, that you don't need to use a collections's default constructor. It's only made available because C# requires all structs have a public default constructor.
 
-Also note that calling `Dispose` on a collection sets `IsCreated` to false *only in that struct*, not in any copies of the struct. Consequently, `IsCreated` may still be true even after the collection's underlying memory was deallocated if...
+Calling `Dispose` on a collection sets `IsCreated` to false only for that struct, and not in any copies of the struct. `IsCreated` might still be true even after the collection's underlying memory is deallocated in the following situations:
 
-- `Dispose` was called on a different copy of the struct.
-- Or the underlying memory was deallocated *via* an [alias](#aliasing).
+* `Dispose` was called on a different copy of the struct.
+* The underlying memory was deallocated via an [alias](#aliasing).
 
 ## Aliasing
 
-An *alias* is a collection which does not have its own allocation but instead shares the allocation of another collection, in whole or in part. For example, an UnsafeList can be created that doesn't allocate its own memory but instead uses a NativeList's allocation. Writing to this shared memory *via* the UnsafeList affects the content of the NativeList, and *vice versa*.
+An **alias** is a collection which doesn't have its own allocation but instead shares the allocation of another collection, in whole or in part. For example, you can create an `UnsafeList` that doesn't allocate its own memory but instead uses a `NativeList`'s allocation. Writing to this shared memory via the `UnsafeList` affects the content of the `NativeList`, and vice versa.
 
-You do not need to dispose aliases, and in fact, calling `Dispose` on an alias does nothing. Once an original is disposed, the aliases of that original can no longer be used:
+You don't need to dispose aliases, and calling `Dispose` on an alias does nothing. Once an original is disposed, you can no longer use the aliases of the original:
 
 [!code-cs[allocation_aliasing](../DocCodeSamples.Tests/CollectionsAllocationExamples.cs#allocation_aliasing)]
 
-Aliasing can be useful in a few scenarios:
+Aliasing is useful for the following situations:
 
-- Getting a collection's data in the form of another collection type without copying the data. For example, you can create an UnsafeList that aliases a NativeArray.
-- Getting a subrange of a collection's data without copying the data. For example, you can create an UnsafeList that aliases a subrange of another list or array.   
-- [Array reinterpretation](#array-reinterpretation).
+* Getting a collection's data in the form of another collection type without copying the data. For example, you can create an `UnsafeList` that aliases a `NativeArray`.
+* Getting a subrange of a collection's data without copying the data. For example, you can create an UnsafeList that aliases a subrange of another list or array.   
+* [Array reinterpretation](#array-reinterpretation).
 
-Perhaps surprisingly, it's allowed for an `Unsafe-` collection to alias a `Native-` collection even though such cases undermine the safety checks. For example, if an UnsafeList aliases a NativeList, it's not safe to schedule a job that accesses one while also another job is scheduled that accesses the other, but the safety checks do not catch these cases. It is your responsibility to avoid such mistakes.
+An `Unsafe-` collection can alias a `Native-` collection even though such cases undermine the safety checks. For example, if an `UnsafeList` aliases a `NativeList`, it's not safe to schedule a job that accesses one while also another job is scheduled that accesses the other, but the safety checks don't catch these cases.
 
 ### Array reinterpretation
 
-A *reinterpretation* of an array is an alias of the array that reads and writes the content as a different element type. For example, a `NativeArray<int>` which reinterprets a `NativeArray<ushort>` shares the same bytes, but it reads and writes the bytes as ints instead of ushorts; because each int is 4 bytes while each ushort is 2 bytes, each int corresponds to two ushorts, and the reinterpretation has half the length of the original.
+A **reinterpretation** of an array is an alias of the array that reads and writes the content as a different element type. For example, a `NativeArray<int>` which reinterprets a `NativeArray<ushort>` shares the same bytes, but it reads and writes the bytes as an int instead of a ushort. This is because each int is 4 bytes while each ushort is 2 bytes. Each int corresponds to two ushorts, and the reinterpretation has half the length of the original.
 
 [!code-cs[allocation_reinterpretation](../DocCodeSamples.Tests/CollectionsAllocationExamples.cs#allocation_reinterpretation)]
 
+## Further information
+
+* [Custom allocators](allocators-custom.md)
+* [Rewindable allocators](allocator-rewindable.md)

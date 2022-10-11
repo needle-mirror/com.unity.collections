@@ -65,10 +65,9 @@ namespace Unity.Jobs
         /// This methods is called when JobReflectionData cannot be created during EarlyInit.
         /// </summary>
         /// <param name="ex">Exception type to throw</param>
-        /// <param name="jobType">Job type involved in exeception</param>
-        public static void JobReflectionDataCreationFailed(Exception ex, Type jobType)
+        public static void JobReflectionDataCreationFailed(Exception ex)
         {
-            Debug.LogError($"Failed to create job reflection data for type ${jobType}:");
+            Debug.LogError($"Failed to create job reflection data. Please refer to callstack of exception for information on which job could not produce its reflection data.");
             Debug.LogException(ex);
         }
     }

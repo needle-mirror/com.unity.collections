@@ -62,4 +62,39 @@ internal class UnsafeStreamTests : CollectionsTestCommonBase
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    [Test]
+    public void UnsafeStream_ScheduleCreate_NativeList()
+    {
+        var container = new NativeList<int>(Allocator.Persistent);
+        container.Add(13);
+        container.Add(13);
+        container.Add(13);
+        container.Add(13);
+
+        UnsafeStream stream;
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
+        jobHandle.Complete();
+
+        Assert.AreEqual(4, stream.ForEachCount);
+
+        stream.Dispose();
+        container.Dispose();
+    }
+
+    [Test]
+    public void UnsafeStream_ScheduleCreate_NativeArray()
+    {
+        var container = new NativeArray<int>(1, Allocator.Persistent);
+        container[0] = 4;
+
+        UnsafeStream stream;
+        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
+        jobHandle.Complete();
+
+        Assert.AreEqual(4, stream.ForEachCount);
+
+        stream.Dispose();
+        container.Dispose();
+    }
 }

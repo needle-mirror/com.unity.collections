@@ -873,15 +873,24 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Overwrites the elements of this list with the elements of an equal-length array.
+        /// Copies all elements of specified container to this container.
         /// </summary>
-        /// <param name="array">An array to copy into this list.</param>
-        public void CopyFrom(UnsafeList<T> array)
+        /// <param name="other">An container to copy into this container.</param>
+        public void CopyFrom(in NativeArray<T> other)
         {
-            Resize(array.Length);
-            UnsafeUtility.MemCpy(Ptr, array.Ptr, UnsafeUtility.SizeOf<T>() * Length);
+            Resize(other.Length);
+            UnsafeUtility.MemCpy(Ptr, other.GetUnsafeReadOnlyPtr<T>(), UnsafeUtility.SizeOf<T>() * other.Length);
         }
 
+        /// <summary>
+        /// Copies all elements of specified container to this container.
+        /// </summary>
+        /// <param name="other">An container to copy into this container.</param>
+        public void CopyFrom(in UnsafeList<T> other)
+        {
+            Resize(other.Length);
+            UnsafeUtility.MemCpy(Ptr, other.Ptr, UnsafeUtility.SizeOf<T>() * other.Length);
+        }
 
         /// <summary>
         /// Returns an enumerator over the elements of the list.
@@ -1124,23 +1133,23 @@ namespace Unity.Collections.LowLevel.Unsafe
             return list.IndexOf(value) != -1;
         }
 
-
         /// <summary>
-        /// Returns true if this array and another have equal length and content.
+        /// Returns true if this container and another have equal length and content.
         /// </summary>
-        /// <typeparam name="T">The type of the source array's elements.</typeparam>
-        /// <param name="array">The array to compare for equality.</param>
-        /// <param name="other">The other array to compare for equality.</param>
-        /// <returns>True if the arrays have equal length and content.</returns>
+        /// <typeparam name="T">The type of the source container's elements.</typeparam>
+        /// <param name="container">The container to compare for equality.</param>
+        /// <param name="other">The other container to compare for equality.</param>
+        /// <returns>True if the containers have equal length and content.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static bool ArraysEqual<T>(this UnsafeList<T> array, UnsafeList<T> other) where T : unmanaged, IEquatable<T>
+        public static bool ArraysEqual<T>(this UnsafeList<T> container, in UnsafeList<T> other)
+            where T : unmanaged, IEquatable<T>
         {
-            if (array.Length != other.Length)
+            if (container.Length != other.Length)
                 return false;
 
-            for (int i = 0; i != array.Length; i++)
+            for (int i = 0; i != container.Length; i++)
             {
-                if (!array[i].Equals(other[i]))
+                if (!container[i].Equals(other[i]))
                     return false;
             }
 
@@ -1180,7 +1189,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// </summary>
     /// <typeparam name="T">The type of pointer element.</typeparam>
     [DebuggerDisplay("Length = {Length}, Capacity = {Capacity}, IsCreated = {IsCreated}, IsEmpty = {IsEmpty}")]
-    [DebuggerTypeProxy(typeof(UnsafePtrListTDebugView<>))]
+    [DebuggerTypeProxy(typeof(UnsafePtrListDebugView<>))]
     [StructLayout(LayoutKind.Sequential)]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct UnsafePtrList<T>
@@ -1775,18 +1784,18 @@ namespace Unity.Collections.LowLevel.Unsafe
     }
 
     [GenerateTestsForBurstCompatibility]
-    internal static class UnsafePtrListTExtensions
+    internal static class UnsafePtrListExtensions
     {
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public static ref UnsafeList<IntPtr> ListData<T>(ref this UnsafePtrList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafePtrList<T>, UnsafeList<IntPtr>>(ref from);
     }
 
-    internal sealed class UnsafePtrListTDebugView<T>
+    internal sealed class UnsafePtrListDebugView<T>
         where T : unmanaged
     {
         UnsafePtrList<T> Data;
 
-        public UnsafePtrListTDebugView(UnsafePtrList<T> data)
+        public UnsafePtrListDebugView(UnsafePtrList<T> data)
         {
             Data = data;
         }

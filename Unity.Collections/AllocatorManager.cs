@@ -805,8 +805,6 @@ namespace Unity.Collections
         /// </summary>
         public const int kErrorBufferOverflow = -1;
 
-#if !UNITY_IOS
-
         [BurstDiscard]
         private static void CheckDelegate(ref bool useDelegate)
         {
@@ -820,7 +818,6 @@ namespace Unity.Collections
             CheckDelegate(ref result);
             return result;
         }
-#endif
 
         private static int allocate_block(ref Block block)
         {
@@ -831,7 +828,6 @@ namespace Unity.Collections
             return function.Invoke(tableEntry.state, ref block);
         }
 
-#if !UNITY_IOS
         [BurstDiscard]
         private static void forward_mono_allocate_block(ref Block block, ref int error)
         {
@@ -846,7 +842,6 @@ namespace Unity.Collections
             ref TryFunction function = ref Managed.TryFunctionDelegates[block.Range.Allocator.Handle.Index];
             error = function(tableEntry.state, ref block);
         }
-#endif
 
         internal static Allocator LegacyOf(AllocatorHandle handle)
         {
@@ -902,14 +897,12 @@ namespace Unity.Collections
                 block.Range.Allocator.Version = block.Range.Allocator.OfficialVersion;
 #endif
 
-#if !UNITY_IOS
             if (UseDelegate())
             {
                 int error = kErrorNone;
                 forward_mono_allocate_block(ref block, ref error);
                 return error;
             }
-#endif
             return allocate_block(ref block);
         }
 
@@ -1018,7 +1011,7 @@ namespace Unity.Collections
             internal int Slabs => (int)(Storage.Bytes >> Log2SlabSizeInBytes);
 
             internal void Initialize(Block storage, int slabSizeInBytes, long budget)
-            {   
+            {
 #if ENABLE_UNITY_ALLOCATION_CHECKS
                 storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
@@ -1139,12 +1132,10 @@ namespace Unity.Collections
 
         internal static class Managed
         {
-#if !UNITY_IOS
             /// <summary>
             /// Global delegate table to hold TryFunction delegates for managed callers
             /// </summary>
             internal static TryFunction[] TryFunctionDelegates = new TryFunction[MaxNumCustomAllocators];
-#endif
 
             /// <summary>
             /// Register TryFunction delegates for managed caller to avoid garbage collections
@@ -1154,14 +1145,12 @@ namespace Unity.Collections
             [ExcludeFromBurstCompatTesting("Uses managed delegate")]
             public static void RegisterDelegate(int index, TryFunction function)
             {
-#if !UNITY_IOS
                 if(index >= MaxNumCustomAllocators)
                 {
                     throw new ArgumentException("index to be registered in TryFunction delegate table exceeds maximum.");
                 }
                 // Register TryFunction delegates for managed caller to avoid garbage collections
                 Managed.TryFunctionDelegates[index] = function;
-#endif
             }
 
             /// <summary>
@@ -1171,13 +1160,11 @@ namespace Unity.Collections
             [ExcludeFromBurstCompatTesting("Uses managed delegate")]
             public static void UnregisterDelegate(int index)
             {
-#if !UNITY_IOS
                 if (index >= MaxNumCustomAllocators)
                 {
                     throw new ArgumentException("index to be unregistered in TryFunction delegate table exceeds maximum.");
                 }
                 Managed.TryFunctionDelegates[index] = default;
-#endif
             }
         }
 
@@ -1485,6 +1472,7 @@ namespace Unity.Collections
             ref var allocator = ref AllocatorManager.CreateAllocator<T>(backingAllocator, isGlobal, globalIndex);
             m_allocator = (T*)UnsafeUtility.AddressOf<T>(ref allocator);
             m_backingAllocator = backingAllocator;
+            Telemetry.SendEvent<T>(Telemetry.Action.CreateAllocator);
         }
 
         /// <summary>
@@ -1495,6 +1483,7 @@ namespace Unity.Collections
         {
             ref var allocator = ref UnsafeUtility.AsRef<T>(m_allocator);
             AllocatorManager.DestroyAllocator(ref allocator, m_backingAllocator);
+            Telemetry.SendEvent<T>(Telemetry.Action.DestroyAllocator);
         }
     }
 }

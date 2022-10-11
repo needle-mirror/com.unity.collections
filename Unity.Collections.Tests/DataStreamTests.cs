@@ -253,6 +253,18 @@ namespace Unity.Collections.Tests
             }
 
             [Test]
+            public void Double()
+            {
+                const double expected = 1979.1989;
+                const double baseVal = 2000.2000;
+                bool Write(ref DataStreamWriter writer) => writer.WriteDouble(expected);
+                bool WritePacked(ref DataStreamWriter writer, StreamCompressionModel model, double value) => writer.WritePackedDouble(value, model);
+                double Read(ref DataStreamReader reader) => reader.ReadDouble();
+                double ReadPacked(ref DataStreamReader reader, StreamCompressionModel model) => reader.ReadPackedDouble(model);
+                CheckReadWritePackedLooped(sizeof(double), baseVal, expected, Write, WritePacked, Read, ReadPacked, (l, u) => l + u);
+            }
+
+            [Test]
             public void WriteOutSideOfCapacity_Fails()
             {
                 var model = StreamCompressionModel.Default;

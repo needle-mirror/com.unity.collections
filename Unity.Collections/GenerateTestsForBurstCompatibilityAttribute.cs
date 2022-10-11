@@ -2,6 +2,9 @@ using System;
 
 namespace Unity.Collections
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Obsolete("Use GenerateTestsForBurstCompatibility (UnityUpgradable) -> GenerateTestsForBurstCompatibilityAttribute", true)]
     public class BurstCompatibleAttribute : Attribute
     {

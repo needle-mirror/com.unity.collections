@@ -351,12 +351,11 @@ namespace Unity.Collections.LowLevel.Unsafe
     sealed internal class UnsafeHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
-#if !NET_DOTS
-        UnsafeHashSet<T> Data;
+        HashMapHelper<T> Data;
 
         public UnsafeHashSetDebuggerTypeProxy(UnsafeHashSet<T> data)
         {
-            Data = data;
+            Data = data.m_Data;
         }
 
         public List<T> Items
@@ -364,7 +363,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             get
             {
                 var result = new List<T>();
-                using (var keys = Data.ToNativeArray(Allocator.Temp))
+                using (var keys = Data.GetKeyArray(Allocator.Temp))
                 {
                     for (var k = 0; k < keys.Length; ++k)
                     {
@@ -375,6 +374,5 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return result;
             }
         }
-#endif
     }
 }

@@ -331,6 +331,17 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Reads a 8-byte floating point value from the current stream and advances the current position of the stream by four bytes.
+        /// </summary>
+        /// <returns>A 8-byte floating point value read from the current stream, or 0 if the end of the stream has been reached.</returns>
+        public double ReadDouble()
+        {
+            UIntFloat uf = new UIntFloat();
+            uf.longValue = (ulong)ReadLong();
+            return uf.doubleValue;
+        }
+
+        /// <summary>
         /// Reads a 4-byte unsigned integer from the current stream using a <see cref="StreamCompressionModel"/> and advances the current position the number of bits depending on the model.
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
@@ -413,10 +424,10 @@ namespace Unity.Collections
         /// <returns>An 8-byte unsigned long read from the current stream, or 0 if the end of the stream has been reached.</returns>
         public ulong ReadPackedULong(StreamCompressionModel model)
         {
-            ulong hi = ReadPackedUInt(model);
-            hi <<= 32;
-            hi |= ReadPackedUInt(model);
-            return hi;
+            ulong value;
+            ((uint*)&value)[0] = ReadPackedUInt(model);
+            ((uint*)&value)[1] = ReadPackedUInt(model);
+            return value;
         }
 
         /// <summary>
@@ -453,6 +464,16 @@ namespace Unity.Collections
         public float ReadPackedFloat(StreamCompressionModel model)
         {
             return ReadPackedFloatDelta(0, model);
+        }
+
+        /// <summary>
+        /// Reads a 8-byte floating point value from the data stream using a <see cref="StreamCompressionModel"/>.
+        /// </summary>
+        /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
+        /// <returns>A 8-byte floating point value read from the current stream, or 0 if the end of the stream has been reached.</returns>
+        public double ReadPackedDouble(StreamCompressionModel model)
+        {
+            return ReadPackedDoubleDelta(0, model);
         }
 
         /// <summary>
@@ -536,6 +557,32 @@ namespace Unity.Collections
             UIntFloat uf = new UIntFloat();
             uf.intValue = ReadRawBitsInternal(bits);
             return uf.floatValue;
+        }
+
+        /// <summary>
+        /// Reads a 8-byte floating point value from the data stream.
+        ///
+        /// If the first bit is 0, the data did not change and <paramref name="baseline"/> will be returned.
+        /// </summary>
+        /// <param name="baseline">The previous 8-byte floating point value.</param>
+        /// <param name="model">Not currently used.</param>
+        /// <returns>A 8-byte floating point value read from the current stream, or <paramref name="baseline"/> if there are no changes to the value.
+        /// <br/>
+        /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
+        public double ReadPackedDoubleDelta(double baseline, StreamCompressionModel model)
+        {
+            CheckRead();
+            FillBitBuffer();
+            if (ReadRawBitsInternal(1) == 0)
+                return baseline;
+
+            var bits = 32;
+            UIntFloat uf = new UIntFloat();
+            var data = (uint*)&uf.longValue;
+            data[0] = ReadRawBitsInternal(bits);
+            FillBitBuffer();
+            data[1] |= ReadRawBitsInternal(bits);
+            return uf.doubleValue;
         }
 
         /// <summary>

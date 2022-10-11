@@ -8,21 +8,51 @@ using Unity.Mathematics;
 
 namespace Unity.Jobs
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Obsolete("'JobParallelIndexListExtensions' has been deprecated; Use 'IJobFilterExtensions' instead.", false)]
     public static class JobParallelIndexListExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="jobData"></param>
+        /// <param name="indices"></param>
+        /// <param name="arrayLength"></param>
+        /// <param name="innerloopBatchCount"></param>
+        /// <param name="dependsOn"></param>
+        /// <returns></returns>
         [Obsolete("The signature for 'ScheduleAppend' has changed. 'innerloopBatchCount' is no longer part of this API.", false)]
         public static unsafe JobHandle ScheduleAppend<T>(this T jobData, NativeList<int> indices, int arrayLength, int innerloopBatchCount, JobHandle dependsOn = new JobHandle()) where T : struct, IJobFilter
             => jobData.ScheduleAppend(indices, arrayLength, dependsOn);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="jobData"></param>
+        /// <param name="indices"></param>
+        /// <param name="innerloopBatchCount"></param>
+        /// <param name="dependsOn"></param>
+        /// <returns></returns>
         [Obsolete("The signature for 'ScheduleFilter' has changed. 'innerloopBatchCount' is no longer part of this API.")]
         public static unsafe JobHandle ScheduleFilter<T>(this T jobData, NativeList<int> indices, int innerloopBatchCount, JobHandle dependsOn = new JobHandle()) where T : struct, IJobFilter
             => jobData.ScheduleFilter(indices, dependsOn);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     [Obsolete("'IJobParallelForFilter' has been deprecated; use 'IJobFilter' instead. (UnityUpgradable) -> IJobFilter")]
     public interface IJobParallelForFilter
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         bool Execute(int index);
     }
 

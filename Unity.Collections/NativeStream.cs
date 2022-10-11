@@ -244,9 +244,13 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CheckForEachCountGreaterThanZero(forEachCount);
-            Assert.IsTrue(m_Stream.m_Block->Ranges == null);
-            Assert.AreEqual(0, m_Stream.m_Block->RangeCount);
-            Assert.AreNotEqual(0, m_Stream.m_Block->BlockCount);
+
+            var blockData = (UnsafeStreamBlockData*)m_Stream.m_BlockData.Range.Pointer;
+            var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
+            Assert.IsTrue(ranges == null);
+            Assert.AreEqual(0, blockData->RangeCount);
+            Assert.AreNotEqual(0, blockData->BlockCount);
 #endif
 
             m_Stream.AllocateForEach(forEachCount);
@@ -323,11 +327,12 @@ namespace Unity.Collections
             /// </summary>
             /// <remarks>Must be called before using this writer. For an individual writer, call this method only once.
             ///
+            /// After calling BeginForEachIndex on this writer, passing this writer into functions must be passed by reference.
+            ///
             /// When done using this writer, you must call <see cref="EndForEachIndex"/>.</remarks>
             /// <param name="foreachIndex">The index of the buffer to write.</param>
             public void BeginForEachIndex(int foreachIndex)
             {
-                //@TODO: Check that no one writes to the same for each index multiple times...
                 CheckBeginForEachIndex(foreachIndex);
                 m_Writer.BeginForEachIndex(foreachIndex);
             }
@@ -350,9 +355,12 @@ namespace Unity.Collections
             /// Write a value to a buffer.
             /// </summary>
             /// <remarks>The value is written to the buffer which was specified
-            /// with <see cref="BeginForEachIndex"/>.</remarks>
+            /// with <see cref="BeginForEachIndex"/>.
+            /// </remarks>
             /// <typeparam name="T">The type of value to write.</typeparam>
             /// <param name="value">The value to write.</param>
+            /// <exception cref="ArgumentException">Thrown if BeginForEachIndex was not called.</exception>
+            /// <exception cref="ArgumentException">Thrown when the NativeStream.Writer instance has been passed by value instead of by reference.</exception>
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             public void Write<T>(T value) where T : unmanaged
             {
@@ -364,9 +372,12 @@ namespace Unity.Collections
             /// Allocate space in a buffer.
             /// </summary>
             /// <remarks>The space is allocated in the buffer which was specified
-            /// with <see cref="BeginForEachIndex"/>.</remarks>
+            /// with <see cref="BeginForEachIndex"/>.
+            /// </remarks>
             /// <typeparam name="T">The type of value to allocate space for.</typeparam>
             /// <returns>A reference to the allocation.</returns>
+            /// <exception cref="ArgumentException">Thrown if BeginForEachIndex was not called.</exception>
+            /// <exception cref="ArgumentException">Thrown when the NativeStream.Writer instance has been passed by value instead of by reference.</exception>
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
             public ref T Allocate<T>() where T : unmanaged
             {
@@ -385,6 +396,8 @@ namespace Unity.Collections
             /// with <see cref="BeginForEachIndex"/>.</remarks>
             /// <param name="size">The number of bytes to allocate.</param>
             /// <returns>The allocation.</returns>
+            /// <exception cref="ArgumentException">Thrown if BeginForEachIndex was not called.</exception>
+            /// <exception cref="ArgumentException">Thrown when the NativeStream.Writer instance has been passed by value instead of by reference.</exception>
             public byte* Allocate(int size)
             {
                 CheckAllocateSize(size);
@@ -402,6 +415,9 @@ namespace Unity.Collections
                     m_PassByRefCheck = UnsafeUtility.AddressOf(ref this);
                 }
 
+                var blockData = (UnsafeStreamBlockData*)m_Writer.m_BlockData.Range.Pointer;
+                var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
                 if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
                 {
                     // When the code is not running through the job system no ParallelForRange patching will occur
@@ -410,7 +426,8 @@ namespace Unity.Collections
                     if (m_MinIndex == int.MinValue && m_MaxIndex == int.MinValue)
                     {
                         m_MinIndex = 0;
-                        m_MaxIndex = m_Writer.m_BlockStream->RangeCount - 1;
+
+                        m_MaxIndex = blockData->RangeCount - 1;
                     }
 
                     if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
@@ -424,12 +441,12 @@ namespace Unity.Collections
                     throw new ArgumentException($"BeginForEachIndex must always be balanced by a EndForEachIndex call");
                 }
 
-                if (0 != m_Writer.m_BlockStream->Ranges[foreachIndex].ElementCount)
+                if (0 != ranges[foreachIndex].ElementCount)
                 {
                     throw new ArgumentException($"BeginForEachIndex can only be called once for the same index ({foreachIndex}).");
                 }
 
-                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < m_Writer.m_BlockStream->RangeCount);
+                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < blockData->RangeCount);
 #endif
             }
 
@@ -452,14 +469,10 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 
-                if (m_PassByRefCheck != UnsafeUtility.AddressOf(ref this))
+                if (m_PassByRefCheck != UnsafeUtility.AddressOf(ref this)
+                ||  m_Writer.m_ForeachIndex == int.MinValue)
                 {
-                    throw new ArgumentException("NativeStream.Writer must be passed by ref once it is in use");
-                }
-
-                if (m_Writer.m_ForeachIndex == int.MinValue)
-                {
-                    throw new ArgumentException("Allocate must be called within BeginForEachIndex / EndForEachIndex");
+                    throw new ArgumentException("BeginForEachIndex has not been called on NativeStream.Writer, or NativeStream.Writer is not passed by reference.");
                 }
 
                 if (size > UnsafeStreamBlockData.AllocationSize - sizeof(void*))
@@ -514,7 +527,10 @@ namespace Unity.Collections
                 var remainingItemCount = m_Reader.BeginForEachIndex(foreachIndex);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                m_RemainingBlocks = m_Reader.m_BlockStream->Ranges[foreachIndex].NumberOfBlocks;
+                var blockData = (UnsafeStreamBlockData*)m_Reader.m_BlockData.Range.Pointer;
+                var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
+                m_RemainingBlocks = ranges[foreachIndex].NumberOfBlocks;
                 if (m_RemainingBlocks == 0)
                 {
                     m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + m_Reader.m_LastBlockSize;
@@ -683,9 +699,11 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 
-                if ((uint)forEachIndex >= (uint)m_Reader.m_BlockStream->RangeCount)
+                var blockData = (UnsafeStreamBlockData*)m_Reader.m_BlockData.Range.Pointer;
+
+                if ((uint)forEachIndex >= (uint)blockData->RangeCount)
                 {
-                    throw new System.ArgumentOutOfRangeException(nameof(forEachIndex), $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {m_Reader.m_BlockStream->RangeCount}");
+                    throw new System.ArgumentOutOfRangeException(nameof(forEachIndex), $"foreachIndex: {forEachIndex} must be between 0 and ForEachCount: {blockData->RangeCount}");
                 }
 #endif
             }

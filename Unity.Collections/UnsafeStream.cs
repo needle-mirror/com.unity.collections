@@ -34,16 +34,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal UnsafeStreamBlock** Blocks;
         internal int BlockCount;
 
-        internal UnsafeStreamBlock* Free;
-
-        internal UnsafeStreamRange* Ranges;
+        internal AllocatorManager.Block Ranges;
         internal int RangeCount;
 
         internal UnsafeStreamBlock* Allocate(UnsafeStreamBlock* oldBlock, int threadIndex)
         {
             Assert.IsTrue(threadIndex < BlockCount && threadIndex >= 0);
 
-            UnsafeStreamBlock* block = (UnsafeStreamBlock*)Memory.Unmanaged.Allocate(AllocationSize, 16, Allocator);
+            UnsafeStreamBlock* block = (UnsafeStreamBlock*)Memory.Unmanaged.Array.Resize(null, 0, AllocationSize, Allocator, 1, 16);
             block->Next = null;
 
             if (oldBlock == null)
@@ -54,10 +52,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
             else
             {
+                block->Next = oldBlock->Next;
                 oldBlock->Next = block;
             }
 
             return block;
+        }
+
+        internal void Free(UnsafeStreamBlock* oldBlock)
+        {
+            Memory.Unmanaged.Array.Resize(oldBlock, AllocationSize, 0, Allocator, 1, 16);
         }
     }
 
@@ -88,8 +92,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         : INativeDisposable
     {
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeStreamBlockData* m_Block;
-        internal AllocatorManager.AllocatorHandle m_Allocator;
+        internal AllocatorManager.Block m_BlockData;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeStream.
@@ -149,28 +152,29 @@ namespace Unity.Collections.LowLevel.Unsafe
             int blockCount = JobsUtility.MaxJobThreadCount;
 
             int allocationSize = sizeof(UnsafeStreamBlockData) + sizeof(UnsafeStreamBlock*) * blockCount;
-            byte* buffer = (byte*)Memory.Unmanaged.Allocate(allocationSize, 16, allocator);
-            UnsafeUtility.MemClear(buffer, allocationSize);
 
-            var block = (UnsafeStreamBlockData*)buffer;
+            AllocatorManager.Block blk = AllocatorManager.AllocateBlock(ref allocator, allocationSize, 16, 1);
+            UnsafeUtility.MemClear( (void*)blk.Range.Pointer, blk.AllocatedBytes);
 
-            stream.m_Block = block;
-            stream.m_Allocator = allocator;
+            stream.m_BlockData = blk;
 
-            block->Allocator = allocator;
-            block->BlockCount = blockCount;
-            block->Blocks = (UnsafeStreamBlock**)(buffer + sizeof(UnsafeStreamBlockData));
+            var blockData = (UnsafeStreamBlockData*)blk.Range.Pointer;
+            blockData->Allocator = allocator;
+            blockData->BlockCount = blockCount;
+            blockData->Blocks = (UnsafeStreamBlock**)(blk.Range.Pointer + sizeof(UnsafeStreamBlockData));
 
-            block->Ranges = null;
-            block->RangeCount = 0;
+            blockData->Ranges = default;
+            blockData->RangeCount = 0;
         }
 
         internal void AllocateForEach(int forEachCount)
         {
             long allocationSize = sizeof(UnsafeStreamRange) * forEachCount;
-            m_Block->Ranges = (UnsafeStreamRange*)Memory.Unmanaged.Allocate(allocationSize, 16, m_Allocator);
-            m_Block->RangeCount = forEachCount;
-            UnsafeUtility.MemClear(m_Block->Ranges, allocationSize);
+
+            var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+            blockData->Ranges = AllocatorManager.AllocateBlock(ref m_BlockData.Range.Allocator, sizeof(UnsafeStreamRange), 16, forEachCount);
+            blockData->RangeCount = forEachCount;
+            UnsafeUtility.MemClear((void*)blockData->Ranges.Range.Pointer, blockData->Ranges.AllocatedBytes);
         }
 
         /// <summary>
@@ -184,9 +188,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return true;
             }
 
-            for (int i = 0; i != m_Block->RangeCount; i++)
+            var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+            var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
+            for (int i = 0; i != blockData->RangeCount; i++)
             {
-                if (m_Block->Ranges[i].ElementCount > 0)
+                if (ranges[i].ElementCount > 0)
                 {
                     return false;
                 }
@@ -200,13 +207,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <remarks>Does not necessarily reflect whether the buffers of the stream have themselves been allocated.</remarks>
         /// <value>True if this stream has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Block != null;
+        public bool IsCreated => m_BlockData.Range.Pointer != IntPtr.Zero;
 
         /// <summary>
         /// The number of buffers in this stream.
         /// </summary>
         /// <value>The number of buffers in this stream.</value>
-        public int ForEachCount => m_Block->RangeCount;
+        public int ForEachCount => ((UnsafeStreamBlockData*)m_BlockData.Range.Pointer)->RangeCount;
 
         /// <summary>
         /// Returns a reader of this stream.
@@ -235,9 +242,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             int itemCount = 0;
 
-            for (int i = 0; i != m_Block->RangeCount; i++)
+            var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+            var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
+            for (int i = 0; i != blockData->RangeCount; i++)
             {
-                itemCount += m_Block->Ranges[i].ElementCount;
+                itemCount += ranges[i].ElementCount;
             }
 
             return itemCount;
@@ -277,26 +287,28 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         void Deallocate()
         {
-            if (m_Block == null)
+            if (!IsCreated)
             {
                 return;
             }
 
-            for (int i = 0; i != m_Block->BlockCount; i++)
+            var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+
+            for (int i = 0; i != blockData->BlockCount; i++)
             {
-                UnsafeStreamBlock* block = m_Block->Blocks[i];
+                UnsafeStreamBlock* block = blockData->Blocks[i];
                 while (block != null)
                 {
                     UnsafeStreamBlock* next = block->Next;
-                    Memory.Unmanaged.Free(block, m_Allocator);
+                    blockData->Free(block);
                     block = next;
                 }
             }
 
-            Memory.Unmanaged.Free(m_Block->Ranges, m_Allocator);
-            Memory.Unmanaged.Free(m_Block, m_Allocator);
-            m_Block = null;
-            m_Allocator = Allocator.None;
+            blockData->Ranges.Dispose();
+
+            m_BlockData.Dispose();
+            m_BlockData = default;
         }
 
         /// <summary>
@@ -316,7 +328,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
 
-            m_Block = null;
+            m_BlockData = default;
 
             return jobHandle;
         }
@@ -370,7 +382,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe struct Writer
         {
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeStreamBlockData* m_BlockStream;
+            internal AllocatorManager.Block m_BlockData;
 
             [NativeDisableUnsafePtrRestriction]
             UnsafeStreamBlock* m_CurrentBlock;
@@ -395,7 +407,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             internal Writer(ref UnsafeStream stream)
             {
-                m_BlockStream = stream.m_Block;
+                m_BlockData = stream.m_BlockData;
                 m_ForeachIndex = int.MinValue;
                 m_ElementCount = -1;
                 m_CurrentBlock = null;
@@ -411,7 +423,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The number of buffers in the stream of this writer.
             /// </summary>
             /// <value>The number of buffers in the stream of this writer.</value>
-            public int ForEachCount => m_BlockStream->RangeCount;
+            public int ForEachCount => ((UnsafeStreamBlockData*)m_BlockData.Range.Pointer)->RangeCount;
 
             /// <summary>
             /// Readies this writer to write to a particular buffer of the stream.
@@ -435,12 +447,15 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>Must be called before reading the buffer written by this writer.</remarks>
             public void EndForEachIndex()
             {
-                m_BlockStream->Ranges[m_ForeachIndex].ElementCount = m_ElementCount;
-                m_BlockStream->Ranges[m_ForeachIndex].OffsetInFirstBlock = m_FirstOffset;
-                m_BlockStream->Ranges[m_ForeachIndex].Block = m_FirstBlock;
+                var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+                var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
 
-                m_BlockStream->Ranges[m_ForeachIndex].LastOffset = (int)(m_CurrentPtr - (byte*)m_CurrentBlock);
-                m_BlockStream->Ranges[m_ForeachIndex].NumberOfBlocks = m_NumberOfBlocks;
+                ranges[m_ForeachIndex].ElementCount = m_ElementCount;
+                ranges[m_ForeachIndex].OffsetInFirstBlock = m_FirstOffset;
+                ranges[m_ForeachIndex].Block = m_FirstBlock;
+
+                ranges[m_ForeachIndex].LastOffset = (int)(m_CurrentPtr - (byte*)m_CurrentBlock);
+                ranges[m_ForeachIndex].NumberOfBlocks = m_NumberOfBlocks;
             }
 
             /// <summary>
@@ -487,7 +502,9 @@ namespace Unity.Collections.LowLevel.Unsafe
                 {
                     UnsafeStreamBlock* oldBlock = m_CurrentBlock;
 
-                    m_CurrentBlock = m_BlockStream->Allocate(oldBlock, m_ThreadIndex);
+                    var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+
+                    m_CurrentBlock = blockData->Allocate(oldBlock, m_ThreadIndex);
                     m_CurrentPtr = m_CurrentBlock->Data;
 
                     if (m_FirstBlock == null)
@@ -520,7 +537,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe struct Reader
         {
             [NativeDisableUnsafePtrRestriction]
-            internal UnsafeStreamBlockData* m_BlockStream;
+            internal AllocatorManager.Block m_BlockData;
 
             [NativeDisableUnsafePtrRestriction]
             internal UnsafeStreamBlock* m_CurrentBlock;
@@ -536,7 +553,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             internal Reader(ref UnsafeStream stream)
             {
-                m_BlockStream = stream.m_Block;
+                m_BlockData = stream.m_BlockData;
                 m_CurrentBlock = null;
                 m_CurrentPtr = null;
                 m_CurrentBlockEnd = null;
@@ -554,11 +571,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <returns>The number of remaining elements to read from the buffer.</returns>
             public int BeginForEachIndex(int foreachIndex)
             {
-                m_RemainingItemCount = m_BlockStream->Ranges[foreachIndex].ElementCount;
-                m_LastBlockSize = m_BlockStream->Ranges[foreachIndex].LastOffset;
+                var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+                var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
 
-                m_CurrentBlock = m_BlockStream->Ranges[foreachIndex].Block;
-                m_CurrentPtr = (byte*)m_CurrentBlock + m_BlockStream->Ranges[foreachIndex].OffsetInFirstBlock;
+                m_RemainingItemCount = ranges[foreachIndex].ElementCount;
+                m_LastBlockSize = ranges[foreachIndex].LastOffset;
+
+                m_CurrentBlock = ranges[foreachIndex].Block;
+                m_CurrentPtr = (byte*)m_CurrentBlock + ranges[foreachIndex].OffsetInFirstBlock;
                 m_CurrentBlockEnd = (byte*)m_CurrentBlock + UnsafeStreamBlockData.AllocationSize;
 
                 return m_RemainingItemCount;
@@ -576,7 +596,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The number of buffers in the stream of this reader.
             /// </summary>
             /// <value>The number of buffers in the stream of this reader.</value>
-            public int ForEachCount => m_BlockStream->RangeCount;
+            public int ForEachCount => ((UnsafeStreamBlockData*)m_BlockData.Range.Pointer)->RangeCount;
 
             /// <summary>
             /// The number of items not yet read from the buffer.
@@ -649,10 +669,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <returns>The total number of items in the buffers of the stream.</returns>
             public int Count()
             {
+                var blockData = (UnsafeStreamBlockData*)m_BlockData.Range.Pointer;
+                var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
+
                 int itemCount = 0;
-                for (int i = 0; i != m_BlockStream->RangeCount; i++)
+                for (int i = 0; i != blockData->RangeCount; i++)
                 {
-                    itemCount += m_BlockStream->Ranges[i].ElementCount;
+                    itemCount += ranges[i].ElementCount;
                 }
 
                 return itemCount;

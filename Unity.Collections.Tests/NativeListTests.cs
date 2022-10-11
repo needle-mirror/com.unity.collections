@@ -156,19 +156,89 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void NativeList_CopyFrom_Unmanaged()
+    public void NativeList_CopyFrom_OtherContainers()
     {
-        var list = new NativeList<float>(4, Allocator.Persistent);
-        var ar = new NativeArray<float>(new float[] { 0, 1, 2, 3, 4, 5, 6, 7 }, Allocator.Persistent);
+        var list = new NativeList<int>(4, Allocator.Persistent);
 
-        list.CopyFrom(ar);
-        ExpectedLength(ref list, 8);
-        for (int i = 0; i < list.Length; ++i)
         {
-            Assert.AreEqual(i, list[i]);
+            var container = new NativeArray<int>(new int[] { 0, 1, 2, 3, 4, 5, 6, 7 }, Allocator.Persistent);
+
+            list.CopyFrom(container);
+            ExpectedLength(ref list, 8);
+            for (int i = 0; i < list.Length; ++i)
+            {
+                Assert.AreEqual(i, list[i]);
+            }
+
+            container.Dispose();
         }
 
-        ar.Dispose();
+        list.Add(123);
+
+        {
+            var container = new NativeList<int>(32, Allocator.Persistent) { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+            list.CopyFrom(container);
+            ExpectedLength(ref list, 8);
+            for (int i = 0; i < list.Length; ++i)
+            {
+                Assert.AreEqual(i, list[i]);
+            }
+
+            container.Dispose();
+        }
+
+        list.Add(345);
+
+        {
+            var container = new UnsafeList<int>(32, Allocator.Persistent) { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+            list.CopyFrom(container);
+            ExpectedLength(ref list, 8);
+            for (int i = 0; i < list.Length; ++i)
+            {
+                Assert.AreEqual(i, list[i]);
+            }
+
+            container.Dispose();
+        }
+
+        list.Add(789);
+
+        {
+            var container = new NativeHashSet<int>(32, Allocator.Persistent) { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+            using (var array = container.ToNativeArray(Allocator.TempJob))
+            {
+                list.CopyFrom(array);
+            }
+            ExpectedLength(ref list, 8);
+            for (int i = 0; i < list.Length; ++i)
+            {
+                list.Contains(i);
+            }
+
+            container.Dispose();
+        }
+
+        list.Add(123);
+
+        {
+            var container = new UnsafeHashSet<int>(32, Allocator.Persistent) { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+            using (var array = container.ToNativeArray(Allocator.TempJob))
+            {
+                list.CopyFrom(array);
+            }
+            ExpectedLength(ref list, 8);
+            for (int i = 0; i < list.Length; ++i)
+            {
+                list.Contains(i);
+            }
+
+            container.Dispose();
+        }
+
         list.Dispose();
     }
 

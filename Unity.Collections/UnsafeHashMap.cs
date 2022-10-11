@@ -822,17 +822,16 @@ namespace Unity.Collections.LowLevel.Unsafe
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-#if !NET_DOTS
-        HashMapHelper<TKey> m_Target;
+        HashMapHelper<TKey> Data;
 
         public UnsafeHashMapDebuggerTypeProxy(UnsafeHashMap<TKey, TValue> target)
         {
-            m_Target = target.m_Data;
+            Data = target.m_Data;
         }
 
         public UnsafeHashMapDebuggerTypeProxy(UnsafeHashMap<TKey, TValue>.ReadOnly target)
         {
-            m_Target = target.m_Data;
+            Data = target.m_Data;
         }
 
         public List<Pair<TKey, TValue>> Items
@@ -840,7 +839,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             get
             {
                 var result = new List<Pair<TKey, TValue>>();
-                using (var kva = m_Target.GetKeyValueArrays<TValue>(Allocator.Temp))
+                using (var kva = Data.GetKeyValueArrays<TValue>(Allocator.Temp))
                 {
                     for (var i = 0; i < kva.Length; ++i)
                     {
@@ -850,6 +849,5 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return result;
             }
         }
-#endif
     }
 }

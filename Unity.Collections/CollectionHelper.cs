@@ -400,6 +400,26 @@ namespace Unity.Collections
             return nativeArray;
         }
 
+        /// <summary>
+        /// Dispose a NativeArray from an AllocatorHandle where it is allocated.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="nativeArray">The NativeArray to make a copy of.</param>
+        /// <param name="allocator">The AllocatorHandle used to allocate the NativeArray.</param>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static void DisposeNativeArray<T>(NativeArray<T> nativeArray, AllocatorManager.AllocatorHandle allocator)
+            where T : unmanaged
+        {
+            if (!AllocatorManager.IsCustomAllocator(allocator))
+            {
+                nativeArray.Dispose();
+            }
+            else
+            {
+                nativeArray.DisposeNativeArray(allocator);
+            }
+        }
+
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         static void CheckConvertArguments<T>(int length) where T : unmanaged
         {

@@ -498,23 +498,27 @@ namespace Unity.Collections
         }
     }
 
-    sealed internal class NativeHashSetDebuggerTypeProxy<T>
+    sealed internal unsafe class NativeHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
-#if !NET_DOTS
-        NativeHashSet<T> Data;
+        HashMapHelper<T>* Data;
 
         public NativeHashSetDebuggerTypeProxy(NativeHashSet<T> data)
         {
-            Data = data;
+            Data = data.m_Data;
         }
 
         public List<T> Items
         {
             get
             {
+                if (Data == null)
+                {
+                    return default;
+                }
+
                 var result = new List<T>();
-                using (var items = Data.ToNativeArray(Allocator.Temp))
+                using (var items = Data->GetKeyArray(Allocator.Temp))
                 {
                     for (var k = 0; k < items.Length; ++k)
                     {
@@ -525,6 +529,5 @@ namespace Unity.Collections
                 return result;
             }
         }
-#endif
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using AOT;
 using NUnit.Framework;
 using Unity.Burst;
@@ -256,10 +255,13 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
         public AllocatorManager.AllocatorHandle m_handle;
         public int AllocationCount;
+        public long Used;
         public bool WasUsed => AllocationCount > 0;
+        public bool IsUsed => Used > 0;
         public void Initialize()
         {
             AllocationCount = 0;
+            Used = 0;
 #if ENABLE_UNITY_ALLOCATIONS_CHECKS
             AllocatorManager.Persistent.Handle.AddChildAllocator(m_handle);
 #endif
@@ -267,6 +269,11 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
 
         public int Try(ref AllocatorManager.Block block)
         {
+            if (block.Range.Pointer != IntPtr.Zero)
+            {
+                Used -= block.AllocatedBytes;
+            }
+
             var temp = block.Range.Allocator;
             block.Range.Allocator = AllocatorManager.Persistent;
             var error = AllocatorManager.Try(ref block);
@@ -274,7 +281,11 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
             if (error != 0)
                 return error;
             if (block.Range.Pointer != IntPtr.Zero) // if we allocated or reallocated...
+            {
                 ++AllocationCount;
+                Used += block.AllocatedBytes;
+            }
+
             return 0;
         }
 

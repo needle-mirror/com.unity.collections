@@ -1,11 +1,12 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.1.0-exp.4",
+  "version": "2.1.0-pre.2",
   "unity": "2022.2",
-  "unityRelease": "0b5",
+  "unityRelease": "0a5",
   "dependencies": {
-    "com.unity.burst": "1.7.3",
+    "com.unity.burst": "1.7.4",
+    "com.unity.modules.unityanalytics": "1.0.0",
     "com.unity.nuget.mono-cecil": "1.11.4",
     "com.unity.test-framework": "1.1.33"
   },
@@ -15,15 +16,12 @@
     "collections",
     "unity"
   ],
-  "_upm": {
-    "changelog": "### Added\n\n* `Native/Unsafe/FixedList.InsertRange` with index/count arguments.\n* StreamCompressionModel moved from com.unity.transport\n* DataStreamReader moved from com.unity.transport\n* DataStreamWriter moved from com.unity.transport\n* Job types depending on collections have been moved here\n* Burst compiled delegates for allocators are now cached, which avoids a costly re-compilation\n* `DataStreamReader` can now be passed to a job\n* `DataStreamReader` can now be passed to a job.\n* IJobParallelForBatch from com.unity.jobs\n* `Unsafe/NativeHashMap/Set` suitable for single-threaded use cases.\n* `Native/UnsafeHashSet.ReadOnly` and `Native/UnsafeParallelHashSet.ReadOnly`.\n* `ConvertExistingDataToNativeArray` in `CollectionHelper` for custom allocators.\n* `Native/UnsafeBitArray.ReadOnly`.\n* CopyFromTruncated for one FixedStringXXXBytes to another FixedStringYYYBytes\n* New method `AddReplicate` to `NativeList`, `UnsafeList` and all `FixedList`, which will add a value `count` times to the list.\n* `CollectionHelper.CreateSafetyHandle` and `CollectionHelper.DisposeSafetyHandle` are public APIs now.\n\n### Changed\n\n* T constraint on all containers from `struct` to `unmanaged`\n* Add the missing string interpolation operator in two memory exception messages and make the message clearer.\n* Awareness of newly supported nested containers\n* Faster FixedString comparison\n* Reset `m_best` in RewindableAllocator rewind.\n* IJobParallelForFilter renamed to IJobFilter to better reflect functionality\n* Ensure lazy initialization of IJob types\n* Change Bool type, `m_enableBlockFree`  in `RewindableAllocator` to Byte type.\n* Change the growth rate of memory block size in RewindableAllocator.\n* FixedList methods `AddRange` and `AddRangeNoResize` will no longer append elements if they would exceed capacity.\n\n### Fixed\n\n* Some `AssumePositive` assumptions that should have been after some safety checks but weren't.\n* `Native/UnsafeList.InsertRangeWithBeginEnd` to allow end argument to resize list.\n* Fixed a race condition in the parallel hashmap when using `ParallelWriter` with hashmaps that operate close to their capacity\n* Update documentation on existing DataStream structs and helper methods.\n* Don't cache `DataStreamWriter.IsLittleEndian`, as the cache could not be properly populated if its shared static was not 0-initialized.\n\n### Removed\n\n* DisposeSentinel usage in containers.\n* deprecated code untyped `UnsafeList`, and `WordStorage`.\n* All deprecated code.\n* Temporary NativeArray placeholder\n\n### Deprecated\n\n* NetworkCompressionModel. New type StreamCompressionModel is no longer IDisposable and all usage of this should use the SharedStatic reference instead.\n* Packed read and write methods that take NetworkCompressionModel as a parameter. New versions taking StreamCompressionModel as an argument should be used instead.\n* `UnsafeList.ParallelReader` replaced by `UnsafeList.ReadOnly`.\n* `NativeList.AsParallelReader()` replaced by `NativeList.AsReadOnly()`.\n* Implicit cast operator from `NativeList<T>` to `NativeArray<T>`. Explicit cast method `NativeList<T>.AsArray()` should be used instead."
-  },
   "upmCi": {
-    "footprint": "9db1db4797a4772f93816100bcd3ed9053371c71"
+    "footprint": "ad1eda3140f646f746b3998561e019afdf5f5f90"
   },
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "d77d369b3e79a55dc7744dc3e6fd451d19e37268"
+    "revision": "b395a0b26f2e6887e7d635fb72248865b6dd4034"
   }
 }

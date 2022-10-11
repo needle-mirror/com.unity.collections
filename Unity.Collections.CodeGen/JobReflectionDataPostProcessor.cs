@@ -65,32 +65,36 @@ namespace Unity.Jobs.CodeGen
 
         bool PostProcessImpl()
         {
-            var assemblyDefinition = AssemblyDefinition;
+            bool anythingChanged = false;
 
-            var earlyInitHelpers = assemblyDefinition.MainModule.ImportReference(typeof(EarlyInitHelpers)).CheckedResolve();
+            var asmDef = AssemblyDefinition;
+            var earlyInitHelpers = asmDef.MainModule.ImportReference(typeof(EarlyInitHelpers)).CheckedResolve();
+            var autoClassName = $"__JobReflectionRegistrationOutput__{(uint) asmDef.FullName.GetHashCode()}";
 
-            var autoClassName = $"__JobReflectionRegistrationOutput__{(uint) assemblyDefinition.FullName.GetHashCode()}";
-
-            var classDef = new TypeDefinition("", autoClassName, TypeAttributes.Class, assemblyDefinition.MainModule.ImportReference(typeof(object)));
-            classDef.IsBeforeFieldInit = false;
-
-            classDef.CustomAttributes.Add(new CustomAttribute(AttributeConstructorReferenceFor(typeof(DOTSCompilerGeneratedAttribute), assemblyDefinition.MainModule)));
-
-            var funcDef = new MethodDefinition("CreateJobReflectionData", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, assemblyDefinition.MainModule.ImportReference(typeof(void)));
-
+            var funcDef = new MethodDefinition("CreateJobReflectionData", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, asmDef.MainModule.ImportReference(typeof(void)));
             funcDef.Body.InitLocals = false;
 
+            var classDef = new TypeDefinition("", autoClassName, TypeAttributes.Class, asmDef.MainModule.ImportReference(typeof(object)));
+            classDef.IsBeforeFieldInit = false;
+            classDef.CustomAttributes.Add(new CustomAttribute(AttributeConstructorReferenceFor(typeof(DOTSCompilerGeneratedAttribute), asmDef.MainModule)));
             classDef.Methods.Add(funcDef);
 
             var body = funcDef.Body;
             var processor = body.GetILProcessor();
 
-            bool anythingChanged = false;
+            // Setup instructions used for try/catch wrapping all earlyinit calls
+            // for this assembly's job types
+            var workStartOp = processor.Create(OpCodes.Nop);
+            var workDoneOp = Instruction.Create(OpCodes.Nop);
+            var handler = Instruction.Create(OpCodes.Nop);
+            var landingPad = Instruction.Create(OpCodes.Nop);
+
+            processor.Append(workStartOp);
 
             var genericJobs = new List<TypeReference>();
             var visited = new HashSet<string>();
 
-            foreach (var attr in assemblyDefinition.CustomAttributes)
+            foreach (var attr in asmDef.CustomAttributes)
             {
                 if (attr.AttributeType.FullName != RegisterGenericJobTypeAttributeName)
                     continue;
@@ -110,7 +114,7 @@ namespace Unity.Jobs.CodeGen
 
             CollectGenericTypeInstances(AssemblyDefinition, genericJobs, visited);
 
-            foreach (var t in assemblyDefinition.MainModule.Types)
+            foreach (var t in asmDef.MainModule.Types)
             {
                 anythingChanged |= VisitJobStructs(t, processor, body);
             }
@@ -120,11 +124,33 @@ namespace Unity.Jobs.CodeGen
                 anythingChanged |= VisitJobStructs(t, processor, body);
             }
 
+            // Now that we have generated all reflection info
+            // finish wrapping the ops in a try catch now
+            var lastWorkOp = processor.Body.Instructions.Last();
+            processor.Append(handler);
+
+            var errorHandler = asmDef.MainModule.ImportReference((asmDef.MainModule.ImportReference(typeof(EarlyInitHelpers)).Resolve().Methods.First(x => x.Name == nameof(EarlyInitHelpers.JobReflectionDataCreationFailed))));
+            processor.Append(Instruction.Create(OpCodes.Call, errorHandler));
+            processor.Append(landingPad);
+
+            var leaveSuccess = Instruction.Create(OpCodes.Leave, landingPad);
+            var leaveFail = Instruction.Create(OpCodes.Leave, landingPad);
+            processor.InsertAfter(lastWorkOp, leaveSuccess);
+            processor.InsertBefore(landingPad, leaveFail);
+
+            var exc = new ExceptionHandler(ExceptionHandlerType.Catch);
+            exc.TryStart = workStartOp;
+            exc.TryEnd = leaveSuccess.Next;
+            exc.HandlerStart = handler;
+            exc.HandlerEnd = leaveFail.Next;
+            exc.CatchType = asmDef.MainModule.ImportReference(typeof(Exception));
+            body.ExceptionHandlers.Add(exc);
+
             processor.Emit(OpCodes.Ret);
 
             if (anythingChanged)
             {
-                var ctorFuncDef = new MethodDefinition("EarlyInit", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, assemblyDefinition.MainModule.ImportReference(typeof(void)));
+                var ctorFuncDef = new MethodDefinition("EarlyInit", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, asmDef.MainModule.ImportReference(typeof(void)));
 
 #if !UNITY_DOTSRUNTIME
                 // Note that DOTS Runtime fills out a predefined method "InvokeEarlyInitMethods" with the EarlyInit() calls
@@ -135,8 +161,8 @@ namespace Unity.Jobs.CodeGen
                     // Needs to run automatically in the player, but we need to
                     // exclude this attribute when building for the editor, or
                     // it will re-run the registration for every enter play mode.
-                    var loadTypeEnumType = assemblyDefinition.MainModule.ImportReference(typeof(UnityEngine.RuntimeInitializeLoadType));
-                    var attributeCtor = assemblyDefinition.MainModule.ImportReference(typeof(UnityEngine.RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new[] { typeof(UnityEngine.RuntimeInitializeLoadType) }));
+                    var loadTypeEnumType = asmDef.MainModule.ImportReference(typeof(UnityEngine.RuntimeInitializeLoadType));
+                    var attributeCtor = asmDef.MainModule.ImportReference(typeof(UnityEngine.RuntimeInitializeOnLoadMethodAttribute).GetConstructor(new[] { typeof(UnityEngine.RuntimeInitializeLoadType) }));
                     var attribute = new CustomAttribute(attributeCtor);
                     attribute.ConstructorArguments.Add(new CustomAttributeArgument(loadTypeEnumType, UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded));
                     ctorFuncDef.CustomAttributes.Add(attribute);
@@ -145,7 +171,7 @@ namespace Unity.Jobs.CodeGen
                 if (Defines.Contains("UNITY_EDITOR"))
                 {
                     // Needs to run automatically in the editor.
-                    var attributeCtor2 = assemblyDefinition.MainModule.ImportReference(typeof(UnityEditor.InitializeOnLoadMethodAttribute).GetConstructor(Type.EmptyTypes));
+                    var attributeCtor2 = asmDef.MainModule.ImportReference(typeof(UnityEditor.InitializeOnLoadMethodAttribute).GetConstructor(Type.EmptyTypes));
                     ctorFuncDef.CustomAttributes.Add(new CustomAttribute(attributeCtor2));
                 }
 #endif
@@ -159,7 +185,7 @@ namespace Unity.Jobs.CodeGen
 
                 classDef.Methods.Add(ctorFuncDef);
 
-                assemblyDefinition.MainModule.Types.Add(classDef);
+                asmDef.MainModule.Types.Add(classDef);
             }
 
             return anythingChanged;
@@ -236,38 +262,9 @@ namespace Unity.Jobs.CodeGen
                     return false;
 
                 var asm = AssemblyDefinition.MainModule;
-
-                var errorHandler = asm.ImportReference((asm.ImportReference(typeof(EarlyInitHelpers)).Resolve().Methods.First(x => x.Name == nameof(EarlyInitHelpers.JobReflectionDataCreationFailed))));
-                var typeType = asm.ImportReference(typeof(Type)).CheckedResolve();
-                var getTypeFromHandle = asm.ImportReference(typeType.Methods.FirstOrDefault((x) => x.Name == "GetTypeFromHandle"));
-
                 var mref = asm.ImportReference(asm.ImportReference(methodToCall).MakeGenericInstanceMethod(jobStructType));
-
-                var callInsn = Instruction.Create(OpCodes.Call, mref);
-                var handler = Instruction.Create(OpCodes.Nop);
-                var landingPad = Instruction.Create(OpCodes.Nop);
-
-                processor.Append(callInsn);
-                processor.Append(handler);
-
-                // This craziness is equivalent to typeof(n)
-                processor.Append(Instruction.Create(OpCodes.Ldtoken, jobStructType));
-                processor.Append(Instruction.Create(OpCodes.Call, getTypeFromHandle));
-                processor.Append(Instruction.Create(OpCodes.Call, errorHandler));
-                processor.Append(landingPad);
-
-                var leaveSuccess = Instruction.Create(OpCodes.Leave, landingPad);
-                var leaveFail = Instruction.Create(OpCodes.Leave, landingPad);
-                processor.InsertAfter(callInsn, leaveSuccess);
-                processor.InsertBefore(landingPad, leaveFail);
-
-                var exc = new ExceptionHandler(ExceptionHandlerType.Catch);
-                exc.TryStart = callInsn;
-                exc.TryEnd = leaveSuccess.Next;
-                exc.HandlerStart = handler;
-                exc.HandlerEnd = leaveFail.Next;
-                exc.CatchType = asm.ImportReference(typeof(Exception));
-                body.ExceptionHandlers.Add(exc);
+                processor.Append(Instruction.Create(OpCodes.Call, mref));
+                
                 return true;
             }
             catch (Exception ex)

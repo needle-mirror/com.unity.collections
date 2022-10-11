@@ -47,7 +47,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void PopulateInts([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
+    public void NativeStream_PopulateInts([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
         var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
@@ -70,7 +70,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void CreateAndDestroy([Values(1, 100, 200)] int count)
+    public void NativeStream_CreateAndDestroy([Values(1, 100, 200)] int count)
     {
         var stream = new NativeStream(count, Allocator.Temp);
 
@@ -83,7 +83,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ItemCount([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
+    public void NativeStream_ItemCount([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
         var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
@@ -95,7 +95,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ToArray([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
+    public void NativeStream_ToArray([Values(1, 100, 200)] int count, [Values(1, 3, 10)] int batchSize)
     {
         var stream = new NativeStream(count, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
@@ -135,7 +135,7 @@ internal class NativeStreamTests : CollectionsTestFixture
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]
-    public void ParallelWriteThrows()
+    public void NativeStream_ParallelWriteThrows()
     {
         var stream = new NativeStream(100, CommonRwdAllocator.Handle);
         var fillInts = new WriteInts {Writer = stream.AsWriter()};
@@ -148,7 +148,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ScheduleCreateThrows_NativeList()
+    public void NativeStream_ScheduleCreateThrows_NativeList()
     {
         var container = new NativeList<int>(Allocator.Persistent);
         container.Add(2);
@@ -167,7 +167,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ScheduleCreateThrows_NativeArray()
+    public void NativeStream_ScheduleCreateThrows_NativeArray()
     {
         var container = new NativeArray<int>(1, Allocator.Persistent);
         container[0] = 1;
@@ -186,7 +186,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void OutOfBoundsWriteThrows()
+    public void NativeStream_OutOfBoundsWriteThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -197,7 +197,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void EndForEachIndexWithoutBeginThrows()
+    public void NativeStream_EndForEachIndexWithoutBeginThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -207,7 +207,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void WriteWithoutBeginThrows()
+    public void NativeStream_WriteWithoutBeginThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -217,7 +217,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void WriteAfterEndThrows()
+    public void NativeStream_WriteAfterEndThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -233,7 +233,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void UnbalancedBeginThrows()
+    public void NativeStream_UnbalancedBeginThrows()
     {
         var stream = new NativeStream(2, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -260,7 +260,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void IncompleteReadThrows()
+    public void NativeStream_IncompleteReadThrows()
     {
         NativeStream stream;
         CreateBlockStream1And2Int(out stream);
@@ -277,7 +277,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void ReadWithoutBeginThrows()
+    public void NativeStream_ReadWithoutBeginThrows()
     {
         NativeStream stream;
         CreateBlockStream1And2Int(out stream);
@@ -289,7 +289,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void TooManyReadsThrows()
+    public void NativeStream_TooManyReadsThrows()
     {
         NativeStream stream;
         CreateBlockStream1And2Int(out stream);
@@ -304,7 +304,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void OutOfBoundsReadThrows()
+    public void NativeStream_OutOfBoundsReadThrows()
     {
         NativeStream stream;
         CreateBlockStream1And2Int(out stream);
@@ -318,7 +318,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void CopyWriterByValueThrows()
+    public void NativeStream_CopyWriterByValueThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -342,7 +342,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
-    public void WriteSameIndexTwiceThrows()
+    public void NativeStream_WriteSameIndexTwiceThrows()
     {
         var stream = new NativeStream(1, Allocator.Temp);
         var writer = stream.AsWriter();
@@ -360,42 +360,33 @@ internal class NativeStreamTests : CollectionsTestFixture
         stream.Dispose();
     }
 
+    static void WriteNotPassedByRef(NativeStream.Writer notPassedByRef)
+    {
+        notPassedByRef.Write(10);
+    }
+
+    static void WritePassedByRef(ref NativeStream.Writer passedByRef)
+    {
+        passedByRef.Write(10);
+    }
+
+    [Test]
+    public void NativeStream_ThrowsOnIncorrectUsage()
+    {
+        var stream = new NativeStream(1, Allocator.Temp);
+        var writer = stream.AsWriter();
+
+        Assert.Throws<ArgumentException>(() => stream.AsWriter().Write(10));
+
+        writer.BeginForEachIndex(0);
+        Assert.Throws<ArgumentException>(() => WriteNotPassedByRef(writer));
+        Assert.DoesNotThrow(() => WritePassedByRef(ref writer));
+        writer.EndForEachIndex();
+
+        stream.Dispose();
+    }
+
 #endif
-
-    [Test]
-    public void UnsafeStream_ScheduleCreate_NativeList()
-    {
-        var container = new NativeList<int>(Allocator.Persistent);
-        container.Add(13);
-        container.Add(13);
-        container.Add(13);
-        container.Add(13);
-
-        UnsafeStream stream;
-        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
-        jobHandle.Complete();
-
-        Assert.AreEqual(4, stream.ForEachCount);
-
-        stream.Dispose();
-        container.Dispose();
-    }
-
-    [Test]
-    public void UnsafeStream_ScheduleCreate_NativeArray()
-    {
-        var container = new NativeArray<int>(1, Allocator.Persistent);
-        container[0] = 4;
-
-        UnsafeStream stream;
-        var jobHandle = UnsafeStream.ScheduleConstruct(out stream, container, default, CommonRwdAllocator.Handle);
-        jobHandle.Complete();
-
-        Assert.AreEqual(4, stream.ForEachCount);
-
-        stream.Dispose();
-        container.Dispose();
-    }
 
     [Test]
     public void NativeStream_CustomAllocatorTest()
@@ -479,6 +470,39 @@ internal class NativeStreamTests : CollectionsTestFixture
         containerNested.Dispose();
         containerNestedStruct.Dispose();
         inner.Dispose();
+    }
+
+    [Test]
+    public unsafe void NativeStream_Continue_Append()
+    {
+        AllocatorManager.Initialize();
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
+        allocator.Initialize();
+
+        for (var i = 0; i < 1024; i++)
+        {
+            var stream = new NativeStream(2, allocator.Handle);
+
+            var writer = stream.AsWriter();
+            writer.BeginForEachIndex(0);
+            writer.Allocate(4000);
+            writer.EndForEachIndex();
+
+            var writer2 = stream.AsWriter();
+            writer2.BeginForEachIndex(1);
+            writer2.Allocate(4000);
+            writer2.Allocate(4000);
+            writer2.EndForEachIndex();
+
+            stream.Dispose();
+
+            Assert.AreEqual(0, allocatorHelper.Allocator.Used);
+        }
+
+        allocator.Dispose();
+        allocatorHelper.Dispose();
+        AllocatorManager.Shutdown();
     }
 
 // DOTS-6203 Nested containers aren't detected in DOTS Runtime currently

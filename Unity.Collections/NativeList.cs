@@ -71,7 +71,7 @@ namespace Unity.Collections
     /// <typeparam name="T">The type of the elements.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
     [NativeContainer]
-    [DebuggerDisplay("Length = {Length}")]
+    [DebuggerDisplay("Length = {m_ListData == null ? default : m_ListData->Length}, Capacity = {m_ListData == null ? default : m_ListData->Capacity}")]
     [DebuggerTypeProxy(typeof(NativeListDebugView<>))]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
     public unsafe struct NativeList<T>
@@ -669,6 +669,40 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// Copies all elements of specified container to this container.
+        /// </summary>
+        /// <param name="other">An container to copy into this container.</param>
+        public void CopyFrom(in NativeArray<T> other)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+            AtomicSafetyHandle.CheckReadAndThrow(other.m_Safety);
+#endif
+            m_ListData->CopyFrom(other);
+        }
+
+        /// <summary>
+        /// Copies all elements of specified container to this container.
+        /// </summary>
+        /// <param name="other">An container to copy into this container.</param>
+        public void CopyFrom(in UnsafeList<T> other)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_ListData->CopyFrom(other);
+        }
+
+        /// <summary>
+        /// Copies all elements of specified container to this container.
+        /// </summary>
+        /// <param name="other">An container to copy into this container.</param>
+        public void CopyFrom(in NativeList<T> other)
+        {
+            CopyFrom(*other.m_ListData);
+        }
+
+        /// <summary>
         /// Returns an enumerator over the elements of this list.
         /// </summary>
         /// <returns>An enumerator over the elements of this list.</returns>
@@ -696,19 +730,6 @@ namespace Unity.Collections
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Overwrites the elements of this list with the elements of an equal-length array.
-        /// </summary>
-        /// <param name="array">An array to copy into this list.</param>
-        /// <exception cref="ArgumentException">Thrown if the array and list have unequal length.</exception>
-        public void CopyFrom(NativeArray<T> array)
-        {
-            Clear();
-            Resize(array.Length, NativeArrayOptions.UninitializedMemory);
-            NativeArray<T> thisArray = AsArray();
-            thisArray.CopyFrom(array);
         }
 
         /// <summary>
@@ -986,16 +1007,133 @@ namespace Unity.Collections
         }
     }
 
-    sealed class NativeListDebugView<T> where T : unmanaged
+    sealed unsafe class NativeListDebugView<T> where T : unmanaged
     {
-        NativeList<T> m_Array;
+        UnsafeList<T>* Data;
 
         public NativeListDebugView(NativeList<T> array)
         {
-            m_Array = array;
+            Data = array.m_ListData;
         }
 
-        public T[] Items => m_Array.AsArray().ToArray();
+        public T[] Items
+        {
+            get
+            {
+                if (Data == null)
+                {
+                    return default;
+                }
+
+                // Trying to avoid safety checks, so that container can be read in debugger if it's safety handle
+                // is in write-only mode.
+                var length = Data->Length;
+                var dst = new T[length];
+
+                fixed (T* pDst = &dst[0])
+                {
+                    UnsafeUtility.MemCpy(pDst, Data->Ptr, length * UnsafeUtility.SizeOf<T>());
+                }
+
+                return dst;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Provides extension methods for UnsafeList.
+    /// </summary>
+    [GenerateTestsForBurstCompatibility]
+    public unsafe static class NativeListExtensions
+    {
+        /// <summary>
+        /// Returns true if a particular value is present in this list.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in this list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">The list to search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>True if the value is present in this list.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public static bool Contains<T, U>(this NativeList<T> list, U value)
+            where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value) != -1;
+        }
+
+        /// <summary>
+        /// Finds the index of the first occurrence of a particular value in this list.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in the list.</typeparam>
+        /// <typeparam name="U">The value type.</typeparam>
+        /// <param name="list">The list to search.</param>
+        /// <param name="value">The value to locate.</param>
+        /// <returns>The index of the first occurrence of the value in this list. Returns -1 if no occurrence is found.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public static int IndexOf<T, U>(this NativeList<T> list, U value)
+            where T : unmanaged, IEquatable<U>
+        {
+            return NativeArrayExtensions.IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value);
+        }
+
+        /// <summary>
+        /// Returns true if this container and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source container's elements.</typeparam>
+        /// <param name="container">The container to compare for equality.</param>
+        /// <param name="other">The other container to compare for equality.</param>
+        /// <returns>True if the containers have equal length and content.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static bool ArraysEqual<T>(this NativeArray<T> container, in NativeList<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            return container.ArraysEqual(other.AsArray());
+        }
+
+        /// <summary>
+        /// Returns true if this container and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source container's elements.</typeparam>
+        /// <param name="container">The container to compare for equality.</param>
+        /// <param name="other">The other container to compare for equality.</param>
+        /// <returns>True if the containers have equal length and content.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static bool ArraysEqual<T>(this NativeList<T> container, in NativeArray<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            return other.ArraysEqual(container);
+        }
+
+        /// <summary>
+        /// Returns true if this container and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source container's elements.</typeparam>
+        /// <param name="container">The container to compare for equality.</param>
+        /// <param name="other">The other container to compare for equality.</param>
+        /// <returns>True if the containers have equal length and content.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static bool ArraysEqual<T>(this NativeList<T> container, in NativeList<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            return container.AsArray().ArraysEqual(other.AsArray());
+        }
+
+        /// <summary>
+        /// Returns true if this container and another have equal length and content.
+        /// </summary>
+        /// <typeparam name="T">The type of the source container's elements.</typeparam>
+        /// <param name="container">The container to compare for equality.</param>
+        /// <param name="other">The other container to compare for equality.</param>
+        /// <returns>True if the containers have equal length and content.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static bool ArraysEqual<T>(this NativeList<T> container, in UnsafeList<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(container.m_Safety);
+#endif
+            return container.m_ListData->ArraysEqual(other);
+        }
     }
 }
 

@@ -61,7 +61,7 @@ namespace Unity.Collections
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static bool Contains<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : unmanaged, IEquatable<U>
         {
-            return IndexOf<T, U>(array.m_Buffer, array.m_Length, value) != -1;
+            return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.m_Length, value) != -1;
         }
 
         /// <summary>
@@ -75,35 +75,7 @@ namespace Unity.Collections
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public static int IndexOf<T, U>(this NativeArray<T>.ReadOnly array, U value) where T : unmanaged, IEquatable<U>
         {
-            return IndexOf<T, U>(array.m_Buffer, array.m_Length, value);
-        }
-
-        /// <summary>
-        /// Returns true if a particular value is present in this list.
-        /// </summary>
-        /// <typeparam name="T">The type of elements in this list.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The list to search.</param>
-        /// <param name="value">The value to locate.</param>
-        /// <returns>True if the value is present in this list.</returns>
-        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static bool Contains<T, U>(this NativeList<T> list, U value) where T : unmanaged, IEquatable<U>
-        {
-            return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value) != -1;
-        }
-
-        /// <summary>
-        /// Finds the index of the first occurrence of a particular value in this list.
-        /// </summary>
-        /// <typeparam name="T">The type of elements in the list.</typeparam>
-        /// <typeparam name="U">The value type.</typeparam>
-        /// <param name="list">The list to search.</param>
-        /// <param name="value">The value to locate.</param>
-        /// <returns>The index of the first occurrence of the value in this list. Returns -1 if no occurrence is found.</returns>
-        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        public static int IndexOf<T, U>(this NativeList<T> list, U value) where T : unmanaged, IEquatable<U>
-        {
-            return IndexOf<T, U>(list.GetUnsafeReadOnlyPtr(), list.Length, value);
+            return IndexOf<T, U>(array.GetUnsafeReadOnlyPtr(), array.m_Length, value);
         }
 
         /// <summary>
@@ -139,6 +111,54 @@ namespace Unity.Collections
                     return i;
             }
             return -1;
+        }
+
+        /// <summary>
+        /// Copies all elements of specified container to array.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in this container.</typeparam>
+        /// <param name="container">Container to copy to.</param>
+        /// <param name="other">An container to copy into this array.</param>
+        /// <exception cref="ArgumentException">Thrown if the array and container have unequal length.</exception>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static void CopyFrom<T>(this ref NativeArray<T> container, NativeList<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            container.CopyFrom(other.AsArray());
+        }
+
+        /// <summary>
+        /// Copies all elements of specified container to array.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in this container.</typeparam>
+        /// <param name="container">Container to copy to.</param>
+        /// <param name="other">An container to copy into this array.</param>
+        /// <exception cref="ArgumentException">Thrown if the array and container have unequal length.</exception>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static void CopyFrom<T>(this ref NativeArray<T> container, in NativeHashSet<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            using (var array = other.ToNativeArray(Allocator.TempJob))
+            {
+                container.CopyFrom(array);
+            }
+        }
+
+        /// <summary>
+        /// Copies all elements of specified container to array.
+        /// </summary>
+        /// <typeparam name="T">The type of elements in this container.</typeparam>
+        /// <param name="container">Container to copy to.</param>
+        /// <param name="other">An container to copy into this array.</param>
+        /// <exception cref="ArgumentException">Thrown if the array and container have unequal length.</exception>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static void CopyFrom<T>(this ref NativeArray<T> container, in UnsafeHashSet<T> other)
+            where T : unmanaged, IEquatable<T>
+        {
+            using (var array = other.ToNativeArray(Allocator.TempJob))
+            {
+                container.CopyFrom(array);
+            }
         }
 
         /// <summary>
@@ -178,39 +198,24 @@ namespace Unity.Collections
         /// Returns true if this array and another have equal length and content.
         /// </summary>
         /// <typeparam name="T">The type of the source array's elements.</typeparam>
-        /// <param name="array">The array to compare for equality.</param>
+        /// <param name="container">The array to compare for equality.</param>
         /// <param name="other">The other array to compare for equality.</param>
         /// <returns>True if the arrays have equal length and content.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static bool ArraysEqual<T>(this NativeArray<T> array, NativeArray<T> other)
+        public static bool ArraysEqual<T>(this NativeArray<T> container, NativeArray<T> other)
             where T : unmanaged, IEquatable<T>
         {
-            if (array.Length != other.Length)
+            if (container.Length != other.Length)
                 return false;
 
-            for (int i = 0; i != array.Length; i++)
+            for (int i = 0; i != container.Length; i++)
             {
-                if (!array[i].Equals(other[i]))
+                if (!container[i].Equals(other[i]))
                     return false;
             }
 
             return true;
         }
-
-        /// <summary>
-        /// Returns true if this array and another have equal length and content.
-        /// </summary>
-        /// <typeparam name="T">The type of the source array's elements.</typeparam>
-        /// <param name="array">The array to compare for equality.</param>
-        /// <param name="other">The other array to compare for equality.</param>
-        /// <returns>True if the arrays have equal length and content.</returns>
-        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static bool ArraysEqual<T>(this NativeList<T> array, NativeArray<T> other)
-            where T : unmanaged, IEquatable<T>
-        {
-            return ArraysEqual(array.AsArray(), other);
-        }
-
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
         static void CheckReinterpretSize<T, U>(ref NativeArray<T> array)
@@ -233,7 +238,7 @@ namespace Unity.Collections
         internal static void Initialize<T>(ref this NativeArray<T> array,
                                             int length,
                                             AllocatorManager.AllocatorHandle allocator,
-                                            NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+                                            NativeArrayOptions options = NativeArrayOptions.ClearMemory)
             where T : unmanaged
         {
             AllocatorHandle handle = allocator;
@@ -281,6 +286,24 @@ namespace Unity.Collections
             CollectionHelper.SetStaticSafetyId<NativeArray<T>>(ref array.m_Safety, ref NativeArrayStaticId<T>.s_staticSafetyId.Data);
             allocator.Handle.AddSafetyHandle(array.m_Safety);
 #endif
+        }
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        internal static void DisposeNativeArray<T>(ref this NativeArray<T> array, AllocatorManager.AllocatorHandle allocator)
+            where T : unmanaged
+        {
+            if (array.m_Buffer == null)
+            {
+                throw new ObjectDisposedException("The NativeArray is already disposed.");
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.DisposeHandle(ref array.m_Safety);
+#endif
+            AllocatorManager.Free(allocator, array.m_Buffer);
+            array.m_AllocatorLabel = Allocator.Invalid;
+
+            array.m_Buffer = null;
         }
     }
 }

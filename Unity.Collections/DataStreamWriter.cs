@@ -422,6 +422,18 @@ namespace Unity.Collections
             return WriteInt((int)uf.intValue);
         }
 
+        /// <summary>
+        /// Writes a 8-byte floating point value to the data stream.
+        /// </summary>
+        /// <param name="value">The 8-byte floating point value to write.</param>
+        /// <returns>Whether the write was successful</returns>
+        public bool WriteDouble(double value)
+        {
+            UIntFloat uf = new UIntFloat();
+            uf.doubleValue = value;
+            return WriteLong((long)uf.longValue);
+        }
+
         void FlushBits()
         {
             while (m_Data.bitIndex >= 8)
@@ -493,8 +505,9 @@ namespace Unity.Collections
         /// <returns>Whether the write was successful</returns>
         public bool WritePackedULong(ulong value, StreamCompressionModel model)
         {
-            return WritePackedUInt((uint)(value >> 32), model) &
-                   WritePackedUInt((uint)(value & 0xFFFFFFFF), model);
+            var data = (uint*)&value;
+            return WritePackedUInt(data[0], model) &
+                   WritePackedUInt(data[1], model);
         }
 
         /// <summary>
@@ -531,6 +544,17 @@ namespace Unity.Collections
         public bool WritePackedFloat(float value, StreamCompressionModel model)
         {
             return WritePackedFloatDelta(value, 0, model);
+        }
+
+        /// <summary>
+        /// Writes a 8-byte floating point value to the data stream using a <see cref="StreamCompressionModel"/>.
+        /// </summary>
+        /// <param name="value">The 8-byte floating point value to write.</param>
+        /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
+        /// <returns>Whether the write was successful</returns>
+        public bool WritePackedDouble(double value, StreamCompressionModel model)
+        {
+            return WritePackedDoubleDelta(value, 0, model);
         }
 
         /// <summary>
@@ -620,6 +644,44 @@ namespace Unity.Collections
             FlushBits();
             return true;
         }
+
+        /// <summary>
+        /// Writes a 8-byte floating point value to the data stream.
+        ///
+        /// If the data did not change a zero bit is prepended, otherwise a 1 bit is prepended.
+        /// When reading back the data, the first bit is then checked for whether the data was changed or not.
+        /// </summary>
+        /// <param name="value">The current 8-byte floating point value.</param>
+        /// <param name="baseline">The previous 8-byte floating value, used to compute the diff.</param>
+        /// <param name="model">Not currently used.</param>
+        /// <returns>Whether the write was successful</returns>
+        public bool WritePackedDoubleDelta(double value, double baseline, StreamCompressionModel model)
+        {
+            CheckWrite();
+            var bits = 0;
+            if (value != baseline)
+                bits = 64;
+            if (m_Data.length + ((m_Data.bitIndex + 1 + bits + 7) >> 3) > m_Data.capacity)
+            {
+                ++m_Data.failedWrites;
+                return false;
+            }
+            if (bits == 0)
+                WriteRawBitsInternal(0, 1);
+            else
+            {
+                WriteRawBitsInternal(1, 1);
+                UIntFloat uf = new UIntFloat();
+                uf.doubleValue = value;
+                var data = (uint*)&uf.longValue;
+                WriteRawBitsInternal(data[0], 32);
+                FlushBits();
+                WriteRawBitsInternal(data[1], 32);
+            }
+            FlushBits();
+            return true;
+        }
+
 
         /// <summary>
         /// Writes a <c>FixedString32Bytes</c> value to the data stream.
