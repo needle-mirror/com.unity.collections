@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -233,6 +234,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             buf.AppendLine($"public unsafe class {s_GeneratedClassName}");
             buf.AppendLine("{");
             buf.AppendLine("    private delegate void TestFunc(IntPtr p);");
+            buf.AppendLine("    static unsafe ref T CreateRef<T>() where T : unmanaged => ref UnsafeUtility.AsRef<T>((void*)default);");
 
             var overloadHandling = new Dictionary<string, int>();
 
@@ -297,12 +299,17 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                         buf.Append($" v{i} = (");
                         TypeToString(pt, buf, methodData);
                         buf.AppendLine($") ((byte*)p + {i * 1024});");
-                    }
-                    else
+                    } else if (HasAttribute<IsByRefLikeAttribute>(pt) || (pt.HasElementType && pt.GetElementType().IsPointer)) // is `ref struct`
                     {
                         buf.Append($"        var v{i} = default(");
                         TypeToString(pt, buf, methodData);
                         buf.AppendLine(");");
+                    }
+                    else
+                    {
+                        buf.Append($"        ref var v{i} = ref CreateRef<");
+                        TypeToString(pt, buf, methodData);
+                        buf.AppendLine(">();");
                     }
                 }
 
@@ -481,6 +488,8 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             methodsTestedCount = methods.Length;
             return true;
         }
+
+        static bool HasAttribute<T>(MemberInfo type) => type.CustomAttributes.Any(ca => ca.AttributeType.IsEquivalentTo(typeof(T)));
 
         private static void TypeToString(Type t, StringBuilder buf, in MethodData methodData)
         {

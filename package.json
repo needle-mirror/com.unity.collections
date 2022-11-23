@@ -1,9 +1,9 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.1.0-pre.2",
+  "version": "2.1.0-pre.6",
   "unity": "2022.2",
-  "unityRelease": "0a5",
+  "unityRelease": "0f1",
   "dependencies": {
     "com.unity.burst": "1.7.4",
     "com.unity.modules.unityanalytics": "1.0.0",
@@ -17,11 +17,11 @@
     "unity"
   ],
   "upmCi": {
-    "footprint": "ad1eda3140f646f746b3998561e019afdf5f5f90"
+    "footprint": "6a16d89bdab20952de764e4a701362abd3c843e9"
   },
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "b395a0b26f2e6887e7d635fb72248865b6dd4034"
+    "revision": "7ef2c19dbaf8f32ace58fffea6c90be7036638a4"
   }
 }

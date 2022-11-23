@@ -82,5 +82,5 @@ A **reinterpretation** of an array is an alias of the array that reads and write
 
 ## Further information
 
-* [Custom allocators](allocators-custom.md)
+* [Define a custom allocator](allocator-custom-define.md)
 * [Rewindable allocators](allocator-rewindable.md)

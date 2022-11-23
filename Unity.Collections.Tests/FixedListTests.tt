@@ -89,6 +89,35 @@ internal class FixedListTests : CollectionsTestFixture
                 var BUFFERTYPE = String.Format("FixedBytes{0}", MAXLENGTH);
 #>
 
+    public readonly unsafe struct <#=TYPENAME_IDENTIFIER #>Wrapper
+    {
+        readonly <#=TYPENAME #><<#=TYPE #>> _values;
+        internal <#=TYPE #>* Values => (<#=TYPE #>*)_values.Buffer;
+        public <#=TYPENAME_IDENTIFIER #>Wrapper(<#=TYPE #> x, <#=TYPE #> y)
+        {
+            _values = new <#=TYPENAME #><<#=TYPE #>>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void <#=TYPENAME_IDENTIFIER #>ReadonlyWorksFunc1(in <#=TYPENAME_IDENTIFIER #>Wrapper list, <#=TYPE #>* originalValues)
+    {
+        <#=TYPE #>* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void <#=TYPENAME_IDENTIFIER #>ReadonlyWorks()
+    {
+        var list = new <#=TYPENAME_IDENTIFIER #>Wrapper(17, 23);
+        <#=TYPE #>* values = list.Values;
+        <#=TYPENAME_IDENTIFIER #>ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void <#=TYPENAME_IDENTIFIER #><#=BUFFERTYPE#>ToNativeArrayWorksGeneric()
     {

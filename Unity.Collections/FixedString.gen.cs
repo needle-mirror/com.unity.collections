@@ -21,9 +21,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine.Internal;
 using UnityEngine;
-#if UNITY_PROPERTIES_EXISTS
 using Unity.Properties;
-#endif
 
 namespace Unity.Collections
 {
@@ -270,11 +268,17 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a pointer to the character bytes.
         /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target FixedString object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the FixedString object is destroyed or goes
+        /// out of scope.
+        /// </remarks>
         /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte* GetUnsafePtr()
+        public readonly unsafe byte* GetUnsafePtr()
         {
-            return (byte*) UnsafeUtility.AddressOf(ref bytes);
+            fixed(void* b = &bytes)
+                return (byte*)b;
         }
 
         /// <summary>
@@ -1328,11 +1332,17 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a pointer to the character bytes.
         /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target FixedString object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the FixedString object is destroyed or goes
+        /// out of scope.
+        /// </remarks>
         /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte* GetUnsafePtr()
+        public readonly unsafe byte* GetUnsafePtr()
         {
-            return (byte*) UnsafeUtility.AddressOf(ref bytes);
+            fixed(void* b = &bytes)
+                return (byte*)b;
         }
 
         /// <summary>
@@ -2398,11 +2408,17 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a pointer to the character bytes.
         /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target FixedString object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the FixedString object is destroyed or goes
+        /// out of scope.
+        /// </remarks>
         /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte* GetUnsafePtr()
+        public readonly unsafe byte* GetUnsafePtr()
         {
-            return (byte*) UnsafeUtility.AddressOf(ref bytes);
+            fixed(void* b = &bytes)
+                return (byte*)b;
         }
 
         /// <summary>
@@ -3580,11 +3596,17 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a pointer to the character bytes.
         /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target FixedString object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the FixedString object is destroyed or goes
+        /// out of scope.
+        /// </remarks>
         /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte* GetUnsafePtr()
+        public readonly unsafe byte* GetUnsafePtr()
         {
-            return (byte*) UnsafeUtility.AddressOf(ref bytes);
+            fixed(void* b = &bytes)
+                return (byte*)b;
         }
 
         /// <summary>
@@ -5874,11 +5896,17 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a pointer to the character bytes.
         /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target FixedString object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the FixedString object is destroyed or goes
+        /// out of scope.
+        /// </remarks>
         /// <returns>A pointer to the character bytes.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe byte* GetUnsafePtr()
+        public readonly unsafe byte* GetUnsafePtr()
         {
-            return (byte*) UnsafeUtility.AddressOf(ref bytes);
+            fixed(void* b = &bytes)
+                return (byte*)b;
         }
 
         /// <summary>

@@ -98,6 +98,35 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
 
+    public readonly unsafe struct FixedList32Byte_Wrapper
+    {
+        readonly FixedList32Bytes<byte> _values;
+        internal byte* Values => (byte*)_values.Buffer;
+        public FixedList32Byte_Wrapper(byte x, byte y)
+        {
+            _values = new FixedList32Bytes<byte>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList32Byte_ReadonlyWorksFunc1(in FixedList32Byte_Wrapper list, byte* originalValues)
+    {
+        byte* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList32Byte_ReadonlyWorks()
+    {
+        var list = new FixedList32Byte_Wrapper(17, 23);
+        byte* values = list.Values;
+        FixedList32Byte_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList32Byte_FixedBytes30ToNativeArrayWorksGeneric()
     {
@@ -364,6 +393,35 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
 
+    public readonly unsafe struct FixedList64Byte_Wrapper
+    {
+        readonly FixedList64Bytes<byte> _values;
+        internal byte* Values => (byte*)_values.Buffer;
+        public FixedList64Byte_Wrapper(byte x, byte y)
+        {
+            _values = new FixedList64Bytes<byte>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList64Byte_ReadonlyWorksFunc1(in FixedList64Byte_Wrapper list, byte* originalValues)
+    {
+        byte* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList64Byte_ReadonlyWorks()
+    {
+        var list = new FixedList64Byte_Wrapper(17, 23);
+        byte* values = list.Values;
+        FixedList64Byte_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList64Byte_FixedBytes62ToNativeArrayWorksGeneric()
     {
@@ -629,6 +687,35 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.True(r2);
     }
 
+
+    public readonly unsafe struct FixedList128Byte_Wrapper
+    {
+        readonly FixedList128Bytes<byte> _values;
+        internal byte* Values => (byte*)_values.Buffer;
+        public FixedList128Byte_Wrapper(byte x, byte y)
+        {
+            _values = new FixedList128Bytes<byte>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList128Byte_ReadonlyWorksFunc1(in FixedList128Byte_Wrapper list, byte* originalValues)
+    {
+        byte* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList128Byte_ReadonlyWorks()
+    {
+        var list = new FixedList128Byte_Wrapper(17, 23);
+        byte* values = list.Values;
+        FixedList128Byte_ReadonlyWorksFunc1(list, values);
+    }
 
     [Test]
     public void FixedList128Byte_FixedBytes126ToNativeArrayWorksGeneric()
@@ -1694,6 +1781,35 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<byte>(a); } );
     }
 
+    public readonly unsafe struct FixedList32Int_Wrapper
+    {
+        readonly FixedList32Bytes<int> _values;
+        internal int* Values => (int*)_values.Buffer;
+        public FixedList32Int_Wrapper(int x, int y)
+        {
+            _values = new FixedList32Bytes<int>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList32Int_ReadonlyWorksFunc1(in FixedList32Int_Wrapper list, int* originalValues)
+    {
+        int* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList32Int_ReadonlyWorks()
+    {
+        var list = new FixedList32Int_Wrapper(17, 23);
+        int* values = list.Values;
+        FixedList32Int_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList32Int_FixedBytes30ToNativeArrayWorksGeneric()
     {
@@ -1960,6 +2076,35 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
 
+    public readonly unsafe struct FixedList64Int_Wrapper
+    {
+        readonly FixedList64Bytes<int> _values;
+        internal int* Values => (int*)_values.Buffer;
+        public FixedList64Int_Wrapper(int x, int y)
+        {
+            _values = new FixedList64Bytes<int>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList64Int_ReadonlyWorksFunc1(in FixedList64Int_Wrapper list, int* originalValues)
+    {
+        int* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList64Int_ReadonlyWorks()
+    {
+        var list = new FixedList64Int_Wrapper(17, 23);
+        int* values = list.Values;
+        FixedList64Int_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList64Int_FixedBytes62ToNativeArrayWorksGeneric()
     {
@@ -2225,6 +2370,35 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.True(r2);
     }
 
+
+    public readonly unsafe struct FixedList128Int_Wrapper
+    {
+        readonly FixedList128Bytes<int> _values;
+        internal int* Values => (int*)_values.Buffer;
+        public FixedList128Int_Wrapper(int x, int y)
+        {
+            _values = new FixedList128Bytes<int>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList128Int_ReadonlyWorksFunc1(in FixedList128Int_Wrapper list, int* originalValues)
+    {
+        int* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList128Int_ReadonlyWorks()
+    {
+        var list = new FixedList128Int_Wrapper(17, 23);
+        int* values = list.Values;
+        FixedList128Int_ReadonlyWorksFunc1(list, values);
+    }
 
     [Test]
     public void FixedList128Int_FixedBytes126ToNativeArrayWorksGeneric()
@@ -3290,6 +3464,35 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<int>(a); } );
     }
 
+    public readonly unsafe struct FixedList32Float_Wrapper
+    {
+        readonly FixedList32Bytes<float> _values;
+        internal float* Values => (float*)_values.Buffer;
+        public FixedList32Float_Wrapper(float x, float y)
+        {
+            _values = new FixedList32Bytes<float>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList32Float_ReadonlyWorksFunc1(in FixedList32Float_Wrapper list, float* originalValues)
+    {
+        float* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList32Float_ReadonlyWorks()
+    {
+        var list = new FixedList32Float_Wrapper(17, 23);
+        float* values = list.Values;
+        FixedList32Float_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList32Float_FixedBytes30ToNativeArrayWorksGeneric()
     {
@@ -3556,6 +3759,35 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
 
+    public readonly unsafe struct FixedList64Float_Wrapper
+    {
+        readonly FixedList64Bytes<float> _values;
+        internal float* Values => (float*)_values.Buffer;
+        public FixedList64Float_Wrapper(float x, float y)
+        {
+            _values = new FixedList64Bytes<float>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList64Float_ReadonlyWorksFunc1(in FixedList64Float_Wrapper list, float* originalValues)
+    {
+        float* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList64Float_ReadonlyWorks()
+    {
+        var list = new FixedList64Float_Wrapper(17, 23);
+        float* values = list.Values;
+        FixedList64Float_ReadonlyWorksFunc1(list, values);
+    }
+
     [Test]
     public void FixedList64Float_FixedBytes62ToNativeArrayWorksGeneric()
     {
@@ -3821,6 +4053,35 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.True(r2);
     }
 
+
+    public readonly unsafe struct FixedList128Float_Wrapper
+    {
+        readonly FixedList128Bytes<float> _values;
+        internal float* Values => (float*)_values.Buffer;
+        public FixedList128Float_Wrapper(float x, float y)
+        {
+            _values = new FixedList128Bytes<float>();
+            _values.Add(x);
+            _values.Add(y);
+            _values.Sort();
+        }
+    }
+
+    unsafe void FixedList128Float_ReadonlyWorksFunc1(in FixedList128Float_Wrapper list, float* originalValues)
+    {
+        float* values = list.Values;
+        Assert.AreEqual(originalValues[0], values[0], "Values[0] mismatch in func1");
+        Assert.AreEqual(originalValues[1], values[1], "Values[1] mismatch in func1");
+        Assert.AreEqual((ulong)originalValues, (ulong)values, "Buffer pointer mismatch in func1");
+    }
+
+    [Test]
+    public unsafe void FixedList128Float_ReadonlyWorks()
+    {
+        var list = new FixedList128Float_Wrapper(17, 23);
+        float* values = list.Values;
+        FixedList128Float_ReadonlyWorksFunc1(list, values);
+    }
 
     [Test]
     public void FixedList128Float_FixedBytes126ToNativeArrayWorksGeneric()

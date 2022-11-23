@@ -41,7 +41,16 @@ namespace Unity.Collections
             return AllocateBlock(ref t, UnsafeUtility.SizeOf<U>(), UnsafeUtility.AlignOf<U>(), items);
         }
 
-        internal static unsafe void* Allocate<T>(ref this T t, int sizeOf, int alignOf, int items) where T : unmanaged, IAllocator
+        /// <summary>
+        /// Allocates memory directly from an allocator.
+        /// </summary>
+        /// <typeparam name="T">The type of allocator.</typeparam>
+        /// /// <param name="t">The allocator of type T used to allocator memory.</param>
+        /// <param name="sizeOf">The number of bytes to allocate to item.</param>
+        /// <param name="alignOf">The alignment in bytes.</param>
+        /// <param name="items">The number of items. Defaults to 1.</param>
+        /// <returns>A pointer to the allocated memory.</returns>
+        public static unsafe void* Allocate<T>(ref this T t, int sizeOf, int alignOf, int items = 1) where T : unmanaged, IAllocator
         {
             return (void*)AllocateBlock(ref t, sizeOf, alignOf, items).Range.Pointer;
         }

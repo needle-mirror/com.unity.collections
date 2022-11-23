@@ -10,7 +10,7 @@ The first step is to declare and create the custom allocator. You must do the fo
 - Register the allocator by adding an entry in a global allocator table
 - Initialize the allocator if necessary.
 
-The wrapper [`AllocatorHelper`](xref:Unity.Collections.AllocatorHelper) helps the process in creating a custom allocator. Examples are given below as how to declare and create a custom allocator defined in the [Example custom allocator](allocator-custom-define.md).  
+The wrapper [`AllocatorHelper`](xref:Unity.Collections.AllocatorHelper`1) helps the process in creating a custom allocator. Examples are given below as how to declare and create a custom allocator defined in the [Example custom allocator](allocator-custom-define.md).  
 
 ```c#
 // Example user structure that contains the custom allocator
@@ -55,9 +55,11 @@ To dispose a custom allocator, the following must happen:
 * You must dispose the memory used to store the allocator.
 
 Example method `DisposeCustomAllocator` in the user structure shows how to dispose a custom allocator.
+
 [!code-cs[Dispose a custom allocator](../Unity.Collections.Tests/AllocatorCustomTests.cs#allocator-custom-dispose)]
 
 ## Full example of a custom allocator
 The following is a full example of how to use a custom allocator defined in [!code-cs[Example custom allocator](./allocator-custom-define.md)]:
+
 [!code-cs[Add a custom allocator in user structure](../Unity.Collections.Tests/AllocatorCustomTests.cs#allocator-custom-user-struct)]
 

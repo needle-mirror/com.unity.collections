@@ -20,9 +20,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine.Internal;
 using UnityEngine;
-#if UNITY_PROPERTIES_EXISTS
 using Unity.Properties;
-#endif
 
 namespace Unity.Collections
 {
@@ -43,7 +41,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<U,T>(value);
@@ -64,7 +62,7 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -99,7 +97,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
@@ -470,7 +468,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<FixedBytes30,T>(value);
@@ -491,7 +489,16 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        /// <summary>
+        /// Returns a pointer to the first element of the list buffer.
+        /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target list object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the list is destroyed or goes
+        /// out of scope.
+        /// </remarks>
+        /// <returns>A pointer to the first element of the list buffer.</returns>
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -527,7 +534,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
@@ -1595,7 +1602,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<FixedBytes62,T>(value);
@@ -1616,7 +1623,16 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        /// <summary>
+        /// Returns a pointer to the first element of the list buffer.
+        /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target list object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the list is destroyed or goes
+        /// out of scope.
+        /// </remarks>
+        /// <returns>A pointer to the first element of the list buffer.</returns>
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -1652,7 +1668,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
@@ -2720,7 +2736,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<FixedBytes126,T>(value);
@@ -2741,7 +2757,16 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        /// <summary>
+        /// Returns a pointer to the first element of the list buffer.
+        /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target list object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the list is destroyed or goes
+        /// out of scope.
+        /// </remarks>
+        /// <returns>A pointer to the first element of the list buffer.</returns>
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -2777,7 +2802,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
@@ -3845,7 +3870,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<FixedBytes510,T>(value);
@@ -3866,7 +3891,16 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        /// <summary>
+        /// Returns a pointer to the first element of the list buffer.
+        /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target list object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the list is destroyed or goes
+        /// out of scope.
+        /// </remarks>
+        /// <returns>A pointer to the first element of the list buffer.</returns>
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -3902,7 +3936,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
@@ -4970,7 +5004,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
-            get => length;
+            readonly get => length;
             set
             {
                 FixedList.CheckResize<FixedBytes4094,T>(value);
@@ -4991,7 +5025,16 @@ namespace Unity.Collections
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
-        unsafe internal byte* Buffer
+        /// <summary>
+        /// Returns a pointer to the first element of the list buffer.
+        /// </summary>
+        /// <remarks>
+        /// The pointer returned by this method points into the internals of the target list object. It is the
+        /// caller's responsibility to ensure that the pointer is not used after the list is destroyed or goes
+        /// out of scope.
+        /// </remarks>
+        /// <returns>A pointer to the first element of the list buffer.</returns>
+        internal readonly unsafe byte* Buffer
         {
             get
             {
@@ -5027,7 +5070,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
-            get
+            readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
                 unsafe
