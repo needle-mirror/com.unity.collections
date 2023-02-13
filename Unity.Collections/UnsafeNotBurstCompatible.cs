@@ -61,7 +61,6 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
             return dst;
         }
 
-#if !NET_DOTS
         /// <summary>
         /// Reads a string from this buffer reader.
         /// </summary>
@@ -88,6 +87,5 @@ namespace Unity.Collections.LowLevel.Unsafe.NotBurstCompatible
                 value = null;
             }
         }
-#endif
     }
 }

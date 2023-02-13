@@ -18,19 +18,20 @@ An **allocator** governs some unmanaged memory from which you can make allocatio
 
 ### Allocator.Temp
 
-Each frame, the main thread creates a Temp allocator which it deallocates in its entirety at the end of the frame. Each job also creates one Temp allocator per thread, and deallocates them in their entirety at the end of the job. Because a Temp allocator gets discarded as a whole, you don't need to manually deallocate Temp allocations, and doing so does nothing.
+Each frame, the main thread creates a Temp allocator which it deallocates in its entirety at the end of the frame. Each job also creates one Temp allocator per thread, and deallocates them in their entirety at the end of the job. Because a Temp allocator gets discarded as a whole, you don't need to manually deallocate Temp allocations, and doing so does nothing.  The minimum alignment of Temp allocations is 64 bytes.
 
 Temp allocations are only safe to use within the thread and within the scope where they were allocated. While you can make Temp allocations within a job, you can't pass main thread Temp allocations into a job. For example, you can't pass a NativeArray that's Temp allocated in the main thread into a job.
 
 ### Allocator.TempJob
 
-You must deallocate TempJob allocations within 4 frames of their creation. 4 frames is the limit so that you can have an allocation that lasts a couple of frames with some extra margin for error. 
+You must deallocate TempJob allocations within 4 frames of their creation. 4 frames is the limit so that you can have an allocation that lasts a couple of frames with some extra margin for error.  The minimum alignment of TempJob allocations is 16 bytes.
 
 For `Native-` collection types, the disposal safety checks throw an exception if a TempJob allocation lasts longer than 4 frames. For `Unsafe-` collection types, you must deallocate them within 4 frames, but Unity doesn't perform any safety checks to ensure you do so.
+
    
 ### Allocator.Persistent
 
-Because Persistent allocations can remain indefinitely, safety checks can't detect if a Persistent allocation has outlived its intended lifetime. As such, you should be extra careful to deallocate a Persistent allocation when you no longer need it.
+Because Persistent allocations can remain indefinitely, safety checks can't detect if a Persistent allocation has outlived its intended lifetime. As such, you should be extra careful to deallocate a Persistent allocation when you no longer need it.  The minimum alignment of Persistent allocations is 16 bytes.
 
 ## Deallocating an allocator
 

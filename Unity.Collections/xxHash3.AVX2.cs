@@ -1,5 +1,3 @@
-﻿#if !NET_DOTS
-
 using Unity.Burst.Intrinsics;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -135,5 +133,3 @@ namespace Unity.Collections
 
     }
 }
-
-#endif

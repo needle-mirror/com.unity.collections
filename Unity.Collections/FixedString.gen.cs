@@ -31,7 +31,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc /> [FixedBytes will be removed]
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
@@ -1135,7 +1135,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -1144,7 +1144,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString32Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -1153,21 +1153,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString32Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString32Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)
@@ -2191,7 +2191,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -2200,7 +2200,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString64Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -2209,21 +2209,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString64Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString64Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)
@@ -3259,7 +3259,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -3268,7 +3268,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString128Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -3277,21 +3277,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString128Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString128Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)
@@ -4439,7 +4439,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -4448,7 +4448,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString512Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -4457,21 +4457,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString512Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString512Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)
@@ -6731,7 +6731,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -6740,7 +6740,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString4096Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -6749,21 +6749,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString4096Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString4096Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)

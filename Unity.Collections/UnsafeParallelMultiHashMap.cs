@@ -12,16 +12,16 @@ namespace Unity.Collections.LowLevel.Unsafe
     /// An unordered, expandable associative array. Each key can have more than one associated value.
     /// </summary>
     /// <remarks>
-    /// Unlike a regular UnsafeParallelHashMap, an UnsafeMultiHashMap can store multiple key-value pairs with the same key.
+    /// Unlike a regular UnsafeParallelHashMap, an UnsafeParallelMultiHashMap can store multiple key-value pairs with the same key.
     ///
     /// The keys are not deduplicated: two key-value pairs with the same key are stored as fully separate key-value pairs.
     /// </remarks>
     /// <typeparam name="TKey">The type of the keys.</typeparam>
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
-    [DebuggerTypeProxy(typeof(UnsafeMultiHashMapDebuggerTypeProxy<,>))]
+    [DebuggerTypeProxy(typeof(UnsafeParallelMultiHashMapDebuggerTypeProxy<,>))]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-    public unsafe struct UnsafeMultiHashMap<TKey, TValue>
+    public unsafe struct UnsafeParallelMultiHashMap<TKey, TValue>
         : INativeDisposable
         , IEnumerable<KeyValue<TKey, TValue>> // Used by collection initializers.
         where TKey : unmanaged, IEquatable<TKey>
@@ -32,11 +32,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
-        /// Initializes and returns an instance of UnsafeMultiHashMap.
+        /// Initializes and returns an instance of UnsafeParallelMultiHashMap.
         /// </summary>
         /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public UnsafeParallelMultiHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_AllocatorLabel = allocator;
             // Bucket size if bigger to reduce collisions
@@ -138,7 +138,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="it">An iterator representing the key-value pair to remove.</param>
         /// <exception cref="InvalidOperationException">Thrown if the iterator is invalid.</exception>
-        public void Remove(NativeMultiHashMapIterator<TKey> it)
+        public void Remove(NativeParallelMultiHashMapIterator<TKey> it)
         {
             UnsafeParallelHashMapBase<TKey, TValue>.Remove(m_Buffer, it);
         }
@@ -150,7 +150,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">Outputs the associated value represented by the iterator.</param>
         /// <param name="it">Outputs an iterator.</param>
         /// <returns>True if the key was present.</returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out it);
         }
@@ -161,7 +161,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">Outputs the next value.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present and had another value.</returns>
-        public bool TryGetNextValue(out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             return UnsafeParallelHashMapBase<TKey, TValue>.TryGetNextValueAtomic(m_Buffer, out item, ref it);
         }
@@ -203,7 +203,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">The new value.</param>
         /// <param name="it">The iterator representing a key-value pair.</param>
         /// <returns>True if a value was overwritten.</returns>
-        public bool SetValue(TValue item, NativeMultiHashMapIterator<TKey> it)
+        public bool SetValue(TValue item, NativeParallelMultiHashMapIterator<TKey> it)
         {
             return UnsafeParallelHashMapBase<TKey, TValue>.SetValue(m_Buffer, ref it, ref item);
         }
@@ -297,12 +297,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public struct Enumerator : IEnumerator<TValue>
         {
-            internal UnsafeMultiHashMap<TKey, TValue> hashmap;
+            internal UnsafeParallelMultiHashMap<TKey, TValue> hashmap;
             internal TKey key;
             internal bool isFirst;
 
             TValue value;
-            NativeMultiHashMapIterator<TKey> iterator;
+            NativeParallelMultiHashMapIterator<TKey> iterator;
 
             /// <summary>
             /// Does nothing.
@@ -364,10 +364,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// A parallel writer for an UnsafeMultiHashMap.
+        /// A parallel writer for an UnsafeParallelMultiHashMap.
         /// </summary>
         /// <remarks>
-        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeMultiHashMap.
+        /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelMultiHashMap.
         /// </remarks>
         [NativeContainerIsAtomicWriteOnly]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
@@ -474,19 +474,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
     }
 
-    internal sealed class UnsafeMultiHashMapDebuggerTypeProxy<TKey, TValue>
+    internal sealed class UnsafeParallelMultiHashMapDebuggerTypeProxy<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>, IComparable<TKey>
         where TValue : unmanaged
     {
-#if !NET_DOTS
-        UnsafeMultiHashMap<TKey, TValue> m_Target;
+        UnsafeParallelMultiHashMap<TKey, TValue> m_Target;
 
-        public UnsafeMultiHashMapDebuggerTypeProxy(UnsafeMultiHashMap<TKey, TValue> target)
+        public UnsafeParallelMultiHashMapDebuggerTypeProxy(UnsafeParallelMultiHashMap<TKey, TValue> target)
         {
             m_Target = target;
         }
 
-        public static (NativeArray<TKey>, int) GetUniqueKeyArray(ref UnsafeMultiHashMap<TKey, TValue> hashMap, AllocatorManager.AllocatorHandle allocator)
+        public static (NativeArray<TKey>, int) GetUniqueKeyArray(ref UnsafeParallelMultiHashMap<TKey, TValue> hashMap, AllocatorManager.AllocatorHandle allocator)
         {
             var withDuplicates = hashMap.GetKeyArray(allocator);
             withDuplicates.Sort();
@@ -522,6 +521,5 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return result;
             }
         }
-#endif
     }
 }

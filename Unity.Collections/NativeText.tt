@@ -68,7 +68,7 @@ namespace Unity.Collections
         // NOTE! This Length is always > 0, because we have a null terminating byte.
         // We hide this byte from NativeText users.
         [NativeDisableUnsafePtrRestriction]
-        private UnsafeText* m_Data;
+        internal UnsafeText* m_Data;
 
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
@@ -704,7 +704,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckNull(void* dataPtr)
         {
             if (dataPtr == null)
@@ -737,7 +737,7 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -746,7 +746,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in NativeText of {Length} length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowCopyError(CopyError error, String source)
         {
             throw new ArgumentException($"NativeText: {error} while copying \"{source}\"");
@@ -931,7 +931,7 @@ namespace Unity.Collections
                 return false;
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             internal static void CheckNull(void* dataPtr)
             {
                 if (dataPtr == null)
@@ -949,7 +949,7 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void ErrorWrite()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

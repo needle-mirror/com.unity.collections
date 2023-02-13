@@ -69,7 +69,6 @@ internal class UnsafeParallelHashMapTests : CollectionsTestCommonBase
         }
     }
 
-#if !NET_DOTS // Array.Sort is not supported
     [Test]
     public void UnsafeParallelHashSet_ToArray()
     {
@@ -83,7 +82,6 @@ internal class UnsafeParallelHashMapTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
     [Test]
     public void UnsafeParallelHashMap_CustomAllocatorTest()

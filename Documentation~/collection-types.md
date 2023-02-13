@@ -13,6 +13,7 @@ Data structure                                        | Description
 @Unity.Collections.LowLevel.Unsafe.UnsafeStream       | A set of append-only, untyped buffers.
 @Unity.Collections.LowLevel.Unsafe.UnsafeAppendBuffer | An append-only untyped buffer.
 @Unity.Collections.NativeQueue`1                      | A resizable queue. Has thread- and disposal-safety checks.
+@Unity.Collections.NativeRingQueue`1                  | A fixed-size circular buffer. Has disposal-safety checks.
 @Unity.Collections.LowLevel.Unsafe.UnsafeRingQueue`1  | A fixed-size circular buffer.
 @Unity.Collections.FixedList32Bytes`1                 | A 32-byte list, including 2 bytes of overhead, so 30 bytes are available for storage. Max capacity depends upon T.
 
@@ -43,8 +44,8 @@ Data structure                                                  | Description
 @Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashMap`2      | An unordered associative array of key-value pairs.
 @Unity.Collections.NativeParallelHashSet`1                      | A set of unique values. Has thread- and disposal-safety checks.
 @Unity.Collections.LowLevel.Unsafe.UnsafeParallelHashSet`1      | A set of unique values.
-@Unity.Collections.NativeMultiParallelHashMap`2                 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys. Has thread- and disposal-safety checks.
-@Unity.Collections.LowLevel.Unsafe.UnsafeMultiParallelHashMap`2 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys.
+@Unity.Collections.NativeParallelMultiHashMap`2                 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys. Has thread- and disposal-safety checks.
+@Unity.Collections.LowLevel.Unsafe.UnsafeParallelMultiHashMap`2 | An unordered associative array of key-value pairs. The keys do not have to be unique, *i.e.* two pairs can have equal keys.
 
 See also @Unity.Collections.ParallelHashSetExtensions, @Unity.Collections.NotBurstCompatible.Extensions, and @Unity.Collections.LowLevel.Unsafe.NotBurstCompatible.Extensions
 

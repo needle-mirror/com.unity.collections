@@ -36,7 +36,7 @@ internal struct ExampleCustomAllocatorStruct
 
 ## Use a custom allocator to allocate memory
 
-For `Native-` collection types, allocation from a custom allocator is similar to a classic allocator, except you must use [`CollectionHelper.CreateNativeArray`](xref:Unity.Collections.CollectionHelper.CreateNativeArray*) to create a `NativeArray` from a custom allocator and [`CollectionHelper.DisposeNativeArray`](xref:Unity.Collections.CollectionHelper.DisposeNativeArray*) to deallocate a `NativeArray` from a custom allocator.
+For `Native-` collection types, allocation from a custom allocator is similar to a classic allocator, except you must use [`CollectionHelper.CreateNativeArray`](xref:Unity.Collections.CollectionHelper.CreateNativeArray*) to create a `NativeArray` from a custom allocator and [`CollectionHelper.Dispose`](xref:Unity.Collections.CollectionHelper.Dispose*) to deallocate a `NativeArray` from a custom allocator.
 
 For `Unsafe-` collection types, you must use [`AllocatorManager.Allocate`](xref:Unity.Collections.AllocatorManager.Allocate*) to allocate memory from a custom allocator and [`AllocatorManager.Free`](xref:Unity.Collections.AllocatorManager.Free*) to deallocate the memory.
 

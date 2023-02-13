@@ -1,4 +1,3 @@
-#if !NET_DOTS
 using System;
 using System.Globalization;
 using System.Threading;
@@ -303,6 +302,25 @@ internal class FixedStringTests
     }
 
     [Test]
+    public void FixedStringNSubstring()
+    {
+        FixedStringN a = "This is substring.";
+        Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(-8, 9));
+        Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(200, 9));
+        Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(8, -9));
+
+        {
+            FixedStringN b = a.Substring(8, 9);
+            Assert.IsTrue(b.Equals("substring"));
+        }
+
+        {
+            FixedStringN b = a.Substring(8, 100);
+            Assert.IsTrue(b.Equals("substring."));
+        }
+    }
+
+    [Test]
     public void FixedStringNIndexOf()
     {
         FixedStringN a = "bookkeeper bookkeeper";
@@ -365,4 +383,3 @@ internal class FixedStringTests
 }
 
 }
-#endif

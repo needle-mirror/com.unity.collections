@@ -5,12 +5,12 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixture
+internal class NativeParallelMultiHashMapTests_JobDebugger : NativeParallelMultiHashMapTestsFixture
 {
     [Test]
-    public void NativeMultiHashMap_Read_And_Write_Without_Fences()
+    public void NativeParallelMultiHashMap_Read_And_Write_Without_Fences()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -41,7 +41,7 @@ internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixt
 #if !UNITY_DOTSRUNTIME
     struct NestedMapJob : IJob
     {
-        public NativeMultiHashMap<int, NativeMultiHashMap<int, int>> nestedMap;
+        public NativeParallelMultiHashMap<int, NativeParallelMultiHashMap<int, int>> nestedMap;
 
         public void Execute()
         {
@@ -50,9 +50,9 @@ internal class NativeMultiHashMapTests_JobDebugger : NativeMultiHashMapTestsFixt
     }
 
     [Test]
-    public void NativeMultiHashMap_NestedJob_Error()
+    public void NativeParallelMultiHashMap_NestedJob_Error()
     {
-        var map = new NativeMultiHashMap<int, NativeMultiHashMap<int, int>>(hashMapSize, CommonRwdAllocator.Handle);
+        var map = new NativeParallelMultiHashMap<int, NativeParallelMultiHashMap<int, int>>(hashMapSize, CommonRwdAllocator.Handle);
 
         var nestedJob = new NestedMapJob
         {

@@ -5,12 +5,6 @@ using Unity.Collections;
 using Unity.Collections.Tests;
 using Unity.Jobs;
 using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine;
-using UnityEngine.TestTools;
-#if !UNITY_PORTABLE_TEST_RUNNER
-using System.Text.RegularExpressions;
-#endif
-
 internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
 {
     static void ExpectedCount<T>(ref UnsafeParallelHashSet<T> container, int expected)

@@ -31,6 +31,12 @@ internal struct ExampleCustomAllocator : AllocatorManager.IAllocator
     // Implement the IsCustomAllocator property required by IAllocator interface
     public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
 
+    // Implement the IsAutoDispose property required by IAllocator interface
+    // Allocations made by this example allocator are not automatically disposed.
+    // This implementation can be skipped because the default implementation of
+    // this property is false.
+    public bool IsAutoDispose { get { return false; } }
+
     // Implement the Dispose method required by IDisposable interface because
     // AllocatorManager.IAllocator implements IDisposable
     public void Dispose()
@@ -204,6 +210,31 @@ internal struct ExampleCustomAllocatorStruct
 
     // Get allocation count from the custom allocator
     public int AllocationCount => customAllocator.AllocationCount;
+
+    public void UseCustomAllocatorHandle(out NativeArray<int> nativeArray, out NativeList<int> nativeList)
+    {
+        // Use custom allocator to allocate a native array and check initial value.
+        nativeArray = CollectionHelper.CreateNativeArray<int>(100, customAllocator.ToAllocator, NativeArrayOptions.UninitializedMemory);
+        Assert.AreEqual(customAllocator.InitialValue, (byte)nativeArray[0] & 0xFF);
+        nativeArray[0] = 0xFE;
+
+        // Use custom allocator to allocate a native list and check initial value.
+        nativeList = new NativeList<int>(customAllocator.Handle);
+        for (int i = 0; i < 50; i++)
+        {
+            nativeList.Add(i);
+        }
+
+        unsafe
+        {
+            // Use custom allocator to allocate a byte buffer.
+            byte* bytePtr = (byte*)AllocatorManager.Allocate(ref customAllocator, sizeof(byte), sizeof(byte), 10);
+            Assert.AreEqual(customAllocator.InitialValue, bytePtr[0]);
+
+            // Free the byte buffer.
+            AllocatorManager.Free(customAllocator.ToAllocator, bytePtr, 10);
+        }
+    }
 }
 
 internal class ExampleCustomAllocatorStructUsage
@@ -225,7 +256,43 @@ internal class ExampleCustomAllocatorStructUsage
         Assert.AreEqual(nativeList[10], 10);
 
         // Need to use CollectionHelper.DisposeNativeArray to dispose the native array from a custom allocator
-        CollectionHelper.DisposeNativeArray(nativeArray, exampleStruct.customAllocator.Handle) ;
+        CollectionHelper.Dispose(nativeArray) ;
+        // Dispose the native list
+        nativeList.Dispose();
+
+        // Object disposed exception throws because nativeArray is already disposed
+        Assert.Throws<ObjectDisposedException>(() =>
+        {
+            nativeArray[0] = 0xEF;
+        });
+
+        // Object disposed exception throws because nativeList is already disposed
+        Assert.Throws<ObjectDisposedException>(() =>
+        {
+            nativeList[10] = 0x10;
+        });
+
+        // Check allocation count after dispose the native array and native list
+        Assert.AreEqual(0, exampleStruct.AllocationCount);
+
+        // Dispose the user structure
+        exampleStruct.Dispose();
+    }
+
+    [Test]
+    public void UseCustomAllocatorHandle_Works()
+    {
+        ExampleCustomAllocatorStruct exampleStruct = new ExampleCustomAllocatorStruct(IntialValue);
+
+        // Allocate native array and native list from the custom allocator handle
+        exampleStruct.UseCustomAllocatorHandle(out NativeArray<int> nativeArray, out NativeList<int> nativeList);
+
+        // Able to access the native array and native list
+        Assert.AreEqual(nativeArray[0], 0xFE);
+        Assert.AreEqual(nativeList[10], 10);
+
+        // Need to use CollectionHelper.DisposeNativeArray to dispose the native array from a custom allocator
+        CollectionHelper.Dispose(nativeArray);
         // Dispose the native list
         nativeList.Dispose();
 

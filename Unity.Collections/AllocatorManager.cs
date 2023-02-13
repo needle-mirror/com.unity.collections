@@ -188,6 +188,7 @@ namespace Unity.Collections
         /// Corresponds to Allocator.AudioKernel.
         /// </summary>
         /// <value>Corresponds to Allocator.AudioKernel.</value>
+        /// <remarks>Do not use. Reserved for internal use.</remarks>
         public static readonly AllocatorHandle AudioKernel = new AllocatorHandle { Index = 5 };
 
         /// <summary>
@@ -561,6 +562,12 @@ namespace Unity.Collections
             public bool IsCustomAllocator { get { return this.Index >= FirstUserIndex; } }
 
             /// <summary>
+            /// Check whether this allocator will automatically dispose allocations.
+            /// </summary>
+            /// <value>True if allocations made by this AllocatorHandle are not automatically disposed.</value>
+            public bool IsAutoDispose { get { return ((SharedStatics.IsAutoDispose.Ref.Data.ElementAt(Index >> 6) >> (Index & 63)) & 1) != 0; } }
+
+            /// <summary>
             /// Dispose the allocator.
             /// </summary>
             public void Dispose()
@@ -801,8 +808,13 @@ namespace Unity.Collections
             /// Check whether an allocator is a custom allocator
             /// </summary>
             bool IsCustomAllocator { get; }
-        }
 
+            /// <summary>
+            /// Check whether an allocator will automatically dispose allocations.
+            /// </summary>
+            /// <remarks>Allocations made by allocator are not automatically disposed by default.</remarks>
+            bool IsAutoDispose { get { return false; } }
+        }
 
         /// <summary>
         /// Memory allocation Success status
@@ -1130,6 +1142,7 @@ namespace Unity.Collections
         {
             internal sealed class IsInstalled { internal static readonly SharedStatic<Long1024> Ref = SharedStatic<Long1024>.GetOrCreate<IsInstalled>(); }
             internal sealed class TableEntry { internal static readonly SharedStatic<Array32768<AllocatorManager.TableEntry>> Ref = SharedStatic<Array32768<AllocatorManager.TableEntry>>.GetOrCreate<TableEntry>(); }
+            internal sealed class IsAutoDispose { internal static readonly SharedStatic<Long1024> Ref = SharedStatic<Long1024>.GetOrCreate<IsAutoDispose>(); }
 #if ENABLE_UNITY_ALLOCATION_CHECKS
             internal sealed class Version { internal static readonly SharedStatic<Array32768<ushort>> Ref = SharedStatic<Array32768<ushort>>.GetOrCreate<Version>(); }
             internal sealed class ChildSafetyHandles { internal static readonly SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>> Ref = SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>>.GetOrCreate<ChildSafetyHandles>(); }
@@ -1191,10 +1204,12 @@ namespace Unity.Collections
         /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
         /// <param name="functionPointer">The allocator function to install in the global function table.</param>
         /// <param name="function">The allocator function to install in the global function table.</param>
+        /// <param name="IsAutoDispose">Flag indicating if the allocator will automatically dispose allocations.</param>
         internal static void Install(AllocatorHandle handle,
                                         IntPtr allocatorState,
                                         FunctionPointer<TryFunction> functionPointer,
-                                        TryFunction function)
+                                        TryFunction function,
+                                        bool IsAutoDispose = false)
         {
             if(functionPointer.Value == IntPtr.Zero)
                 handle.Unregister();
@@ -1205,6 +1220,12 @@ namespace Unity.Collections
                 {
                     handle.Install(new TableEntry { state = allocatorState, function = functionPointer.Value });
                     Managed.RegisterDelegate(handle.Index, function);
+
+                    // If the allocator will automatically dispose allocations.
+                    if (IsAutoDispose)
+                    {
+                        ConcurrentMask.TryAllocate(ref SharedStatics.IsAutoDispose.Ref.Data, handle.Value, 1);
+                    }
                 }
             }
         }
@@ -1228,10 +1249,15 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
         /// <param name="functionPointer">Function pointer to create or save in the function table.</param>
+        /// <param name="IsAutoDispose">Flag indicating if the allocator will automatically dispose allocations.</param>
         /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
         /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
         /// <returns>Returns a handle to the newly registered allocator function.</returns>
-        internal static AllocatorHandle Register(IntPtr allocatorState, FunctionPointer<TryFunction> functionPointer, bool isGlobal = false, int globalIndex = 0)
+        internal static AllocatorHandle Register(IntPtr allocatorState,
+                                                    FunctionPointer<TryFunction> functionPointer,
+                                                    bool IsAutoDispose = false,
+                                                    bool isGlobal = false,
+                                                    int globalIndex = 0)
         {
             int error;
             int offset;
@@ -1254,6 +1280,13 @@ namespace Unity.Collections
             {
                 handle.Index = (ushort)offset;
                 handle.Install(tableEntry);
+
+                // If the allocator will automatically dispose allocations.
+                if (IsAutoDispose)
+                {
+                    ConcurrentMask.TryAllocate(ref SharedStatics.IsAutoDispose.Ref.Data, offset, 1);
+                }
+
 #if ENABLE_UNITY_ALLOCATION_CHECKS
                 handle.Version = handle.OfficialVersion;
 #endif
@@ -1272,10 +1305,11 @@ namespace Unity.Collections
         /// </summary>
         /// <typeparam name="T">The type of allocator to register.</typeparam>
         /// <param name="t">Reference to the allocator.</param>
+        /// <param name="IsAutoDispose">Flag indicating if the allocator will automatically dispose allocations.</param>
         /// <param name="isGlobal">Flag indicating if the allocator is a global allocator.</param>
         /// <param name="globalIndex">Index into the global function table of the allocator to be created.</param>
         [ExcludeFromBurstCompatTesting("Uses managed delegate")]
-        public static unsafe void Register<T>(ref this T t, bool isGlobal = false, int globalIndex = 0) where T : unmanaged, IAllocator
+        public static unsafe void Register<T>(ref this T t, bool IsAutoDispose = false, bool isGlobal = false, int globalIndex = 0) where T : unmanaged, IAllocator
         {
             FunctionPointer<TryFunction> functionPointer;
             var func = t.Function;
@@ -1290,7 +1324,7 @@ namespace Unity.Collections
                 }
                 functionPointer = AllocatorCache<T>.TryFunction;
             }
-            t.Handle = Register((IntPtr)UnsafeUtility.AddressOf(ref t), functionPointer, isGlobal, globalIndex);
+            t.Handle = Register((IntPtr)UnsafeUtility.AddressOf(ref t), functionPointer, IsAutoDispose, isGlobal, globalIndex);
 
             Managed.RegisterDelegate(t.Handle.Index, t.Function);
 
@@ -1311,6 +1345,7 @@ namespace Unity.Collections
             {
                 t.Handle.Install(default);
                 ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
+                ConcurrentMask.TryFree(ref SharedStatics.IsAutoDispose.Ref.Data, t.Handle.Value, 1);
             }
         }
 
@@ -1326,6 +1361,7 @@ namespace Unity.Collections
             {
                 t.Handle.Install(default);
                 ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
+                ConcurrentMask.TryFree(ref SharedStatics.IsAutoDispose.Ref.Data, t.Handle.Value, 1);
                 Managed.UnregisterDelegate(t.Handle.Index);
             }
         }
@@ -1347,7 +1383,7 @@ namespace Unity.Collections
                 var allocatorPtr = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>(), 16, backingAllocator);
                 *allocatorPtr = default;
                 ref T allocator = ref UnsafeUtility.AsRef<T>(allocatorPtr);
-                Register(ref allocator, isGlobal, globalIndex);
+                Register(ref allocator, allocatorPtr->IsAutoDispose, isGlobal, globalIndex);
                 return ref allocator;
             }
         }

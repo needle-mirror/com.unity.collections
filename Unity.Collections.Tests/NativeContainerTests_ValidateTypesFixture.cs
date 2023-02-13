@@ -5,7 +5,6 @@ using Unity.Collections.Tests;
 
 internal class NativeContainerTests_ValidateTypesFixture : CollectionsTestCommonBase
 {
-#if !UNITY_PORTABLE_TEST_RUNNER
     protected static void CheckNativeContainerReflectionException<T>(string expected) where T : unmanaged, IJob
     {
         var exc = Assert.Catch<InvalidOperationException>(() => { new T().Schedule(); });
@@ -24,5 +23,4 @@ internal class NativeContainerTests_ValidateTypesFixture : CollectionsTestCommon
         string expected = string.Format("{0}.value is not a value type. Job structs may not contain any reference types.", typeof(T).Name);
         Assert.AreEqual(expected, exc.Message);
     }
-#endif
 }

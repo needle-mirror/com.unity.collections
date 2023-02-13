@@ -18,6 +18,7 @@ namespace Unity.Collections
     /// </remarks>
     /// <typeparam name="T">The type of the values.</typeparam>
     [StructLayout(LayoutKind.Sequential)]
+    [NativeContainer]
     [DebuggerTypeProxy(typeof(NativeHashSetDebuggerTypeProxy<>))]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
     public unsafe struct NativeHashSet<T>
@@ -36,11 +37,16 @@ namespace Unity.Collections
         /// <summary>
         /// Initializes and returns an instance of NativeParallelHashSet.
         /// </summary>
-        /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
+        /// <param name="initialCapacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
+            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
         {
-            m_Data = HashMapHelper<T>.Alloc(capacity, 0, 256, allocator);
+        }
+
+        internal NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
+        {
+            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, growthPolicy, 256, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -80,7 +86,7 @@ namespace Unity.Collections
             get
             {
                 CheckRead();
-                return m_Data->Count;
+                return m_Data->GrowthPolicy.Count;
             }
         }
 
@@ -101,7 +107,7 @@ namespace Unity.Collections
             set
             {
                 CheckWrite();
-                m_Data->Resize(m_Data->CalcCapacity(value));
+                m_Data->Resize(value);
             }
         }
 
@@ -137,7 +143,7 @@ namespace Unity.Collections
                 Data = new NativeDataDispose
                 {
                     m_Ptr = m_Data->Ptr,
-                    m_AllocatorLabel = m_Data->Allocator,
+                    m_Allocator = m_Data->GrowthPolicy.Allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = m_Safety,
 #endif
@@ -171,7 +177,6 @@ namespace Unity.Collections
         public bool Add(T item)
         {
             CheckWrite();
-            m_Data->UpdateCapacity();
             return -1 != m_Data->TryAdd(item);
         }
 
@@ -195,6 +200,15 @@ namespace Unity.Collections
         {
             CheckRead();
             return -1 != m_Data->Find(item);
+        }
+
+        /// <summary>
+        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
+        /// </summary>
+        public void TrimExcess()
+        {
+            CheckWrite();
+            m_Data->TrimExcess();
         }
 
         /// <summary>
@@ -224,8 +238,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Data = m_Data,
-                m_Index = -1,
+                m_Enumerator = new HashMapHelper<T>.Enumerator(m_Data),
             };
         }
 
@@ -261,8 +274,7 @@ namespace Unity.Collections
         public struct Enumerator : IEnumerator<T>
         {
             [NativeDisableUnsafePtrRestriction]
-            internal HashMapHelper<T>* m_Data;
-            internal int m_Index;
+            internal HashMapHelper<T>.Enumerator m_Enumerator;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
@@ -281,8 +293,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = m_Data->FindNext(m_Index + 1);
-                return m_Index != -1;
+                return m_Enumerator.MoveNext();
             }
 
             /// <summary>
@@ -293,7 +304,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = -1;
+                m_Enumerator.Reset();
             }
 
             /// <summary>
@@ -307,7 +318,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                    return m_Data->GetKeyAt(m_Index);
+                    return m_Enumerator.GetCurrentKey();
                 }
             }
 
@@ -380,7 +391,7 @@ namespace Unity.Collections
                 get
                 {
                     CheckRead();
-                    return m_Data->Count;
+                    return m_Data->GrowthPolicy.Count;
                 }
             }
 
@@ -447,8 +458,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = ash,
 #endif
-                    m_Data = m_Data,
-                    m_Index = -1,
+                    m_Enumerator = new HashMapHelper<T>.Enumerator(m_Data),
                 };
             }
 

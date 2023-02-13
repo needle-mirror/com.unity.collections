@@ -8,9 +8,7 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
-#if !UNITY_PORTABLE_TEST_RUNNER
 using System.Text.RegularExpressions;
-#endif
 
 internal class NativeListTests : CollectionsTestFixture
 {

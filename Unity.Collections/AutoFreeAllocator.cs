@@ -91,21 +91,21 @@ namespace Unity.Collections
             Memory.Unmanaged.Free(m_block, m_backingAllocatorHandle);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckElementIndex(int elementIndex)
         {
             if (elementIndex >= m_lengthInElements)
                 throw new ArgumentException($"Element index {elementIndex} must be less than length in elements {m_lengthInElements}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckBlockIndex(int blockIndex)
         {
             if (blockIndex >= m_blocks)
                 throw new ArgumentException($"Block index {blockIndex} must be less than number of blocks {m_blocks}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckBlockIsNotNull(int blockIndex)
         {
             if(m_block[blockIndex] == IntPtr.Zero)
@@ -253,5 +253,12 @@ namespace Unity.Collections
         /// Check whether an allocator is a custom allocator
         /// </summary>
         public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+
+        /// <summary>
+        /// Check whether this allocator will automatically dispose allocations.
+        /// </summary>
+        /// <remarks>Allocations made by Auto free allocator are automatically disposed.</remarks>
+        /// <value>Always true</value>
+        public bool IsAutoDispose { get { return true; } }
     }
 }

@@ -35,7 +35,7 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
-    /// <undoc /> [FixedBytes will be removed]
+    /// For internal use only.
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size=16)]
@@ -703,7 +703,7 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -712,7 +712,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in FixedString<#=BYTES#>Bytes of '{utf8LengthInBytes}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckLengthInRange(int length)
         {
             if (length < 0)
@@ -721,21 +721,21 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException($"Length {length} is out of range in FixedString<#=BYTES#>Bytes of '{utf8MaxLengthInBytes}' Capacity.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckCapacityInRange(int capacity)
         {
             if (capacity > utf8MaxLengthInBytes)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be lower than {utf8MaxLengthInBytes}.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCopyError(CopyError error, String source)
         {
             if (error != CopyError.None)
                 throw new ArgumentException($"FixedString<#=BYTES#>Bytes: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckFormatError(FormatError error)
         {
             if (error != FormatError.None)

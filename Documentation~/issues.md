@@ -4,7 +4,7 @@ uid: collections-known-issues
 
 # Known issues
 
-All containers allocated with `Allocator.Temp` on the same thread use a shared `AtomicSafetyHandle` instance rather than each having their own. On the one hand, this is fine because Temp allocated collections cannot be passed into jobs. On the other hand, this is problematic when using `NativeHashMap`, `NativeMultiHashMap`, `NativeHashSet`, and `NativeList` together in situations where their secondary safety handle is used. (A secondary safety handle ensures that a NativeArray which aliases a NativeList gets invalidated when the NativeList is reallocated due to resizing.)
+All containers allocated with `Allocator.Temp` on the same thread use a shared `AtomicSafetyHandle` instance rather than each having their own. On the one hand, this is fine because Temp allocated collections cannot be passed into jobs. On the other hand, this is problematic when using `Native*HashMap`, `NativeParallelMultiHashMap`, `Native*HashSet`, and `NativeList` together in situations where their secondary safety handle is used. (A secondary safety handle ensures that a NativeArray which aliases a NativeList gets invalidated when the NativeList is reallocated due to resizing.)
 
 Operations that invalidate an enumerator for these collection types (or invalidate the `NativeArray` returned by `NativeList.AsArray`) will also invalidate all other previously acquired enumerators. For example, this will throw when safety checks are enabled:
 

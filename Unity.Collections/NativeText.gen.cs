@@ -62,7 +62,7 @@ namespace Unity.Collections
         // NOTE! This Length is always > 0, because we have a null terminating byte.
         // We hide this byte from NativeText users.
         [NativeDisableUnsafePtrRestriction]
-        private UnsafeText* m_Data;
+        internal UnsafeText* m_Data;
 
         /// <summary>
         /// Initializes and returns an instance of NativeText with the characters copied from another string.
@@ -1047,7 +1047,7 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)

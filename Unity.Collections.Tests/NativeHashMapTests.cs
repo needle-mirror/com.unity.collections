@@ -14,7 +14,6 @@ using UnityEngine;
 internal class NativeHashMapTests : CollectionsTestCommonBase
 {
 #pragma warning disable 0649 // always default value
-#if !UNITY_PORTABLE_TEST_RUNNER
     struct NonBlittableStruct : IEquatable<NonBlittableStruct>
     {
         object o;
@@ -35,7 +34,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
             return (o != null ? o.GetHashCode() : 0);
         }
     }
-#endif
+
 #pragma warning restore 0649
 
     static void ExpectedCount<TKey, TValue>(ref NativeHashMap<TKey, TValue> container, int expected)

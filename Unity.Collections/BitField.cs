@@ -753,7 +753,7 @@ namespace Unity.Collections
             return math.tzcnt(Value);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckArgs(int pos, int numBits)
         {
             if (pos > 31
@@ -937,7 +937,7 @@ namespace Unity.Collections
             return math.tzcnt(Value);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckArgs(int pos, int numBits)
         {
             if (pos > 63

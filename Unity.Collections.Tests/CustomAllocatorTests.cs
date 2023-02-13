@@ -11,8 +11,6 @@ using Unity.Collections.Tests;
 
 internal class CustomAllocatorTests : CollectionsTestCommonBase
 {
-
-#if !NET_DOTS
     [TestCase(1337,   1337)]
     [TestCase(0xFFFF, 0x0000)]
     [TestCase(0x0000, 0xFFFF)]
@@ -30,7 +28,6 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         Allocator destAllocator = destHandle.ToAllocator;
         Assert.AreEqual(srcAllocator, destAllocator);
     }
-#endif
 
     [Test]
     public void AllocatorVersioningWorks()
@@ -253,6 +250,7 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         public Allocator ToAllocator { get { return m_handle.ToAllocator; } }
 
         public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+
         public AllocatorManager.AllocatorHandle m_handle;
         public int AllocationCount;
         public long Used;

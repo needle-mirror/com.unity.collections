@@ -2,7 +2,7 @@
 
 A rewindable allocator is a custom allocator that works in a similar way to a linear allocator. It's fast and thread safe. A rewindable allocator pre-allocates blocks of memory in advance. 
 
-When you request memory from a rewindable allocator, it selects a range of memory from its pre-allocated block and assigns it to use. After it uses all the existing blocks of memory, the rewindable allocator allocates another block of memory. 
+When you request memory from a rewindable allocator, it selects a range of memory from its pre-allocated block and assigns it to use. The minimum alignment of rewindable allocations is 64 bytes. After it uses all the existing blocks of memory, the rewindable allocator allocates another block of memory. 
 
 It doubles the size of the new block until it reaches a maximum block size. When it reaches this point, the rewindable allocator adds the maximum block size to its previous block size to increase its block size linearly.
 

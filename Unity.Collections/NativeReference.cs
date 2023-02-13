@@ -319,7 +319,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckNotDisposed()
         {
             if (m_Data == null)

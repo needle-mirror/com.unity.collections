@@ -600,7 +600,7 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckReadNotEmpty()
         {
             CheckRead();
@@ -619,7 +619,7 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void ThrowEmpty()
         {
             throw new InvalidOperationException("Trying to read from an empty queue.");

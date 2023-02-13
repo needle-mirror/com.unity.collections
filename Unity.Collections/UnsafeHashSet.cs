@@ -24,12 +24,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// Initializes and returns an instance of NativeParallelHashSet.
         /// </summary>
-        /// <param name="capacity">The number of values that should fit in the initial allocation.</param>
+        /// <param name="initialCapacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeHashSet(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
+            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
+        {
+        }
+
+        internal UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
         {
             m_Data = default;
-            m_Data.Init(capacity, 0, 256, allocator);
+            m_Data.Init(initialCapacity, 0, growthPolicy, 256, allocator);
         }
 
         /// <summary>
@@ -57,7 +62,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             get
             {
-                return m_Data.Count;
+                return m_Data.GrowthPolicy.Count;
             }
         }
 
@@ -76,7 +81,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             set
             {
-                m_Data.Resize(m_Data.CalcCapacity(value));
+                m_Data.Resize(value);
             }
         }
 
@@ -101,13 +106,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this set.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new UnsafeDisposeJob
-            {
-                Ptr = m_Data.Ptr,
-                Allocator = m_Data.Allocator,
-
-            }.Schedule(inputDeps);
-
+            var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.GrowthPolicy.Allocator }.Schedule(inputDeps);
             m_Data.Ptr = null;
 
             return jobHandle;
@@ -129,7 +128,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the value was not already present.</returns>
         public bool Add(T item)
         {
-            m_Data.UpdateCapacity();
             return -1 != m_Data.TryAdd(item);
         }
 
@@ -154,6 +152,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
+        /// </summary>
+        public void TrimExcess() => m_Data.TrimExcess();
+
+        /// <summary>
         /// Returns an array with a copy of this set's values (in no particular order).
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
@@ -169,11 +172,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>An enumerator over the values of this set.</returns>
         public Enumerator GetEnumerator()
         {
-            return new Enumerator
+            fixed (HashMapHelper<T>* data = &m_Data)
             {
-                m_Data = m_Data,
-                m_Index = -1,
-            };
+                return new Enumerator { m_Enumerator = new HashMapHelper<T>.Enumerator(data) };
+            }
         }
 
         /// <summary>
@@ -205,8 +207,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public struct Enumerator : IEnumerator<T>
         {
-            internal HashMapHelper<T> m_Data;
-            internal int m_Index;
+            internal HashMapHelper<T>.Enumerator m_Enumerator;
 
             /// <summary>
             /// Does nothing.
@@ -217,19 +218,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next value.
             /// </summary>
             /// <returns>True if `Current` is valid to read after the call.</returns>
-            public bool MoveNext()
-            {
-                m_Index = m_Data.FindNext(m_Index + 1);
-                return m_Index != -1;
-            }
+            public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
             /// Resets the enumerator to its initial state.
             /// </summary>
-            public void Reset()
-            {
-                m_Index = -1;
-            }
+            public void Reset() => m_Enumerator.Reset();
 
             /// <summary>
             /// The current value.
@@ -239,7 +233,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 get
                 {
-                    return m_Data.GetKeyAt(m_Index);
+                    return m_Enumerator.m_Data->Keys[m_Enumerator.m_Index];
                 }
             }
 
@@ -283,7 +277,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The current number of key-value pairs in this hash map.
             /// </summary>
             /// <returns>The current number of key-value pairs in this hash map.</returns>
-            public int Count => m_Data.Count;
+            public int Count => m_Data.GrowthPolicy.Count;
 
             /// <summary>
             /// The number of key-value pairs that fit in the current allocation.
@@ -323,7 +317,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
             public Enumerator GetEnumerator()
             {
-                return new Enumerator { m_Data = m_Data, m_Index = -1 };
+                fixed (HashMapHelper<T>* data = &m_Data)
+                {
+                    return new Enumerator { m_Enumerator = new HashMapHelper<T>.Enumerator(data) };
+                }
             }
 
             /// <summary>

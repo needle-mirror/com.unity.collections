@@ -21,20 +21,9 @@ namespace Unity.Collections.Tests
 #endif
 }
 
-// This is duplicated from Entities.
-#if UNITY_PORTABLE_TEST_RUNNER
-class IgnoreInPortableTests : IgnoreAttribute
-{
-    public IgnoreInPortableTests(string reason) : base(reason)
-    {
-    }
-}
-#else
 class IgnoreInPortableTestsAttribute : Attribute
 {
     public IgnoreInPortableTestsAttribute(string reason)
     {
     }
 }
-#endif
-

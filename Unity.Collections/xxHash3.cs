@@ -1,8 +1,6 @@
 using System.Runtime.CompilerServices;
 using Unity.Burst;
-#if !NET_DOTS
 using Unity.Burst.Intrinsics;
-#endif
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
@@ -413,13 +411,11 @@ namespace Unity.Collections
 
             unchecked
             {
-#if !NET_DOTS
                 if (X86.Avx2.IsAvx2Supported)
                 {
                     Avx2HashLongInternalLoop(acc, input, dest, length, secret, 1);
                 }
                 else
-#endif
                 {
                     DefaultHashLongInternalLoop(acc, input, dest, length, secret, 1);
                 }
@@ -606,13 +602,11 @@ namespace Unity.Collections
 
             unchecked
             {
-#if !NET_DOTS
                 if (X86.Avx2.IsAvx2Supported)
                 {
                     Avx2HashLongInternalLoop(acc, input, dest, length, secret, 0);
                 }
                 else
-#endif
                 {
                     DefaultHashLongInternalLoop(acc, input, dest, length, secret, 0);
                 }
@@ -698,33 +692,6 @@ namespace Unity.Collections
             return v64 ^ (v64 >> shift);
         }
 
-#if NET_DOTS
-        private static class Common
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static ulong umul128(ulong x, ulong y, out ulong high)
-            {
-                // Split the inputs into high/low sections.
-                ulong xLo = (uint)x;
-                var xHi = x >> 32;
-                ulong yLo = (uint)y;
-                var yHi = y >> 32;
-
-                // We have to use 4 multiples to compute the full range of the result.
-                var hi = xHi * yHi;
-                var m1 = xHi * yLo;
-                var m2 = yHi * xLo;
-                var lo = xLo * yLo;
-
-                ulong m1Lo = (uint)m1;
-                var loHi = lo >> 32;
-                var m1Hi = m1 >> 32;
-
-                high = hi + m1Hi + ((loHi + m1Lo + m2) >> 32);
-                return x * y;
-            }
-        }
-#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong Mul128Fold64(ulong lhs, ulong rhs)
         {

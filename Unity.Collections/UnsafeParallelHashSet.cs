@@ -309,7 +309,6 @@ namespace Unity.Collections.LowLevel.Unsafe
     sealed internal class UnsafeParallelHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
-#if !NET_DOTS
         UnsafeParallelHashSet<T> Data;
 
         public UnsafeParallelHashSetDebuggerTypeProxy(UnsafeParallelHashSet<T> data)
@@ -333,6 +332,5 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return result;
             }
         }
-#endif
     }
 }

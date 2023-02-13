@@ -198,7 +198,6 @@ namespace Unity.Collections.Tests
 
             buf.AppendLine(
 @"// auto-generated
-#if !NET_DOTS
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -482,7 +481,6 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             }
 
             buf.AppendLine("}");
-            buf.AppendLine("#endif");
 
             File.WriteAllText(path, buf.ToString());
             methodsTestedCount = methods.Length;

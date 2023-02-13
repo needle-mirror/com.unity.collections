@@ -1,11 +1,31 @@
 # Changelog
 
+## [2.1.0-pre.11] - 2023-02-13
+
+### Added
+
+* Ability to resize `Unsafe/NativeBitArray` with `Resize`, `SetCapacity`, `TrimExcess` methods.
+* `.Substring` method to `FixedStringN`, and `NativeText`.
+* `NativeRingQueue`.
+* `CollectionHelper.Dispose` to dispose a NativeArray without Allocator input parameter.
+
+### Changed
+
+* Reviewed all safety checks and made many of them supported with `UNITY_DOTS_DEBUG` in addition to `ENABLE_UNITY_COLLECTIONS_CHECKS`
+* Optimize `RewindableAllocator`.
+* Underlying algorithm for `*HashMap/Set` containters to improve performance.
+
+### Fixed
+
+* Code generation responsible for early initialization of JobReflectionData could previously emit enormous amounts of code that could dramatically increase IL2CPP build times. We now produce the minimal amount of code necessary and no longer impact IL2CPP compilation times.
+* Removed unnecessary test and documentation samples assemblies from always being loaded in projects.
+* `NativeHashSet.ToNativeArray(allocator)` now works with custom allocators
+
+
 ## [2.1.0-pre.6] - 2022-11-23
 
 ### Fixed
 * `FixedListNBytes.Buffer` and `FixedString.GetUnsafePtr()` could return an invalid pointer in some cases, if the target object was `readonly`.
-
-
 
 
 ## [2.1.0-pre.2] - 2022-10-11
@@ -24,12 +44,15 @@
 * ReadDouble, ReadPackedDouble, ReadPackedDoubleDelta to DataStreamReader
 
 ### Changed
+
 * Change the default `NativeArrayOptions` in `CollectionHelper.CreateNativeArray` to `UninitializedMemory`.
 
 ### Removed
+
 * Move doc `allocator.md` into `allocator` folder in `Documentation~`.
 
 ### Fixed
+
 * Don't cache `DataStreamWriter.IsLittleEndian`, as the cache could not be properly populated if its shared static was not 0-initialized.
 * BinarySearch is using read-only access.
 * Memory leak in `Native/UnsafeStream` due to orphaned block.
@@ -100,18 +123,19 @@
 * `NativeList.AsParallelReader()` replaced by `NativeList.AsReadOnly()`.
 * Implicit cast operator from `NativeList<T>` to `NativeArray<T>`. Explicit cast method `NativeList<T>.AsArray()` should be used instead.
 
+
 ## [1.4.0] - 2022-07-12
 
 ### Changed
 
-* The com.unity.jobs package has been merged into com.unity.collections to resolve circular dependency issues that can occur when using Unity 2022.2+.
+* The com.unity.jobs package has been merged into com.unity.collections to resolve circular dependency issues that can occur when using Unity 2022.2+
+
 
 ## [1.3.2] - 2022-06-27
-
 * updated minimum compatible version of Unity to 2020.3.30f1
 
-## [1.3.1] - 2022-06-13
 
+## [1.3.1] - 2022-06-13
 * Minor Fixes to changelog
 
 

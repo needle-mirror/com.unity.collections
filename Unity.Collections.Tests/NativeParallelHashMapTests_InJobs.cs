@@ -214,7 +214,7 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
         Assert.DoesNotThrow(() => { container0.Add(0, 1); });
         Assert.True(container0.ContainsKey(0));
 
-        var container1 = new NativeMultiHashMap<int, int>(1, Allocator.Persistent);
+        var container1 = new NativeParallelMultiHashMap<int, int>(1, Allocator.Persistent);
         Assert.True(container1.IsCreated);
         Assert.DoesNotThrow(() => { container1.Add(1, 2); });
         Assert.True(container1.ContainsKey(1));

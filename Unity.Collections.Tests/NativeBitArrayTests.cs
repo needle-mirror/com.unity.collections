@@ -9,9 +9,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.TestTools;
-#if !NET_DOTS
 using System.Text.RegularExpressions;
-#endif
 using Assert = FastAssert;
 
 internal class NativeBitArrayTests : CollectionsTestFixture
@@ -290,13 +288,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         test.Clear();
     }
 
-    [Test]
-    public void NativeBitArray_Copy()
+    static void CopyBitsTests(ref NativeBitArray test)
     {
-        var numBits = 512;
-
-        var test = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
-
         CopyBitsTest(ref test, 1, 16, 12); // short up to 64-bits copy
         CopyBitsTest(ref test, 1, 80, 63); // short up to 64-bits copy
         CopyBitsTest(ref test, 1, 11, 12); // short up to 64-bits copy overlapped
@@ -311,6 +304,71 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         CopyBitsTest(ref test, 8, 0, 255); // long copy overlapped aligned
         CopyBitsTest(ref test, 1, 80, 255); // long copy unaligned
         CopyBitsTest(ref test, 80, 1, 255); // long copy overlapped unaligned
+    }
+
+    [Test]
+    public void NativeBitArray_Copy()
+    {
+        var numBits = 512;
+
+        var test = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        CopyBitsTests(ref test);
+
+        test.Dispose();
+    }
+
+    [Test]
+    public void UnsafeBitArray_Resize()
+    {
+        var test = new NativeBitArray(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        Assert.AreEqual(1, test.Length);
+        Assert.AreEqual(64, test.Capacity);
+
+        test.SetCapacity(200); // expand
+        Assert.AreEqual(1, test.Length);
+        Assert.AreEqual(256, test.Capacity);
+
+        test.Resize(100, NativeArrayOptions.ClearMemory);
+        Assert.True(test.TestNone(0, test.Length));
+
+        // prepare survival test
+        test.Set(0, true);
+        test.Set(99, true);
+        Assert.True(test.IsSet(0));
+        Assert.True(test.TestNone(1, 98));
+        Assert.True(test.IsSet(99));
+
+        test.SetCapacity(1000); // expand
+        Assert.AreEqual(100, test.Length);
+        Assert.AreEqual(1024, test.Capacity);
+
+        // test resize survival
+        Assert.True(test.IsSet(0));
+        Assert.True(test.TestNone(1, 98));
+        Assert.True(test.IsSet(99));
+
+        // manual clear
+        test.Resize(1);
+        test.Set(0, false);
+
+        test.SetCapacity(200); // truncate capacity
+        Assert.AreEqual(1, test.Length);
+        Assert.AreEqual(256, test.Capacity);
+
+        test.Resize(512, NativeArrayOptions.ClearMemory); // resize
+        Assert.AreEqual(512, test.Length);
+        Assert.AreEqual(512, test.Capacity);
+        Assert.True(test.TestNone(0, test.Length));
+
+        CopyBitsTests(ref test);
+
+        test.Resize(256); // truncate length
+        Assert.AreEqual(256, test.Length);
+        Assert.AreEqual(512, test.Capacity);
+
+        test.TrimExcess();
+        Assert.AreEqual(256, test.Length);
+        Assert.AreEqual(256, test.Capacity);
 
         test.Dispose();
     }
@@ -641,7 +699,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         }
     }
 
-#if !NET_DOTS && !UNITY_DOTSRUNTIME    // DOTS-Runtime does throw an exception.
+#if !UNITY_DOTSRUNTIME    // DOTS-Runtime does throw an exception.
     [Test]
     public void NativeBitArray_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {

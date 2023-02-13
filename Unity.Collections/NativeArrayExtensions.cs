@@ -245,7 +245,7 @@ namespace Unity.Collections
             array = default;
             array.m_Buffer = handle.AllocateStruct(default(T), length);
             array.m_Length = length;
-            array.m_AllocatorLabel = Allocator.None;
+            array.m_AllocatorLabel = allocator.IsAutoDispose ? Allocator.None : allocator.ToAllocator;
             if (options == NativeArrayOptions.ClearMemory)
             {
                 UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
@@ -272,7 +272,7 @@ namespace Unity.Collections
             array = default;
             array.m_Buffer = allocator.AllocateStruct(default(T), length);
             array.m_Length = length;
-            array.m_AllocatorLabel = Allocator.None;
+            array.m_AllocatorLabel = allocator.IsAutoDispose ? Allocator.None : allocator.ToAllocator;
             if (options == NativeArrayOptions.ClearMemory)
             {
                 UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
@@ -289,7 +289,7 @@ namespace Unity.Collections
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
-        internal static void DisposeNativeArray<T>(ref this NativeArray<T> array, AllocatorManager.AllocatorHandle allocator)
+        internal static void DisposeCheckAllocator<T>(ref this NativeArray<T> array)
             where T : unmanaged
         {
             if (array.m_Buffer == null)
@@ -297,13 +297,20 @@ namespace Unity.Collections
                 throw new ObjectDisposedException("The NativeArray is already disposed.");
             }
 
+            if (!AllocatorManager.IsCustomAllocator(array.m_AllocatorLabel))
+            {
+                array.Dispose();
+            }
+            else
+            {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            AtomicSafetyHandle.DisposeHandle(ref array.m_Safety);
+                AtomicSafetyHandle.DisposeHandle(ref array.m_Safety);
 #endif
-            AllocatorManager.Free(allocator, array.m_Buffer);
-            array.m_AllocatorLabel = Allocator.Invalid;
+                AllocatorManager.Free(array.m_AllocatorLabel, array.m_Buffer);
+                array.m_AllocatorLabel = Allocator.Invalid;
 
-            array.m_Buffer = null;
+                array.m_Buffer = null;
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ To define a custom allocator, you must implement the interface [`AllocatorManage
 * [`Handle`](xref:Unity.Collections.AllocatorManager.IAllocator.Handle): A property that gets and sets the allocator handle which is of type [`AllocatorManager.AllocatorHandle`](xref:Unity.Collections.AllocatorManager.AllocatorHandle).
 * [`ToAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.ToAllocator): A property that casts the allocator handle index to the enum `Allocator`.
 * [`IsCustomAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.IsCustomAllocator): A property that checks whether the allocator is a custom allocator. An allocator is a custom allocator if its handle `Index` is larger or equal to [`AllocatorManager.FirstUserIndex`](xref:Unity.Collections.AllocatorManager.FirstUserIndex).
+* [`IsIndividualDisposable`](xref:Unity.Collections.AllocatorManager.IAllocator.AllowIndividualDispose): A property that checks whether the allocator is able to dispose individual allocations.  False if disposing an individual allocation is a no-op.
 
 Because `AllocatorManager.IAllocator` implements `IDisposable`, your custom allocator must implement the `Dispose` method.
 
@@ -45,6 +46,12 @@ internal struct ExampleCustomAllocator : AllocatorManager.IAllocator
 
     // Implement the IsCustomAllocator property required by IAllocator interface
     public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+
+    // Implement the IsAutoDispose property required by IAllocator interface
+    // Allocations made by this example allocator are not automatically disposed.
+    // This implementation can be skipped because the default implementation of
+    // this property is false.
+    public bool IsAutoDispose { get { return false; } }
 
     // Implement the Dispose method required by IDisposable interface because
     // AllocatorManager.IAllocator implements IDisposable
@@ -73,7 +80,8 @@ The global allocator table in [`AllocatorManager`](xref:Unity.Collections.Alloca
 * A pointer to the allocator function of the custom allocator instance
 * The current official version of the custom allocator instance, lower 15 bits of a 2 byte unsigned integer value
 * A list of child safety handles of native containers that are created using the custom allocator instance
-* A list of child allocators that are allocated using the custom allocator instance 
+* A list of child allocators that are allocated using the custom allocator instance
+* A bit flag indicating whether the custom allocator is able to dispose individual allocations
 
 ## Custom allocator example
 

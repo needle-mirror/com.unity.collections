@@ -586,7 +586,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal static unsafe bool TryAddAtomic(UnsafeParallelHashMapData* data, TKey key, TValue item, int threadIndex)
         {
             TValue tempItem;
-            NativeMultiHashMapIterator<TKey> tempIt;
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
             if (TryGetFirstValueAtomic(data, key, out tempItem, out tempIt))
             {
                 return false;
@@ -659,7 +659,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal static unsafe bool TryAdd(UnsafeParallelHashMapData* data, TKey key, TValue item, bool isMultiHashMap, AllocatorManager.AllocatorHandle allocation)
         {
             TValue tempItem;
-            NativeMultiHashMapIterator<TKey> tempIt;
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
             if (!isMultiHashMap && TryGetFirstValueAtomic(data, key, out tempItem, out tempIt))
             {
                 return false;
@@ -772,7 +772,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return removed;
         }
 
-        internal static unsafe void Remove(UnsafeParallelHashMapData* data, NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe void Remove(UnsafeParallelHashMapData* data, NativeParallelMultiHashMapIterator<TKey> it)
         {
             // First find the slot based on the hash
             int* buckets = (int*)data->buckets;
@@ -848,7 +848,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             while ((uint)entryIdx < keyCapacity);
         }
 
-        internal static unsafe bool TryGetFirstValueAtomic(UnsafeParallelHashMapData* data, TKey key, out TValue item, out NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe bool TryGetFirstValueAtomic(UnsafeParallelHashMapData* data, TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             it.key = key;
 
@@ -866,7 +866,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return TryGetNextValueAtomic(data, out item, ref it);
         }
 
-        internal static unsafe bool TryGetNextValueAtomic(UnsafeParallelHashMapData* data, out TValue item, ref NativeMultiHashMapIterator<TKey> it)
+        internal static unsafe bool TryGetNextValueAtomic(UnsafeParallelHashMapData* data, out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             int entryIdx = it.NextEntryIndex;
             it.NextEntryIndex = -1;
@@ -896,7 +896,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        internal static unsafe bool SetValue(UnsafeParallelHashMapData* data, ref NativeMultiHashMapIterator<TKey> it, ref TValue item)
+        internal static unsafe bool SetValue(UnsafeParallelHashMapData* data, ref NativeParallelMultiHashMapIterator<TKey> it, ref TValue item)
         {
             int entryIdx = it.EntryIndex;
             if (entryIdx < 0 || entryIdx >= data->keyCapacity)
@@ -908,7 +908,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckOutOfCapacity(int idx, int keyCapacity)
         {
             if (idx >= keyCapacity)
@@ -917,20 +917,20 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static unsafe void CheckIndexOutOfBounds(UnsafeParallelHashMapData* data, int idx)
         {
             if (idx < 0 || idx >= data->keyCapacity)
                 throw new InvalidOperationException("Internal HashMap error");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void ThrowFull()
         {
             throw new InvalidOperationException("HashMap is full");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void ThrowInvalidIterator()
         {
             throw new InvalidOperationException("Invalid iterator passed to HashMap remove");
@@ -1177,7 +1177,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the key was present.</returns>
         public bool TryGetValue(TKey key, out TValue item)
         {
-            NativeMultiHashMapIterator<TKey> tempIt;
+            NativeParallelMultiHashMapIterator<TKey> tempIt;
             return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out tempIt);
         }
 
@@ -1422,7 +1422,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-#if !NET_DOTS
         UnsafeParallelHashMap<TKey, TValue> m_Target;
 
         public UnsafeParallelHashMapDebuggerTypeProxy(UnsafeParallelHashMap<TKey, TValue> target)
@@ -1445,7 +1444,6 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return result;
             }
         }
-#endif
     }
 
     /// <summary>

@@ -6,11 +6,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.NotBurstCompatible;
 using Unity.Jobs;
 using Unity.Collections.Tests;
-using UnityEngine;
-using UnityEngine.TestTools;
-#if !UNITY_PORTABLE_TEST_RUNNER
-using System.Text.RegularExpressions;
-#endif
 
 internal class NativeParallelHashSetTests: CollectionsTestFixture
 {
@@ -538,7 +533,6 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
         setB.Dispose();
     }
 
-#if !NET_DOTS // Array.Sort is not supported
     [Test]
     public void NativeParallelHashSet_ToArray()
     {
@@ -552,7 +546,6 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
             }
         }
     }
-#endif
 
     [Test]
     public void NativeParallelHashSet_CustomAllocatorTest()

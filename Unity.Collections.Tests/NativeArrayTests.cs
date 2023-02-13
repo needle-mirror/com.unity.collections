@@ -192,4 +192,75 @@ internal class NativeArrayTests : CollectionsTestFixture
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
     }
+
+    [Ignore("Wait for DOTS-7576 trunk PR in")]
+    [Test]
+    public void NativeArray_CustomAllocator_DisposeException()
+    {
+        AllocatorManager.Initialize();
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
+        allocator.Initialize();
+
+        var nativeArray = CollectionHelper.CreateNativeArray<int>(100, allocator.ToAllocator, NativeArrayOptions.UninitializedMemory);
+        nativeArray[0] = 0xFE;
+
+        var nativeList = new NativeList<int>(allocator.ToAllocator);
+        for (int i = 0; i < 50; i++)
+        {
+            nativeList.Add(i);
+        }
+
+        Assert.IsTrue(allocator.WasUsed);
+
+        Assert.Throws<InvalidOperationException>(() => nativeArray.Dispose());
+
+        CollectionHelper.Dispose(nativeArray);
+        nativeList.Dispose();
+        allocator.Dispose();
+        allocatorHelper.Dispose();
+        AllocatorManager.Shutdown();
+    }
+
+    public struct SimpleTestJob : IJob
+    {
+        public int ElementValue;
+
+        [WriteOnly]
+        public NativeArray<int> Result;
+
+        public void Execute()
+        {
+            for (int i = 0; i < Result.Length; ++i)
+                Result[i] = ElementValue;
+        }
+    }
+
+    [Ignore("Wait for DOTS-7576 trunk PR in")]
+    [Test]
+    public void NativeArray_CustomAllocator_DisposeHandleException()
+    {
+        AllocatorManager.Initialize();
+        var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
+        ref var allocator = ref allocatorHelper.Allocator;
+        allocator.Initialize();
+
+        var nativeArray = CollectionHelper.CreateNativeArray<int>(100, allocator.ToAllocator, NativeArrayOptions.UninitializedMemory);
+
+        SimpleTestJob job = new SimpleTestJob()
+        {
+            ElementValue = 0xFE,
+            Result = nativeArray
+        };
+
+        var jobHandle = job.Schedule();
+        jobHandle.Complete();
+        Assert.IsTrue(allocator.WasUsed);
+        Assert.Throws<InvalidOperationException>(() => nativeArray.Dispose(jobHandle));
+
+        CollectionHelper.Dispose(nativeArray);
+        allocator.Dispose();
+        allocatorHelper.Dispose();
+        AllocatorManager.Shutdown();
+    }
 }

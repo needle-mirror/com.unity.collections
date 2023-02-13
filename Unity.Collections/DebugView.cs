@@ -13,17 +13,13 @@ namespace Unity.Collections
             value = v;
         }
 
-#if !NET_DOTS
         public override string ToString()
         {
             return $"{key} = {value}";
         }
-
-#endif
     }
 
     // Tiny does not contains an IList definition (or even ICollection)
-#if !NET_DOTS
     internal struct ListPair<Key, Value> where Value : IList
     {
         public Key key;
@@ -49,5 +45,4 @@ namespace Unity.Collections
             return result;
         }
     }
-#endif
 }

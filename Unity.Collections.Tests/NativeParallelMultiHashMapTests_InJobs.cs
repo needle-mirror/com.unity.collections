@@ -5,12 +5,12 @@ using Unity.Burst;
 using Unity.Collections;
 using Assert = FastAssert;
 
-internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
+internal class NativeParallelMultiHashMapTests_InJobs : NativeParallelMultiHashMapTestsFixture
 {
     [Test]
-    public void NativeMultiHashMap_Read_And_Write()
+    public void NativeParallelMultiHashMap_Read_And_Write()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -45,9 +45,9 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
 
     [Test]
     [IgnoreInPortableTests("Hash map throws when full.")]
-    public void NativeMultiHashMap_Read_And_Write_Full()
+    public void NativeParallelMultiHashMap_Read_And_Write_Full()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelMultiHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -91,9 +91,9 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
     }
 
     [Test]
-    public void NativeMultiHashMap_Key_Collisions()
+    public void NativeParallelMultiHashMap_Key_Collisions()
     {
-        var hashMap = new NativeMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
+        var hashMap = new NativeParallelMultiHashMap<int, int>(hashMapSize, CommonRwdAllocator.Handle);
         var writeStatus = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
         var readValues = CollectionHelper.CreateNativeArray<int>(hashMapSize, CommonRwdAllocator.Handle);
 
@@ -129,7 +129,7 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
     [BurstCompile(CompileSynchronously = true)]
     struct AddMultiIndex : IJobParallelFor
     {
-        public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter hashMap;
 
         public void Execute(int index)
         {
@@ -138,11 +138,11 @@ internal class NativeMultiHashMapTests_InJobs : NativeMultiHashMapTestsFixture
     }
 
     [Test]
-    public void NativeMultiHashMap_TryMultiAddScalabilityConcurrent()
+    public void NativeParallelMultiHashMap_TryMultiAddScalabilityConcurrent()
     {
         for (int count = 0; count < 1024; count++)
         {
-            var hashMap = new NativeMultiHashMap<int, int>(count, CommonRwdAllocator.Handle);
+            var hashMap = new NativeParallelMultiHashMap<int, int>(count, CommonRwdAllocator.Handle);
             var addIndexJob = new AddMultiIndex
             {
                 hashMap = hashMap.AsParallelWriter()

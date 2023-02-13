@@ -6,4 +6,7 @@
 ## [Rewindable allocators](allocator-rewindable.md)
 ## [Define a custom allocator](allocator-custom-define.md)
 ## [Use a custom allocator](allocator-custom-use.md)
+## [Allocator benchmarks](allocator-benchmarks.md)
+## [Allocator performance results](allocator-performance-results.md)
+# [Performance comparison](performance-comparison.md)
 # [Known issues](issues.md)

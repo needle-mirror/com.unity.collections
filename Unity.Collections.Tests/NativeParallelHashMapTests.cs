@@ -8,15 +8,13 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Unity.Collections.LowLevel.Unsafe;
-#if !UNITY_PORTABLE_TEST_RUNNER
 using System.Text.RegularExpressions;
-#endif
 using Assert = FastAssert;
 
 internal class NativeParallelHashMapTests : CollectionsTestFixture
 {
 #pragma warning disable 0649 // always default value
-#if !UNITY_PORTABLE_TEST_RUNNER
+
     struct NonBlittableStruct : IEquatable<NonBlittableStruct>
     {
         object o;
@@ -37,7 +35,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
             return (o != null ? o.GetHashCode() : 0);
         }
     }
-#endif
+
 #pragma warning restore 0649
 
     static void ExpectedCount<TKey, TValue>(ref NativeParallelHashMap<TKey, TValue> container, int expected)

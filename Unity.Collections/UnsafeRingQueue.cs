@@ -153,6 +153,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
+        internal static UnsafeRingQueue<T>* Alloc(AllocatorManager.AllocatorHandle allocator)
+        {
+            UnsafeRingQueue<T>* data = (UnsafeRingQueue<T>*)Memory.Unmanaged.Allocate(sizeof(UnsafeRingQueue<T>), UnsafeUtility.AlignOf<UnsafeRingQueue<T>>(), allocator);
+            return data;
+        }
+
+        internal static void Free(UnsafeRingQueue<T>* data, AllocatorManager.AllocatorHandle allocator)
+        {
+            Memory.Unmanaged.Free(data, allocator);
+        }
+
         /// <summary>
         /// Whether this queue has been allocated (and not yet deallocated).
         /// </summary>
@@ -214,7 +225,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return true;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void ThrowQueueFull()
         {
             throw new InvalidOperationException("Trying to enqueue into full queue.");
@@ -245,7 +256,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return 1 == Control.Consume(1);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void ThrowQueueEmpty()
         {
             throw new InvalidOperationException("Trying to dequeue from an empty queue");

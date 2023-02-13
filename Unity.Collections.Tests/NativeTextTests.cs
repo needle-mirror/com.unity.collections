@@ -371,6 +371,25 @@ namespace FixedStringTests
         }
 
         [Test]
+        public void NativeTextNSubstring()
+        {
+            NativeText a = new NativeText("This is substring.", Allocator.Temp);
+            Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(-8, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(200, 9));
+            Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(8, -9));
+
+            {
+                NativeText b = a.Substring(8, 9);
+                Assert.IsTrue(b.Equals("substring"));
+            }
+
+            {
+                NativeText b = a.Substring(8, 100);
+                Assert.IsTrue(b.Equals("substring."));
+            }
+        }
+
+        [Test]
         public void NativeTextIndexOf()
         {
             NativeText a = new NativeText("bookkeeper bookkeeper", Allocator.Temp);
@@ -414,7 +433,7 @@ namespace FixedStringTests
         }
 
         [Test]
-        public void NativeText_CustomAllocatorTest()
+        public void NativeTextCustomAllocatorTest()
         {
             AllocatorManager.Initialize();
             var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);
@@ -449,7 +468,7 @@ namespace FixedStringTests
         }
 
         [Test]
-        public unsafe void NativeText_BurstedCustomAllocatorTest()
+        public unsafe void NativeTextBurstedCustomAllocatorTest()
         {
             AllocatorManager.Initialize();
             var allocatorHelper = new AllocatorHelper<CustomAllocatorTests.CountingAllocator>(AllocatorManager.Persistent);

@@ -424,7 +424,6 @@ namespace Unity.Collections
     sealed internal class NativeParallelHashSetDebuggerTypeProxy<T>
         where T : unmanaged, IEquatable<T>
     {
-#if !NET_DOTS
         NativeParallelHashSet<T> Data;
 
         public NativeParallelHashSetDebuggerTypeProxy(NativeParallelHashSet<T> data)
@@ -448,6 +447,5 @@ namespace Unity.Collections
                 return result;
             }
         }
-#endif
     }
 }

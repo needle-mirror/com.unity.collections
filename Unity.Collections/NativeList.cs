@@ -107,11 +107,11 @@ namespace Unity.Collections
         {
             this = default;
             AllocatorManager.AllocatorHandle temp = allocator;
-            Initialize(initialCapacity, ref temp);
+            Initialize(initialCapacity, ref temp, CapacityGrowthPolicy.CeilPow2);
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal void Initialize<U>(int initialCapacity, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
+        internal void Initialize<U>(int initialCapacity, ref U allocator, CapacityGrowthPolicy growthPolicy) where U : unmanaged, AllocatorManager.IAllocator
         {
             var totalSize = sizeof(T) * (long)initialCapacity;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -128,14 +128,14 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
-            m_ListData = UnsafeList<T>.Create(initialCapacity, ref allocator);
+            m_ListData = UnsafeList<T>.Create(initialCapacity, ref allocator, NativeArrayOptions.UninitializedMemory, growthPolicy);
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
         internal static NativeList<T> New<U>(int initialCapacity, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             var nativelist = new NativeList<T>();
-            nativelist.Initialize(initialCapacity, ref allocator);
+            nativelist.Initialize(initialCapacity, ref allocator, CapacityGrowthPolicy.CeilPow2);
             return nativelist;
         }
 
@@ -741,7 +741,6 @@ namespace Unity.Collections
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
-            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
             m_ListData->Resize(length, options);
         }
@@ -867,7 +866,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Increment(ref ListData->m_length) - 1;
+                var idx = Interlocked.Increment(ref ListData->GrowthPolicy.Count) - 1;
                 CheckSufficientCapacity(ListData->Capacity, idx + 1);
 
                 UnsafeUtility.WriteArrayElement(ListData->Ptr, idx, value);
@@ -889,7 +888,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Add(ref ListData->m_length, count) - count;
+                var idx = Interlocked.Add(ref ListData->GrowthPolicy.Count, count) - count;
                 CheckSufficientCapacity(ListData->Capacity, idx + count);
 
                 var sizeOf = sizeof(T);
@@ -924,14 +923,14 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckInitialCapacity(int initialCapacity)
         {
             if (initialCapacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Capacity must be >= 0");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckTotalSize(int initialCapacity, long totalSize)
         {
             // Make sure we cannot allocate more than int.MaxValue (2,147,483,647 bytes)
@@ -941,31 +940,32 @@ namespace Unity.Collections
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), $"Capacity * sizeof(T) cannot exceed {int.MaxValue} bytes");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckSufficientCapacity(int capacity, int length)
         {
             if (capacity < length)
                 throw new Exception($"Length {length} exceeds capacity Capacity {capacity}");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckIndexInRange(int value, int length)
         {
             if (value < 0)
                 throw new IndexOutOfRangeException($"Value {value} must be positive.");
 
             if ((uint)value >= (uint)length)
-                throw new IndexOutOfRangeException($"Value {value} is out of range in NativeList of '{length}' Length.");
+                throw new IndexOutOfRangeException(
+                    $"Value {value} is out of range in NativeList of '{length}' Length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckArgPositive(int value)
         {
             if (value < 0)
                 throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckHandleMatches(AllocatorManager.AllocatorHandle handle)
         {
             if(m_ListData == null)

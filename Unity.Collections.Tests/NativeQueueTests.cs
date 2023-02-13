@@ -5,11 +5,6 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs;
-using UnityEngine;
-using UnityEngine.TestTools;
-#if !UNITY_PORTABLE_TEST_RUNNER
-using System.Text.RegularExpressions;
-#endif
 using Assert = FastAssert;
 
 internal class NativeQueueTests : CollectionsTestCommonBase

@@ -31,6 +31,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         public int Length;
 
         /// <summary>
+        /// The capacity number of bits.
+        /// </summary>
+        /// <value>The capacity number of bits.</value>
+        public int Capacity;
+
+        /// <summary>
         /// The allocator to use.
         /// </summary>
         /// <value>The allocator to use.</value>
@@ -47,6 +53,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             CheckSizeMultipleOf8(sizeInBytes);
             Ptr = (ulong*)ptr;
             Length = sizeInBytes * 8;
+            Capacity = sizeInBytes * 8;
             Allocator = allocator;
         }
 
@@ -60,14 +67,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             CollectionHelper.CheckAllocator(allocator);
             Allocator = allocator;
-            var sizeInBytes = Bitwise.AlignUp(numBits, 64) / 8;
-            Ptr = (ulong*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
-            Length = numBits;
 
-            if (options == NativeArrayOptions.ClearMemory)
-            {
-                UnsafeUtility.MemClear(Ptr, sizeInBytes);
-            }
+            Ptr = null;
+            Length = 0;
+            Capacity = 0;
+
+            Resize(numBits, options);
+        }
+
+        internal static UnsafeBitArray* Alloc(AllocatorManager.AllocatorHandle allocator)
+        {
+            UnsafeBitArray* data = (UnsafeBitArray*)Memory.Unmanaged.Allocate(sizeof(UnsafeBitArray), UnsafeUtility.AlignOf<UnsafeBitArray>(), allocator);
+            return data;
+        }
+
+        internal static void Free(UnsafeBitArray* data, AllocatorManager.AllocatorHandle allocator)
+        {
+            Memory.Unmanaged.Free(data, allocator);
         }
 
         /// <summary>
@@ -75,6 +91,79 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>True if this array has been allocated (and not yet deallocated).</value>
         public bool IsCreated => Ptr != null;
+
+        void Realloc(int capacityInBits)
+        {
+            var newCapacity = Bitwise.AlignUp(capacityInBits, 64);
+            var sizeInBytes = newCapacity / 8;
+
+            ulong* newPointer = null;
+
+            if (sizeInBytes > 0)
+            {
+                newPointer = (ulong*)Memory.Unmanaged.Allocate(sizeInBytes, 16, Allocator);
+
+                if (Capacity > 0)
+                {
+                    var itemsToCopy = math.min(newCapacity, Capacity);
+                    var bytesToCopy = itemsToCopy / 8;
+                    UnsafeUtility.MemCpy(newPointer, Ptr, bytesToCopy);
+                }
+            }
+
+            Memory.Unmanaged.Free(Ptr, Allocator);
+
+            Ptr = newPointer;
+            Capacity = newCapacity;
+            Length = math.min(Length, newCapacity);
+        }
+
+        /// <summary>
+        /// Sets the length, expanding the capacity if necessary.
+        /// </summary>
+        /// <param name="numBits">The new length in bits.</param>
+        /// <param name="options">Whether newly allocated data should be zeroed out.</param>
+        public void Resize(int numBits, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+            CollectionHelper.CheckAllocator(Allocator);
+
+            if (numBits > Capacity)
+            {
+                SetCapacity(numBits);
+            }
+
+            var oldLength = Length;
+            Length = numBits;
+
+            if (options == NativeArrayOptions.ClearMemory && oldLength < Length)
+            {
+                SetBits(oldLength, false, Length - oldLength);
+            }
+        }
+
+        /// <summary>
+        /// Sets the capacity.
+        /// </summary>
+        /// <param name="capacityInBits">The new capacity.</param>
+        public void SetCapacity(int capacityInBits)
+        {
+            CollectionHelper.CheckCapacityInRange(capacityInBits, Length);
+
+            if (Capacity == capacityInBits)
+            {
+                return;
+            }
+
+            Realloc(capacityInBits);
+        }
+
+        /// <summary>
+        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
+        /// </summary>
+        public void TrimExcess()
+        {
+            SetCapacity(Length);
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -608,7 +697,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return Bitwise.CountBits(Ptr, Length, pos, numBits);
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckArgs(int pos, int numBits)
             {
                 if (pos < 0
@@ -619,7 +708,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckArgsPosCount(int begin, int count, int numBits)
             {
                 if (begin < 0 || begin >= Length)
@@ -638,7 +727,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckArgsUlong(int pos, int numBits)
             {
                 CheckArgs(pos, numBits);
@@ -659,7 +748,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         static void CheckSizeMultipleOf8(int sizeInBytes)
         {
             if ((sizeInBytes & 7) != 0)
+            {
                 throw new ArgumentException($"BitArray invalid arguments: sizeInBytes {sizeInBytes} (must be multiple of 8-bytes, sizeInBytes: {sizeInBytes}).");
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]

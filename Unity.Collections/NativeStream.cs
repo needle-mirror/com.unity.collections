@@ -276,7 +276,8 @@ namespace Unity.Collections
 #pragma warning restore CS0414
             int m_MinIndex;
             int m_MaxIndex;
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             [NativeDisableUnsafePtrRestriction]
             void* m_PassByRefCheck;
 #endif
@@ -291,6 +292,8 @@ namespace Unity.Collections
                 m_Length = int.MaxValue;
                 m_MinIndex = int.MinValue;
                 m_MaxIndex = int.MinValue;
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 m_PassByRefCheck = null;
 #endif
             }
@@ -404,20 +407,21 @@ namespace Unity.Collections
                 return m_Writer.Allocate(size);
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckBeginForEachIndex(int foreachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_PassByRefCheck == null)
                 {
                     m_PassByRefCheck = UnsafeUtility.AddressOf(ref this);
                 }
-
                 var blockData = (UnsafeStreamBlockData*)m_Writer.m_BlockData.Range.Pointer;
                 var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
                 {
                     // When the code is not running through the job system no ParallelForRange patching will occur
@@ -435,7 +439,8 @@ namespace Unity.Collections
                         throw new ArgumentException($"Index {foreachIndex} is out of restricted IJobParallelFor range [{m_MinIndex}...{m_MaxIndex}] in NativeStream.");
                     }
                 }
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_Writer.m_ForeachIndex != int.MinValue)
                 {
                     throw new ArgumentException($"BeginForEachIndex must always be balanced by a EndForEachIndex call");
@@ -450,12 +455,13 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckEndForEachIndex()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_Writer.m_ForeachIndex == int.MinValue)
                 {
                     throw new System.ArgumentException("EndForEachIndex must always be called balanced by a BeginForEachIndex or AppendForEachIndex call");
@@ -463,12 +469,13 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckAllocateSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_PassByRefCheck != UnsafeUtility.AddressOf(ref this)
                 ||  m_Writer.m_ForeachIndex == int.MinValue)
                 {
@@ -495,8 +502,10 @@ namespace Unity.Collections
         {
             UnsafeStream.Reader m_Reader;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             int m_RemainingBlocks;
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
             internal static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<Reader>();
 #endif
@@ -505,8 +514,10 @@ namespace Unity.Collections
             {
                 m_Reader = stream.m_Stream.AsReader();
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 m_RemainingBlocks = 0;
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = stream.m_Safety;
                 CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeStream.Reader");
 #endif
@@ -526,7 +537,7 @@ namespace Unity.Collections
 
                 var remainingItemCount = m_Reader.BeginForEachIndex(foreachIndex);
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 var blockData = (UnsafeStreamBlockData*)m_Reader.m_BlockData.Range.Pointer;
                 var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
 
@@ -593,7 +604,7 @@ namespace Unity.Collections
                      * just do pointer + 8. On netcore, doing that throws a NullReferenceException. So, first check for
                      * out of bounds accesses, and only then update m_CurrentBlock and m_CurrentPtr.
                      */
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                     m_RemainingBlocks--;
 
                     CheckNotReadingOutOfBounds(size);
@@ -601,7 +612,7 @@ namespace Unity.Collections
                     m_Reader.m_CurrentBlock = m_Reader.m_CurrentBlock->Next;
                     m_Reader.m_CurrentPtr = m_Reader.m_CurrentBlock->Data;
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                     if (m_RemainingBlocks <= 0)
                     {
                         m_Reader.m_CurrentBlockEnd = (byte*)m_Reader.m_CurrentBlock + m_Reader.m_LastBlockSize;
@@ -659,10 +670,10 @@ namespace Unity.Collections
                 return m_Reader.Count();
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckNotReadingOutOfBounds(int size)
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_RemainingBlocks < 0)
                     throw new System.ArgumentException("Reading out of bounds");
 
@@ -679,12 +690,13 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckReadSize(int size)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 Assert.IsTrue(size <= UnsafeStreamBlockData.AllocationSize - (sizeof(void*)));
                 if (m_Reader.m_RemainingItemCount < 1)
                 {
@@ -693,12 +705,13 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckBeginForEachIndex(int forEachIndex)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
-
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 var blockData = (UnsafeStreamBlockData*)m_Reader.m_BlockData.Range.Pointer;
 
                 if ((uint)forEachIndex >= (uint)blockData->RangeCount)
@@ -708,7 +721,7 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckEndForEachIndex()
             {
                 if (m_Reader.m_RemainingItemCount != 0)
@@ -723,7 +736,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckForEachCountGreaterThanZero(int forEachCount)
         {
             if (forEachCount <= 0)

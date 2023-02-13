@@ -415,7 +415,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return (length == 0) ? null : ReadNext(length * UnsafeUtility.SizeOf<T>());
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckBounds(int structSize)
             {
                 if (Offset + structSize > Size)
@@ -425,7 +425,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckAlignment(int alignment)
         {
             var zeroAlignment = alignment == 0;

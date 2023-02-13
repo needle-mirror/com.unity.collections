@@ -1,5 +1,6 @@
 using AOT;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using UnityEngine.Assertions;
 using Unity.Burst;
@@ -9,22 +10,75 @@ using Unity.Mathematics;
 
 namespace Unity.Collections
 {
+    [GenerateTestsForBurstCompatibility]
     struct Spinner
     {
-        int m_value;
-        public void Lock()
+        int m_Lock;
+
+        /// <summary>
+        /// Continually spin until the lock can be acquired.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Acquire()
         {
-            while (0 != Interlocked.CompareExchange(ref m_value, 1, 0))
+            for(; ; )
             {
+                // Optimistically assume the lock is free on the first try.
+                if(Interlocked.CompareExchange(ref m_Lock, 1, 0) == 0)
+                {
+                    return;
+                }
+
+                // Wait for lock to be released without generate cache misses.
+                while(Volatile.Read(ref m_Lock) == 1)
+                {
+                    continue;
+                }
+
+                // Future improvement: the 'continue` instruction above could be swapped for a 'pause' intrinsic
+                // instruction when the CPU supports it, to further reduce contention by reducing load-store unit
+                // utilization. However, this would need to be optional because if you don't use hyper-threading
+                // and you don't care about power efficiency, using the 'pause' instruction will slow down lock
+                // acquisition in the contended scenario.
             }
-            Interlocked.MemoryBarrier();
         }
-        public void Unlock()
+
+        /// <summary>
+        /// Try to acquire the lock and immediately return without spinning.
+        /// </summary>
+        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false"/> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAcquire()
         {
-            Interlocked.MemoryBarrier();
-            while (1 != Interlocked.CompareExchange(ref m_value, 0, 1))
+            // First do a memory load (read) to check if lock is free in order to prevent uncessary cache missed.
+            return Volatile.Read(ref m_Lock) == 0 &&
+                Interlocked.CompareExchange(ref m_Lock, 1, 0) == 0;
+        }
+
+        /// <summary>
+        /// Try to acquire the lock, and spin only if <paramref name="spin"/> is <see langword="true"/>.
+        /// </summary>
+        /// <param name="spin">Set to true to spin the lock.</param>
+        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false" otherwise./></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAcquire(bool spin)
+        {
+            if(spin)
             {
+                Acquire();
+                return true;
             }
+
+            return TryAcquire();
+        }
+
+        /// <summary>
+        /// Release the lock
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Release()
+        {
+            Volatile.Write(ref m_Lock, 0);
         }
     }
 
@@ -67,58 +121,86 @@ namespace Unity.Collections
     [BurstCompile]
     public struct RewindableAllocator : AllocatorManager.IAllocator
     {
+        internal struct Union
+        {
+            internal long m_long;
+
+            // Number of bits used to store current position in a block to give out memory.
+            // This limits the maximum block size to 1TB (2^40).
+            const int currentBits = 40;
+            // Offset of current position in m_long
+            const int currentOffset = 0;
+            // Number of bits used to store the allocation count in a block
+            const long currentMask = (1L << currentBits) - 1;
+
+            // Number of bits used to store allocation count in a block.
+            // This limits the maximum number of allocations per block to 16 millions (2^24)
+            const int allocCountBits = 24;
+            // Offset of allocation count in m_long
+            const int allocCountOffset = currentOffset + currentBits;
+            const long allocCountMask = (1L << allocCountBits) - 1;
+
+            // Current position in a block to give out memory
+            internal long m_current
+            {
+                get
+                {
+                    return (m_long >> currentOffset) & currentMask;
+                }
+
+                set
+                {
+                    m_long &= ~(currentMask << currentOffset);
+                    m_long |= (value & currentMask) << currentOffset;
+                }
+            }
+
+            // The number of allocations in a block
+            internal long m_allocCount
+            {
+                get
+                {
+                    return (m_long >> allocCountOffset) & allocCountMask;
+                }
+
+                set
+                {
+                    m_long &= ~(allocCountMask << allocCountOffset);
+                    m_long |= (value & allocCountMask) << allocCountOffset;
+                }
+            }
+        }
         [GenerateTestsForBurstCompatibility]
         internal unsafe struct MemoryBlock : IDisposable
         {
-            public const int kMaximumAlignment = 16384; // can't align any coarser than this many bytes
-            public byte* m_pointer; // pointer to contiguous memory
-            public long m_bytes; // how many bytes of contiguous memory it points to
-            public long m_current; // next byte to give out, when people "allocate" from this block
-            public long m_allocations; // how many allocations have been made from this block, so far?
+            // can't align any coarser than this many bytes
+            public const int kMaximumAlignment = 16384;
+            // pointer to contiguous memory
+            public byte* m_pointer;
+            // how many bytes of contiguous memory it points to
+            public long m_bytes;
+            // Union of current position to give out memory and allocation counts
+            public Union m_union;
+
             public MemoryBlock(long bytes)
             {
                 m_pointer = (byte*)Memory.Unmanaged.Allocate(bytes, kMaximumAlignment, Allocator.Persistent);
                 Assert.IsTrue(m_pointer != null, "Memory block allocation failed, system out of memory");
                 m_bytes = bytes;
-                m_current = 0;
-                m_allocations = 0;
+                m_union = default;
             }
+
             public void Rewind()
             {
-                m_current = 0;
-                m_allocations = 0;
+                m_union = default;
             }
+
             public void Dispose()
             {
                 Memory.Unmanaged.Free(m_pointer, Allocator.Persistent);
                 m_pointer = null;
                 m_bytes = 0;
-                m_current = 0;
-                m_allocations = 0;
-            }
-
-            public int TryAllocate(ref AllocatorManager.Block block, long alignedSize, long alignmentMask)
-            {
-                var readValue = Interlocked.Read(ref m_current);
-                long oldReadValue;
-                long writtenValue;
-                long begin;
-                do
-                {
-                    writtenValue = readValue + alignedSize;
-                    begin = (readValue + alignmentMask) & ~alignmentMask;
-                    if (begin + block.Bytes > m_bytes)
-                    {
-                        return AllocatorManager.kErrorBufferOverflow;
-                    }
-                    oldReadValue = readValue;
-                    readValue = Interlocked.CompareExchange(ref m_current, writtenValue, oldReadValue);
-                } while (readValue != oldReadValue);
-
-                block.Range.Pointer = (IntPtr)(m_pointer + begin);
-                block.AllocatedItems = block.Range.Items;
-                Interlocked.Increment(ref m_allocations);
-                return AllocatorManager.kErrorNone;
+                m_union = default;
             }
 
             public bool Contains(IntPtr ptr)
@@ -126,19 +208,28 @@ namespace Unity.Collections
                 unsafe
                 {
                     void* pointer = (void*)ptr;
-                    return (pointer >= m_pointer) && (pointer < m_pointer + m_current);
+                    return (pointer >= m_pointer) && (pointer < m_pointer + m_union.m_current);
                 }
             }
         };
 
-        /// Maximum memory block size.  Can exceed maximum memory block size if user requested more.
-        const long kMaxMemoryBlockSize = 64 * 1024 * 1024;  // 64MB
+        // Log2 of Maximum memory block size.  Cannot exceed MemoryBlock.Union.currentBits.
+        const int kLog2MaxMemoryBlockSize = 26;
+
+        // Maximum memory block size.  Can exceed maximum memory block size if user requested more.
+        const long kMaxMemoryBlockSize = 1L << kLog2MaxMemoryBlockSize;  // 64MB
 
         /// Minimum memory block size, 128KB.
         const long kMinMemoryBlockSize = 128 * 1024;
 
         /// Maximum number of memory blocks.
         const int kMaxNumBlocks = 64;
+
+        // Bit mask (bit 31) of the memory block busy flag indicating whether the block is busy rewinding.
+        const int kBlockBusyRewindMask = 0x1 << 31;
+
+        // Bit mask of the memory block busy flag indicating whether the block is busy allocating.
+        const int kBlockBusyAllocateMask = ~kBlockBusyRewindMask;
 
         Spinner m_spinner;
         AllocatorManager.AllocatorHandle m_handle;
@@ -241,6 +332,56 @@ namespace Unity.Collections
         [ExcludeFromBurstCompatTesting("Uses managed delegate")]
         public AllocatorManager.TryFunction Function => Try;
 
+        unsafe int TryAllocate(ref AllocatorManager.Block block, int startIndex, int lastIndex, long alignedSize, long alignmentMask)
+        {
+            for (int best = startIndex; best <= lastIndex; best++)
+            {
+                Union oldUnion;
+                Union readUnion = default;
+                long begin = 0;
+                bool skip = false;
+                readUnion.m_long = Interlocked.Read(ref m_block[best].m_union.m_long);
+                do
+                {
+                    begin = (readUnion.m_current + alignmentMask) & ~alignmentMask;
+                    if (begin + block.Bytes > m_block[best].m_bytes)
+                    {
+                        skip = true;
+                        break;
+                    }
+                    oldUnion = readUnion;
+                    Union newUnion = default;
+                    newUnion.m_current = (begin + alignedSize) > m_block[best].m_bytes ? m_block[best].m_bytes : (begin + alignedSize);
+                    newUnion.m_allocCount = readUnion.m_allocCount + 1;
+                    readUnion.m_long = Interlocked.CompareExchange(ref m_block[best].m_union.m_long, newUnion.m_long, oldUnion.m_long);
+                } while (readUnion.m_long != oldUnion.m_long);
+
+                if(skip)
+                {
+                    continue;
+                }
+
+                block.Range.Pointer = (IntPtr)(m_block[best].m_pointer + begin);
+                block.AllocatedItems = block.Range.Items;
+
+                Interlocked.MemoryBarrier();
+                int oldUsed;
+                int readUsed;
+                int newUsed;
+                readUsed = m_used;
+                do
+                {
+                    oldUsed = readUsed;
+                    newUsed = best > oldUsed ? best : oldUsed;
+                    readUsed = Interlocked.CompareExchange(ref m_used, newUsed, oldUsed);
+                } while (newUsed != oldUsed);
+
+                return AllocatorManager.kErrorNone;
+            }
+
+            return AllocatorManager.kErrorBufferOverflow;
+        }
+
         /// <summary>
         /// Try to allocate, free, or reallocate a block of memory. This is an internal function, and
         /// is not generally called by the user.
@@ -266,23 +407,28 @@ namespace Unity.Collections
                 var size = (block.Bytes + extra * alignment + mask) & ~mask;
 
                 // Check all the blocks to see if any of them have enough memory
-                m_spinner.Lock();
-                int best;
-                int error;
-                for (best = 0; best <= m_last; ++best)
+                var last = m_last;
+                int error = TryAllocate(ref block, 0, m_last, size, mask);
+                if (error == AllocatorManager.kErrorNone)
                 {
-                    error = m_block[best].TryAllocate(ref block, size, mask);
-                    if (error == AllocatorManager.kErrorNone)
-                    {
-                        m_used = best > m_used ? best : m_used;
-                        m_spinner.Unlock();
-                        return error;
-                    }
+                    return error;
                 }
 
                 // If that fails, allocate another block that's guaranteed big enough, and allocate from it.
                 // Allocate twice as much as last time until it reaches MaxMemoryBlockSize, after that, increase
                 // the block size by MaxMemoryBlockSize.
+                m_spinner.Acquire();
+
+                // After getting the lock, we must try to allocate again, because if many threads waited at
+                // the lock, the first one allocates and when it unlocks, it's likely that there's space for the
+                // other threads' allocations in the first thread's block.
+                error = TryAllocate(ref block, last, m_last, size, mask);
+                if (error == AllocatorManager.kErrorNone)
+                {
+                    m_spinner.Release();
+                    return error;
+                }
+
                 long bytes;
                 if (m_reachMaxBlockSize == 0)
                 {
@@ -295,11 +441,10 @@ namespace Unity.Collections
                 // if user asks more, skip smaller sizes
                 bytes = math.max(bytes, size);
                 m_reachMaxBlockSize = (bytes >= kMaxMemoryBlockSize) ? (byte)1 : (byte)0;
-                m_block[best] = new MemoryBlock(bytes);
-                error = m_block[best].TryAllocate(ref block, size, mask);
-                m_used = best;
-                m_last = best;
-                m_spinner.Unlock();
+                m_block[m_last + 1] = new MemoryBlock(bytes);
+                Interlocked.Increment(ref m_last);
+                error = TryAllocate(ref block, m_last, m_last, size, mask);
+                m_spinner.Release();
                 return error;
             }
 
@@ -308,19 +453,26 @@ namespace Unity.Collections
             {
                 if (m_enableBlockFree != 0)
                 {
-                    m_spinner.Lock();
                     for (int blockIndex = 0; blockIndex <= m_last; ++blockIndex)
                     {
                         if (m_block[blockIndex].Contains(block.Range.Pointer))
                         {
-                            if (0 == Interlocked.Decrement(ref m_block[blockIndex].m_allocations))
+                            Union oldUnion;
+                            Union readUnion = default;
+                            readUnion.m_long = Interlocked.Read(ref m_block[blockIndex].m_union.m_long);
+                            do
                             {
-                                m_block[blockIndex].Rewind();
-                                break;
-                            }
+                                oldUnion = readUnion;
+                                Union newUnion = readUnion;
+                                newUnion.m_allocCount--;
+                                if (newUnion.m_allocCount == 0)
+                                {
+                                    newUnion.m_current = 0;
+                                }
+                                readUnion.m_long = Interlocked.CompareExchange(ref m_block[blockIndex].m_union.m_long, newUnion.m_long, oldUnion.m_long);
+                            } while (readUnion.m_long != oldUnion.m_long);
                         }
                     }
-                    m_spinner.Unlock();
                 }
                 return 0; // we could check to see if the pointer belongs to us, if we want to be strict about it.
             }
@@ -353,6 +505,13 @@ namespace Unity.Collections
         /// </summary>
         /// <value>True if this AllocatorHandle is a custom allocator.</value>
         public bool IsCustomAllocator { get { return m_handle.IsCustomAllocator; } }
+
+        /// <summary>
+        /// Check whether this allocator will automatically dispose allocations.
+        /// </summary>
+        /// <remarks>Allocations made by Rewindable allocator are automatically disposed.</remarks>
+        /// <value>Always true</value>
+        public bool IsAutoDispose { get { return true; } }
 
         /// <summary>
         /// Allocate a NativeArray of type T from memory that is guaranteed to remain valid until the end of the
@@ -401,9 +560,10 @@ namespace Unity.Collections
             {
                 container.m_ListData = this.Allocate(default(UnsafeList<T>), 1);
                 container.m_ListData->Ptr = this.Allocate(default(T), capacity);
-                container.m_ListData->m_capacity = capacity;
                 container.m_ListData->m_length = 0;
-                container.m_ListData->Allocator = Allocator.None;
+                container.m_ListData->m_capacity = 0;
+                container.m_ListData->GrowthPolicy = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.CeilPow2, 0);
+                container.m_ListData->GrowthPolicy.Capacity = capacity;
             }
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);

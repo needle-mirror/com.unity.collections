@@ -2,9 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Unity.Burst;
-#if !NET_DOTS
 using Unity.Burst.Intrinsics;
-#endif
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 
@@ -271,14 +269,12 @@ namespace Unity.Collections
                     var totalNbStripes = (State.BufferedSize - 1) / STRIPE_LEN;
                     ConsumeStripes(acc, ref State.NbStripesSoFar, Buffer, totalNbStripes, secret, isHash64);
 
-#if !NET_DOTS
                     if (X86.Avx2.IsAvx2Supported)
                     {
                         Avx2Accumulate512(acc, Buffer + State.BufferedSize - STRIPE_LEN, null,
                             secret + SECRET_LIMIT - SECRET_LASTACC_START);
                     }
                     else
-#endif
                     {
                         DefaultAccumulate512(acc, Buffer + State.BufferedSize - STRIPE_LEN, null,
                             secret + SECRET_LIMIT - SECRET_LASTACC_START, isHash64);
@@ -290,13 +286,11 @@ namespace Unity.Collections
                     var catchupSize = STRIPE_LEN - State.BufferedSize;
                     UnsafeUtility.MemCpy(lastStripe, Buffer + INTERNAL_BUFFER_SIZE - catchupSize, catchupSize);
                     UnsafeUtility.MemCpy(lastStripe + catchupSize, Buffer, State.BufferedSize);
-#if !NET_DOTS
                     if (X86.Avx2.IsAvx2Supported)
                     {
                         Avx2Accumulate512(acc, lastStripe, null, secret+SECRET_LIMIT-SECRET_LASTACC_START);
                     }
                     else
-#endif
                     {
                         DefaultAccumulate512(acc, lastStripe, null, secret+SECRET_LIMIT-SECRET_LASTACC_START, isHash64);
                     }
@@ -309,7 +303,6 @@ namespace Unity.Collections
                 if (NB_STRIPES_PER_BLOCK - nbStripesSoFar <= totalStripes)
                 {
                     var nbStripes = NB_STRIPES_PER_BLOCK - nbStripesSoFar;
-#if !NET_DOTS
                     if (X86.Avx2.IsAvx2Supported)
                     {
                         Avx2Accumulate(acc, input, null, secret + nbStripesSoFar * SECRET_CONSUME_RATE, nbStripes, isHash64);
@@ -317,7 +310,6 @@ namespace Unity.Collections
                         Avx2Accumulate(acc, input + nbStripes * STRIPE_LEN, null, secret, totalStripes - nbStripes, isHash64);
                     }
                     else
-#endif
                     {
                         DefaultAccumulate(acc, input, null, secret + nbStripesSoFar * SECRET_CONSUME_RATE, nbStripes, isHash64);
                         DefaultScrambleAcc(acc, secret + SECRET_LIMIT);
@@ -328,13 +320,11 @@ namespace Unity.Collections
                 }
                 else
                 {
-#if !NET_DOTS
                     if (X86.Avx2.IsAvx2Supported)
                     {
                         Avx2Accumulate(acc, input, null, secret + nbStripesSoFar * SECRET_CONSUME_RATE, totalStripes, isHash64);
                     }
                     else
-#endif
                     {
                         DefaultAccumulate(acc, input, null, secret + nbStripesSoFar * SECRET_CONSUME_RATE, totalStripes, isHash64);
                     }

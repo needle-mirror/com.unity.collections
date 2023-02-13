@@ -756,13 +756,13 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowKeyNotPresent(TKey key)
         {
             throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowKeyAlreadyAdded(TKey key)
         {
             throw new ArgumentException("An item with the same key has already been added", nameof(key));
@@ -773,7 +773,6 @@ namespace Unity.Collections
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
-#if !NET_DOTS
         UnsafeParallelHashMap<TKey, TValue> m_Target;
 
         public NativeParallelHashMapDebuggerTypeProxy(NativeParallelHashMap<TKey, TValue> target)
@@ -801,6 +800,5 @@ namespace Unity.Collections
                 return result;
             }
         }
-#endif
     }
 }

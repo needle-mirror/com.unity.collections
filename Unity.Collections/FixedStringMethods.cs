@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 namespace Unity.Collections
 {
@@ -9,6 +11,115 @@ namespace Unity.Collections
     [GenerateTestsForBurstCompatibility]
     public unsafe static partial class FixedStringMethods
     {
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        internal static void CheckSubstringInRange(int strLength, int startIndex, int length)
+        {
+            if (startIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException($"startIndex {startIndex} must be positive.");
+            }
+
+            if (length < 0)
+            {
+                throw new ArgumentOutOfRangeException($"length {length} cannot be negative.");
+            }
+
+            if (startIndex > strLength)
+            {
+                throw new ArgumentOutOfRangeException($"startIndex {startIndex} cannot be larger than string length {strLength}.");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a substring of this FixedString*N*. The substring starts from a specific character index, and has a specified length.
+        /// </summary>
+        /// <typeparam name="T">A <see cref="FixedString"/> type.</typeparam>
+        /// <param name="str">A FixedString*N* to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <param name="length">Length of substring.</param>
+        /// <returns>A new FixedString*N* with length equivalent to `length` that begins at `startIndex`.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if startIndex or length parameter is negative, or if startIndex is larger than the string length.</exception>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T Substring<T>(ref this T str, int startIndex, int length)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            CheckSubstringInRange(str.Length, startIndex, length);
+            length = math.min(length, str.Length - startIndex);
+
+            var substr = new T();
+            substr.Append(str.GetUnsafePtr() + startIndex, length);
+            return substr;
+        }
+
+        /// <summary>
+        /// Retrieves a substring of this FixedString*N*. The substring starts from a specific character index and continues to the end of the string.
+        /// </summary>
+        /// <typeparam name="T">A <see cref="FixedString"/> type.</typeparam>
+        /// <param name="str">A string to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <returns>A new FixedString*N* that begins at `startIndex`.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T Substring<T>(ref this T str, int startIndex)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            return str.Substring(startIndex, str.Length - startIndex);
+        }
+
+        /// <summary>
+        /// Retrieves a substring from this string. The substring starts from a specific character index, and has a specified length. Allocates memory to the new substring with the allocator specified.
+        /// </summary>
+        /// <param name="str">A <see cref="NativeText"/> string to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <param name="length">Length of substring.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>A `NativeText` string with a length equivalent to `length` that starts at `startIndex` and an allocator type of `allocator`.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if startIndex or length parameter is negative, or if startIndex is larger than string length.</exception>
+        public static NativeText Substring(ref this NativeText str, int startIndex, int length, AllocatorManager.AllocatorHandle allocator)
+        {
+            CheckSubstringInRange(str.Length, startIndex, length);
+            length = math.min(length, str.Length - startIndex);
+
+            var substr = new NativeText(length, allocator);
+            substr.Append(str.GetUnsafePtr() + startIndex, length);
+            return substr;
+        }
+
+        /// <summary>
+        /// Retrieves a substring of this string. The substring starts from a specific character index and continues to the end of the string. Allocates memory to the new substring with the allocator specified.
+        /// </summary>
+        /// <param name="str">A <see cref="NativeText"/> string to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>A NativeText string that begins at `startIndex` and has an allocator of type `allocator`.</returns>
+        public static NativeText Substring(ref this NativeText str, int startIndex, AllocatorManager.AllocatorHandle allocator)
+        {
+            return str.Substring(startIndex, str.Length - startIndex);
+        }
+
+        /// <summary>
+        /// Retrieves a substring of this string. The substring starts from a specific character index, and has a specified length. The new substring has the same allocator as the string.
+        /// </summary>
+        /// <param name="str">A <see cref="NativeText"/> string to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <param name="length">Length of substring.</param>
+        /// <returns>A NativeText string that has length equivalent to `length` and begins at `startIndex`.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if startIndex or length parameter is negative, or if startIndex is larger than string length.</exception>
+        public static NativeText Substring(ref this NativeText str, int startIndex, int length)
+        {
+            return str.Substring(startIndex, length, str.m_Data->m_UntypedListData.Allocator);
+        }
+
+        /// <summary>
+        /// Retrieves a substring of this string. The substring starts from a specific character index and continues to the end of the string. The new substring has the same allocator as the string.
+        /// </summary>
+        /// <param name="str">A <see cref="NativeText"/> to get the substring from.</param>
+        /// <param name="startIndex">Start index of substring.</param>
+        /// <returns>A NativeText string that begins at `startIndex`.</returns>
+        public static NativeText Substring(ref this NativeText str, int startIndex)
+        {
+            return str.Substring(startIndex, str.Length - startIndex);
+        }
+
         /// <summary>
         /// Returns the index of the first occurrence of a single Unicode rune in this string.
         /// </summary>

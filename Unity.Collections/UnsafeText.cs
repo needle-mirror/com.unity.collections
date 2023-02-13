@@ -190,7 +190,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return this.ConvertToString();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -199,13 +199,13 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new IndexOutOfRangeException($"Index {index} is out of range in UnsafeText of {Length} length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowCopyError(CopyError error, string source)
         {
             throw new ArgumentException($"UnsafeText: {error} while copying \"{source}\"");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckCapacityInRange(int value, int length)
         {
             if (value < 0)

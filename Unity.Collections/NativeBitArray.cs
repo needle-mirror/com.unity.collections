@@ -25,7 +25,8 @@ namespace Unity.Collections
         static readonly SharedStatic<int> s_staticSafetyId = SharedStatic<int>.GetOrCreate<NativeBitArray>();
 #endif
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeBitArray m_BitArray;
+        internal UnsafeBitArray* m_BitArray;
+        internal AllocatorManager.AllocatorHandle m_Allocator;
 
         /// <summary>
         /// Initializes and returns an instance of NativeBitArray.
@@ -40,14 +41,52 @@ namespace Unity.Collections
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
             CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeBitArray");
 #endif
-            m_BitArray = new UnsafeBitArray(numBits, allocator, options);
+            m_BitArray = UnsafeBitArray.Alloc(allocator);
+            *m_BitArray = new UnsafeBitArray(numBits, allocator, options);
+            m_Allocator = allocator;
         }
 
         /// <summary>
         /// Whether this array has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this array has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_BitArray.IsCreated;
+        public bool IsCreated => m_BitArray != null && m_BitArray->IsCreated;
+
+        /// <summary>
+        /// Sets the length, expanding the capacity if necessary.
+        /// </summary>
+        /// <param name="numBits">The new length in bits.</param>
+        /// <param name="options">Whether newly allocated data should be zeroed out.</param>
+        public void Resize(int numBits, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_BitArray->Resize(numBits, options);
+        }
+
+        /// <summary>
+        /// Sets the capacity.
+        /// </summary>
+        /// <param name="capacityInBits">The new capacity.</param>
+        public void SetCapacity(int capacityInBits)
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_BitArray->SetCapacity(capacityInBits);
+        }
+
+        /// <summary>
+        /// Sets the capacity to match what it would be if it had been originally initialized with all its entries.
+        /// </summary>
+        public void TrimExcess()
+        {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+            m_BitArray->TrimExcess();
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -58,7 +97,9 @@ namespace Unity.Collections
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            m_BitArray.Dispose();
+            m_BitArray->Dispose();
+            UnsafeBitArray.Free(m_BitArray, m_Allocator);
+            m_BitArray = null;
         }
 
         /// <summary>
@@ -68,11 +109,14 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will dispose this array. The new job depends upon inputDeps.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = m_BitArray.Dispose(inputDeps);
+            var jobHandle = m_BitArray->Dispose(inputDeps);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.Release(m_Safety);
 #endif
+
+            UnsafeBitArray.Free(m_BitArray, m_Allocator);
+            m_BitArray = null;
 
             return jobHandle;
         }
@@ -86,7 +130,20 @@ namespace Unity.Collections
             get
             {
                 CheckRead();
-                return CollectionHelper.AssumePositive(m_BitArray.Length);
+                return CollectionHelper.AssumePositive(m_BitArray->Length);
+            }
+        }
+
+        /// <summary>
+        /// Returns the capacity number of bits.
+        /// </summary>
+        /// <value>The capacity number of bits.</value>
+        public int Capacity
+        {
+            get
+            {
+                CheckRead();
+                return CollectionHelper.AssumePositive(m_BitArray->Capacity);
             }
         }
 
@@ -96,7 +153,7 @@ namespace Unity.Collections
         public void Clear()
         {
             CheckWrite();
-            m_BitArray.Clear();
+            m_BitArray->Clear();
         }
 
         /// <summary>
@@ -112,9 +169,9 @@ namespace Unity.Collections
             CheckReadBounds<T>();
 
             var bitsPerElement = UnsafeUtility.SizeOf<T>() * 8;
-            var length = m_BitArray.Length / bitsPerElement;
+            var length = m_BitArray->Length / bitsPerElement;
 
-            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(m_BitArray.Ptr, length, Allocator.None);
+            var array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(m_BitArray->Ptr, length, Allocator.None);
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.UseSecondaryVersion(ref m_Safety);
             NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, m_Safety);
@@ -130,7 +187,7 @@ namespace Unity.Collections
         public void Set(int pos, bool value)
         {
             CheckWrite();
-            m_BitArray.Set(pos, value);
+            m_BitArray->Set(pos, value);
         }
 
         /// <summary>
@@ -147,7 +204,7 @@ namespace Unity.Collections
         public void SetBits(int pos, bool value, int numBits)
         {
             CheckWrite();
-            m_BitArray.SetBits(pos, value, numBits);
+            m_BitArray->SetBits(pos, value, numBits);
         }
 
         /// <summary>
@@ -167,7 +224,7 @@ namespace Unity.Collections
         public void SetBits(int pos, ulong value, int numBits = 1)
         {
             CheckWrite();
-            m_BitArray.SetBits(pos, value, numBits);
+            m_BitArray->SetBits(pos, value, numBits);
         }
 
         /// <summary>
@@ -186,7 +243,7 @@ namespace Unity.Collections
         public ulong GetBits(int pos, int numBits = 1)
         {
             CheckRead();
-            return m_BitArray.GetBits(pos, numBits);
+            return m_BitArray->GetBits(pos, numBits);
         }
 
         /// <summary>
@@ -198,7 +255,7 @@ namespace Unity.Collections
         public bool IsSet(int pos)
         {
             CheckRead();
-            return m_BitArray.IsSet(pos);
+            return m_BitArray->IsSet(pos);
         }
 
         /// <summary>
@@ -217,7 +274,7 @@ namespace Unity.Collections
         public void Copy(int dstPos, int srcPos, int numBits)
         {
             CheckWrite();
-            m_BitArray.Copy(dstPos, srcPos, numBits);
+            m_BitArray->Copy(dstPos, srcPos, numBits);
         }
 
         /// <summary>
@@ -240,7 +297,7 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckReadAndThrow(srcBitArray.m_Safety);
 #endif
             CheckWrite();
-            m_BitArray.Copy(dstPos, ref srcBitArray.m_BitArray, srcPos, numBits);
+            m_BitArray->Copy(dstPos, ref *srcBitArray.m_BitArray, srcPos, numBits);
         }
 
         /// <summary>
@@ -253,7 +310,7 @@ namespace Unity.Collections
         public int Find(int pos, int numBits)
         {
             CheckRead();
-            return m_BitArray.Find(pos, numBits);
+            return m_BitArray->Find(pos, numBits);
         }
 
         /// <summary>
@@ -267,7 +324,7 @@ namespace Unity.Collections
         public int Find(int pos, int count, int numBits)
         {
             CheckRead();
-            return m_BitArray.Find(pos, count, numBits);
+            return m_BitArray->Find(pos, count, numBits);
         }
 
         /// <summary>
@@ -280,7 +337,7 @@ namespace Unity.Collections
         public bool TestNone(int pos, int numBits = 1)
         {
             CheckRead();
-            return m_BitArray.TestNone(pos, numBits);
+            return m_BitArray->TestNone(pos, numBits);
         }
 
         /// <summary>
@@ -293,7 +350,7 @@ namespace Unity.Collections
         public bool TestAny(int pos, int numBits = 1)
         {
             CheckRead();
-            return m_BitArray.TestAny(pos, numBits);
+            return m_BitArray->TestAny(pos, numBits);
         }
 
         /// <summary>
@@ -306,7 +363,7 @@ namespace Unity.Collections
         public bool TestAll(int pos, int numBits = 1)
         {
             CheckRead();
-            return m_BitArray.TestAll(pos, numBits);
+            return m_BitArray->TestAll(pos, numBits);
         }
 
         /// <summary>
@@ -319,7 +376,7 @@ namespace Unity.Collections
         public int CountBits(int pos, int numBits = 1)
         {
             CheckRead();
-            return m_BitArray.CountBits(pos, numBits);
+            return m_BitArray->CountBits(pos, numBits);
         }
 
         /// <summary>
@@ -348,7 +405,7 @@ namespace Unity.Collections
 
             internal ReadOnly(ref NativeBitArray data)
             {
-                m_BitArray = data.m_BitArray.AsReadOnly();
+                m_BitArray = data.m_BitArray->AsReadOnly();
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = data.m_Safety;
                 CollectionHelper.SetStaticSafetyId<ReadOnly>(ref m_Safety, ref s_staticSafetyId.Data);
@@ -495,21 +552,21 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckReadBounds<T>() where T : unmanaged
         {
             CheckRead();
 
             var bitsPerElement = UnsafeUtility.SizeOf<T>() * 8;
-            var length = m_BitArray.Length / bitsPerElement;
+            var length = m_BitArray->Length / bitsPerElement;
 
             if (length == 0)
             {
-                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray.Length} is not sufficient to cast to NativeArray<T> {UnsafeUtility.SizeOf<T>() * 8}.");
+                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray->Length} is not sufficient to cast to NativeArray<T> {UnsafeUtility.SizeOf<T>() * 8}.");
             }
-            else if (m_BitArray.Length != bitsPerElement* length)
+            else if (m_BitArray->Length != bitsPerElement* length)
             {
-                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray.Length} couldn't hold multiple of T {UnsafeUtility.SizeOf<T>()}. Output array would be truncated.");
+                throw new InvalidOperationException($"Number of bits in the NativeBitArray {m_BitArray->Length} couldn't hold multiple of T {UnsafeUtility.SizeOf<T>()}. Output array would be truncated.");
             }
         }
 
@@ -564,9 +621,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>A bit array with content aliasing a buffer.</returns>
         public static unsafe NativeBitArray ConvertExistingDataToNativeBitArray(void* ptr, int sizeInBytes, AllocatorManager.AllocatorHandle allocator)
         {
+            var bitArray = UnsafeBitArray.Alloc(Allocator.Persistent);
+            *bitArray = new UnsafeBitArray(ptr, sizeInBytes, allocator);
+
             return new NativeBitArray
             {
-                m_BitArray = new UnsafeBitArray(ptr, sizeInBytes, allocator),
+                m_BitArray = bitArray,
+                m_Allocator = Allocator.Persistent,
             };
         }
     }

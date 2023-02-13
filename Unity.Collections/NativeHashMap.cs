@@ -15,7 +15,7 @@ namespace Unity.Collections
     {
         [NativeDisableUnsafePtrRestriction]
         internal void* m_Ptr;
-        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
+        internal AllocatorManager.AllocatorHandle m_Allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         internal AtomicSafetyHandle m_Safety;
@@ -23,7 +23,7 @@ namespace Unity.Collections
 
         internal void Dispose()
         {
-            AllocatorManager.Free(m_AllocatorLabel, m_Ptr);
+            AllocatorManager.Free(m_Allocator, m_Ptr);
         }
     }
 
@@ -46,30 +46,71 @@ namespace Unity.Collections
     /// <typeparam name="TValue">The type of the values.</typeparam>
     [DebuggerDisplay("Key = {Key}, Value = {Value}")]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
-    public struct KVPair<TKey, TValue>
+    public unsafe struct KVPair<TKey, TValue>
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
     {
+        internal HashMapHelper<TKey>* m_Data;
+        internal int m_Index;
+        internal int m_Next;
+
+        /// <summary>
+        ///  An invalid KeyValue.
+        /// </summary>
+        /// <value>In a hash map enumerator's initial state, its <see cref="UnsafeHashMap{TKey,TValue}.Enumerator.Current"/> value is Null.</value>
+        public static KVPair<TKey, TValue> Null => new KVPair<TKey, TValue> { m_Index = -1 };
+
         /// <summary>
         /// The key.
         /// </summary>
         /// <value>The key. If this KeyValue is Null, returns the default of TKey.</value>
-        public TKey Key;
+        public TKey Key
+        {
+            get
+            {
+                if (m_Index != -1)
+                {
+                    return m_Data->Keys[m_Index];
+                }
+
+                return default;
+            }
+        }
 
         /// <summary>
         /// Value of key/value pair.
         /// </summary>
-        public TValue Value;
+        public ref TValue Value
+        {
+            get
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                if (m_Index == -1)
+                    throw new ArgumentException("must be valid");
+#endif
+
+                return ref UnsafeUtility.AsRef<TValue>(m_Data->Ptr + sizeof(TValue) * m_Index);
+            }
+        }
 
         /// <summary>
-        /// Initializes a new instance of the KeyValuePair&lt;TKey,TValue&gt; structure with the specified key and value.
+        /// Gets the key and the value.
         /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="value">Value of key/value pair.</param>
-        public KVPair(TKey key, TValue value)
+        /// <param name="key">Outputs the key. If this KeyValue is Null, outputs the default of TKey.</param>
+        /// <param name="value">Outputs the value. If this KeyValue is Null, outputs the default of TValue.</param>
+        /// <returns>True if the key-value pair is valid.</returns>
+        public bool GetKeyValue(out TKey key, out TValue value)
         {
-            Key = key;
-            Value = value;
+            if (m_Index != -1)
+            {
+                key = m_Data->Keys[m_Index];
+                value = UnsafeUtility.ReadArrayElement<TValue>(m_Data->Ptr, m_Index);
+                return true;
+            }
+
+            key = default;
+            value = default;
+            return false;
         }
     }
 
@@ -102,11 +143,16 @@ namespace Unity.Collections
         /// <summary>
         /// Initializes and returns an instance of UnsafeHashMap.
         /// </summary>
-        /// <param name="capacity">The number of key-value pairs that should fit in the initial allocation.</param>
+        /// <param name="initialCapacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
-        public NativeHashMap(int capacity, AllocatorManager.AllocatorHandle allocator)
+        public NativeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
+            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
         {
-            m_Data = HashMapHelper<TKey>.Alloc(capacity, sizeof(TValue), 256, allocator);
+        }
+
+        internal NativeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
+        {
+            m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), growthPolicy, 256, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -145,7 +191,7 @@ namespace Unity.Collections
                 Data = new NativeDataDispose
                 {
                     m_Ptr = m_Data->Ptr,
-                    m_AllocatorLabel = m_Data->Allocator,
+                    m_Allocator = m_Data->GrowthPolicy.Allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = m_Safety,
 #endif
@@ -194,7 +240,7 @@ namespace Unity.Collections
             get
             {
                 CheckRead();
-                return m_Data->Count;
+                return m_Data->GrowthPolicy.Count;
             }
         }
 
@@ -215,7 +261,7 @@ namespace Unity.Collections
             set
             {
                 CheckWrite();
-                m_Data->Resize(m_Data->CalcCapacity(value));
+                m_Data->Resize(value);
             }
         }
 
@@ -239,12 +285,11 @@ namespace Unity.Collections
         public bool TryAdd(TKey key, TValue item)
         {
             CheckWrite();
-            m_Data->UpdateCapacity();
 
             var idx = m_Data->TryAdd(key);
             if (-1 != idx)
             {
-                m_Data->GetElementAt<TValue>(idx) = item;
+                UnsafeUtility.WriteArrayElement(m_Data->Ptr, idx, item);
                 return true;
             }
 
@@ -307,7 +352,8 @@ namespace Unity.Collections
         /// </summary>
         public void TrimExcess()
         {
-            m_Data->Resize(m_Data->CalcCapacity(m_Data->CalcMinCapacity()));
+            CheckWrite();
+            m_Data->TrimExcess();
         }
 
         /// <summary>
@@ -339,7 +385,7 @@ namespace Unity.Collections
                 var idx = m_Data->Find(key);
                 if (-1 != idx)
                 {
-                    m_Data->GetElementAt<TValue>(idx) = value;
+                    UnsafeUtility.WriteArrayElement(m_Data->Ptr, idx, value);
                     return;
                 }
 
@@ -397,8 +443,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 m_Safety = ash,
 #endif
-                m_Data = m_Data,
-                m_Index = -1,
+                m_Enumerator = new HashMapHelper<TKey>.Enumerator(m_Data),
             };
         }
 
@@ -434,8 +479,7 @@ namespace Unity.Collections
         public struct Enumerator : IEnumerator<KVPair<TKey, TValue>>
         {
             [NativeDisableUnsafePtrRestriction]
-            internal HashMapHelper<TKey>* m_Data;
-            internal int m_Index;
+            internal HashMapHelper<TKey>.Enumerator m_Enumerator;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal AtomicSafetyHandle m_Safety;
 #endif
@@ -454,8 +498,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = m_Data->FindNext(m_Index + 1);
-                return m_Index != -1;
+                return m_Enumerator.MoveNext();
             }
 
             /// <summary>
@@ -466,25 +509,18 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
-                m_Index = -1;
+                m_Enumerator.Reset();
             }
 
             /// <summary>
             /// The current key-value pair.
             /// </summary>
             /// <value>The current key-value pair.</value>
-            public KVPair<TKey, TValue> Current
-            {
-                get
-                {
-                    return new KVPair<TKey, TValue>
-                    {
-                        Key = m_Data->GetKeyAt(m_Index),
-                        Value = m_Data->GetElementAt<TValue>(m_Index)
-                    };
-                }
-            }
+            public KVPair<TKey, TValue> Current => m_Enumerator.GetCurrent<TValue>();
 
+            /// <summary>
+            /// Gets the element at the current position of the enumerator in the container.
+            /// </summary>
             object IEnumerator.Current => Current;
         }
 
@@ -551,7 +587,7 @@ namespace Unity.Collections
                 get
                 {
                     CheckRead();
-                    return m_Data->Count;
+                    return m_Data->GrowthPolicy.Count;
                 }
             }
 
@@ -677,8 +713,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = ash,
 #endif
-                    m_Data = m_Data,
-                    m_Index = -1,
+                    m_Enumerator = new HashMapHelper<TKey>.Enumerator(m_Data),
                 };
             }
 
@@ -710,7 +745,7 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void ThrowKeyNotPresent(TKey key)
             {
                 throw new ArgumentException($"Key: {key} is not present.");
@@ -733,13 +768,13 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowKeyNotPresent(TKey key)
         {
             throw new ArgumentException($"Key: {key} is not present.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowKeyAlreadyAdded(TKey key)
         {
             throw new ArgumentException($"An item with the same key has already been added: {key}");

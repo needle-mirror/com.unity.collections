@@ -116,7 +116,7 @@ namespace Unity.Collections
         public DataStreamWriter(int length, Allocator allocator)
         {
             CheckAllocator(allocator);
-            Initialize(out this, new NativeArray<byte>(length, allocator));
+            Initialize(out this, CollectionHelper.CreateNativeArray<byte>(length, allocator));
         }
 
         /// <summary>
@@ -879,14 +879,14 @@ namespace Unity.Collections
 #endif
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckAllocator(Allocator allocator)
         {
             if (allocator != Allocator.Temp)
                 throw new InvalidOperationException("DataStreamWriters can only be created with temp memory");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckBits(uint value, int numbits)
         {
             if (numbits < 0 || numbits > 32)

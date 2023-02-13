@@ -7,9 +7,7 @@ using Unity.Burst.CompilerServices;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
-#if !NET_DOTS
 using System.Reflection;
-#endif
 
 namespace Unity.Collections
 {
@@ -32,7 +30,7 @@ namespace Unity.Collections
     [GenerateTestsForBurstCompatibility]
     public static class CollectionHelper
     {
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckAllocator(AllocatorManager.AllocatorHandle allocator)
         {
             if (!ShouldDeallocate(allocator))
@@ -178,7 +176,6 @@ namespace Unity.Collections
         [ExcludeFromBurstCompatTesting("Used only for debugging, and uses managed strings")]
         internal static void WriteLayout(Type type)
         {
-#if !NET_DOTS
             Console.WriteLine($"   Offset | Bytes  | Name     Layout: {0}", type.Name);
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var field in fields)
@@ -189,9 +186,6 @@ namespace Unity.Collections
                     , field.Name
                 );
             }
-#else
-            _ = type;
-#endif
         }
 
         internal static bool ShouldDeallocate(AllocatorManager.AllocatorHandle allocator)
@@ -231,7 +225,7 @@ namespace Unity.Collections
         }
 #endif
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckIntPositivePowerOfTwo(int value)
         {
             var valid = (value > 0) && ((value & (value - 1)) == 0);
@@ -241,7 +235,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckUlongPositivePowerOfTwo(ulong value)
         {
             var valid = (value > 0) && ((value & (value - 1)) == 0);
@@ -410,17 +404,22 @@ namespace Unity.Collections
         public static void DisposeNativeArray<T>(NativeArray<T> nativeArray, AllocatorManager.AllocatorHandle allocator)
             where T : unmanaged
         {
-            if (!AllocatorManager.IsCustomAllocator(allocator))
-            {
-                nativeArray.Dispose();
-            }
-            else
-            {
-                nativeArray.DisposeNativeArray(allocator);
-            }
+            nativeArray.DisposeCheckAllocator();
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        /// <summary>
+        /// Dispose a NativeArray from an AllocatorHandle where it is allocated.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="nativeArray">The NativeArray to be disposed.</param>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        public static void Dispose<T>(NativeArray<T> nativeArray)
+            where T : unmanaged
+        {
+            nativeArray.DisposeCheckAllocator();
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckConvertArguments<T>(int length) where T : unmanaged
         {
             if (length < 0)
@@ -524,23 +523,23 @@ namespace Unity.Collections
 
 
         /// <summary>
-        /// Create a NativeMultiHashMap from a managed array, using a provided Allocator.
+        /// Create a NativeParallelMultiHashMap from a managed array, using a provided Allocator.
         /// </summary>
         /// <typeparam name="TKey">The type of the keys.</typeparam>
         /// <typeparam name="TValue">The type of the values.</typeparam>
         /// <typeparam name="U">The type of allocator.</typeparam>
-        /// <param name="length">The desired capacity of the NativeMultiHashMap.</param>
+        /// <param name="length">The desired capacity of the NativeParallelMultiHashMap.</param>
         /// <param name="allocator">The Allocator to use.</param>
-        /// <returns>Returns the NativeMultiHashMap that was created.</returns>
+        /// <returns>Returns the NativeParallelMultiHashMap that was created.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int), typeof(AllocatorManager.AllocatorHandle) })]
-        public static NativeMultiHashMap<TKey, TValue> CreateNativeMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
+        public static NativeParallelMultiHashMap<TKey, TValue> CreateNativeParallelMultiHashMap<TKey, TValue, U>(int length, ref U allocator)
             where TKey : unmanaged, IEquatable<TKey>
             where TValue : unmanaged
             where U : unmanaged, AllocatorManager.IAllocator
         {
-            var nativeMultiHashMap = new NativeMultiHashMap<TKey, TValue>();
-            nativeMultiHashMap.Initialize(length, ref allocator);
-            return nativeMultiHashMap;
+            var container = new NativeParallelMultiHashMap<TKey, TValue>();
+            container.Initialize(length, ref allocator);
+            return container;
         }
 
         /// <summary>
@@ -565,10 +564,10 @@ namespace Unity.Collections
         /// <typeparam name="T">Job type</typeparam>
         [GenerateTestsForBurstCompatibility(RequiredUnityDefine = "ENABLE_UNITY_COLLECTIONS_CHECKS",
             GenericTypeArguments = new[] { typeof(DummyJob) })]
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         public static void CheckReflectionDataCorrect<T>(IntPtr reflectionData)
         {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             bool burstCompiled = true;
             CheckReflectionDataCorrectInternal<T>(reflectionData, ref burstCompiled);
             if (burstCompiled && reflectionData == IntPtr.Zero)
@@ -662,8 +661,8 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.SetStaticSafetyId(ref handle, sharedStaticId);
         }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+#endif
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         [BurstDiscard]
         static void CheckReflectionDataCorrectInternal<T>(IntPtr reflectionData, ref bool burstCompiled)
         {
@@ -671,7 +670,5 @@ namespace Unity.Collections
                 throw new InvalidOperationException($"Reflection data was not set up by an Initialize() call. For generic job types, please include [assembly: RegisterGenericJobType(typeof({typeof(T)}))] in your source file.");
             burstCompiled = false;
         }
-
-#endif
     }
 }
