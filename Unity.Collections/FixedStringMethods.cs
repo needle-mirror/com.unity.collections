@@ -562,5 +562,77 @@ namespace Unity.Collections
         {
             return sizeof(ushort) + fs.Length + 1;
         }
+
+        /// <summary>
+        /// Returns true if a given character occurs at the beginning of this string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to search.</param>
+        /// <param name="rune">A character to search for within this string.</param>
+        /// <returns>True if the character occurs at the beginning of this string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static bool StartsWith<T>(ref this T fs, Unicode.Rune rune)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var len = rune.LengthInUtf8Bytes();
+            return fs.Length >= len
+                && 0 == UTF8ArrayUnsafeUtility.StrCmp(fs.GetUnsafePtr(), len, &rune, 1)
+                ;
+        }
+
+        /// <summary>
+        /// Returns true if a given substring occurs at the beginning of this string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="U">A string type.</typeparam>
+        /// <param name="fs">A string to search.</param>
+        /// <param name="other">A substring to search for within this string.</param>
+        /// <returns>True if the substring occurs at the beginning of this string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
+        public static bool StartsWith<T, U>(ref this T fs, in U other)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var len = other.Length;
+            return fs.Length >= len
+                && 0 == UTF8ArrayUnsafeUtility.StrCmp(fs.GetUnsafePtr(), len, other.GetUnsafePtr(), len)
+                ;
+        }
+
+        /// <summary>
+        /// Returns true if a given character occurs at the end of this string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to search.</param>
+        /// <param name="rune">A character to search for within this string.</param>
+        /// <returns>True if the character occurs at the end of this string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static bool EndsWith<T>(ref this T fs, Unicode.Rune rune)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var len = rune.LengthInUtf8Bytes();
+            return fs.Length >= len
+                && 0 == UTF8ArrayUnsafeUtility.StrCmp(fs.GetUnsafePtr() + fs.Length - len, len, &rune, 1)
+                ;
+        }
+
+        /// <summary>
+        /// Returns true if a given substring occurs at the end of this string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="U">A string type.</typeparam>
+        /// <param name="fs">A string to search.</param>
+        /// <param name="other">A substring to search for within this string.</param>
+        /// <returns>True if the substring occurs at the end of this string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes), typeof(FixedString128Bytes) })]
+        public static bool EndsWith<T, U>(ref this T fs, in U other)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+            where U : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var len = other.Length;
+            return fs.Length >= len
+                && 0 == UTF8ArrayUnsafeUtility.StrCmp(fs.GetUnsafePtr() + fs.Length - len, len, other.GetUnsafePtr(), len)
+                ;
+        }
     }
 }

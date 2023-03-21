@@ -90,7 +90,7 @@ namespace Unity.Collections
         /// <returns>An array that is a copy of this list.</returns>
         public unsafe static NativeArray<T> ToNativeArray<T>(this List<T> list, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
         {
-            var container = CollectionHelper.CreateNativeArray<T>(list.Count, allocator);
+            var container = CollectionHelper.CreateNativeArray<T>(list.Count, allocator, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < list.Count; i++)
             {
                 container[i] = list[i];

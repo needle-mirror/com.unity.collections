@@ -4,6 +4,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine.Assertions;
+using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
 {
@@ -100,9 +101,9 @@ namespace Unity.Collections
         /// Returns true if this stream is empty.
         /// </summary>
         /// <returns>True if this stream is empty or the stream has not been constructed.</returns>
-        public bool IsEmpty()
+        public readonly bool IsEmpty()
         {
-            CheckReadAccess();
+            CheckRead();
             return m_Stream.IsEmpty();
         }
 
@@ -111,17 +112,21 @@ namespace Unity.Collections
         /// </summary>
         /// <remarks>Does not necessarily reflect whether the buffers of the stream have themselves been allocated.</remarks>
         /// <value>True if this stream has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Stream.IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Stream.IsCreated;
+        }
 
         /// <summary>
         /// The number of buffers in this stream.
         /// </summary>
         /// <value>The number of buffers in this stream.</value>
-        public int ForEachCount
+        public readonly int ForEachCount
         {
             get
             {
-                CheckReadAccess();
+                CheckRead();
                 return m_Stream.ForEachCount;
             }
         }
@@ -151,7 +156,7 @@ namespace Unity.Collections
         /// <returns>The total number of items in the buffers of this stream.</returns>
         public int Count()
         {
-            CheckReadAccess();
+            CheckRead();
             return m_Stream.Count();
         }
 
@@ -168,7 +173,7 @@ namespace Unity.Collections
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public NativeArray<T> ToNativeArray<T>(AllocatorManager.AllocatorHandle allocator) where T : unmanaged
         {
-            CheckReadAccess();
+            CheckRead();
             return m_Stream.ToNativeArray<T>(allocator);
         }
 
@@ -744,7 +749,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckReadAccess()
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Jobs;
 
@@ -27,43 +28,29 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="initialCapacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
         public UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
-            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
-        {
-        }
-
-        internal UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, 0, growthPolicy, 256, allocator);
+            m_Data.Init(initialCapacity, 0, 256, allocator);
         }
 
         /// <summary>
         /// Whether this set is empty.
         /// </summary>
         /// <value>True if this set is empty or if the set has not been constructed.</value>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
-            get
-            {
-                if (!IsCreated)
-                {
-                    return true;
-                }
-
-                return m_Data.IsEmpty;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || m_Data.IsEmpty;
         }
 
         /// <summary>
         /// Returns the current number of values in this set.
         /// </summary>
         /// <returns>The current number of values in this set.</returns>
-        public int Count
+        public readonly int Count
         {
-            get
-            {
-                return m_Data.GrowthPolicy.Count;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.Count;
         }
 
         /// <summary>
@@ -74,22 +61,20 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
-            {
-                return m_Data.Capacity;
-            }
-
-            set
-            {
-                m_Data.Resize(value);
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => m_Data.Capacity;
+            set => m_Data.Resize(value);
         }
 
         /// <summary>
         /// Whether this set has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this set has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Data.IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.IsCreated;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -106,7 +91,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this set.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.GrowthPolicy.Allocator }.Schedule(inputDeps);
+            var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.Allocator }.Schedule(inputDeps);
             m_Data.Ptr = null;
 
             return jobHandle;
@@ -218,6 +203,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next value.
             /// </summary>
             /// <returns>True if `Current` is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
@@ -231,10 +217,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <value>The current value.</value>
             public T Current
             {
-                get
-                {
-                    return m_Enumerator.m_Data->Keys[m_Enumerator.m_Index];
-                }
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Enumerator.m_Data->Keys[m_Enumerator.m_Index];
             }
 
             /// <summary>
@@ -268,29 +252,51 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.IsCreated;
+            }
+
+            /// <summary>
             /// Whether this hash set is empty.
             /// </summary>
             /// <value>True if this hash set is empty or if the set has not been constructed.</value>
-            public bool IsEmpty => m_Data.IsEmpty;
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.IsEmpty;
+            }
 
             /// <summary>
             /// The current number of key-value pairs in this hash map.
             /// </summary>
             /// <returns>The current number of key-value pairs in this hash map.</returns>
-            public int Count => m_Data.GrowthPolicy.Count;
+            public readonly int Count
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.Count;
+            }
 
             /// <summary>
             /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity => m_Data.Capacity;
+            public readonly int Capacity
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.Capacity;
+            }
 
             /// <summary>
             /// Returns true if a particular value is present.
             /// </summary>
             /// <param name="item">The item to look up.</param>
             /// <returns>True if the item was present.</returns>
-            public bool Contains(T item)
+            public readonly bool Contains(T item)
             {
                 return -1 != m_Data.Find(item);
             }
@@ -300,22 +306,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of the set's values.</returns>
-            public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
+            public readonly NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
             {
                 return m_Data.GetKeyArray(allocator);
             }
 
             /// <summary>
-            /// Whether this hash map has been allocated (and not yet deallocated).
-            /// </summary>
-            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-            public bool IsCreated => m_Data.IsCreated;
-
-            /// <summary>
             /// Returns an enumerator over the key-value pairs of this hash map.
             /// </summary>
             /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-            public Enumerator GetEnumerator()
+            public readonly Enumerator GetEnumerator()
             {
                 fixed (HashMapHelper<T>* data = &m_Data)
                 {

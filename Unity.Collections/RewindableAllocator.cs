@@ -110,6 +110,7 @@ namespace Unity.Collections
         }
         public ref T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { unsafe { return ref ((T*)m_pointer)[index]; } }
         }
     }
@@ -143,11 +144,13 @@ namespace Unity.Collections
             // Current position in a block to give out memory
             internal long m_current
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     return (m_long >> currentOffset) & currentMask;
                 }
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set
                 {
                     m_long &= ~(currentMask << currentOffset);
@@ -158,11 +161,13 @@ namespace Unity.Collections
             // The number of allocations in a block
             internal long m_allocCount
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     return (m_long >> allocCountOffset) & allocCountMask;
                 }
 
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set
                 {
                     m_long &= ~(allocCountMask << allocCountOffset);
@@ -561,9 +566,8 @@ namespace Unity.Collections
                 container.m_ListData = this.Allocate(default(UnsafeList<T>), 1);
                 container.m_ListData->Ptr = this.Allocate(default(T), capacity);
                 container.m_ListData->m_length = 0;
-                container.m_ListData->m_capacity = 0;
-                container.m_ListData->GrowthPolicy = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.CeilPow2, 0);
-                container.m_ListData->GrowthPolicy.Capacity = capacity;
+                container.m_ListData->m_capacity = capacity;
+                container.m_ListData->Allocator = Allocator.None;
             }
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             container.m_Safety = CollectionHelper.CreateSafetyHandle(ToAllocator);

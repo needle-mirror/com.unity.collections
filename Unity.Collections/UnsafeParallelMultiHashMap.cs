@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Jobs;
 using UnityEngine.Assertions;
@@ -48,7 +49,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this hash map is empty.
         /// </summary>
         /// <value>True if this hash map is empty or the hash map has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || UnsafeParallelHashMapData.IsEmpty(m_Buffer);
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || UnsafeParallelHashMapData.IsEmpty(m_Buffer);
+        }
 
         /// <summary>
         /// Returns the current number of key-value pairs in this hash map.
@@ -73,7 +78,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 UnsafeParallelHashMapData* data = m_Buffer;
                 return data->keyCapacity;
@@ -212,7 +218,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Buffer != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Buffer != null;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -313,6 +323,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next value of the key.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 //Avoids going beyond the end of the collection.
@@ -334,7 +345,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The current value.
             /// </summary>
             /// <value>The current value.</value>
-            public TValue Current => value;
+            public TValue Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => value;
+            }
 
             object IEnumerator.Current => Current;
 
@@ -383,12 +398,10 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Returns the number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity
+            public readonly int Capacity
             {
-                get
-                {
-                    return m_Buffer->keyCapacity;
-                }
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Buffer->keyCapacity;
             }
 
             /// <summary>
@@ -457,6 +470,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next key-value pair.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
@@ -468,7 +482,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The current key-value pair.
             /// </summary>
             /// <value>The current key-value pair.</value>
-            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
+            public KeyValue<TKey, TValue> Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Enumerator.GetCurrent<TKey, TValue>();
+            }
 
             object IEnumerator.Current => Current;
         }

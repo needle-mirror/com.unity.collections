@@ -8,6 +8,7 @@ using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
 {
@@ -201,6 +202,7 @@ namespace Unity.Collections
         /// <param name="value">The integer that is always positive.</param>
         /// <returns>Returns `x`, but allows the compiler to assume it is always positive.</returns>
         [return: AssumeRange(0, int.MaxValue)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int AssumePositive(int value)
         {
             return value;
@@ -246,12 +248,11 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void CheckIndexInRange(int index, int length)
         {
-            if (index < 0)
-                throw new IndexOutOfRangeException($"Index {index} must be positive.");
-
-            if (index >= length)
+            // This checks both < 0 and >= Length with one comparison
+            if ((uint)index >= (uint)length)
                 throw new IndexOutOfRangeException($"Index {index} is out of range in container of '{length}' Length.");
         }
 
@@ -520,7 +521,6 @@ namespace Unity.Collections
             return nativeArray.m_Safety;
         }
 #endif
-
 
         /// <summary>
         /// Create a NativeParallelMultiHashMap from a managed array, using a provided Allocator.

@@ -294,7 +294,8 @@ namespace Unity.Collections
         /// <value>The current length in bytes of the UTF-8 encoded string.</value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 CheckNull(m_Data);
                 CheckRead();
@@ -318,12 +319,14 @@ namespace Unity.Collections
         /// <value>The current capacity in bytes of the string.</value>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 CheckNull(m_Data);
                 CheckRead();
                 return m_Data->Capacity;
             }
+
             set
             {
                 CheckNull(m_Data);
@@ -352,8 +355,9 @@ namespace Unity.Collections
         /// </summary>
         /// <value>True if this string has no characters or the string has not been constructed.</value>
         /// <exception cref="NotSupportedException">Thrown if ENABLE_UNITY_COLLECTIONS_CHECKS is defined and a write is attempted.</exception>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (!IsCreated)
@@ -370,7 +374,11 @@ namespace Unity.Collections
         /// Whether this string's character buffer has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>Whether this string's character buffer has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Data != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data != null;
+        }
 
         /// <summary>
         /// Returns a pointer to this string's character buffer.
@@ -394,12 +402,14 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckNull(m_Data);
                 CheckRead();
                 return m_Data->ElementAt(index);
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckNull(m_Data);
@@ -417,6 +427,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             CheckNull(m_Data);
@@ -441,6 +452,7 @@ namespace Unity.Collections
         /// No validation is performed: it is your responsibility for the bytes of the string to form valid UTF-8 when you're done appending bytes.
         /// </remarks>
         /// <param name="value">A byte to append.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(in byte value)
         {
             CheckWrite();
@@ -608,6 +620,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character, returning true if <see cref="Current"/> is valid to read afterwards.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -630,7 +643,11 @@ namespace Unity.Collections
                 current = default;
             }
 
-            object IEnumerator.Current => Current;
+            object IEnumerator.Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => Current;
+            }
 
             /// <summary>
             /// The current character.
@@ -1014,7 +1031,8 @@ namespace Unity.Collections
             return false;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void CheckNull(void* dataPtr)
         {
             if (dataPtr == null)
@@ -1024,7 +1042,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -1032,6 +1051,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -1040,7 +1060,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckWriteAndBumpSecondaryVersion()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckWriteAndBumpSecondaryVersion()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
@@ -1048,6 +1069,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckIndexInRange(int index)
         {
             if (index < 0)
@@ -1056,7 +1078,7 @@ namespace Unity.Collections
                 throw new IndexOutOfRangeException($"Index {index} is out of range in NativeText of {Length} length.");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void ThrowCopyError(CopyError error, String source)
         {
             throw new ArgumentException($"NativeText: {error} while copying \"{source}\"");
@@ -1115,12 +1137,14 @@ namespace Unity.Collections
             /// <exception cref="NotSupportedException">Thrown if ENABLE_UNITY_COLLECTIONS_CHECKS is defined and a write is attempted.</exception>
             public int Capacity
             {
-                get
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                readonly get
                 {
                     CheckNull(m_Data);
                     CheckRead();
                     return m_Data->Capacity;
                 }
+
                 set
                 {
                     ErrorWrite();
@@ -1133,7 +1157,8 @@ namespace Unity.Collections
             /// <value>True if this string has no characters or if the string has not been constructed.</value>
             public bool IsEmpty
             {
-                get
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                readonly get
                 {
                     if (m_Data == null)
                     {
@@ -1143,6 +1168,7 @@ namespace Unity.Collections
                     CheckRead();
                     return m_Data->IsEmpty;
                 }
+
                 set
                 {
                     ErrorWrite();
@@ -1159,7 +1185,8 @@ namespace Unity.Collections
             /// <exception cref="NotSupportedException">Thrown if ENABLE_UNITY_COLLECTIONS_CHECKS is defined and a write is attempted.</exception>
             public int Length
             {
-                get
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                readonly get
                 {
                     CheckNull(m_Data);
                     CheckRead();
@@ -1180,12 +1207,15 @@ namespace Unity.Collections
             /// <exception cref="NotSupportedException">Thrown if ENABLE_UNITY_COLLECTIONS_CHECKS is defined and a write is attempted.</exception>
             public byte this[int index]
             {
-                get
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                readonly get
                 {
                     CheckNull(m_Data);
                     CheckRead();
                     return m_Data->ElementAt(index);
                 }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 set
                 {
                     ErrorWrite();
@@ -1242,7 +1272,8 @@ namespace Unity.Collections
                 return false;
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal static void CheckNull(void* dataPtr)
             {
                 if (dataPtr == null)
@@ -1252,7 +1283,8 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void CheckRead()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 // Ensure we are allowed to read
@@ -1260,7 +1292,7 @@ namespace Unity.Collections
 #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void ErrorWrite()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

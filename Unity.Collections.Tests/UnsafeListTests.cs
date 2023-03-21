@@ -330,19 +330,19 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     {
         var list = new UnsafeList<int>(10, Allocator.Persistent, NativeArrayOptions.ClearMemory);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAt(0); });
+        Assert.Throws<IndexOutOfRangeException>(() => { list.RemoveAt(0); });
         Assert.AreEqual(0, list.Length);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAtSwapBack(0); });
+        Assert.Throws<IndexOutOfRangeException>(() => { list.RemoveAtSwapBack(0); });
         Assert.AreEqual(0, list.Length);
 
         int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         fixed (int* r = range) list.AddRange(r, 10);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAt(100); });
+        Assert.Throws<IndexOutOfRangeException>(() => { list.RemoveAt(100); });
         Assert.AreEqual(10, list.Length);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveAtSwapBack(100); });
+        Assert.Throws<IndexOutOfRangeException>(() => { list.RemoveAtSwapBack(100); });
         Assert.AreEqual(10, list.Length);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => { list.RemoveRange(0, 100); });

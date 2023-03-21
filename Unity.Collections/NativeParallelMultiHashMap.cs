@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -27,6 +28,7 @@ namespace Unity.Collections
         /// Returns the entry index.
         /// </summary>
         /// <returns>The entry index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetEntryIndex() => EntryIndex;
     }
 
@@ -90,8 +92,9 @@ namespace Unity.Collections
         /// Whether this hash map is empty.
         /// </summary>
         /// <value>True if the hash map is empty or if the hash map has not been constructed.</value>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -118,7 +121,8 @@ namespace Unity.Collections
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 CheckRead();
                 return m_MultiHashMapData.Capacity;
@@ -249,7 +253,7 @@ namespace Unity.Collections
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_MultiHashMapData.IsCreated;
+        public readonly bool IsCreated => m_MultiHashMapData.IsCreated;
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -365,8 +369,9 @@ namespace Unity.Collections
             /// Returns the number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity
+            public readonly int Capacity
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -431,6 +436,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next value of the key.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 //Avoids going beyond the end of the collection.
@@ -452,7 +458,14 @@ namespace Unity.Collections
             /// The current value.
             /// </summary>
             /// <value>The current value.</value>
-            public TValue Current => value;
+            public TValue Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return value;
+                }
+            }
 
             object IEnumerator.Current => Current;
 
@@ -530,6 +543,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next key-value pair.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public unsafe bool MoveNext()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -553,8 +567,9 @@ namespace Unity.Collections
             /// The current key-value pair.
             /// </summary>
             /// <value>The current key-value pair.</value>
-            public KeyValue<TKey, TValue> Current
+            public readonly KeyValue<TKey, TValue> Current
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -568,7 +583,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -576,6 +592,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

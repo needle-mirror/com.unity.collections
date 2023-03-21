@@ -90,7 +90,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this array has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this array has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => Ptr != null;
+        public readonly bool IsCreated => Ptr != null;
 
         void Realloc(int capacityInBits)
         {
@@ -572,13 +572,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <value>Pointer to the data.</value>
             [NativeDisableUnsafePtrRestriction]
-            public ulong* Ptr;
+            public readonly ulong* Ptr;
 
             /// <summary>
             /// The number of bits.
             /// </summary>
             /// <value>The number of bits.</value>
-            public int Length;
+            public readonly int Length;
 
             internal ReadOnly(ulong* ptr, int length)
             {
@@ -599,7 +599,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of bits to get (must be between 1 and 64).</param>
             /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
             /// <returns>A ulong which has bits copied from this array.</returns>
-            public ulong GetBits(int pos, int numBits = 1)
+            public readonly ulong GetBits(int pos, int numBits = 1)
             {
                 CheckArgsUlong(pos, numBits);
                 return Bitwise.GetBits(Ptr, Length, pos, numBits);
@@ -611,7 +611,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="pos">Index of the bit to test.</param>
             /// <returns>True if the bit at the index is 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds.</exception>
-            public bool IsSet(int pos)
+            public readonly bool IsSet(int pos)
             {
                 CheckArgs(pos, 1);
                 return Bitwise.IsSet(Ptr, pos);
@@ -624,7 +624,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="pos">Index of the bit at which to start searching.</param>
             /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
             /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns -1 if no occurrence is found.</returns>
-            public int Find(int pos, int numBits)
+            public readonly int Find(int pos, int numBits)
             {
                 var count = Length - pos;
                 CheckArgsPosCount(pos, count, numBits);
@@ -639,7 +639,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
             /// <param name="count">Number of indexes to consider as the return value.</param>
             /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns -1 if no occurrence is found.</returns>
-            public int Find(int pos, int count, int numBits)
+            public readonly int Find(int pos, int count, int numBits)
             {
                 CheckArgsPosCount(pos, count, numBits);
                 return Bitwise.Find(Ptr, pos, count, numBits);
@@ -652,7 +652,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>Returns true if none of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestNone(int pos, int numBits = 1)
+            public readonly bool TestNone(int pos, int numBits = 1)
             {
                 CheckArgs(pos, numBits);
                 return Bitwise.TestNone(Ptr, pos, numBits);
@@ -665,7 +665,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>True if one or more of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestAny(int pos, int numBits = 1)
+            public readonly bool TestAny(int pos, int numBits = 1)
             {
                 CheckArgs(pos, numBits);
                 return Bitwise.TestAny(Ptr, Length, pos, numBits);
@@ -678,7 +678,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>True if all of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestAll(int pos, int numBits = 1)
+            public readonly bool TestAll(int pos, int numBits = 1)
             {
                 CheckArgs(pos, numBits);
                 return Bitwise.TestAll(Ptr, Length, pos, numBits);
@@ -691,14 +691,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>The number of bits in a range of bits that are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public int CountBits(int pos, int numBits = 1)
+            public readonly int CountBits(int pos, int numBits = 1)
             {
                 CheckArgs(pos, numBits);
                 return Bitwise.CountBits(Ptr, Length, pos, numBits);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-            void CheckArgs(int pos, int numBits)
+            readonly void CheckArgs(int pos, int numBits)
             {
                 if (pos < 0
                     || pos >= Length
@@ -709,7 +709,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-            void CheckArgsPosCount(int begin, int count, int numBits)
+            readonly void CheckArgsPosCount(int begin, int count, int numBits)
             {
                 if (begin < 0 || begin >= Length)
                 {
@@ -728,7 +728,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-            void CheckArgsUlong(int pos, int numBits)
+            readonly void CheckArgsUlong(int pos, int numBits)
             {
                 CheckArgs(pos, numBits);
 

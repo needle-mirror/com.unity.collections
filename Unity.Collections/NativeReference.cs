@@ -102,7 +102,7 @@ namespace Unity.Collections
         /// Whether this reference has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this reference has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Data != null;
+        public readonly bool IsCreated => m_Data != null;
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -373,13 +373,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static unsafe void* GetUnsafePtr<T>(this NativeReference<T> reference)
+        public static unsafe T* GetUnsafePtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(reference.m_Safety);
 #endif
-            return reference.m_Data;
+            return (T*)reference.m_Data;
         }
 
         /// <summary>
@@ -390,13 +390,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeReference<T> reference)
+        public static unsafe T* GetUnsafeReadOnlyPtr<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(reference.m_Safety);
 #endif
-            return reference.m_Data;
+            return (T*)reference.m_Data;
         }
 
         /// <summary>
@@ -407,10 +407,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="reference">The reference.</param>
         /// <returns>A pointer to this reference's stored value.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static unsafe void* GetUnsafePtrWithoutChecks<T>(this NativeReference<T> reference)
+        public static unsafe T* GetUnsafePtrWithoutChecks<T>(this NativeReference<T> reference)
             where T : unmanaged
         {
-            return reference.m_Data;
+            return (T*)reference.m_Data;
         }
     }
 }

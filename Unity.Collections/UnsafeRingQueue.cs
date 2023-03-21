@@ -1,81 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
-    [GenerateTestsForBurstCompatibility]
-    internal struct RingControl
-    {
-        internal RingControl(int capacity)
-        {
-            Capacity = capacity;
-            Current = 0;
-            Write = 0;
-            Read = 0;
-        }
-
-        internal void Reset()
-        {
-            Current = 0;
-            Write = 0;
-            Read = 0;
-        }
-
-        internal int Distance(int from, int to)
-        {
-            var diff = to - from;
-            return diff < 0 ? Capacity - math.abs(diff) : diff;
-        }
-
-        internal int Available()
-        {
-            return Distance(Read, Current);
-        }
-
-        internal int Reserve(int count)
-        {
-            var dist = Distance(Write, Read) - 1;
-            var maxCount = dist < 0 ? Capacity - 1 : dist;
-            var absCount = math.abs(count);
-            var test = absCount - maxCount;
-            count = test < 0 ? count : maxCount;
-            Write = (Write + count) % Capacity;
-
-            return count;
-        }
-
-        internal int Commit(int count)
-        {
-            var maxCount = Distance(Current, Write);
-            var absCount = math.abs(count);
-            var test = absCount - maxCount;
-            count = test < 0 ? count : maxCount;
-            Current = (Current + count) % Capacity;
-
-            return count;
-        }
-
-        internal int Consume(int count)
-        {
-            var maxCount = Distance(Read, Current);
-            var absCount = math.abs(count);
-            var test = absCount - maxCount;
-            count = test < 0 ? count : maxCount;
-            Read = (Read + count) % Capacity;
-
-            return count;
-        }
-
-        internal int Length => Distance(Read, Write);
-
-        internal readonly int Capacity;
-        internal int Current;
-        internal int Write;
-        internal int Read;
-    }
-
     /// <summary>
     /// A fixed-size circular buffer.
     /// </summary>
@@ -100,25 +30,40 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The allocator used to create the internal buffer.</value>
         public AllocatorManager.AllocatorHandle Allocator;
 
-        internal RingControl Control;
+        internal readonly int m_Capacity;
+        internal int m_Filled;
+        internal int m_Write;
+        internal int m_Read;
 
         /// <summary>
         /// Whether the queue is empty.
         /// </summary>
         /// <value>True if the queue is empty or the queue has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Filled == 0;
+        }
 
         /// <summary>
         /// The number of elements currently in this queue.
         /// </summary>
         /// <value>The number of elements currently in this queue.</value>
-        public int Length => Control.Length;
+        public readonly int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Filled;
+        }
 
         /// <summary>
         /// The number of elements that fit in the internal buffer.
         /// </summary>
         /// <value>The number of elements that fit in the internal buffer.</value>
-        public int Capacity => Control.Capacity;
+        public readonly int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Capacity;
+        }
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeRingQueue which aliasing an existing buffer.
@@ -129,7 +74,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             Ptr = ptr;
             Allocator = AllocatorManager.None;
-            Control = new RingControl(capacity);
+            m_Capacity = capacity;
+            m_Filled = 0;
+            m_Write = 0;
+            m_Read = 0;
         }
 
         /// <summary>
@@ -140,10 +88,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public UnsafeRingQueue(int capacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.ClearMemory)
         {
-            capacity += 1;
-
             Allocator = allocator;
-            Control = new RingControl(capacity);
+            m_Capacity = capacity;
+            m_Filled = 0;
+            m_Write = 0;
+            m_Read = 0;
             var sizeInBytes = capacity * UnsafeUtility.SizeOf<T>();
             Ptr = (T*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
 
@@ -168,7 +117,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this queue has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this queue has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => Ptr != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Ptr != null;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -206,6 +159,19 @@ namespace Unity.Collections.LowLevel.Unsafe
             return inputDeps;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool TryEnqueueInternal(T value)
+        {
+            if (m_Filled == m_Capacity)
+                return false;
+            Ptr[m_Write] = value;
+            m_Write++;
+            if (m_Write == m_Capacity)
+                m_Write = 0;
+            m_Filled++;
+            return true;
+        }
+
         /// <summary>
         /// Adds an element at the front of the queue.
         /// </summary>
@@ -214,15 +180,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if the value was added.</returns>
         public bool TryEnqueue(T value)
         {
-            if (1 != Control.Reserve(1))
-            {
-                return false;
-            }
-
-            Ptr[Control.Current] = value;
-            Control.Commit(1);
-
-            return true;
+            return TryEnqueueInternal(value);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
@@ -238,10 +196,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="InvalidOperationException">Thrown if the queue was full.</exception>
         public void Enqueue(T value)
         {
-            if (!TryEnqueue(value))
+            if (!TryEnqueueInternal(value))
             {
                 ThrowQueueFull();
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool TryDequeueInternal(out T item)
+        {
+            item = Ptr[m_Read];
+            if (m_Filled == 0)
+                return false;
+            m_Read = m_Read + 1;
+            if (m_Read == m_Capacity)
+                m_Read = 0;
+            m_Filled--;
+            return true;
         }
 
         /// <summary>
@@ -252,8 +223,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>True if an element was removed.</returns>
         public bool TryDequeue(out T item)
         {
-            item = Ptr[Control.Read];
-            return 1 == Control.Consume(1);
+            return TryDequeueInternal(out item);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
@@ -269,7 +239,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>Returns the removed element.</returns>
         public T Dequeue()
         {
-            if (!TryDequeue(out T item))
+            if (!TryDequeueInternal(out T item))
             {
                 ThrowQueueEmpty();
             }
@@ -294,8 +264,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 T[] result = new T[Data.Length];
 
-                var read = Data.Control.Read;
-                var capacity = Data.Control.Capacity;
+                var read = Data.m_Read;
+                var capacity = Data.m_Capacity;
 
                 for (var i = 0; i < result.Length; ++i)
                 {

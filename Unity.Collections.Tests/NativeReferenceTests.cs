@@ -112,9 +112,9 @@ class NativeReferenceTests : CollectionsTestCommonBase
 
         jobHandle.Complete();
 
-        Assert.AreEqual(*(int*)reference.GetUnsafePtr(), 42);
-        Assert.AreEqual(*(int*)reference.GetUnsafeReadOnlyPtr(), 42);
-        Assert.AreEqual(*(int*)reference.GetUnsafePtrWithoutChecks(), 42);
+        Assert.AreEqual(*reference.GetUnsafePtr(), 42);
+        Assert.AreEqual(*reference.GetUnsafeReadOnlyPtr(), 42);
+        Assert.AreEqual(*reference.GetUnsafePtrWithoutChecks(), 42);
 
         Assert.That(job.Output.Value, Is.EqualTo(42));
 

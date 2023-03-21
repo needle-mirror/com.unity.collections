@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Burst;
@@ -80,7 +81,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         public AllocatorManager.AllocatorHandle Allocator;
 
         readonly int padding;
-        internal ref CapacityGrowthPolicyImpl GrowthPolicy => ref UnsafeUtility.AsRef<CapacityGrowthPolicyImpl>(UnsafeUtilityExtensions.AddressOf(m_length));
 
         /// <summary>
         /// The number of elements.
@@ -88,10 +88,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements.</value>
         public int Length
         {
-            get
-            {
-                return CollectionHelper.AssumePositive(GrowthPolicy.Count);
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => CollectionHelper.AssumePositive(m_length);
 
             set
             {
@@ -101,7 +99,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
                 else
                 {
-                    GrowthPolicy.Count = value;
+                    m_length = value;
                 }
             }
         }
@@ -112,15 +110,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements that can fit in the internal buffer.</value>
         public int Capacity
         {
-            get
-            {
-                return CollectionHelper.AssumePositive(GrowthPolicy.Capacity);
-            }
-
-            set
-            {
-                SetCapacity(value);
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => CollectionHelper.AssumePositive(m_capacity);
+            set => SetCapacity(value);
         }
 
         /// <summary>
@@ -130,15 +122,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The element at the index.</value>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                CollectionHelper.CheckIndexInRange(index, Length);
+                CollectionHelper.CheckIndexInRange(index, m_length);
                 return Ptr[CollectionHelper.AssumePositive(index)];
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                CollectionHelper.CheckIndexInRange(index, Length);
+                CollectionHelper.CheckIndexInRange(index, m_length);
                 Ptr[CollectionHelper.AssumePositive(index)] = value;
             }
         }
@@ -148,9 +142,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="index">The index to access. Must be in the range of [0..Length).</param>
         /// <returns>A reference to the element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
-            CollectionHelper.CheckIndexInRange(index, Length);
+            CollectionHelper.CheckIndexInRange(index, m_length);
             return ref Ptr[CollectionHelper.AssumePositive(index)];
         }
 
@@ -162,11 +157,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeList(T* ptr, int length) : this()
         {
             Ptr = ptr;
-            m_length = 0;
-            m_capacity = 0;
-            GrowthPolicy = new CapacityGrowthPolicyImpl(AllocatorManager.None, 0, CapacityGrowthPolicy.ThrowIfFull, 0);
-            GrowthPolicy.Count = length;
-            GrowthPolicy.Capacity = length;
+            m_length = length;
+            m_capacity = length;
+            Allocator = AllocatorManager.None;
         }
 
         /// <summary>
@@ -176,17 +169,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-            : this(initialCapacity, allocator, options, CapacityGrowthPolicy.CeilPow2)
-        {
-        }
-
-        internal UnsafeList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options, CapacityGrowthPolicy growthPolicy) : this()
         {
             Ptr = null;
             m_length = 0;
             m_capacity = 0;
-            GrowthPolicy = new CapacityGrowthPolicyImpl(allocator, 0, growthPolicy, JobsUtility.CacheLineSize / sizeof(T));
-            GrowthPolicy.Reset();
+            Allocator = allocator;
+            padding = 0;
 
             if (initialCapacity != 0)
             {
@@ -201,10 +189,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal static UnsafeList<T>* Create<U>(int initialCapacity, ref U allocator, NativeArrayOptions options, CapacityGrowthPolicy growthPolicy) where U : unmanaged, AllocatorManager.IAllocator
+        internal static UnsafeList<T>* Create<U>(int initialCapacity, ref U allocator, NativeArrayOptions options) where U : unmanaged, AllocatorManager.IAllocator
         {
             UnsafeList<T>* listData = allocator.Allocate(default(UnsafeList<T>), 1);
-            *listData = new UnsafeList<T>(initialCapacity, allocator.Handle, options, growthPolicy);
+            *listData = new UnsafeList<T>(initialCapacity, allocator.Handle, options);
             return listData;
         }
 
@@ -247,22 +235,29 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether the list is empty.
         /// </summary>
         /// <value>True if the list is empty or the list has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || GrowthPolicy.Count == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || m_length == 0;
+        }
 
         /// <summary>
         /// Whether this list has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this list has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => Ptr != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Ptr != null;
+        }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(AllocatorManager.AllocatorHandle) })]
         internal void Dispose<U>(ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
-            allocator.Free(Ptr, GrowthPolicy.Capacity);
+            allocator.Free(Ptr, m_capacity);
             Ptr = null;
             m_length = 0;
             m_capacity = 0;
-            GrowthPolicy.Reset();
         }
 
         /// <summary>
@@ -279,7 +274,6 @@ namespace Unity.Collections.LowLevel.Unsafe
             Ptr = null;
             m_length = 0;
             m_capacity = 0;
-            GrowthPolicy.Reset();
         }
 
         /// <summary>
@@ -310,7 +304,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
-            GrowthPolicy.Count = 0;
+            m_length = 0;
         }
 
         /// <summary>
@@ -320,14 +314,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            var oldLength = GrowthPolicy.Count;
+            var oldLength = m_length;
 
             if (length > Capacity)
             {
                 SetCapacity(length);
             }
 
-            GrowthPolicy.Count = length;
+            m_length = length;
 
             if (options == NativeArrayOptions.ClearMemory && oldLength < length)
             {
@@ -352,7 +346,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 newPointer = (T*)allocator.Allocate(sizeOf, alignOf, newCapacity);
 
-                if (Ptr != null && GrowthPolicy.Capacity > 0)
+                if (Ptr != null && m_capacity > 0)
                 {
                     var itemsToCopy = math.min(newCapacity, Capacity);
                     var bytesToCopy = itemsToCopy * sizeOf;
@@ -363,8 +357,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             allocator.Free(Ptr, Capacity);
 
             Ptr = newPointer;
-            GrowthPolicy.Capacity = newCapacity;
-            GrowthPolicy.Count = math.min(GrowthPolicy.Count, newCapacity);
+            m_capacity = newCapacity;
+            m_length = math.min(m_length, newCapacity);
         }
 
         void ResizeExact(int capacity)
@@ -376,7 +370,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             CollectionHelper.CheckCapacityInRange(capacity, Length);
 
-            var newCapacity = GrowthPolicy.CalcCapacity(capacity);
+            var sizeOf = sizeof(T);
+            var newCapacity = math.max(capacity, CollectionHelper.CacheLineSize / sizeOf);
+            newCapacity = math.ceilpow2(newCapacity);
 
             if (newCapacity == Capacity)
             {
@@ -400,9 +396,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void TrimExcess()
         {
-            if (Capacity != GrowthPolicy.Count)
+            if (Capacity != m_length)
             {
-                ResizeExact(GrowthPolicy.Count);
+                ResizeExact(m_length);
             }
         }
 
@@ -414,11 +410,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="value">The value to add to the end of the list.</param>
         /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(T value)
         {
             CheckNoResizeHasEnoughCapacity(1);
-            UnsafeUtility.WriteArrayElement(Ptr, GrowthPolicy.Count, value);
-            GrowthPolicy.Count += 1;
+            UnsafeUtility.WriteArrayElement(Ptr, m_length, value);
+            m_length += 1;
         }
 
         /// <summary>
@@ -434,9 +431,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             CheckNoResizeHasEnoughCapacity(count);
             var sizeOf = sizeof(T);
-            void* dst = (byte*)Ptr + GrowthPolicy.Count * sizeOf;
+            void* dst = (byte*)Ptr + m_length * sizeOf;
             UnsafeUtility.MemCpy(dst, ptr, count * sizeOf);
-            GrowthPolicy.Count += count;
+            m_length += count;
         }
 
         /// <summary>
@@ -460,20 +457,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Increments the length by 1. Increases the capacity if necessary.
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(in T value)
         {
-            var idx = GrowthPolicy.Count;
-
-            if (GrowthPolicy.NeedResize())
+            var idx = m_length;
+            if (m_length < m_capacity)
             {
-                Resize(idx + 1);
+                Ptr[idx] = value;
+                m_length++;
+                return;
             }
-            else
-            {
-                GrowthPolicy.Count += 1;
-            }
-
-            UnsafeUtility.WriteArrayElement(Ptr, idx, value);
+            
+            Resize(idx + 1);
+            Ptr[idx] = value;
         }
 
         /// <summary>
@@ -486,15 +482,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddRange(void* ptr, int count)
         {
-            var idx = GrowthPolicy.Count;
+            var idx = m_length;
 
-            if (GrowthPolicy.Count + count > Capacity)
+            if (m_length + count > Capacity)
             {
-                Resize(GrowthPolicy.Count + count);
+                Resize(m_length + count);
             }
             else
             {
-                GrowthPolicy.Count += count;
+                m_length += count;
             }
 
             var sizeOf = sizeof(T);
@@ -525,14 +521,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         public void AddReplicate(in T value, int count)
         {
-            var idx = GrowthPolicy.Count;
-            if (GrowthPolicy.Count + count > Capacity)
+            var idx = m_length;
+            if (m_length + count > Capacity)
             {
-                Resize(GrowthPolicy.Count + count);
+                Resize(m_length + count);
             }
             else
             {
-                GrowthPolicy.Count += count;
+                m_length += count;
             }
 
             fixed (void* ptr = &value)
@@ -574,15 +570,15 @@ namespace Unity.Collections.LowLevel.Unsafe
                 return;
             }
 
-            var oldLength = GrowthPolicy.Count;
+            var oldLength = m_length;
 
-            if (GrowthPolicy.Count + items > Capacity)
+            if (m_length + items > Capacity)
             {
-                Resize(GrowthPolicy.Count + items);
+                Resize(m_length + items);
             }
             else
             {
-                GrowthPolicy.Count += items;
+                m_length += items;
             }
 
             var itemsToCopy = oldLength - begin;
@@ -644,7 +640,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="index">The index of the first element to overwrite.</param>
         /// <param name="count">The number of elements to copy and remove.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `count` is negative,
         /// or `index + count` exceeds the length.</exception>
         public void RemoveRangeSwapBack(int index, int count)
         {
@@ -655,12 +652,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (count > 0)
             {
-                int copyFrom = math.max(GrowthPolicy.Count - count, index + count);
+                int copyFrom = math.max(m_length - count, index + count);
                 var sizeOf = sizeof(T);
                 void* dst = (byte*)Ptr + index * sizeOf;
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
-                UnsafeUtility.MemCpy(dst, src, (GrowthPolicy.Count - copyFrom) * sizeOf);
-                GrowthPolicy.Count -= count;
+                UnsafeUtility.MemCpy(dst, src, (m_length - copyFrom) * sizeOf);
+                m_length -= count;
             }
         }
 
@@ -671,10 +668,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If you don't care about preserving the order of the elements, <see cref="RemoveAtSwapBack(int)"/> is a more efficient way to remove elements.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public void RemoveAt(int index)
         {
-            RemoveRange(index, 1);
+            CollectionHelper.CheckIndexInRange(index, m_length);
+
+            index = CollectionHelper.AssumePositive(index);
+
+            T* dst = Ptr + index;
+            T* src = dst + 1;
+            m_length--;
+
+            // Because these tend to be smaller (< 1MB), and the cost of jumping context to native and back is
+            // so high, this consistently optimizes to better code than UnsafeUtility.MemCpy
+            for (int i = index; i < m_length; i++)
+            {
+                *dst++ = *src++;
+            }
         }
 
         /// <summary>
@@ -686,7 +696,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// If you don't care about preserving the order of the elements, `RemoveRangeSwapBackWithBeginEnd`
         /// is a more efficient way to remove elements.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `count` is negative,
         /// or `index + count` exceeds the length.</exception>
         public void RemoveRange(int index, int count)
         {
@@ -697,12 +708,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (count > 0)
             {
-                int copyFrom = math.min(index + count, GrowthPolicy.Count);
+                int copyFrom = math.min(index + count, m_length);
                 var sizeOf = sizeof(T);
                 void* dst = (byte*)Ptr + index * sizeOf;
                 void* src = (byte*)Ptr + copyFrom * sizeOf;
-                UnsafeUtility.MemCpy(dst, src, (GrowthPolicy.Count - copyFrom) * sizeOf);
-                GrowthPolicy.Count -= count;
+                UnsafeUtility.MemCpy(dst, src, (m_length - copyFrom) * sizeOf);
+                m_length -= count;
             }
         }
 
@@ -801,7 +812,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <summary>
             /// The data of the list.
             /// </summary>
-            public readonly void* Ptr => ListData->Ptr;
+            public readonly void* Ptr
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return ListData->Ptr;
+                }
+            }
 
             /// <summary>
             /// The UnsafeList to write to.
@@ -825,7 +843,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddNoResize(T value)
             {
-                var idx = Interlocked.Increment(ref ListData->GrowthPolicy.Count) - 1;
+                var idx = Interlocked.Increment(ref ListData->m_length) - 1;
                 ListData->CheckNoResizeHasEnoughCapacity(idx, 1);
                 UnsafeUtility.WriteArrayElement(ListData->Ptr, idx, value);
             }
@@ -842,7 +860,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddRangeNoResize(void* ptr, int count)
             {
-                var idx = Interlocked.Add(ref ListData->GrowthPolicy.Count, count) - count;
+                var idx = Interlocked.Add(ref ListData->m_length, count) - count;
                 ListData->CheckNoResizeHasEnoughCapacity(idx, count);
                 void* dst = (byte*)ListData->Ptr + idx * sizeof(T);
                 UnsafeUtility.MemCpy(dst, ptr, count * sizeof(T));
@@ -937,6 +955,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The first `MoveNext` call advances the enumerator to the first element of the list. Before this call, `Current` is not valid to read.
             /// </remarks>
             /// <returns>True if `Current` is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => ++m_Index < m_Length;
 
             /// <summary>
@@ -948,7 +967,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_Ptr[m_Index];
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Ptr[m_Index];
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -963,15 +986,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        static void CheckMustBePositive(int value)
-        {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException($"Value {value} must be positive.");
-            }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckIndexCount(int index, int count)
         {
             if (count < 0)
@@ -981,12 +995,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException($"Value for index {index} must be positive.");
+                throw new IndexOutOfRangeException($"Value for index {index} must be positive.");
             }
 
-            if (index > Length)
+            if (index >= Length)
             {
-                throw new ArgumentOutOfRangeException($"Value for index {index} is out of bounds.");
+                throw new IndexOutOfRangeException($"Value for index {index} is out of bounds.");
             }
 
             if (index + count > Length)
@@ -1026,12 +1040,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckNoResizeHasEnoughCapacity(int length)
         {
             CheckNoResizeHasEnoughCapacity(length, Length);
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckNoResizeHasEnoughCapacity(int length, int index)
         {
             if (Capacity < index + length)
@@ -1224,7 +1240,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         public readonly AllocatorManager.AllocatorHandle Allocator;
 
         readonly int padding;
-        internal ref CapacityGrowthPolicyImpl GrowthPolicy => ref UnsafeUtility.AsRef<CapacityGrowthPolicyImpl>(UnsafeUtilityExtensions.AddressOf(m_length));
 
         /// <summary>
         /// The number of elements.
@@ -1232,15 +1247,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements.</value>
         public int Length
         {
-            get
-            {
-                return this.ListData().Length;
-            }
-
-            set
-            {
-                this.ListData().Length = value;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => this.ListDataRO().Length;
+            set => this.ListData().Length = value;
         }
 
         /// <summary>
@@ -1249,15 +1258,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The number of elements that can fit in the internal buffer.</value>
         public int Capacity
         {
-            get
-            {
-                return this.ListData().Capacity;
-            }
-
-            set
-            {
-                this.ListData().Capacity = value;
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => this.ListDataRO().Capacity;
+            set => this.ListData().Capacity = value;
         }
 
         /// <summary>
@@ -1267,12 +1270,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The element at the index.</value>
         public T* this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CollectionHelper.CheckIndexInRange(index, Length);
                 return Ptr[CollectionHelper.AssumePositive(index)];
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, Length);
@@ -1285,6 +1290,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="index">The index to access. Must be in the range of [0..Length).</param>
         /// <returns>A reference to the element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T* ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, Length);
@@ -1299,11 +1305,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         public unsafe UnsafePtrList(T** ptr, int length) : this()
         {
             Ptr = ptr;
-            m_length = 0;
-            m_capacity = 0;
-            GrowthPolicy = new CapacityGrowthPolicyImpl(AllocatorManager.None, 0, CapacityGrowthPolicy.ThrowIfFull, 0);
-            GrowthPolicy.Count = length;
-            GrowthPolicy.Capacity = length;
+            m_length = length;
+            m_capacity = length;
+            Allocator = AllocatorManager.None;
         }
 
         /// <summary>
@@ -1313,10 +1317,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="allocator">The allocator to use.</param>
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
-            : this(initialCapacity, allocator, options, CapacityGrowthPolicy.CeilPow2)
-        {
-        }
-        internal unsafe UnsafePtrList(int initialCapacity, AllocatorManager.AllocatorHandle allocator, NativeArrayOptions options, CapacityGrowthPolicy growthPolicy)
         {
             Ptr = null;
             m_length = 0;
@@ -1324,7 +1324,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             padding = 0;
             Allocator = AllocatorManager.None;
 
-            this.ListData() = new UnsafeList<IntPtr>(initialCapacity, allocator, options, growthPolicy);
+            this.ListData() = new UnsafeList<IntPtr>(initialCapacity, allocator, options);
         }
 
         /// <summary>
@@ -1373,13 +1373,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether the list is empty.
         /// </summary>
         /// <value>True if the list is empty or the list has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || Length == 0;
+        }
 
         /// <summary>
         /// Whether this list has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this list has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => Ptr != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Ptr != null;
+        }
 
         /// <summary>
         /// Releases all resources (memory).
@@ -1557,7 +1565,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="index">The index of the first pointer to overwrite.</param>
         /// <param name="count">The number of pointers to copy and remove.</param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `count` is negative,
         /// or `index + count` exceeds the length.</exception>
         public void RemoveRangeSwapBack(int index, int count) => this.ListData().RemoveRangeSwapBack(index, count);
 
@@ -1568,7 +1577,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// If you don't care about preserving the order of the pointers, <see cref="RemoveAtSwapBack(int)"/> is a more efficient way to remove pointers.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds.</exception>
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public void RemoveAt(int index) => this.ListData().RemoveAt(index);
 
         /// <summary>
@@ -1580,7 +1589,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// If you don't care about preserving the order of the pointers, `RemoveRangeSwapBackWithBeginEnd`
         /// is a more efficient way to remove pointers.
         /// </remarks>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if `index` is out of bounds, `count` is negative,
+        /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if `count` is negative,
         /// or `index + count` exceeds the length.</exception>
         public void RemoveRange(int index, int count) => this.ListData().RemoveRange(index, count);
 
@@ -1801,7 +1811,12 @@ namespace Unity.Collections.LowLevel.Unsafe
     internal static class UnsafePtrListExtensions
     {
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref UnsafeList<IntPtr> ListData<T>(ref this UnsafePtrList<T> from) where T : unmanaged => ref UnsafeUtility.As<UnsafePtrList<T>, UnsafeList<IntPtr>>(ref from);
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeList<IntPtr> ListDataRO<T>(this UnsafePtrList<T> from) where T : unmanaged => UnsafeUtility.As<UnsafePtrList<T>, UnsafeList<IntPtr>>(ref from);
     }
 
     internal sealed class UnsafePtrListDebugView<T>

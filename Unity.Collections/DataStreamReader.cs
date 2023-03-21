@@ -90,7 +90,7 @@ namespace Unity.Collections
         /// <item>Little-endian: means the most significant byte is at the right end of a word.</item>
         /// </list>
         /// </remarks>
-        public static bool IsLittleEndian => DataStreamWriter.IsLittleEndian;
+        public static bool IsLittleEndian { get { return DataStreamWriter.IsLittleEndian; } }
 
         static short ByteSwap(short val)
         {
@@ -105,12 +105,12 @@ namespace Unity.Collections
         /// <summary>
         /// If there is a read failure this returns true. A read failure might happen if this attempts to read more than there is capacity for.
         /// </summary>
-        public bool HasFailedReads => m_Context.m_FailedReads > 0;
+        public readonly bool HasFailedReads => m_Context.m_FailedReads > 0;
 
         /// <summary>
         /// The total size of the buffer space this reader is working with.
         /// </summary>
-        public int Length
+        public readonly int Length
         {
             get
             {
@@ -123,7 +123,7 @@ namespace Unity.Collections
         /// True if the reader has been pointed to a valid buffer space. This
         /// would be false if the reader was created with no arguments.
         /// </summary>
-        public bool IsCreated
+        public readonly bool IsCreated
         {
             get { return m_BufferPtr != null; }
         }
@@ -779,7 +779,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);

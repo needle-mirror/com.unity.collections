@@ -504,4 +504,18 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
             }
         }
     }
+
+    [Test]
+    public void AllocatorManager_Block_DoesNotOverflow()
+    {
+        AllocatorManager.Block block = default;
+        block.BytesPerItem = int.MaxValue;
+        block.AllocatedItems = 2;
+        block.Range = new AllocatorManager.Range { Items = 2 };
+
+        long ExpectedAllocatedBytes = (long)block.BytesPerItem * (long)block.AllocatedItems;
+        long ExpectedBytes = (long)block.BytesPerItem * (long)block.Range.Items;
+        Assert.AreEqual(ExpectedAllocatedBytes, block.AllocatedBytes);
+        Assert.AreEqual(ExpectedBytes, block.Bytes);
+    }
 }

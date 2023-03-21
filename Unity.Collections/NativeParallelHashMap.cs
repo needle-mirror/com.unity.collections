@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -121,8 +122,9 @@ namespace Unity.Collections
         /// Whether this hash map is empty.
         /// </summary>
         /// <value>True if this hash map is empty or if the map has not been constructed.</value>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (!IsCreated)
@@ -153,7 +155,8 @@ namespace Unity.Collections
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 CheckRead();
                 return m_HashMapData.Capacity;
@@ -187,7 +190,7 @@ namespace Unity.Collections
         public bool TryAdd(TKey key, TValue item)
         {
             CheckWrite();
-            return m_HashMapData.TryAdd(key, item);
+            return UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_HashMapData.m_Buffer, key, item, false, m_HashMapData.m_AllocatorLabel);
         }
 
         /// <summary>
@@ -199,7 +202,8 @@ namespace Unity.Collections
         /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
         public void Add(TKey key, TValue item)
         {
-            var added = TryAdd(key, item);
+            CheckWrite();
+            var added = UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_HashMapData.m_Buffer, key, item, false, m_HashMapData.m_AllocatorLabel);
 
             if (!added)
             {
@@ -277,7 +281,7 @@ namespace Unity.Collections
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_HashMapData.IsCreated;
+        public readonly bool IsCreated => m_HashMapData.IsCreated;
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -405,11 +409,22 @@ namespace Unity.Collections
 #endif
 
             /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_HashMapData.IsCreated;
+            }
+
+            /// <summary>
             /// Whether this hash map is empty.
             /// </summary>
             /// <value>True if this hash map is empty or if the map has not been constructed.</value>
-            public bool IsEmpty
+            public readonly bool IsEmpty
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     if (!IsCreated)
@@ -426,7 +441,7 @@ namespace Unity.Collections
             /// The current number of key-value pairs in this hash map.
             /// </summary>
             /// <returns>The current number of key-value pairs in this hash map.</returns>
-            public int Count()
+            public readonly int Count()
             {
                 CheckRead();
                 return m_HashMapData.Count();
@@ -436,8 +451,9 @@ namespace Unity.Collections
             /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity
+            public readonly int Capacity
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     CheckRead();
@@ -451,7 +467,7 @@ namespace Unity.Collections
             /// <param name="key">The key to look up.</param>
             /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
             /// <returns>True if the key was present.</returns>
-            public bool TryGetValue(TKey key, out TValue item)
+            public readonly bool TryGetValue(TKey key, out TValue item)
             {
                 CheckRead();
                 return m_HashMapData.TryGetValue(key, out item);
@@ -462,7 +478,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="key">The key to look up.</param>
             /// <returns>True if the key was present.</returns>
-            public bool ContainsKey(TKey key)
+            public readonly bool ContainsKey(TKey key)
             {
                 CheckRead();
                 return m_HashMapData.ContainsKey(key);
@@ -475,7 +491,7 @@ namespace Unity.Collections
             /// <param name="key">The key to look up.</param>
             /// <value>The value associated with the key.</value>
             /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
-            public TValue this[TKey key]
+            public readonly TValue this[TKey key]
             {
                 get
                 {
@@ -495,17 +511,11 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Whether this hash map has been allocated (and not yet deallocated).
-            /// </summary>
-            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-            public bool IsCreated => m_HashMapData.IsCreated;
-
-            /// <summary>
             /// Returns an array with a copy of all this hash map's keys (in no particular order).
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-            public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+            public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
             {
                 CheckRead();
                 return m_HashMapData.GetKeyArray(allocator);
@@ -516,7 +526,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-            public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+            public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
             {
                 CheckRead();
                 return m_HashMapData.GetValueArray(allocator);
@@ -528,14 +538,14 @@ namespace Unity.Collections
             /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-            public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+            public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
             {
                 CheckRead();
                 return m_HashMapData.GetKeyValueArrays(allocator);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void CheckRead()
+            readonly void CheckRead()
             {
     #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -543,7 +553,7 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void ThrowKeyNotPresent(TKey key)
+            readonly void ThrowKeyNotPresent(TKey key)
             {
                 throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
             }
@@ -552,7 +562,7 @@ namespace Unity.Collections
             /// Returns an enumerator over the key-value pairs of this hash map.
             /// </summary>
             /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-            public Enumerator GetEnumerator()
+            public readonly Enumerator GetEnumerator()
             {
     #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
@@ -614,14 +624,19 @@ namespace Unity.Collections
             /// <remarks>In a job, each thread gets its own copy of the ParallelWriter struct, and the job system assigns
             /// each copy the index of its thread.</remarks>
             /// <value>The index of the current thread.</value>
+            public int ThreadIndex => m_Writer.m_ThreadIndex;
+
+            /// <inheritdoc cref="ThreadIndex"/>
+            [Obsolete("'m_ThreadIndex' has been deprecated; use 'ThreadIndex' instead. (UnityUpgradable) -> ThreadIndex")]
             public int m_ThreadIndex => m_Writer.m_ThreadIndex;
 
             /// <summary>
             /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity
+            public readonly int Capacity
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -644,6 +659,22 @@ namespace Unity.Collections
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
 #endif
                 return m_Writer.TryAdd(key, item);
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>If the key is already present, this method returns false without modifying this hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
+            /// <returns>True if the key-value pair was added.</returns>
+            internal bool TryAdd(TKey key, TValue item, int threadIndexOverride)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+                return m_Writer.TryAdd(key, item, threadIndexOverride);
             }
         }
 
@@ -712,6 +743,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next key-value pair.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -735,13 +767,18 @@ namespace Unity.Collections
             /// The current key-value pair.
             /// </summary>
             /// <value>The current key-value pair.</value>
-            public KeyValue<TKey, TValue> Current => m_Enumerator.GetCurrent<TKey, TValue>();
+            public KeyValue<TKey, TValue> Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Enumerator.GetCurrent<TKey, TValue>();
+            }
 
             object IEnumerator.Current => Current;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -749,6 +786,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

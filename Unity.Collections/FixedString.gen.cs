@@ -294,10 +294,12 @@ namespace Unity.Collections
         /// </value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8LengthInBytes;
             }
+
             set
             {
                 CheckLengthInRange(value);
@@ -325,10 +327,12 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 29.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8MaxLengthInBytes;
             }
+
             set
             {
                 CheckCapacityInRange(value);
@@ -367,7 +371,11 @@ namespace Unity.Collections
         /// Returns true if this string is empty (has no characters).
         /// </summary>
         /// <value>True if this string is empty (has no characters).</value>
-        public bool IsEmpty => utf8LengthInBytes == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => utf8LengthInBytes == 0;
+        }
 
         /// <summary>
         /// Returns the byte (not character) at an index.
@@ -377,7 +385,8 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 unsafe
                 {
@@ -386,6 +395,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 unsafe
@@ -403,6 +413,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -470,6 +481,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -499,7 +511,11 @@ namespace Unity.Collections
             /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
             /// </remarks>
             /// <value>The current character.</value>
-            public Unicode.Rune Current => current;
+            public Unicode.Rune Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => current;
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -1136,7 +1152,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckIndexInRange(int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
@@ -1358,10 +1375,12 @@ namespace Unity.Collections
         /// </value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8LengthInBytes;
             }
+
             set
             {
                 CheckLengthInRange(value);
@@ -1389,10 +1408,12 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 61.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8MaxLengthInBytes;
             }
+
             set
             {
                 CheckCapacityInRange(value);
@@ -1431,7 +1452,11 @@ namespace Unity.Collections
         /// Returns true if this string is empty (has no characters).
         /// </summary>
         /// <value>True if this string is empty (has no characters).</value>
-        public bool IsEmpty => utf8LengthInBytes == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => utf8LengthInBytes == 0;
+        }
 
         /// <summary>
         /// Returns the byte (not character) at an index.
@@ -1441,7 +1466,8 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 unsafe
                 {
@@ -1450,6 +1476,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 unsafe
@@ -1467,6 +1494,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -1534,6 +1562,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -1563,7 +1592,11 @@ namespace Unity.Collections
             /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
             /// </remarks>
             /// <value>The current character.</value>
-            public Unicode.Rune Current => current;
+            public Unicode.Rune Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => current;
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -2192,7 +2225,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckIndexInRange(int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
@@ -2434,10 +2468,12 @@ namespace Unity.Collections
         /// </value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8LengthInBytes;
             }
+
             set
             {
                 CheckLengthInRange(value);
@@ -2465,10 +2501,12 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 125.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8MaxLengthInBytes;
             }
+
             set
             {
                 CheckCapacityInRange(value);
@@ -2507,7 +2545,11 @@ namespace Unity.Collections
         /// Returns true if this string is empty (has no characters).
         /// </summary>
         /// <value>True if this string is empty (has no characters).</value>
-        public bool IsEmpty => utf8LengthInBytes == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => utf8LengthInBytes == 0;
+        }
 
         /// <summary>
         /// Returns the byte (not character) at an index.
@@ -2517,7 +2559,8 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 unsafe
                 {
@@ -2526,6 +2569,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 unsafe
@@ -2543,6 +2587,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -2610,6 +2655,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -2639,7 +2685,11 @@ namespace Unity.Collections
             /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
             /// </remarks>
             /// <value>The current character.</value>
-            public Unicode.Rune Current => current;
+            public Unicode.Rune Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => current;
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -3260,7 +3310,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckIndexInRange(int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
@@ -3622,10 +3673,12 @@ namespace Unity.Collections
         /// </value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8LengthInBytes;
             }
+
             set
             {
                 CheckLengthInRange(value);
@@ -3653,10 +3706,12 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 509.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8MaxLengthInBytes;
             }
+
             set
             {
                 CheckCapacityInRange(value);
@@ -3695,7 +3750,11 @@ namespace Unity.Collections
         /// Returns true if this string is empty (has no characters).
         /// </summary>
         /// <value>True if this string is empty (has no characters).</value>
-        public bool IsEmpty => utf8LengthInBytes == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => utf8LengthInBytes == 0;
+        }
 
         /// <summary>
         /// Returns the byte (not character) at an index.
@@ -3705,7 +3764,8 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 unsafe
                 {
@@ -3714,6 +3774,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 unsafe
@@ -3731,6 +3792,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -3798,6 +3860,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -3827,7 +3890,11 @@ namespace Unity.Collections
             /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
             /// </remarks>
             /// <value>The current character.</value>
-            public Unicode.Rune Current => current;
+            public Unicode.Rune Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => current;
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -4440,7 +4507,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckIndexInRange(int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");
@@ -5922,10 +5990,12 @@ namespace Unity.Collections
         /// </value>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8LengthInBytes;
             }
+
             set
             {
                 CheckLengthInRange(value);
@@ -5953,10 +6023,12 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if attempting to set the capacity to anything other than 4093.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 return utf8MaxLengthInBytes;
             }
+
             set
             {
                 CheckCapacityInRange(value);
@@ -5995,7 +6067,11 @@ namespace Unity.Collections
         /// Returns true if this string is empty (has no characters).
         /// </summary>
         /// <value>True if this string is empty (has no characters).</value>
-        public bool IsEmpty => utf8LengthInBytes == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => utf8LengthInBytes == 0;
+        }
 
         /// <summary>
         /// Returns the byte (not character) at an index.
@@ -6005,7 +6081,8 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 unsafe
                 {
@@ -6014,6 +6091,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 unsafe
@@ -6031,6 +6109,7 @@ namespace Unity.Collections
         /// <param name="index">A byte index.</param>
         /// <returns>A reference to the byte at the index.</returns>
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref byte ElementAt(int index)
         {
             unsafe
@@ -6098,6 +6177,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next character.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 if (offset >= target.Length)
@@ -6127,7 +6207,11 @@ namespace Unity.Collections
             /// In an enumerator's initial state, <see cref="Current"/> is not valid to read.
             /// </remarks>
             /// <value>The current character.</value>
-            public Unicode.Rune Current => current;
+            public Unicode.Rune Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => current;
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -6732,7 +6816,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckIndexInRange(int index)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckIndexInRange(int index)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException($"Index {index} must be positive.");

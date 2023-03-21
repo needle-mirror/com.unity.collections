@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
@@ -181,7 +182,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Returns true if this stream is empty.
         /// </summary>
         /// <returns>True if this stream is empty or the stream has not been constructed.</returns>
-        public bool IsEmpty()
+        public readonly bool IsEmpty()
         {
             if (!IsCreated)
             {
@@ -207,13 +208,17 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <remarks>Does not necessarily reflect whether the buffers of the stream have themselves been allocated.</remarks>
         /// <value>True if this stream has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_BlockData.Range.Pointer != IntPtr.Zero;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_BlockData.Range.Pointer != IntPtr.Zero;
+        }
 
         /// <summary>
         /// The number of buffers in this stream.
         /// </summary>
         /// <value>The number of buffers in this stream.</value>
-        public int ForEachCount => ((UnsafeStreamBlockData*)m_BlockData.Range.Pointer)->RangeCount;
+        public readonly int ForEachCount => ((UnsafeStreamBlockData*)m_BlockData.Range.Pointer)->RangeCount;
 
         /// <summary>
         /// Returns a reader of this stream.

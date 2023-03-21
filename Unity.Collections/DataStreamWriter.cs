@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -113,7 +114,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="length">The number of bytes available in the buffer.</param>
         /// <param name="allocator">The <see cref="Allocator"/> used to allocate the memory.</param>
-        public DataStreamWriter(int length, Allocator allocator)
+        public DataStreamWriter(int length, AllocatorManager.AllocatorHandle allocator)
         {
             CheckAllocator(allocator);
             Initialize(out this, CollectionHelper.CreateNativeArray<byte>(length, allocator));
@@ -185,8 +186,9 @@ namespace Unity.Collections
         /// True if there is a valid data buffer present. This would be false
         /// if the writer was created with no arguments.
         /// </summary>
-        public bool IsCreated
+        public readonly bool IsCreated
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get { return m_Data.buffer != null; }
         }
 
@@ -194,14 +196,19 @@ namespace Unity.Collections
         /// If there is a write failure this returns true.
         /// A failure might happen if an attempt is made to write more than there is capacity for.
         /// </summary>
-        public bool HasFailedWrites => m_Data.failedWrites > 0;
+        public readonly bool HasFailedWrites
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.failedWrites > 0;
+        }
 
         /// <summary>
         /// The total size of the data buffer, see <see cref="Length"/> for
         /// the size of space used in the buffer.
         /// </summary>
-        public int Capacity
+        public readonly int Capacity
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -864,7 +871,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -872,6 +880,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -880,9 +889,9 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        static void CheckAllocator(Allocator allocator)
+        static void CheckAllocator(AllocatorManager.AllocatorHandle allocator)
         {
-            if (allocator != Allocator.Temp)
+            if (allocator.ToAllocator != Allocator.Temp)
                 throw new InvalidOperationException("DataStreamWriters can only be created with temp memory");
         }
 

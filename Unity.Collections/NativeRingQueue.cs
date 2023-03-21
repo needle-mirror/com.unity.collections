@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -34,13 +35,21 @@ namespace Unity.Collections
         /// Whether this queue has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this queue has been allocated (and not yet deallocated).</value>
-        public readonly bool IsCreated => m_RingQueue != null && m_RingQueue->IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_RingQueue != null && m_RingQueue->IsCreated;
+        }
 
         /// <summary>
         /// Whether the queue is empty.
         /// </summary>
         /// <value>True if the queue is empty or the queue has not been constructed.</value>
-        public readonly bool IsEmpty => !IsCreated || Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_RingQueue == null || m_RingQueue->Length == 0;
+        }
 
         /// <summary>
         /// The number of elements currently in this queue.
@@ -48,6 +57,7 @@ namespace Unity.Collections
         /// <value>The number of elements currently in this queue.</value>
         public readonly int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -61,6 +71,7 @@ namespace Unity.Collections
         /// <value>The number of elements that fit in the internal buffer.</value>
         public readonly int Capacity
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -166,6 +177,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -174,6 +186,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -198,8 +211,8 @@ namespace Unity.Collections
             {
                 T[] result = new T[Data->Length];
 
-                var read = Data->Control.Read;
-                var capacity = Data->Control.Capacity;
+                var read = Data->m_Read;
+                var capacity = Data->m_Capacity;
 
                 for (var i = 0; i < result.Length; ++i)
                 {

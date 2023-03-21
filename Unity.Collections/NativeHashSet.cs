@@ -7,6 +7,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine.Internal;
 using Unity.Burst;
+using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
 {
@@ -40,13 +41,8 @@ namespace Unity.Collections
         /// <param name="initialCapacity">The number of values that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
-            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
         {
-        }
-
-        internal NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
-        {
-            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, growthPolicy, 256, allocator);
+            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, 256, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -63,8 +59,9 @@ namespace Unity.Collections
         /// Whether this set is empty.
         /// </summary>
         /// <value>True if this set is empty or if the set has not been constructed.</value>
-        public bool IsEmpty
+        public readonly bool IsEmpty
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (!IsCreated)
@@ -81,12 +78,13 @@ namespace Unity.Collections
         /// Returns the current number of values in this set.
         /// </summary>
         /// <returns>The current number of values in this set.</returns>
-        public int Count
+        public readonly int Count
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
-                return m_Data->GrowthPolicy.Count;
+                return m_Data->Count;
             }
         }
 
@@ -98,7 +96,8 @@ namespace Unity.Collections
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
                 CheckRead();
                 return m_Data->Capacity;
@@ -115,7 +114,11 @@ namespace Unity.Collections
         /// Whether this set has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this set has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Data != null && m_Data->IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data != null && m_Data->IsCreated;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -143,7 +146,7 @@ namespace Unity.Collections
                 Data = new NativeDataDispose
                 {
                     m_Ptr = m_Data->Ptr,
-                    m_Allocator = m_Data->GrowthPolicy.Allocator,
+                    m_Allocator = m_Data->Allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                     m_Safety = m_Safety,
 #endif
@@ -288,6 +291,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next value.
             /// </summary>
             /// <returns>True if `Current` is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -313,6 +317,7 @@ namespace Unity.Collections
             /// <value>The current value.</value>
             public T Current
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -365,11 +370,26 @@ namespace Unity.Collections
             }
 
             /// <summary>
+            /// Whether this hash set has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash set has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    CheckRead();
+                    return m_Data->IsCreated;
+                }
+            }
+
+            /// <summary>
             /// Whether this hash set is empty.
             /// </summary>
             /// <value>True if this hash set is empty or if the map has not been constructed.</value>
-            public bool IsEmpty
+            public readonly bool IsEmpty
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     CheckRead();
@@ -386,12 +406,13 @@ namespace Unity.Collections
             /// The current number of items in this hash set.
             /// </summary>
             /// <returns>The current number of items in this hash set.</returns>
-            public int Count
+            public readonly int Count
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     CheckRead();
-                    return m_Data->GrowthPolicy.Count;
+                    return m_Data->Count;
                 }
             }
 
@@ -399,8 +420,9 @@ namespace Unity.Collections
             /// The number of items that fit in the current allocation.
             /// </summary>
             /// <value>The number of items that fit in the current allocation.</value>
-            public int Capacity
+            public readonly int Capacity
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     CheckRead();
@@ -413,7 +435,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="item">The item to look up.</param>
             /// <returns>True if the item was present.</returns>
-            public bool Contains(T item)
+            public readonly bool Contains(T item)
             {
                 CheckRead();
                 return -1 != m_Data->Find(item);
@@ -424,29 +446,17 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of all this hash set's items (in no particular order).</returns>
-            public NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
+            public readonly NativeArray<T> ToNativeArray(AllocatorManager.AllocatorHandle allocator)
             {
                 CheckRead();
                 return m_Data->GetKeyArray(allocator);
-            }
-            /// <summary>
-            /// Whether this hash set has been allocated (and not yet deallocated).
-            /// </summary>
-            /// <value>True if this hash set has been allocated (and not yet deallocated).</value>
-            public bool IsCreated
-            {
-                get
-                {
-                    CheckRead();
-                    return m_Data->IsCreated;
-                }
             }
 
             /// <summary>
             /// Returns an enumerator over the items of this hash set.
             /// </summary>
             /// <returns>An enumerator over the items of this hash set.</returns>
-            public Enumerator GetEnumerator()
+            public readonly Enumerator GetEnumerator()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckGetSecondaryDataPointerAndThrow(m_Safety);
@@ -483,7 +493,8 @@ namespace Unity.Collections
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void CheckRead()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -492,7 +503,8 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -500,6 +512,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

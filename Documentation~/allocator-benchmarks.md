@@ -30,34 +30,4 @@ The different allocators have the following different features:
 
 The following performance tests compare Temp, TempJob, Persistent and rewindable allocators. Because the world update allocator, entity command buffer allocator, and system group allocator are rewindable allocators, their performance is reflected in the rewindable allocator test results. The allocators are tested in single thread cases and in multithread cases by scheduling allocations in jobs across all the cores.  
 
-### Performance test results of single thread allocations
-
-This performance test takes 100 measurements in a row of 150 allocations in a single IJob job. Each allocates the following memory: 
-
-* Fixed small size (1KB)
-* Fixed large size (1MB)
-* Incremental size from 64KB to 150 * 64KB 
-* Decremental size from 150 * 64KB to 64KB  
-
-[The performance test results of single thread allocations](allocator-performance-results.md#Performancetestresultsofsinglethreadallocations) are measured in milliseconds. 
-
-The results show that in single thread allocations, for fixed size small allocations, Temp allocator is the fastest, slightly faster than rewindable allocator, followed by TempJob allocator and then Persistant allocator. 
-
-For other allocation sizes, rewindable allocator is the fastest, followed by TempJob, Temp allocator, and the Persistent allocator is the slowest.
-
-### Performance results of multithreaded allocations
-
-This performance test takes 100 measurements in a row of 150 allocations in every IJobParallelFor job across all CPU cores. Each allocates the following memory:
-
-* Fixed small size (1KB)
-* Fixed large size (1MB)
-* Incremental size from 64KB to 150 * 64KB 
-* Decremental size from 150 * 64KB to 64KB  
-
-[The performance test results of of multithreaded allocations](allocator-performance-results.md#Performanceresultsofmultithreadedallocations) are measured in milliseconds. 
-
-The results show that in multithreaded allocations, with varying allocation sizes, rewindable allocator is the fastest, followed by Temp allocator, Persistent allocator, and then TempJob allocator.  
-
-For fixed size large allocations, rewindable allocator is the fastest, followed by Temp allocator, TempJob Allocator, and then Persistent allocator.  
-
-For fixed size small allocations, rewindable allocator is the fastest followed by TempJob allocator, Temp allocator, and then Persistant allocator.
+For results, see [Performance Comparison for Allocators](performance-comparison-allocators.md).

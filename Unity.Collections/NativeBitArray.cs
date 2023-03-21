@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
@@ -50,7 +51,7 @@ namespace Unity.Collections
         /// Whether this array has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this array has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_BitArray != null && m_BitArray->IsCreated;
+        public readonly bool IsCreated => m_BitArray != null && m_BitArray->IsCreated;
 
         /// <summary>
         /// Sets the length, expanding the capacity if necessary.
@@ -125,8 +126,9 @@ namespace Unity.Collections
         /// Returns the number of bits.
         /// </summary>
         /// <value>The number of bits.</value>
-        public int Length
+        public readonly int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -138,8 +140,9 @@ namespace Unity.Collections
         /// Returns the capacity number of bits.
         /// </summary>
         /// <value>The capacity number of bits.</value>
-        public int Capacity
+        public readonly int Capacity
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckRead();
@@ -416,7 +419,7 @@ namespace Unity.Collections
             /// Returns the number of bits.
             /// </summary>
             /// <value>The number of bits.</value>
-            public int Length
+            public readonly int Length
             {
                 get
                 {
@@ -438,7 +441,7 @@ namespace Unity.Collections
             /// <param name="numBits">Number of bits to get (must be between 1 and 64).</param>
             /// <exception cref="ArgumentException">Thrown if pos is out of bounds or if numBits is not between 1 and 64.</exception>
             /// <returns>A ulong which has bits copied from this array.</returns>
-            public ulong GetBits(int pos, int numBits = 1)
+            public readonly ulong GetBits(int pos, int numBits = 1)
             {
                 CheckRead();
                 return m_BitArray.GetBits(pos, numBits);
@@ -450,7 +453,7 @@ namespace Unity.Collections
             /// <param name="pos">Index of the bit to test.</param>
             /// <returns>True if the bit at the index is 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds.</exception>
-            public bool IsSet(int pos)
+            public readonly bool IsSet(int pos)
             {
                 CheckRead();
                 return m_BitArray.IsSet(pos);
@@ -463,7 +466,7 @@ namespace Unity.Collections
             /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
             /// <returns>The index in this array where the sequence is found. The index will be greater than or equal to `pos`.
             /// Returns -1 if no occurrence is found.</returns>
-            public int Find(int pos, int numBits)
+            public readonly int Find(int pos, int numBits)
             {
                 CheckRead();
                 return m_BitArray.Find(pos, numBits);
@@ -477,7 +480,7 @@ namespace Unity.Collections
             /// <param name="count">Number of bits to search.</param>
             /// <returns>The index in this array where the sequence is found. The index will be greater than or equal to `pos` but less than `pos + count`.
             /// Returns -1 if no occurrence is found.</returns>
-            public int Find(int pos, int count, int numBits)
+            public readonly int Find(int pos, int count, int numBits)
             {
                 CheckRead();
                 return m_BitArray.Find(pos, count, numBits);
@@ -490,7 +493,7 @@ namespace Unity.Collections
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>Returns true if none of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestNone(int pos, int numBits = 1)
+            public readonly bool TestNone(int pos, int numBits = 1)
             {
                 CheckRead();
                 return m_BitArray.TestNone(pos, numBits);
@@ -503,7 +506,7 @@ namespace Unity.Collections
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>True if one ore more of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestAny(int pos, int numBits = 1)
+            public readonly bool TestAny(int pos, int numBits = 1)
             {
                 CheckRead();
                 return m_BitArray.TestAny(pos, numBits);
@@ -516,7 +519,7 @@ namespace Unity.Collections
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>True if all of the bits in range `pos` up to (but not including) `pos + numBits` are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public bool TestAll(int pos, int numBits = 1)
+            public readonly bool TestAll(int pos, int numBits = 1)
             {
                 CheckRead();
                 return m_BitArray.TestAll(pos, numBits);
@@ -529,14 +532,14 @@ namespace Unity.Collections
             /// <param name="numBits">Number of bits to test. Defaults to 1.</param>
             /// <returns>The number of bits in a range of bits that are 1.</returns>
             /// <exception cref="ArgumentException">Thrown if `pos` is out of bounds or `numBits` is less than 1.</exception>
-            public int CountBits(int pos, int numBits = 1)
+            public readonly int CountBits(int pos, int numBits = 1)
             {
                 CheckRead();
                 return m_BitArray.CountBits(pos, numBits);
             }
 
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            void CheckRead()
+            readonly void CheckRead()
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -545,7 +548,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);

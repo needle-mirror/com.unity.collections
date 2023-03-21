@@ -51,6 +51,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static T ReadArrayElementBoundsChecked<T>(void* source, int index, int capacity)
+            where T : unmanaged
         {
             CheckIndexRange(index, capacity);
 
@@ -68,6 +69,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
         public unsafe static void WriteArrayElementBoundsChecked<T>(void* destination, int index, T value, int capacity)
+            where T : unmanaged
         {
             CheckIndexRange(index, capacity);
 

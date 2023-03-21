@@ -6,6 +6,7 @@ using Unity.Collections.LowLevel.Unsafe.NotBurstCompatible;
 using Unity.Collections.Tests;
 using System;
 using Unity.Burst;
+using System.Diagnostics;
 
 internal class UnsafeHashMapTests : CollectionsTestCommonBase
 {
@@ -469,12 +470,14 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     public void UnsafeHashMap_TryAddScalability()
     {
         var container = new UnsafeHashMap<int, int>(1, Allocator.Persistent);
+        Assert.AreEqual(container.Capacity, (1 << container.m_Data.Log2MinGrowth));
         for (int i = 0; i != 1000 * 100; i++)
         {
             container.Add(i, i);
         }
 
         int value;
+        Assert.AreEqual(container.Count, 100000);
         Assert.IsFalse(container.TryGetValue(-1, out value));
         Assert.IsFalse(container.TryGetValue(1000 * 1000, out value));
 
@@ -496,6 +499,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
 
             container.Add(123, 345);
             container.TrimExcess();
+            Assert.AreEqual(container.Capacity, (1 << container.m_Data.Log2MinGrowth));
             Assert.AreEqual(1, container.Count);
             Assert.AreNotEqual(oldCapacity, container.Capacity);
 
@@ -526,125 +530,5 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
         }
         Assert.AreEqual(1024, container.Count);
         container.Dispose();
-    }
-
-    internal int TestResizeCount(ref CapacityGrowthPolicyImpl cgp, int num)
-    {
-        cgp.Count = 0;
-        cgp.Capacity = cgp.CalcMinCapacity();
-
-        var numResizes = 0;
-
-        for (var i = 0; i < num; ++i)
-        {
-            if (cgp.NeedResize())
-            {
-                numResizes++;
-                cgp.Capacity = cgp.CalcCapacity(i + (1 << cgp.Log2MinGrowth));
-            }
-            cgp.Count++;
-        }
-
-        return numResizes;
-    }
-
-    [Test]
-    public void CapacityGrowthPolicy_Linear_MinGrowth0()
-    {
-        var cgp = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.Linear, 0);
-
-        Assert.AreEqual(0, cgp.Count);
-        Assert.AreEqual(1, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        Assert.AreEqual(1, cgp.Count);
-        Assert.AreEqual(1, cgp.Capacity);
-        Assert.True(cgp.NeedResize());
-
-        cgp.Count++;
-        cgp.Capacity = cgp.CalcCapacity(10);
-        Assert.AreEqual(2, cgp.Count);
-        Assert.AreEqual(10, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        Assert.AreEqual(cgp.Count, cgp.CalcMinCapacity());
-
-        Assert.AreEqual(1023, TestResizeCount(ref cgp, 1024)); // initial capacity is 1, then resizes 1024-1 times
-    }
-
-    [Test]
-    public void CapacityGrowthPolicy_Linear_MinGrowth10()
-    {
-        var cgp = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.Linear, 10);
-
-        Assert.AreEqual(0, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        Assert.AreEqual(1, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        cgp.Capacity = cgp.CalcCapacity(11);
-        Assert.AreEqual(2, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        Assert.AreEqual(16, cgp.CalcMinCapacity());
-
-        Assert.AreEqual(63, TestResizeCount(ref cgp, 1024)); // initial capacity is 16, then resizes (1024-16)/16 times.
-    }
-
-    [Test]
-    public void CapacityGrowthPolicy_CeilPow2_MinGrowth0()
-    {
-        var cgp = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.CeilPow2, 0);
-
-        Assert.AreEqual(0, cgp.Count);
-        Assert.AreEqual(1, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        Assert.AreEqual(1, cgp.Count);
-        Assert.AreEqual(1, cgp.Capacity);
-        Assert.True(cgp.NeedResize());
-
-        cgp.Count++;
-        cgp.Capacity = cgp.CalcCapacity(10);
-        Assert.AreEqual(2, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        Assert.AreEqual(cgp.Count, cgp.CalcMinCapacity());
-
-        Assert.AreEqual(10, TestResizeCount(ref cgp, 1024)); // initial capacity is 1, then resizes log2(1024) times
-    }
-
-    [Test]
-    public void CapacityGrowthPolicy_CeilPow2_MinGrowth10()
-    {
-        var cgp = new CapacityGrowthPolicyImpl(Allocator.None, 0, CapacityGrowthPolicy.CeilPow2, 10);
-
-        Assert.AreEqual(0, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        Assert.AreEqual(1, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        cgp.Count++;
-        cgp.Capacity = cgp.CalcCapacity(11);
-        Assert.AreEqual(2, cgp.Count);
-        Assert.AreEqual(16, cgp.Capacity);
-        Assert.False(cgp.NeedResize());
-
-        Assert.AreEqual(16, cgp.CalcMinCapacity());
-
-        Assert.AreEqual(6, TestResizeCount(ref cgp, 1024)); // initial capacity is 16, then resizes log2(1024)-log2(16) times
     }
 }

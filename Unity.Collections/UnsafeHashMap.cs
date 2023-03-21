@@ -10,147 +10,6 @@ using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
-    /// <summary>
-    /// Container growth policy behavior.
-    /// </summary>
-    internal enum CapacityGrowthPolicy
-    {
-        /// <summary>
-        /// Double growth policy. It minimizes number of resizes needed for large number of elements.
-        /// It should be used in cases where number of elements is not known ahead of time.
-        /// </summary>
-        CeilPow2,
-
-        /// <summary>
-        /// Linear growth policy. It minimizes amount of memory used by container. It should be
-        /// used in cases where number of elements is approximately known, but might require
-        /// infrequent calls to container resize.
-        /// </summary>
-        Linear,
-
-        /// <summary>
-        /// No growth policy. It declares that user knows exactly required capacity, and that resizing
-        /// container should be treated as error. It should be used in cases where number of elements is
-        /// known, and resize should not happen.
-        /// </summary>
-        ThrowIfFull,
-    };
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct CapacityGrowthPolicyImpl
-    {
-        // WARNING!
-        // This aliases m_length, m_capacity, and padding of UntypedUnsafeList, UnsafeList, and UnsafePtrList.
-        // If things are changed here, must match exactly there too.
-        internal int Count;
-        internal int Capacity;
-        internal readonly AllocatorManager.AllocatorHandle Allocator;
-        internal readonly byte Log2MinGrowth;
-        internal readonly byte Log2ReserveFree;
-        internal readonly byte GrowthPolicy;
-        readonly byte Padding;
-
-        internal readonly int MinReserve => 0 < Log2ReserveFree ? 1 << (Log2ReserveFree - 1) : 0;
-
-        internal readonly int MinCount => Count + MinReserve;
-
-        internal CapacityGrowthPolicyImpl(AllocatorManager.AllocatorHandle allocator, int initialCapacity, CapacityGrowthPolicy growthPolicy, int minGrowth, bool reserveFree = false)
-        {
-            Count = 0;
-            Capacity = 0;
-            Allocator = allocator;
-            Log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
-            Log2ReserveFree = reserveFree ? Log2MinGrowth : (byte)0;
-            GrowthPolicy = (byte)growthPolicy;
-            Padding = 0;
-
-            Capacity = CalcCapacity(initialCapacity);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void Reset()
-        {
-            Capacity = 0;
-            Count = 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void Reset(int newCapacity)
-        {
-            Capacity = Math.Max(newCapacity, Count);
-            Count = 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int CalcCapacityThrowIfFull(int minCapacity, int minGrowth, int capacity)
-        {
-            return capacity;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int CalcCapacityCeilPow2(int minCapacity, int minGrowth, int capacity)
-        {
-            capacity = math.max(math.max(minCapacity, 1), capacity);
-            var newCapacity = math.max(capacity, minGrowth);
-            var result = math.ceilpow2(newCapacity);
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int CalcCapacityLinear(int minCapacity, int minGrowth, int capacity)
-        {
-            capacity = math.max(math.max(minCapacity, 1), capacity);
-            var result = Bitwise.AlignUp(capacity, math.max(1, minGrowth));
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal bool NeedResize()
-        {
-            var needResize = MinCount >= Capacity;
-
-            if (needResize 
-            && (CapacityGrowthPolicy)GrowthPolicy == CapacityGrowthPolicy.ThrowIfFull)
-            {
-                throw new InvalidOperationException("Container is using CapacityGrowthPolicy.ThrowIfFull capacity growth policy, and it cannot be resized.");
-            }
-
-            return needResize;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal int CalcMinCapacity()
-        {
-            return CalcCapacity(MinCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal int CalcNewCapacity()
-        {
-            return CalcCapacity(Capacity + (1 << Log2MinGrowth));
-        }
-
-        internal int CalcCapacity(int capacity)
-        {
-            switch ((CapacityGrowthPolicy)GrowthPolicy)
-            {
-            case CapacityGrowthPolicy.ThrowIfFull:
-                return CalcCapacityThrowIfFull(math.max(1, Count), 1 << Log2MinGrowth, capacity);
-
-            case CapacityGrowthPolicy.CeilPow2:
-                return CalcCapacityCeilPow2(math.max(1, Count), 1 << Log2MinGrowth, capacity);
-
-            case CapacityGrowthPolicy.Linear:
-                return CalcCapacityLinear(math.max(1, Count), 1 << Log2MinGrowth, capacity);
-
-            default: break;
-            }
-
-            return capacity;
-        }
-    }
-
     [StructLayout(LayoutKind.Sequential)]
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
     internal unsafe struct HashMapHelper<TKey>
@@ -168,43 +27,65 @@ namespace Unity.Collections.LowLevel.Unsafe
         [NativeDisableUnsafePtrRestriction]
         internal int* Buckets;
 
+        internal int Count;
         internal int Capacity;
+        internal int Log2MinGrowth;
+        internal int BucketCapacity;
         internal int AllocatedIndex;
         internal int FirstFreeIdx;
         internal int SizeOfTValue;
-        internal CapacityGrowthPolicyImpl GrowthPolicy;
+        internal AllocatorManager.AllocatorHandle Allocator;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal int CalcCapacityCeilPow2(int capacity)
+        {
+            capacity = math.max(math.max(1, Count), capacity);
+            var newCapacity = math.max(capacity, 1 << Log2MinGrowth);
+            var result = math.ceilpow2(newCapacity);
+
+            return result;
+        }
 
         internal static int GetBucketSize(int capacity)
         {
             return capacity * 2;
         }
 
-        internal readonly bool IsCreated => Ptr != null;
+        internal readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Ptr != null;
+        }
 
-        internal readonly bool IsEmpty => !IsCreated || GrowthPolicy.Count == 0;
+        internal readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || Count == 0;
+        }
 
         internal void Clear()
         {
-            UnsafeUtility.MemSet(Buckets, 0xff, GrowthPolicy.Capacity * sizeof(int));
+            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
             UnsafeUtility.MemSet(Next, 0xff, Capacity * sizeof(int));
 
-            GrowthPolicy.Reset(GrowthPolicy.Capacity);
+            Count = 0;
             FirstFreeIdx = -1;
             AllocatedIndex = 0;
         }
 
-        internal void Init(int capacity, int sizeOfValueT, CapacityGrowthPolicy growthPolicy, int minGrowth, AllocatorManager.AllocatorHandle allocator)
+        internal void Init(int capacity, int sizeOfValueT, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
-            var bucketCapacity = math.ceilpow2(GetBucketSize(capacity));
+            Count = 0;
+            Log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
 
-            GrowthPolicy = new CapacityGrowthPolicyImpl(allocator, bucketCapacity, growthPolicy, minGrowth);
-
+            capacity = CalcCapacityCeilPow2(capacity);
             Capacity = capacity;
-            GrowthPolicy.Capacity = bucketCapacity;
+            BucketCapacity = GetBucketSize(capacity);
+            Allocator = allocator;
             SizeOfTValue = sizeOfValueT;
 
             int keyOffset, nextOffset, bucketOffset;
-            int totalSize = CalculateDataSize(capacity, bucketCapacity, sizeOfValueT, out keyOffset, out nextOffset, out bucketOffset);
+            int totalSize = CalculateDataSize(capacity, BucketCapacity, sizeOfValueT, out keyOffset, out nextOffset, out bucketOffset);
 
             Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
             Keys = (TKey*)(Ptr + keyOffset);
@@ -216,32 +97,33 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal void Dispose()
         {
-            Memory.Unmanaged.Free(Ptr, GrowthPolicy.Allocator);
+            Memory.Unmanaged.Free(Ptr, Allocator);
             Ptr = null;
             Keys = null;
             Next = null;
             Buckets = null;
-            GrowthPolicy.Reset();
+            Count = 0;
+            BucketCapacity = 0;
         }
 
-        internal static HashMapHelper<TKey>* Alloc(int capacity, int sizeOfValueT, CapacityGrowthPolicy growthPolicy, int minGrowth, AllocatorManager.AllocatorHandle allocator)
+        internal static HashMapHelper<TKey>* Alloc(int capacity, int sizeOfValueT, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
             var data = (HashMapHelper<TKey>*)Memory.Unmanaged.Allocate(sizeof(HashMapHelper<TKey>), UnsafeUtility.AlignOf<HashMapHelper<TKey>>(), allocator);
-            data->Init(capacity, sizeOfValueT, growthPolicy, minGrowth, allocator);
+            data->Init(capacity, sizeOfValueT, minGrowth, allocator);
 
             return data;
         }
 
         internal static void Free(HashMapHelper<TKey>* data)
         {
-            Memory.Unmanaged.Free(data, data->GrowthPolicy.Allocator);
+            Memory.Unmanaged.Free(data, data->Allocator);
         }
 
         internal void Resize(int newCapacity)
         {
             var newBucketCapacity = math.ceilpow2(GetBucketSize(newCapacity));
 
-            if (Capacity == newCapacity && GrowthPolicy.Capacity == newBucketCapacity)
+            if (Capacity == newCapacity && BucketCapacity == newBucketCapacity)
             {
                 return;
             }
@@ -258,14 +140,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             var oldKeys = Keys;
             var oldNext = Next;
             var oldBuckets = Buckets;
-            var oldBucketCapacity = GrowthPolicy.Capacity;
+            var oldBucketCapacity = BucketCapacity;
 
-            Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, GrowthPolicy.Allocator);
+            Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, Allocator);
             Keys = (TKey*)(Ptr + keyOffset);
             Next = (int*)(Ptr + nextOffset);
             Buckets = (int*)(Ptr + bucketOffset);
             Capacity = newCapacity;
-            GrowthPolicy.Capacity = newBucketCapacity;
+            BucketCapacity = newBucketCapacity;
 
             Clear();
 
@@ -278,12 +160,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 }
             }
 
-            Memory.Unmanaged.Free(oldPtr, GrowthPolicy.Allocator);
+            Memory.Unmanaged.Free(oldPtr, Allocator);
         }
 
         internal void TrimExcess()
         {
-            var capacity = GrowthPolicy.CalcMinCapacity();
+            var capacity = CalcCapacityCeilPow2(Count);
             ResizeExact(capacity, GetBucketSize(capacity));
         }
 
@@ -322,76 +204,78 @@ namespace Unity.Collections.LowLevel.Unsafe
             return math.min(Capacity, AllocatedIndex) - numFree;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        int GetBucket(in TKey key)
+        {
+            return (int)((uint)key.GetHashCode() & (BucketCapacity - 1));
+        }
+
         internal int TryAdd(in TKey key)
         {
-            if (-1 != Find(key))
+            if (-1 == Find(key))
             {
-                return -1;
+                // Allocate an entry from the free list
+                int idx;
+                int* next;
+
+                if (AllocatedIndex >= Capacity && FirstFreeIdx < 0)
+                {
+                    int newCap = CalcCapacityCeilPow2(Capacity + (1 << Log2MinGrowth));
+                    Resize(newCap);
+                }
+
+                idx = FirstFreeIdx;
+
+                if (idx >= 0)
+                {
+                    FirstFreeIdx = Next[idx];
+                }
+                else
+                {
+                    idx = AllocatedIndex++;
+                }
+
+                CheckIndexOutOfBounds(idx);
+
+                UnsafeUtility.WriteArrayElement(Keys, idx, key);
+                var bucket = GetBucket(key);
+
+                // Add the index to the hash-map
+                next = Next;
+                next[idx] = Buckets[bucket];
+                Buckets[bucket] = idx;
+                Count++;
+
+                return idx;
             }
-
-            // Allocate an entry from the free list
-            int idx;
-            int* next;
-
-            if (AllocatedIndex >= Capacity && FirstFreeIdx < 0)
-            {
-                int newCap = GrowthPolicy.CalcCapacity(Capacity + (1 << GrowthPolicy.Log2MinGrowth));
-                Resize(newCap);
-            }
-
-            idx = FirstFreeIdx;
-
-            if (idx >= 0)
-            {
-                FirstFreeIdx = Next[idx];
-            }
-            else
-            {
-                idx = AllocatedIndex++;
-            }
-
-            CheckIndexOutOfBounds(idx);
-
-            UnsafeUtility.WriteArrayElement(Keys, idx, key);
-
-            var bucket = (int)((uint)key.GetHashCode() % GrowthPolicy.Capacity);
-            // Add the index to the hash-map
-            next = Next;
-            next[idx] = Buckets[bucket];
-            Buckets[bucket] = idx;
-            GrowthPolicy.Count++;
-
-            return idx;
+            return -1;
         }
 
         internal int Find(TKey key)
         {
-            if (AllocatedIndex <= 0)
+            if (AllocatedIndex > 0)
             {
-                return -1;
-            }
+                // First find the slot based on the hash
+                var bucket = GetBucket(key);
+                var entryIdx = Buckets[bucket];
 
-            // First find the slot based on the hash
-            var bucket = (int)((uint)key.GetHashCode() % GrowthPolicy.Capacity);
-
-            var entryIdx = Buckets[bucket];
-
-            if (entryIdx < 0 || entryIdx >= Capacity)
-            {
-                return -1;
-            }
-
-            var nextPtrs = Next;
-            while (!UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
-            {
-                entryIdx = nextPtrs[entryIdx];
-                if (entryIdx < 0 || entryIdx >= Capacity)
+                if ((uint)entryIdx < (uint)Capacity)
                 {
-                    return -1;
+                    var nextPtrs = Next;
+                    while (!UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
+                    {
+                        entryIdx = nextPtrs[entryIdx];
+                        if ((uint)entryIdx >= (uint)Capacity)
+                        {
+                            return -1;
+                        }
+                    }
+
+                    return entryIdx;
                 }
             }
 
-            return entryIdx;
+            return -1;
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
@@ -412,63 +296,57 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal int TryRemove(TKey key)
         {
-            if (Capacity == 0)
+            if (Capacity != 0)
             {
-                return -1;
-            }
+                var removed = 0;
 
-            var removed = 0;
+                // First find the slot based on the hash
+                var bucket = GetBucket(key);
 
-            // First find the slot based on the hash
-            var bucket = (int)((uint)key.GetHashCode() % GrowthPolicy.Capacity);
-            var prevEntry = -1;
-            var entryIdx = Buckets[bucket];
+                var prevEntry = -1;
+                var entryIdx = Buckets[bucket];
 
-            while (entryIdx >= 0 && entryIdx < Capacity)
-            {
-                if (UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
+                while (entryIdx >= 0 && entryIdx < Capacity)
                 {
-                    ++removed;
-
-                    // Found matching element, remove it
-                    if (prevEntry < 0)
+                    if (UnsafeUtility.ReadArrayElement<TKey>(Keys, entryIdx).Equals(key))
                     {
-                        Buckets[bucket] = Next[entryIdx];
+                        ++removed;
+
+                        // Found matching element, remove it
+                        if (prevEntry < 0)
+                        {
+                            Buckets[bucket] = Next[entryIdx];
+                        }
+                        else
+                        {
+                            Next[prevEntry] = Next[entryIdx];
+                        }
+
+                        // And free the index
+                        int nextIdx = Next[entryIdx];
+                        Next[entryIdx] = FirstFreeIdx;
+                        FirstFreeIdx = entryIdx;
+                        entryIdx = nextIdx;
+
+                        break;
                     }
                     else
                     {
-                        Next[prevEntry] = Next[entryIdx];
+                        prevEntry = entryIdx;
+                        entryIdx = Next[entryIdx];
                     }
-
-                    // And free the index
-                    int nextIdx = Next[entryIdx];
-                    Next[entryIdx] = FirstFreeIdx;
-                    FirstFreeIdx = entryIdx;
-                    entryIdx = nextIdx;
-
-                    break;
                 }
-                else
-                {
-                    prevEntry = entryIdx;
-                    entryIdx = Next[entryIdx];
-                }
+
+                Count -= removed;
+                return 0 != removed ? removed : -1;
             }
 
-            GrowthPolicy.Count -= removed;
-            return 0 == removed ? -1 : removed;
+            return -1;
         }
 
-        internal bool MoveNext(ref int bucketIndex, ref int nextIndex, out int index)
+        internal bool MoveNextSearch(ref int bucketIndex, ref int nextIndex, out int index)
         {
-            if (nextIndex != -1)
-            {
-                index = nextIndex;
-                nextIndex = Next[nextIndex];
-                return true;
-            }
-
-            for (int i = bucketIndex, num = GrowthPolicy.Capacity; i < num; ++i)
+            for (int i = bucketIndex, num = BucketCapacity; i < num; ++i)
             {
                 var idx = Buckets[i];
 
@@ -483,16 +361,29 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             index = -1;
-            bucketIndex = GrowthPolicy.Capacity;
+            bucketIndex = BucketCapacity;
             nextIndex = -1;
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool MoveNext(ref int bucketIndex, ref int nextIndex, out int index)
+        {
+            if (nextIndex != -1)
+            {
+                index = nextIndex;
+                nextIndex = Next[nextIndex];
+                return true;
+            }
+
+            return MoveNextSearch(ref bucketIndex, ref nextIndex, out index);
+        }
+
         internal NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
-            var result = CollectionHelper.CreateNativeArray<TKey>(GrowthPolicy.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TKey>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            for (int i = 0, count = 0, max = result.Length, capacity = GrowthPolicy.Capacity
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity
                 ; i < capacity && count < max
                 ; ++i
                 )
@@ -513,9 +404,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal NativeArray<TValue> GetValueArray<TValue>(AllocatorManager.AllocatorHandle allocator)
             where TValue : unmanaged
         {
-            var result = CollectionHelper.CreateNativeArray<TValue>(GrowthPolicy.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = CollectionHelper.CreateNativeArray<TValue>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            for (int i = 0, count = 0, max = result.Length, capacity = GrowthPolicy.Capacity
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity
                 ; i < capacity && count < max
                 ; ++i
                 )
@@ -536,9 +427,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays<TValue>(AllocatorManager.AllocatorHandle allocator)
             where TValue : unmanaged
         {
-            var result = new NativeKeyValueArrays<TKey, TValue>(GrowthPolicy.Count, allocator, NativeArrayOptions.UninitializedMemory);
+            var result = new NativeKeyValueArrays<TKey, TValue>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
-            for (int i = 0, count = 0, max = result.Length, capacity = GrowthPolicy.Capacity
+            for (int i = 0, count = 0, max = result.Length, capacity = BucketCapacity
                 ; i < capacity && count < max
                 ; ++i
                 )
@@ -573,6 +464,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 m_NextIndex = -1;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal bool MoveNext()
             {
                 return m_Data->MoveNext(ref m_BucketIndex, ref m_NextIndex, out m_Index);
@@ -585,12 +477,14 @@ namespace Unity.Collections.LowLevel.Unsafe
                 m_NextIndex = -1;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal KVPair<TKey, TValue> GetCurrent<TValue>()
                 where TValue : unmanaged
             {
                 return new KVPair<TKey, TValue> { m_Data = m_Data, m_Index = m_Index };
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             internal TKey GetCurrentKey()
             {
                 if (m_Index != -1)
@@ -603,9 +497,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckIndexOutOfBounds(int idx)
         {
-            if (idx < 0 || idx >= Capacity)
+            if ((uint)idx >= (uint)Capacity)
             {
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
             }
@@ -635,14 +530,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="initialCapacity">The number of key-value pairs that should fit in the initial allocation.</param>
         /// <param name="allocator">The allocator to use.</param>
         public UnsafeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
-            : this(initialCapacity, allocator, CapacityGrowthPolicy.CeilPow2)
-        {
-        }
-
-        internal UnsafeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator, CapacityGrowthPolicy growthPolicy)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, sizeof(TValue), growthPolicy, 256, allocator);
+            m_Data.Init(initialCapacity, sizeof(TValue), 256, allocator);
         }
 
         /// <summary>
@@ -661,7 +551,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.GrowthPolicy.Allocator }.Schedule(inputDeps);
+            var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.Allocator }.Schedule(inputDeps);
             m_Data.Ptr = null;
 
             return jobHandle;
@@ -671,19 +561,31 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this hash map has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Data.IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.IsCreated;
+        }
 
         /// <summary>
         /// Whether this hash map is empty.
         /// </summary>
         /// <value>True if this hash map is empty or if the map has not been constructed.</value>
-        public bool IsEmpty => m_Data.IsEmpty;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.IsEmpty;
+        }
 
         /// <summary>
         /// The current number of key-value pairs in this hash map.
         /// </summary>
         /// <returns>The current number of key-value pairs in this hash map.</returns>
-        public int Count => m_Data.GrowthPolicy.Count;
+        public readonly int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_Data.Count;
+        }
 
         /// <summary>
         /// The number of key-value pairs that fit in the current allocation.
@@ -693,15 +595,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
-            get
-            {
-                return m_Data.Capacity;
-            }
-
-            set
-            {
-                m_Data.Resize(value);
-            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => m_Data.Capacity;
+            set => m_Data.Resize(value);
         }
 
         /// <summary>
@@ -893,6 +789,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// Advances the enumerator to the next key-value pair.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => m_Enumerator.MoveNext();
 
             /// <summary>
@@ -904,7 +801,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The current key-value pair.
             /// </summary>
             /// <value>The current key-value pair.</value>
-            public KVPair<TKey, TValue> Current => m_Enumerator.GetCurrent<TValue>();
+            public KVPair<TKey, TValue> Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Enumerator.GetCurrent<TValue>();
+            }
 
             /// <summary>
             /// Gets the element at the current position of the enumerator in the container.
@@ -938,22 +839,44 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.IsCreated;
+            }
+
+            /// <summary>
             /// Whether this hash map is empty.
             /// </summary>
             /// <value>True if this hash map is empty or if the map has not been constructed.</value>
-            public bool IsEmpty => m_Data.IsEmpty;
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.IsEmpty;
+            }
 
             /// <summary>
             /// The current number of key-value pairs in this hash map.
             /// </summary>
             /// <returns>The current number of key-value pairs in this hash map.</returns>
-            public int Count => m_Data.GrowthPolicy.Count;
+            public readonly int Count
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.Count;
+            }
 
             /// <summary>
             /// The number of key-value pairs that fit in the current allocation.
             /// </summary>
             /// <value>The number of key-value pairs that fit in the current allocation.</value>
-            public int Capacity => m_Data.Capacity;
+            public readonly int Capacity
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_Data.Capacity;
+            }
 
             /// <summary>
             /// Returns the value associated with a key.
@@ -961,14 +884,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="key">The key to look up.</param>
             /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
             /// <returns>True if the key was present.</returns>
-            public bool TryGetValue(TKey key, out TValue item) => m_Data.TryGetValue(key, out item);
+            public readonly bool TryGetValue(TKey key, out TValue item) => m_Data.TryGetValue(key, out item);
 
             /// <summary>
             /// Returns true if a given key is present in this hash map.
             /// </summary>
             /// <param name="key">The key to look up.</param>
             /// <returns>True if the key was present.</returns>
-            public bool ContainsKey(TKey key)
+            public readonly bool ContainsKey(TKey key)
             {
                 return -1 != m_Data.Find(key);
             }
@@ -980,7 +903,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="key">The key to look up.</param>
             /// <value>The value associated with the key.</value>
             /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
-            public TValue this[TKey key]
+            public readonly TValue this[TKey key]
             {
                 get
                 {
@@ -995,14 +918,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
-            public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyArray(allocator);
+            public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyArray(allocator);
 
             /// <summary>
             /// Returns an array with a copy of all this hash map's values (in no particular order).
             /// </summary>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
-            public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetValueArray<TValue>(allocator);
+            public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator) => m_Data.GetValueArray<TValue>(allocator);
 
             /// <summary>
             /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
@@ -1010,19 +933,13 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
             /// <param name="allocator">The allocator to use.</param>
             /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
-            public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyValueArrays<TValue>(allocator);
-
-            /// <summary>
-            /// Whether this hash map has been allocated (and not yet deallocated).
-            /// </summary>
-            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
-            public bool IsCreated => m_Data.IsCreated;
+            public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator) => m_Data.GetKeyValueArrays<TValue>(allocator);
 
             /// <summary>
             /// Returns an enumerator over the key-value pairs of this hash map.
             /// </summary>
             /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
-            public Enumerator GetEnumerator()
+            public readonly Enumerator GetEnumerator()
             {
                 fixed (HashMapHelper<TKey>* data = &m_Data)
                 {

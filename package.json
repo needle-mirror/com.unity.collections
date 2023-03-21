@@ -1,11 +1,11 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.1.0-pre.11",
+  "version": "2.1.0-pre.18",
   "unity": "2022.2",
   "unityRelease": "2f1",
   "dependencies": {
-    "com.unity.burst": "1.8.2",
+    "com.unity.burst": "1.8.3",
     "com.unity.modules.unityanalytics": "1.0.0",
     "com.unity.nuget.mono-cecil": "1.11.4",
     "com.unity.test-framework": "1.3.2"
@@ -17,15 +17,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Added\n\n* Ability to resize `Unsafe/NativeBitArray` with `Resize`, `SetCapacity`, `TrimExcess` methods.\n* `.Substring` method to `FixedStringN`, and `NativeText`.\n* `NativeRingQueue`.\n* `CollectionHelper.Dispose` to dispose a NativeArray without Allocator input parameter.\n\n### Changed\n\n* Reviewed all safety checks and made many of them supported with `UNITY_DOTS_DEBUG` in addition to `ENABLE_UNITY_COLLECTIONS_CHECKS`\n* Optimize `RewindableAllocator`.\n* Underlying algorithm for `*HashMap/Set` containters to improve performance.\n\n### Fixed\n\n* Code generation responsible for early initialization of JobReflectionData could previously emit enormous amounts of code that could dramatically increase IL2CPP build times. We now produce the minimal amount of code necessary and no longer impact IL2CPP compilation times.\n* Removed unnecessary test and documentation samples assemblies from always being loaded in projects.\n* `NativeHashSet.ToNativeArray(allocator)` now works with custom allocators"
+    "changelog": "### Added\n\n* UnsafeParallelHashMap.ParallelWriter.ThreadIndex is a public read-only property to mirror functionality in NativeParallelHashMap\n* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage\n* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage\n* `Starts/EndsWith` to `Native/UnsafeText` and `FixedStringN`.\n\n### Changed\n\n* `NativeReference/NativeList.GetUnsafePtr` returns typed pointer `T*` instead of typeless `void*`.\n* Updated Burst version in use to 1.8.3\n* Updated auto-generated allocator performance comparison documentation\n* NativeParallelHashMap.ParallelWriter.m_ThreadIndex public property renamed to ThreadIndex\n* Allocator benchmark documentation updated to reflect corrected performance measurements\n* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now\n* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now\n* Significant performance improvements, especially when not burst compiled, across the board in all containers\n* Implementation for NativeRingQueue simplified and performance increased greatly\n\n### Deprecated\n\n\n### Removed\n\n* GenPerformanceComparisonMd\n* InternalsVisibleTo reference to Tiny\n\n### Fixed\n\n* All HashMap and HashSet types are now consistently initialized with a capacity no less than the `minGrowth` specified\n* Incorrect markdown syntax for header anchors\n* `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.\n\n### Security"
   },
   "upmCi": {
-    "footprint": "ab5f5e054909ec4f3897141988be9f9c51497cfe"
+    "footprint": "d6b518e9bc31de707a9ff3a39d2adbff6e59ac69"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.1/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "0e572178431e16c09c6c434c873bf0c60e52a5e9"
+    "revision": "15bf392224681c22f76277c3db22b5656ac4c1a5"
   }
 }

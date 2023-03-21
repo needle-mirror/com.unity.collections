@@ -125,7 +125,7 @@ namespace Unity.Collections
             /// <remarks>Because a char is 16-bit, it can only represent the first 2^16 code points, not all 1.1 million.</remarks>
             /// <param name="codepoint">A code point.</param>
             /// <returns>A rune.</returns>
-            public static explicit operator Rune(char codepoint) => new Rune { value = codepoint };
+            public static implicit operator Rune(char codepoint) => new Rune { value = codepoint };
 
             /// <summary>
             /// Returns true if a rune is a numerical digit character.
@@ -134,7 +134,33 @@ namespace Unity.Collections
             /// <returns>True if the rune is a numerical digit character.</returns>
             public static bool IsDigit(Rune r)
             {
-                return r.value >= '0' && r.value <= '9';
+                return r.IsDigit();
+            }
+
+            internal bool IsAscii()
+            {
+                return value < 0x80;
+            }
+
+            internal bool IsLatin1()
+            {
+                return value < 0x100;
+            }
+
+            internal bool IsDigit()
+            {
+                return value >= '0' && value <= '9';
+            }
+
+            internal bool IsWhiteSpace()
+            {
+                return value == ' '
+                    || value == '\t'
+                    || value == '\n'
+                    || value == '\r'
+                    || value == '\v'
+                    || value == '\f'
+                    ;
             }
 
             /// <summary>
@@ -347,6 +373,16 @@ namespace Unity.Collections
             return ConversionError.None;
         }
 
+        internal static ConversionError UcsToUcs(out Rune rune, Rune* buffer, ref int index, int capacity)
+        {
+            rune = ReplacementCharacter;
+            if (index + 1 > capacity)
+                return ConversionError.Overflow;
+            rune = buffer[index];
+            index += 1;
+            return ConversionError.None;
+        }
+
         /// <summary>
         /// Writes a rune to a buffer as a UTF-8 encoded character.
         /// </summary>
@@ -533,6 +569,19 @@ namespace Unity.Collections
                     return ConversionError.Overflow;
             }
             return ConversionError.None;
+        }
+
+        static int CountRunes(byte* utf8Buffer, int utf8Length, int maxRunes = int.MaxValue)
+        {
+            var numRunes = 0;
+
+            for (var i = 0; numRunes < maxRunes && i < utf8Length; ++i)
+            {
+                if ((utf8Buffer[i] & 0xC0) != 0x80)
+                    numRunes++;
+            }
+
+            return numRunes;
         }
     }
 }

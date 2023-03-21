@@ -1,5 +1,45 @@
 # Changelog
 
+## [2.1.0-pre.18] - 2023-03-21
+
+### Added
+
+* UnsafeParallelHashMap.ParallelWriter.ThreadIndex is a public read-only property to mirror functionality in NativeParallelHashMap
+* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage
+* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage
+* `Starts/EndsWith` to `Native/UnsafeText` and `FixedStringN`.
+
+### Changed
+
+* `NativeReference/NativeList.GetUnsafePtr` returns typed pointer `T*` instead of typeless `void*`.
+* Updated Burst version in use to 1.8.3
+* Updated auto-generated allocator performance comparison documentation
+* NativeParallelHashMap.ParallelWriter.m_ThreadIndex public property renamed to ThreadIndex
+* Allocator benchmark documentation updated to reflect corrected performance measurements
+* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now
+* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now
+* Significant performance improvements, especially when not burst compiled, across the board in all containers
+* Implementation for NativeRingQueue simplified and performance increased greatly
+
+### Deprecated
+
+
+### Removed
+
+* GenPerformanceComparisonMd
+* InternalsVisibleTo reference to Tiny
+
+### Fixed
+
+* All HashMap and HashSet types are now consistently initialized with a capacity no less than the `minGrowth` specified
+* Incorrect markdown syntax for header anchors
+* `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.
+
+### Security
+
+
+
+
 ## [2.1.0-pre.11] - 2023-02-13
 
 ### Added
@@ -20,6 +60,7 @@
 * Code generation responsible for early initialization of JobReflectionData could previously emit enormous amounts of code that could dramatically increase IL2CPP build times. We now produce the minimal amount of code necessary and no longer impact IL2CPP compilation times.
 * Removed unnecessary test and documentation samples assemblies from always being loaded in projects.
 * `NativeHashSet.ToNativeArray(allocator)` now works with custom allocators
+* `AllocatorManager.Block.AllocatedBytes` and `AllocatorManager.Block.Bytes` properties could overflow returning incorrect negative values.
 
 
 ## [2.1.0-pre.6] - 2022-11-23
@@ -57,7 +98,6 @@
 * BinarySearch is using read-only access.
 * Memory leak in `Native/UnsafeStream` due to orphaned block.
 * Debug visualizers display content even when safety handle is in write-only mode.
-
 
 ## [2.1.0-exp.4] - 2022-08-05
 
@@ -123,7 +163,6 @@
 * `NativeList.AsParallelReader()` replaced by `NativeList.AsReadOnly()`.
 * Implicit cast operator from `NativeList<T>` to `NativeArray<T>`. Explicit cast method `NativeList<T>.AsArray()` should be used instead.
 
-
 ## [1.4.0] - 2022-07-12
 
 ### Changed
@@ -137,7 +176,6 @@
 
 ## [1.3.1] - 2022-06-13
 * Minor Fixes to changelog
-
 
 ## [1.3.0] - 2022-05-16
 

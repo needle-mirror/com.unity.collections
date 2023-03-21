@@ -246,6 +246,20 @@ namespace Unity.Collections
             }
         }
 
+        internal static int StrCmp(byte* utf8BufferA, int utf8LengthInBytesA, Unicode.Rune* runeBufferB, int lengthInRunesB)
+        {
+            int charIndexA = 0;
+            int charIndexB = 0;
+            while (true)
+            {
+                var utf16ErrorA = Unicode.Utf8ToUcs(out var utf16RuneA, utf8BufferA, ref charIndexA, utf8LengthInBytesA);
+                var errorB = Unicode.UcsToUcs(out var runeB, runeBufferB, ref charIndexB, lengthInRunesB);
+                var comparison = new Comparison(utf16RuneA, utf16ErrorA, runeB, errorB);
+                if (comparison.terminates)
+                    return comparison.result;
+            }
+        }
+
         /// <summary>Compares two UTF-16 buffers for relative equality.</summary>
         /// <param name="utf16BufferA">The first buffer of UTF-16 text.</param>
         /// <param name="utf16LengthInCharsA">The length in chars of the first UTF-16 buffer.</param>

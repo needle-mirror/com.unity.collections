@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Jobs;
@@ -10,9 +11,16 @@ namespace Unity.Collections.LowLevel.Unsafe
 {
     internal static class UnsafeTextExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref UnsafeList<byte> AsUnsafeListOfBytes( this ref UnsafeText text )
         {
             return ref UnsafeUtility.As<UntypedUnsafeList, UnsafeList<byte>>(ref text.m_UntypedListData);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeList<byte> AsUnsafeListOfBytesRO(this UnsafeText text)
+        {
+            return UnsafeUtility.As<UntypedUnsafeList, UnsafeList<byte>>(ref text.m_UntypedListData);
         }
     }
 
@@ -48,7 +56,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether this string's character buffer has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>Whether this string's character buffer has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => this.AsUnsafeListOfBytes().IsCreated;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => this.AsUnsafeListOfBytesRO().IsCreated;
+        }
 
 
         /// <summary>
@@ -73,7 +85,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Reports whether container is empty.
         /// </summary>
         /// <value>True if the string is empty or the string has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => !IsCreated || Length == 0;
+        }
 
         /// <summary>
         /// The byte at an index.
@@ -83,11 +99,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public byte this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 CheckIndexInRange(index);
                 return UnsafeUtility.ReadArrayElement<byte>(m_UntypedListData.Ptr, index);
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckIndexInRange(index);
@@ -153,7 +171,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The current capacity in bytes of the string.</value>
         public int Capacity
         {
-            get => this.AsUnsafeListOfBytes().Capacity - 1;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => this.AsUnsafeListOfBytesRO().Capacity - 1;
+
             set
             {
                 CheckCapacityInRange(value + 1, this.AsUnsafeListOfBytes().Length);
@@ -170,7 +190,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>The current length in bytes of the UTF-8 encoded string.</value>
         public int Length
         {
-            get => this.AsUnsafeListOfBytes().Length - 1;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => this.AsUnsafeListOfBytesRO().Length - 1;
             set
             {
                 this.AsUnsafeListOfBytes().Resize(value + 1);

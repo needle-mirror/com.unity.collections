@@ -450,6 +450,41 @@ namespace FixedStringTests
             allocatorHelper.Dispose();
             AllocatorManager.Shutdown();
         }
+
+        [TestCase("red", 'r', 'd')]
+        [TestCase("紅色", '紅', '色')]
+        [TestCase("црвена", 'ц', 'а')]
+        [TestCase("George Washington", 'G', 'n')]
+        [TestCase("村上春樹", '村', '樹')]
+        [TestCase("로마는 하루아침에 이루어진 것이 아니다", '로', '다')]
+        [TestCase("Лако ти је плитку воду замутити и будалу наљутити", 'Л', 'и')]
+        [TestCase("Үнэн үг хэлсэн хүнд ноёд өстэй, үхэр унасан хүнд ноход өстэй.", 'Ү', '.')]
+        public void UnsafeText_StartsEndsWithChar(String a, char starts, char ends)
+        {
+            UnsafeText actual = new UnsafeText(16, Allocator.Temp);
+            actual.Append(a);
+            Assert.True(actual.StartsWith(starts));
+            Assert.True(actual.EndsWith(ends));
+        }
+
+        [TestCase("red", "r", "d")]
+        [TestCase("紅色", "紅", "色")]
+        [TestCase("црвена", "црв", "ена")]
+        [TestCase("George Washington", "George", "Washington")]
+        [TestCase("村上春樹", "村上", "春樹")]
+        [TestCase("🌕🌖🌗🌘🌑🌒🌓🌔", "🌕🌖🌗", "🌒🌓🌔")]
+        [TestCase("𝒞𝒯𝒮𝒟𝒳𝒩𝒫𝒢", "𝒞𝒯𝒮", "𝒩𝒫𝒢")]
+        [TestCase("로마는 하루아침에 이루어진 것이 아니다", "로마는", "아니다")]
+        [TestCase("Лако ти је плитку воду замутити и будалу наљутити", "Лако", "наљутити")]
+        [TestCase("Үнэн үг хэлсэн хүнд ноёд өстэй, үхэр унасан хүнд ноход өстэй.", "Үнэн", "өстэй.")]
+        public void UnsafeText_StartsEndsWithString(String a, String starts, String ends)
+        {
+            UnsafeText actual = new UnsafeText(16, Allocator.Temp);
+            actual.Append(a);
+
+            Assert.True(actual.StartsWith((FixedString64Bytes)starts));
+            Assert.True(actual.EndsWith((FixedString64Bytes)ends));
+        }
     }
 }
 #endif

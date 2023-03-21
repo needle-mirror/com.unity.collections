@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unity.Jobs;
 using Unity.Mathematics;
 
@@ -85,13 +86,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Whether the append buffer is empty.
         /// </summary>
         /// <value>True if the append buffer is empty.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         /// <summary>
         /// Whether this append buffer has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this append buffer has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => Ptr != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Ptr != null;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -185,9 +194,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void Add<T>(T value) where T : unmanaged
         {
             var structSize = UnsafeUtility.SizeOf<T>();
-
             SetCapacity(Length + structSize);
-            UnsafeUtility.CopyStructureToPtr(ref value, Ptr + Length);
+
+            void* addr = Ptr + Length;
+            if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                UnsafeUtility.CopyStructureToPtr(ref value, addr);
+            else
+                UnsafeUtility.MemCpy(addr, &value, structSize);
+            
             Length += structSize;
         }
 
@@ -246,7 +260,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             long size = Length;
             long addr = ptr + size - structSize;
 
-            var data = UnsafeUtility.ReadArrayElement<T>((void*)addr, 0);
+            T data;
+            if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                data = UnsafeUtility.ReadArrayElement<T>((void*)addr, 0);
+            else
+                UnsafeUtility.MemCpy(&data, (void*)addr, structSize);
+
             Length -= structSize;
             return data;
         }
@@ -342,7 +361,12 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
 
-                UnsafeUtility.CopyPtrToStructure<T>(Ptr + Offset, out value);
+                void* addr = Ptr + Offset;
+                if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                    UnsafeUtility.CopyPtrToStructure<T>(addr, out value);
+                else
+                    fixed (void* pValue = &value) UnsafeUtility.MemCpy(pValue, addr, structSize);
+
                 Offset += structSize;
             }
 
@@ -358,7 +382,13 @@ namespace Unity.Collections.LowLevel.Unsafe
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
 
-                T value = UnsafeUtility.ReadArrayElement<T>(Ptr + Offset, 0);
+                T value;
+                void* addr = Ptr + Offset;
+                if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                    value = UnsafeUtility.ReadArrayElement<T>(addr, 0);
+                else
+                    UnsafeUtility.MemCpy(&value, addr, structSize);
+                
                 Offset += structSize;
                 return value;
             }
@@ -389,7 +419,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 var length = ReadNext<int>();
-                value = CollectionHelper.CreateNativeArray<T>(length, allocator);
+                value = CollectionHelper.CreateNativeArray<T>(length, allocator, NativeArrayOptions.UninitializedMemory);
                 var size = length * UnsafeUtility.SizeOf<T>();
                 if (size > 0)
                 {

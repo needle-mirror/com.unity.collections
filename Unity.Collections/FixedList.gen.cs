@@ -41,7 +41,9 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
+
             set
             {
                 FixedList.CheckResize<U,T>(value);
@@ -58,12 +60,17 @@ namespace Unity.Collections
         /// Whether the list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
-        internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
+        internal readonly int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(U* u = &buffer)
@@ -79,14 +86,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<U,T>();
-          }
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<U,T>();
+            }
+
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -97,6 +106,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -106,6 +116,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -121,6 +132,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>A reference to the element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -175,6 +187,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -409,18 +422,21 @@ namespace Unity.Collections
     struct FixedList
     {
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int PaddingBytes<T>() where T : unmanaged
         {
             return math.max(0, math.min(6, (1 << math.tzcnt(UnsafeUtility.SizeOf<T>())) - 2));
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int StorageBytes<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
             return UnsafeUtility.SizeOf<BUFFER>() - PaddingBytes<T>();
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int Capacity<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
             return StorageBytes<BUFFER,T>() / UnsafeUtility.SizeOf<T>();
@@ -468,6 +484,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
             set
             {
@@ -485,7 +502,11 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -500,6 +521,7 @@ namespace Unity.Collections
         /// <returns>A pointer to the first element of the list buffer.</returns>
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(byte* b = &buffer.offset0000.byte0000)
@@ -515,15 +537,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<FixedBytes30,T>();
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<FixedBytes30,T>();
+            }
 
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -534,6 +557,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -543,6 +567,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -558,6 +583,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>The list element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -612,6 +638,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -1419,6 +1446,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 m_Index++;
@@ -1437,7 +1465,11 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList32Bytes<T> indexer check for out of range.
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_List[m_Index]; // Let FixedList32Bytes<T> indexer check for out of range.
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -1602,6 +1634,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
             set
             {
@@ -1619,7 +1652,11 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -1634,6 +1671,7 @@ namespace Unity.Collections
         /// <returns>A pointer to the first element of the list buffer.</returns>
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(byte* b = &buffer.offset0000.byte0000)
@@ -1649,15 +1687,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<FixedBytes62,T>();
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<FixedBytes62,T>();
+            }
 
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -1668,6 +1707,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -1677,6 +1717,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -1692,6 +1733,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>The list element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -1746,6 +1788,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -2553,6 +2596,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 m_Index++;
@@ -2571,7 +2615,11 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList64Bytes<T> indexer check for out of range.
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_List[m_Index]; // Let FixedList64Bytes<T> indexer check for out of range.
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -2736,6 +2784,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
             set
             {
@@ -2753,7 +2802,11 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -2768,6 +2821,7 @@ namespace Unity.Collections
         /// <returns>A pointer to the first element of the list buffer.</returns>
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(byte* b = &buffer.offset0000.byte0000)
@@ -2783,15 +2837,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<FixedBytes126,T>();
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<FixedBytes126,T>();
+            }
 
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -2802,6 +2857,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -2811,6 +2867,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -2826,6 +2883,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>The list element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -2880,6 +2938,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -3687,6 +3746,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 m_Index++;
@@ -3705,7 +3765,11 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList128Bytes<T> indexer check for out of range.
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_List[m_Index]; // Let FixedList128Bytes<T> indexer check for out of range.
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -3870,6 +3934,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
             set
             {
@@ -3887,7 +3952,11 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -3902,6 +3971,7 @@ namespace Unity.Collections
         /// <returns>A pointer to the first element of the list buffer.</returns>
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(byte* b = &buffer.offset0000.byte0000)
@@ -3917,15 +3987,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<FixedBytes510,T>();
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<FixedBytes510,T>();
+            }
 
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -3936,6 +4007,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -3945,6 +4017,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -3960,6 +4033,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>The list element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -4014,6 +4088,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -4821,6 +4896,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 m_Index++;
@@ -4839,7 +4915,11 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList512Bytes<T> indexer check for out of range.
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_List[m_Index]; // Let FixedList512Bytes<T> indexer check for out of range.
+            }
 
             object IEnumerator.Current => Current;
         }
@@ -5004,6 +5084,7 @@ namespace Unity.Collections
         [CreateProperty]
         public int Length
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => length;
             set
             {
@@ -5021,7 +5102,11 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if this string has no characters or if the container has not been constructed.</value>
-        public bool IsEmpty => Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Length == 0;
+        }
 
         internal int LengthInBytes => Length * UnsafeUtility.SizeOf<T>();
 
@@ -5036,6 +5121,7 @@ namespace Unity.Collections
         /// <returns>A pointer to the first element of the list buffer.</returns>
         internal readonly unsafe byte* Buffer
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 fixed(byte* b = &buffer.offset0000.byte0000)
@@ -5051,15 +5137,16 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new value does not match the current capacity.</exception>
         public int Capacity
         {
-          get
-          {
-              return FixedList.Capacity<FixedBytes4094,T>();
-          }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                return FixedList.Capacity<FixedBytes4094,T>();
+            }
 
-          set
-          {
-              CollectionHelper.CheckCapacityInRange(value, Length);
-          }
+            set
+            {
+                CollectionHelper.CheckCapacityInRange(value, Length);
+            }
         }
 
         /// <summary>
@@ -5070,6 +5157,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if the index is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -5079,6 +5167,7 @@ namespace Unity.Collections
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CollectionHelper.CheckIndexInRange(index, length);
@@ -5094,6 +5183,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="index">An index.</param>
         /// <returns>The list element at the index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T ElementAt(int index)
         {
             CollectionHelper.CheckIndexInRange(index, length);
@@ -5148,6 +5238,7 @@ namespace Unity.Collections
         /// </remarks>
         /// <param name="item">The element to append at the end of the list.</param>
         /// <exception cref="IndexOutOfRangeException">Thrown if the append exceeds the capacity.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(in T item)
         {
             this[Length++] = item;
@@ -5955,6 +6046,7 @@ namespace Unity.Collections
             /// Advances the enumerator to the next element.
             /// </summary>
             /// <returns>True if <see cref="Current"/> is valid to read after the call.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 m_Index++;
@@ -5973,7 +6065,11 @@ namespace Unity.Collections
             /// The current element.
             /// </summary>
             /// <value>The current element.</value>
-            public T Current => m_List[m_Index]; // Let FixedList4096Bytes<T> indexer check for out of range.
+            public T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_List[m_Index]; // Let FixedList4096Bytes<T> indexer check for out of range.
+            }
 
             object IEnumerator.Current => Current;
         }

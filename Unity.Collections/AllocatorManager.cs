@@ -12,6 +12,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine.Assertions;
 using Unity.Jobs.LowLevel.Unsafe;
+using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
 {
@@ -212,7 +213,7 @@ namespace Unity.Collections
         /// Represents the allocator function used within an allocator.
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
-        public struct AllocatorHandle : IAllocator
+        public struct AllocatorHandle : IAllocator, IEquatable<AllocatorHandle>, IComparable<AllocatorHandle>
         {
             internal ref TableEntry TableEntry => ref SharedStatics.TableEntry.Ref.Data.ElementAt(Index);
             internal bool IsInstalled => ((SharedStatics.IsInstalled.Ref.Data.ElementAt(Index>>6) >> (Index&63)) & 1) != 0;
@@ -574,6 +575,137 @@ namespace Unity.Collections
             {
                 Rewind();
             }
+
+            /// <summary>
+            /// <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> instances are equal if they refer to the same instance at the same version.
+            /// </summary>
+            /// <param name="obj">Object containing an <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/>.</param>
+            /// <returns>Returns true if both handles are for the same allocator instance at the same version, otherwise false.</returns>
+            public override bool Equals(object obj)
+            {
+                if (obj is AllocatorHandle)
+                    return Value == ((AllocatorHandle) obj).Value;
+
+                if (obj is Allocator)
+                    return ToAllocator == ((Allocator)obj);
+
+                return false;
+            }
+
+            /// <summary>
+            /// <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> instances are equal if they refer to the same instance at the same version.
+            /// </summary>
+            /// <param name="other"><seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> to compare against.</param>
+            /// <returns>Returns true if both handles are for the same allocator instance at the same version, otherwise false.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool Equals(AllocatorHandle other)
+            {
+                return Value == other.Value;
+            }
+
+            /// <summary>
+            /// <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> instances are equal if they refer to the same instance at the same version.
+            /// </summary>
+            /// <param name="other"><seealso cref="Unity.Collections.Allocator"/> to compare against.</param>
+            /// <returns>Returns true if both handles are for the same allocator instance at the same version, otherwise false.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool Equals(Allocator other)
+            {
+                return ToAllocator == other;
+            }
+
+            /// <summary>
+            /// A hash used for comparisons.
+            /// </summary>
+            /// <returns>A unique hash code.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override int GetHashCode()
+            {
+                return Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is equal to the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator ==(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value == rhs.Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is not equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is not equal to the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator !=(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value != rhs.Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is less than the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is less than the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator <(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value < rhs.Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is greater than the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is greater than the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator >(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value > rhs.Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is less than or equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is less than or equal to the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator <=(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value <= rhs.Value;
+            }
+
+            /// <summary>
+            /// Evaluates if one <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is greater than or equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> is greater than or equal to the right-hand side's.</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator >=(AllocatorHandle lhs, AllocatorHandle rhs)
+            {
+                return lhs.Value >= rhs.Value;
+            }
+
+            /// <summary>
+            /// Compare this <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> against a given one
+            /// </summary>
+            /// <param name="other">The other <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> to compare to</param>
+            /// <returns>Difference between <seealso cref="Unity.Collections.AllocatorManager.AllocatorHandle"/> values</returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int CompareTo(AllocatorHandle other)
+            {
+                return Value - other.Value;
+            }
         }
 
         /// <summary>
@@ -689,14 +821,14 @@ namespace Unity.Collections
             /// </summary>
             /// <remarks>The actual allocation size may be larger due to alignment.</remarks>
             /// <value>Number of bytes requested for this block.</value>
-            public long Bytes => BytesPerItem * Range.Items;
+            public long Bytes => (long) BytesPerItem * Range.Items;
 
             /// <summary>
             /// Number of bytes allocated for this block.
             /// </summary>
             /// <remarks>The requested allocation size may be smaller. Any excess is due to alignment</remarks>
             /// <value>Number of bytes allocated for this block.</value>
-            public long AllocatedBytes => BytesPerItem * AllocatedItems;
+            public long AllocatedBytes => (long) BytesPerItem * AllocatedItems;
 
             /// <summary>
             /// The alignment.

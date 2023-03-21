@@ -41,7 +41,7 @@ namespace Doc.CodeSamples.Collections.Tests
 
             // Calculate the sum of all elements in the list.
             int sum = 0;
-            NativeArray<int>.Enumerator enumerator = nums.GetEnumerator();
+            var enumerator = nums.GetEnumerator();
 
             // The first MoveNext call advances the enumerator to the first element.
             // MoveNext returns false when the enumerator has advanced past the last element.

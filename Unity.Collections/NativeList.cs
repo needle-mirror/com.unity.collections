@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Unity.Burst;
@@ -107,11 +108,11 @@ namespace Unity.Collections
         {
             this = default;
             AllocatorManager.AllocatorHandle temp = allocator;
-            Initialize(initialCapacity, ref temp, CapacityGrowthPolicy.CeilPow2);
+            Initialize(initialCapacity, ref temp);
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
-        internal void Initialize<U>(int initialCapacity, ref U allocator, CapacityGrowthPolicy growthPolicy) where U : unmanaged, AllocatorManager.IAllocator
+        internal void Initialize<U>(int initialCapacity, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             var totalSize = sizeof(T) * (long)initialCapacity;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -128,14 +129,14 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
-            m_ListData = UnsafeList<T>.Create(initialCapacity, ref allocator, NativeArrayOptions.UninitializedMemory, growthPolicy);
+            m_ListData = UnsafeList<T>.Create(initialCapacity, ref allocator, NativeArrayOptions.UninitializedMemory);
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(AllocatorManager.AllocatorHandle) })]
         internal static NativeList<T> New<U>(int initialCapacity, ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
             var nativelist = new NativeList<T>();
-            nativelist.Initialize(initialCapacity, ref allocator, CapacityGrowthPolicy.CeilPow2);
+            nativelist.Initialize(initialCapacity, ref allocator);
             return nativelist;
         }
 
@@ -147,6 +148,7 @@ namespace Unity.Collections
         /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -154,6 +156,8 @@ namespace Unity.Collections
 #endif
                 return (*m_ListData)[index];
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -186,7 +190,8 @@ namespace Unity.Collections
         /// Newly allocated memory is cleared.</param>
         public int Length
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -208,7 +213,8 @@ namespace Unity.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the new capacity is smaller than the length.</exception>
         public int Capacity
         {
-            get
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -462,13 +468,21 @@ namespace Unity.Collections
         /// Whether this list is empty.
         /// </summary>
         /// <value>True if the list is empty or if the list has not been constructed.</value>
-        public bool IsEmpty => !IsCreated || Length == 0;
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_ListData == null || m_ListData->Length == 0;
+        }
 
         /// <summary>
         /// Whether this list has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this list has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_ListData != null;
+        public readonly bool IsCreated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => m_ListData != null;
+        }
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -664,7 +678,11 @@ namespace Unity.Collections
         public NativeArray<T> ToArray(AllocatorManager.AllocatorHandle allocator)
         {
             NativeArray<T> result = CollectionHelper.CreateNativeArray<T>(Length, allocator, NativeArrayOptions.UninitializedMemory);
-            result.CopyFrom(AsArray());
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
+            AtomicSafetyHandle.CheckWriteAndThrow(result.m_Safety);
+#endif
+            UnsafeUtility.MemCpy((byte*)result.m_Buffer, (byte*)m_ListData->Ptr, Length * UnsafeUtility.SizeOf<T>());
             return result;
         }
 
@@ -826,7 +844,11 @@ namespace Unity.Collections
             /// <summary>
             /// The data of the list.
             /// </summary>
-            public readonly void* Ptr => ListData->Ptr;
+            public readonly void* Ptr
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ListData->Ptr;
+            }
 
             /// <summary>
             /// The internal unsafe list.
@@ -866,7 +888,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Increment(ref ListData->GrowthPolicy.Count) - 1;
+                var idx = Interlocked.Increment(ref ListData->m_length) - 1;
                 CheckSufficientCapacity(ListData->Capacity, idx + 1);
 
                 UnsafeUtility.WriteArrayElement(ListData->Ptr, idx, value);
@@ -888,7 +910,7 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
 #endif
-                var idx = Interlocked.Add(ref ListData->GrowthPolicy.Count, count) - count;
+                var idx = Interlocked.Add(ref ListData->m_length, count) - count;
                 CheckSufficientCapacity(ListData->Capacity, idx + count);
 
                 var sizeOf = sizeof(T);
@@ -944,7 +966,7 @@ namespace Unity.Collections
         static void CheckSufficientCapacity(int capacity, int length)
         {
             if (capacity < length)
-                throw new Exception($"Length {length} exceeds capacity Capacity {capacity}");
+                throw new Exception($"Length {length} exceeds Capacity {capacity}");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
@@ -1153,7 +1175,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <returns>A pointer to this list's internal buffer.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static void* GetUnsafePtr<T>(this NativeList<T> list) where T : unmanaged
+        public static T* GetUnsafePtr<T>(this NativeList<T> list) where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckWriteAndThrow(list.m_Safety);
@@ -1169,7 +1191,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <returns>A pointer to this list's internal buffer.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static unsafe void* GetUnsafeReadOnlyPtr<T>(this NativeList<T> list) where T : unmanaged
+        public static unsafe T* GetUnsafeReadOnlyPtr<T>(this NativeList<T> list) where T : unmanaged
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(list.m_Safety);

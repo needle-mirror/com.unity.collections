@@ -6,6 +6,7 @@ using Unity.Burst;
 using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Unity.Collections
 {
@@ -155,12 +156,14 @@ namespace Unity.Collections
         public int m_CurrentRead;
         public byte* m_CurrentWriteBlockTLS;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal NativeQueueBlockHeader* GetCurrentWriteBlockTLS(int threadIndex)
         {
             var data = (NativeQueueBlockHeader**)&m_CurrentWriteBlockTLS[threadIndex * JobsUtility.CacheLineSize];
             return *data;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void SetCurrentWriteBlockTLS(int threadIndex, NativeQueueBlockHeader* currentWriteBlock)
         {
             var data = (NativeQueueBlockHeader**)&m_CurrentWriteBlockTLS[threadIndex * JobsUtility.CacheLineSize];
@@ -172,31 +175,30 @@ namespace Unity.Collections
         {
             NativeQueueBlockHeader* currentWriteBlock = data->GetCurrentWriteBlockTLS(threadIndex);
 
-            if (currentWriteBlock != null
-                && currentWriteBlock->m_NumItems == data->m_MaxItems)
+            if (currentWriteBlock != null)
             {
+                if (currentWriteBlock->m_NumItems != data->m_MaxItems)
+                {
+                    return currentWriteBlock;
+                }
                 currentWriteBlock = null;
             }
 
-            if (currentWriteBlock == null)
+            currentWriteBlock = pool->AllocateBlock();
+            currentWriteBlock->m_NextBlock = null;
+            currentWriteBlock->m_NumItems = 0;
+            NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
+
+            if (prevLast == null)
             {
-                currentWriteBlock = pool->AllocateBlock();
-                currentWriteBlock->m_NextBlock = null;
-                currentWriteBlock->m_NumItems = 0;
-                NativeQueueBlockHeader* prevLast = (NativeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
-
-                if (prevLast == null)
-                {
-                    data->m_FirstBlock = (IntPtr)currentWriteBlock;
-                }
-                else
-                {
-                    prevLast->m_NextBlock = currentWriteBlock;
-                }
-
-                data->SetCurrentWriteBlockTLS(threadIndex, currentWriteBlock);
+                data->m_FirstBlock = (IntPtr)currentWriteBlock;
+            }
+            else
+            {
+                prevLast->m_NextBlock = currentWriteBlock;
             }
 
+            data->SetCurrentWriteBlockTLS(threadIndex, currentWriteBlock);
             return currentWriteBlock;
         }
 
@@ -290,32 +292,31 @@ namespace Unity.Collections
         /// Returns true if this queue is empty.
         /// </summary>
         /// <returns>True if this queue has no items or if the queue has not been constructed.</returns>
-        public bool IsEmpty()
+        public readonly bool IsEmpty()
         {
-            if (!IsCreated)
+            if (IsCreated)
             {
-                return true;
-            }
+                CheckRead();
 
-            CheckRead();
+                int count = 0;
+                var currentRead = m_Buffer->m_CurrentRead;
 
-            int count = 0;
-            var currentRead = m_Buffer->m_CurrentRead;
-
-            for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock
-                    ; block != null
-                    ; block = block->m_NextBlock
-            )
-            {
-                count += block->m_NumItems;
-
-                if (count > currentRead)
+                for (NativeQueueBlockHeader* block = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock
+                        ; block != null
+                        ; block = block->m_NextBlock
+                )
                 {
-                    return false;
-                }
-            }
+                    count += block->m_NumItems;
 
-            return count == currentRead;
+                    if (count > currentRead)
+                    {
+                        return false;
+                    }
+                }
+
+                return count == currentRead;
+            }
+            return true;
         }
 
         /// <summary>
@@ -324,7 +325,7 @@ namespace Unity.Collections
         /// <remarks>Note that getting the count requires traversing the queue's internal linked list of blocks.
         /// Where possible, cache this value instead of reading the property repeatedly.</remarks>
         /// <returns>The current number of elements in this queue.</returns>
-        public int Count
+        public readonly int Count
         {
             get
             {
@@ -406,37 +407,37 @@ namespace Unity.Collections
 
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
 
-            if (firstBlock == null)
+            if (firstBlock != null)
             {
-                item = default(T);
-                return false;
-            }
+                var currentRead = m_Buffer->m_CurrentRead++;
+                var numItems = firstBlock->m_NumItems;
+                item = UnsafeUtility.ReadArrayElement<T>(firstBlock + 1, currentRead);
 
-            var currentRead = m_Buffer->m_CurrentRead++;
-            item = UnsafeUtility.ReadArrayElement<T>(firstBlock + 1, currentRead);
-
-            if (m_Buffer->m_CurrentRead >= firstBlock->m_NumItems)
-            {
-                m_Buffer->m_CurrentRead = 0;
-                m_Buffer->m_FirstBlock = (IntPtr)firstBlock->m_NextBlock;
-
-                if (m_Buffer->m_FirstBlock == IntPtr.Zero)
+                if (currentRead + 1 >= numItems)
                 {
-                    m_Buffer->m_LastBlock = IntPtr.Zero;
-                }
+                    m_Buffer->m_CurrentRead = 0;
+                    m_Buffer->m_FirstBlock = (IntPtr)firstBlock->m_NextBlock;
 
-                for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
-                {
-                    if (m_Buffer->GetCurrentWriteBlockTLS(threadIndex) == firstBlock)
+                    if (m_Buffer->m_FirstBlock == IntPtr.Zero)
                     {
-                        m_Buffer->SetCurrentWriteBlockTLS(threadIndex, null);
+                        m_Buffer->m_LastBlock = IntPtr.Zero;
                     }
-                }
 
-                m_QueuePool->FreeBlock(firstBlock);
+                    for (int threadIndex = 0; threadIndex < JobsUtility.MaxJobThreadCount; ++threadIndex)
+                    {
+                        if (m_Buffer->GetCurrentWriteBlockTLS(threadIndex) == firstBlock)
+                        {
+                            m_Buffer->SetCurrentWriteBlockTLS(threadIndex, null);
+                        }
+                    }
+
+                    m_QueuePool->FreeBlock(firstBlock);
+                }
+                return true;
             }
 
-            return true;
+            item = default(T);
+            return false;
         }
 
         /// <summary>
@@ -450,7 +451,7 @@ namespace Unity.Collections
             CheckRead();
 
             NativeQueueBlockHeader* firstBlock = (NativeQueueBlockHeader*)m_Buffer->m_FirstBlock;
-            var outputArray = CollectionHelper.CreateNativeArray<T>(Count, allocator);
+            var outputArray = CollectionHelper.CreateNativeArray<T>(Count, allocator, NativeArrayOptions.UninitializedMemory);
 
             NativeQueueBlockHeader* currentBlock = firstBlock;
             var arrayPtr = (byte*)outputArray.GetUnsafePtr();
@@ -473,7 +474,6 @@ namespace Unity.Collections
         /// <summary>
         /// Removes all elements of this queue.
         /// </summary>
-        /// <remarks>Does not change the capacity.</remarks>
         public void Clear()
         {
             CheckWrite();
@@ -501,7 +501,7 @@ namespace Unity.Collections
         /// Whether this queue has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this queue has been allocated (and not yet deallocated).</value>
-        public bool IsCreated => m_Buffer != null;
+        public readonly bool IsCreated => m_Buffer != null;
 
         /// <summary>
         /// Releases all resources (memory and safety handles).
@@ -590,10 +590,26 @@ namespace Unity.Collections
                 UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
                 ++writeBlock->m_NumItems;
             }
+
+            /// <summary>
+            /// Adds an element at the front of the queue.
+            /// </summary>
+            /// <param name="value">The value to be enqueued.</param>
+            /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
+            internal void Enqueue(T value, int threadIndexOverride)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);
+#endif
+                NativeQueueBlockHeader* writeBlock = NativeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, threadIndexOverride);
+                UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
+                ++writeBlock->m_NumItems;
+            }
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        void CheckRead()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
@@ -601,6 +617,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckReadNotEmpty()
         {
             CheckRead();
@@ -612,6 +629,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void CheckWrite()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
