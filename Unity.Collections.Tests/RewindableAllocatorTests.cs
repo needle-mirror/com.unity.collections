@@ -51,6 +51,7 @@ internal class RewindableAllocatorTests
     }
 #endif
 
+    [TestRequiresCollectionChecks]
     public unsafe void RewindInvalidatesNativeList()
     {
         var container = RwdAllocator.AllocateNativeList<byte>(RwdAllocator.InitialSizeInBytes / 1000);
@@ -64,11 +65,13 @@ internal class RewindableAllocatorTests
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public unsafe void RewindInvalidatesNativeArray()
     {
         var container = RwdAllocator.AllocateNativeArray<byte>(RwdAllocator.InitialSizeInBytes / 1000);
         container[0] = 0xFE;
         RwdAllocator.Rewind();
+
         Assert.Throws<ObjectDisposedException>(() =>
         {
             container[0] = 0xEF;

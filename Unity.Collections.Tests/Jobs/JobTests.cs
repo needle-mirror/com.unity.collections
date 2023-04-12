@@ -7,6 +7,7 @@ using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Burst;
 using System.Diagnostics;
+using Unity.Collections.Tests;
 
 [assembly: RegisterGenericJobType(typeof(Unity.Jobs.Tests.ManagedJobs.MyGenericJobDefer<int>))]
 [assembly: RegisterGenericJobType(typeof(Unity.Jobs.Tests.ManagedJobs.MyGenericJobDefer<double>))]
@@ -313,6 +314,7 @@ namespace Unity.Jobs.Tests.ManagedJobs
         struct DontReferenceThisTypeOutsideOfThisTest { public int v; }
         
         [Test]
+        [TestRequiresCollectionChecks]
         [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
         public void SchedulingGenericJobFromGenericContextUnsafelyThrows()
         {
@@ -481,9 +483,11 @@ namespace Unity.Jobs.Tests.ManagedJobs
 
             RwdAllocator.Rewind();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             // Ensure released safety handle indicating invalid buffer
             Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(tempNativeArray)); });
 			Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(job.nested.input)); });
+#endif
         }
 
         public struct TestJobProducerJob : IJobTest
@@ -511,11 +515,13 @@ namespace Unity.Jobs.Tests.ManagedJobs
 
             RwdAllocator.Rewind();
 
-			// Check job data
-			Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(tempNativeArray)); });
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            // Check job data
+            Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(tempNativeArray)); });
 			Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(job.jobStructData)); });
 			// Check job producer
 			Assert.Throws<ObjectDisposedException>(() => { AtomicSafetyHandle.CheckExistsAndThrow(NativeArrayUnsafeUtility.GetAtomicSafetyHandle(tempNativeArray2)); });
+#endif
         }
 
         public struct CopyJob : IJob

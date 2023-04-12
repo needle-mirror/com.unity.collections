@@ -35,7 +35,6 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList32BytesDebugView()
     {
         var list = new FixedList32Bytes<NonComparableStruct>();
@@ -56,7 +55,6 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList64BytesDebugView()
     {
         var list = new FixedList64Bytes<NonComparableStruct>();
@@ -77,7 +75,6 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void FixedList128BytesDebugView()
     {
         var list = new FixedList128Bytes<NonComparableStruct>();
@@ -128,9 +125,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32Byte_FixedBytes30ToNativeArrayWorksGeneric()
+    public void FixedList32Byte_FixedBytes32Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<byte,FixedBytes30>();
+        var list = new FixedList<byte,FixedBytes32Align8>();
 
         for(var i = 0; i < 30; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -173,17 +170,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Byte_GenericHasExpectedCapacity()
     {
         var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
@@ -198,7 +197,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -217,7 +218,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -233,7 +236,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -252,7 +257,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -270,7 +277,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -423,9 +432,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64Byte_FixedBytes62ToNativeArrayWorksGeneric()
+    public void FixedList64Byte_FixedBytes64Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<byte,FixedBytes62>();
+        var list = new FixedList<byte,FixedBytes64Align8>();
 
         for(var i = 0; i < 62; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -468,17 +477,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Byte_GenericHasExpectedCapacity()
     {
         var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
@@ -493,7 +504,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -512,7 +525,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -528,7 +543,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -547,7 +564,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -565,7 +584,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -718,9 +739,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128Byte_FixedBytes126ToNativeArrayWorksGeneric()
+    public void FixedList128Byte_FixedBytes128Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<byte,FixedBytes126>();
+        var list = new FixedList<byte,FixedBytes128Align8>();
 
         for(var i = 0; i < 126; ++i)
             list.Add((byte)(i * 123 + 234));
@@ -763,17 +784,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Byte_GenericHasExpectedCapacity()
     {
         var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
     [Test]
@@ -788,7 +811,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -807,7 +832,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -823,7 +850,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -842,7 +871,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -860,7 +891,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -999,17 +1032,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Byte_HasExpectedCapacity()
     {
         var list = new FixedList32Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
 
@@ -1042,7 +1077,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1061,7 +1098,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1077,7 +1116,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1096,7 +1137,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1114,7 +1157,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -1220,6 +1265,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList32Byte_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<byte>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList32Bytes<byte> and ensure we can still read+write safely
+        const int buffSize = 32 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList32Bytes<byte>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 30; ++i)
+            list->Add((byte)i);
+
+        for (var i = 0; i < 30; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList32Bytes<byte>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList32Byte_Sort()
     {
         var list = new FixedList32Bytes<byte>();
@@ -1267,17 +1343,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Byte_HasExpectedCapacity()
     {
         var list = new FixedList64Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
 
@@ -1310,7 +1388,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1329,7 +1409,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1345,7 +1427,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1364,7 +1448,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1382,7 +1468,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -1488,6 +1576,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList64Byte_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<byte>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList64Bytes<byte> and ensure we can still read+write safely
+        const int buffSize = 64 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList64Bytes<byte>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 62; ++i)
+            list->Add((byte)i);
+
+        for (var i = 0; i < 62; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList64Bytes<byte>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList64Byte_Sort()
     {
         var list = new FixedList64Bytes<byte>();
@@ -1504,7 +1623,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList64Bytes<byte>();
         for(var i = 0; i < 62; ++i)
             a.Add((byte)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
+#endif
     }
     [Test]
     public void FixedList64Byte_To_FixedList128Byte()
@@ -1533,17 +1654,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (byte)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<byte>() + sizeof(byte) * i, &s, sizeof(byte));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Byte_HasExpectedCapacity()
     {
         var list = new FixedList128Bytes<byte>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((byte)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((byte)expectedCapacity); });
     }
 
@@ -1576,7 +1699,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1595,7 +1720,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1611,7 +1738,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1630,7 +1759,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1648,7 +1779,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -1754,6 +1887,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList128Byte_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<byte>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList128Bytes<byte> and ensure we can still read+write safely
+        const int buffSize = 128 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList128Bytes<byte>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 126; ++i)
+            list->Add((byte)i);
+
+        for (var i = 0; i < 126; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList128Bytes<byte>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList128Byte_Sort()
     {
         var list = new FixedList128Bytes<byte>();
@@ -1770,7 +1934,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<byte>(a); } );
+#endif
     }
     [Test]
     public void FixedList128Byte_To_FixedList64Byte()
@@ -1778,7 +1944,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<byte>();
         for(var i = 0; i < 126; ++i)
             a.Add((byte)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<byte>(a); } );
+#endif
     }
 
     public readonly unsafe struct FixedList32Int_Wrapper
@@ -1811,9 +1979,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32Int_FixedBytes30ToNativeArrayWorksGeneric()
+    public void FixedList32Int_FixedBytes32Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<int,FixedBytes30>();
+        var list = new FixedList<int,FixedBytes32Align8>();
 
         for(var i = 0; i < 7; ++i)
             list.Add((int)(i * 123 + 234));
@@ -1856,17 +2024,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Int_GenericHasExpectedCapacity()
     {
         var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
@@ -1881,7 +2051,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1900,7 +2072,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1916,7 +2090,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -1935,7 +2111,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -1953,7 +2131,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -2106,9 +2286,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64Int_FixedBytes62ToNativeArrayWorksGeneric()
+    public void FixedList64Int_FixedBytes64Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<int,FixedBytes62>();
+        var list = new FixedList<int,FixedBytes64Align8>();
 
         for(var i = 0; i < 15; ++i)
             list.Add((int)(i * 123 + 234));
@@ -2151,17 +2331,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Int_GenericHasExpectedCapacity()
     {
         var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
@@ -2176,7 +2358,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2195,7 +2379,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2211,7 +2397,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2230,7 +2418,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2248,7 +2438,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -2401,9 +2593,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128Int_FixedBytes126ToNativeArrayWorksGeneric()
+    public void FixedList128Int_FixedBytes128Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<int,FixedBytes126>();
+        var list = new FixedList<int,FixedBytes128Align8>();
 
         for(var i = 0; i < 31; ++i)
             list.Add((int)(i * 123 + 234));
@@ -2446,17 +2638,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Int_GenericHasExpectedCapacity()
     {
         var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
     [Test]
@@ -2471,7 +2665,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2490,7 +2686,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2506,7 +2704,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2525,7 +2725,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2543,7 +2745,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -2682,17 +2886,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Int_HasExpectedCapacity()
     {
         var list = new FixedList32Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
 
@@ -2725,7 +2931,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2744,7 +2952,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2760,7 +2970,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -2779,7 +2991,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -2797,7 +3011,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -2903,6 +3119,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList32Int_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<int>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList32Bytes<int> and ensure we can still read+write safely
+        const int buffSize = 32 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList32Bytes<int>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 7; ++i)
+            list->Add((int)i);
+
+        for (var i = 0; i < 7; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList32Bytes<int>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList32Int_Sort()
     {
         var list = new FixedList32Bytes<int>();
@@ -2950,17 +3197,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Int_HasExpectedCapacity()
     {
         var list = new FixedList64Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
 
@@ -2993,7 +3242,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3012,7 +3263,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3028,7 +3281,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3047,7 +3302,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3065,7 +3322,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -3171,6 +3430,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList64Int_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<int>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList64Bytes<int> and ensure we can still read+write safely
+        const int buffSize = 64 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList64Bytes<int>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 15; ++i)
+            list->Add((int)i);
+
+        for (var i = 0; i < 15; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList64Bytes<int>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList64Int_Sort()
     {
         var list = new FixedList64Bytes<int>();
@@ -3187,7 +3477,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList64Bytes<int>();
         for(var i = 0; i < 15; ++i)
             a.Add((int)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
+#endif
     }
     [Test]
     public void FixedList64Int_To_FixedList128Int()
@@ -3216,17 +3508,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (int)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<int>() + sizeof(int) * i, &s, sizeof(int));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Int_HasExpectedCapacity()
     {
         var list = new FixedList128Bytes<int>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((int)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((int)expectedCapacity); });
     }
 
@@ -3259,7 +3553,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3278,7 +3574,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3294,7 +3592,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3313,7 +3613,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3331,7 +3633,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -3437,6 +3741,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList128Int_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<int>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList128Bytes<int> and ensure we can still read+write safely
+        const int buffSize = 128 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList128Bytes<int>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 31; ++i)
+            list->Add((int)i);
+
+        for (var i = 0; i < 31; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList128Bytes<int>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList128Int_Sort()
     {
         var list = new FixedList128Bytes<int>();
@@ -3453,7 +3788,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<int>(a); } );
+#endif
     }
     [Test]
     public void FixedList128Int_To_FixedList64Int()
@@ -3461,7 +3798,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<int>();
         for(var i = 0; i < 31; ++i)
             a.Add((int)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<int>(a); } );
+#endif
     }
 
     public readonly unsafe struct FixedList32Float_Wrapper
@@ -3494,9 +3833,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList32Float_FixedBytes30ToNativeArrayWorksGeneric()
+    public void FixedList32Float_FixedBytes32Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<float,FixedBytes30>();
+        var list = new FixedList<float,FixedBytes32Align8>();
 
         for(var i = 0; i < 7; ++i)
             list.Add((float)(i * 123 + 234));
@@ -3539,17 +3878,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Float_GenericHasExpectedCapacity()
     {
         var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
@@ -3564,7 +3905,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3583,7 +3926,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3599,7 +3944,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3618,7 +3965,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3636,7 +3985,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -3789,9 +4140,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList64Float_FixedBytes62ToNativeArrayWorksGeneric()
+    public void FixedList64Float_FixedBytes64Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<float,FixedBytes62>();
+        var list = new FixedList<float,FixedBytes64Align8>();
 
         for(var i = 0; i < 15; ++i)
             list.Add((float)(i * 123 + 234));
@@ -3834,17 +4185,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Float_GenericHasExpectedCapacity()
     {
         var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
@@ -3859,7 +4212,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3878,7 +4233,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3894,7 +4251,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -3913,7 +4272,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -3931,7 +4292,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -4084,9 +4447,9 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
-    public void FixedList128Float_FixedBytes126ToNativeArrayWorksGeneric()
+    public void FixedList128Float_FixedBytes128Align8ToNativeArrayWorksGeneric()
     {
-        var list = new FixedList<float,FixedBytes126>();
+        var list = new FixedList<float,FixedBytes128Align8>();
 
         for(var i = 0; i < 31; ++i)
             list.Add((float)(i * 123 + 234));
@@ -4129,17 +4492,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Float_GenericHasExpectedCapacity()
     {
         var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
     [Test]
@@ -4154,7 +4519,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4173,7 +4540,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4189,7 +4558,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4208,7 +4579,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4226,7 +4599,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -4365,17 +4740,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 32));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 32));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList32Float_HasExpectedCapacity()
     {
         var list = new FixedList32Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
 
@@ -4408,7 +4785,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4427,7 +4806,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4443,7 +4824,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4462,7 +4845,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4480,7 +4865,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -4586,6 +4973,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList32Float_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<float>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList32Bytes<float> and ensure we can still read+write safely
+        const int buffSize = 32 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList32Bytes<float>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 7; ++i)
+            list->Add((float)i);
+
+        for (var i = 0; i < 7; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList32Bytes<float>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList32Float_Sort()
     {
         var list = new FixedList32Bytes<float>();
@@ -4633,17 +5051,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 64));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 64));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList64Float_HasExpectedCapacity()
     {
         var list = new FixedList64Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
 
@@ -4676,7 +5096,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4695,7 +5117,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4711,7 +5135,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4730,7 +5156,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4748,7 +5176,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -4854,6 +5284,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList64Float_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<float>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList64Bytes<float> and ensure we can still read+write safely
+        const int buffSize = 64 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList64Bytes<float>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 15; ++i)
+            list->Add((float)i);
+
+        for (var i = 0; i < 15; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList64Bytes<float>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList64Float_Sort()
     {
         var list = new FixedList64Bytes<float>();
@@ -4870,7 +5331,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList64Bytes<float>();
         for(var i = 0; i < 15; ++i)
             a.Add((float)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
+#endif
     }
     [Test]
     public void FixedList64Float_To_FixedList128Float()
@@ -4899,17 +5362,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (float)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<float>() + sizeof(float) * i, &s, sizeof(float));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, 128));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, 128));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void FixedList128Float_HasExpectedCapacity()
     {
         var list = new FixedList128Bytes<float>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((float)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((float)expectedCapacity); });
     }
 
@@ -4942,7 +5407,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4961,7 +5428,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -4977,7 +5446,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -4996,7 +5467,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -5014,7 +5487,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -5120,6 +5595,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void FixedList128Float_Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<float>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned FixedList128Bytes<float> and ensure we can still read+write safely
+        const int buffSize = 128 * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (FixedList128Bytes<float>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < 31; ++i)
+            list->Add((float)i);
+
+        for (var i = 0; i < 31; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<FixedList128Bytes<float>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void FixedList128Float_Sort()
     {
         var list = new FixedList128Bytes<float>();
@@ -5136,7 +5642,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList32Bytes<float>(a); } );
+#endif
     }
     [Test]
     public void FixedList128Float_To_FixedList64Float()
@@ -5144,7 +5652,9 @@ internal class FixedListTests : CollectionsTestFixture
         var a = new FixedList128Bytes<float>();
         for(var i = 0; i < 31; ++i)
             a.Add((float)i);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException> (() => { var b = new FixedList64Bytes<float>(a); } );
+#endif
     }
 
 }

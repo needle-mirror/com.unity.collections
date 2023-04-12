@@ -10,15 +10,17 @@ using UnityEngine.TestTools;
 
 internal class NativeRingQueueTests
 {
-#if !UNITY_DOTSRUNTIME
+
     [Test, DotsRuntimeIgnore]
     public void NativeRingQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var test = new NativeRingQueue<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         test.Dispose();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         NUnit.Framework.Assert.That(() => test.Dequeue(),
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test.GetType()} has been deallocated"));
+#endif
     }
 
     [Test, DotsRuntimeIgnore]
@@ -34,14 +36,20 @@ internal class NativeRingQueueTests
         test0.Enqueue(123);
         test0.Dispose();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         NUnit.Framework.Assert.That(() => test0.Dequeue(),
             Throws.Exception.With.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test0.GetType()} has been deallocated"));
+#endif
+
         test.Enqueue(123);
         test1.Dispose();
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         NUnit.Framework.Assert.That(() => test1.Dequeue(),
             Throws.Exception.With.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test1.GetType()} has been deallocated"));
+#endif
     }
 
     [BurstCompile(CompileSynchronously = true)]
@@ -58,6 +66,7 @@ internal class NativeRingQueueTests
     }
 
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeRingQueue_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         var test = new NativeRingQueue<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -103,8 +112,10 @@ internal class NativeRingQueueTests
 
         var handle = job.Schedule();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<InvalidOperationException>(() => container.Enqueue(321));
         Assert.Throws<InvalidOperationException>(() => container.TryDequeue(out _));
+#endif
 
         handle.Complete();
         Assert.AreEqual(3, container.Length);
@@ -126,5 +137,4 @@ internal class NativeRingQueueTests
         Assert.AreEqual(987, container.Dequeue());
         Assert.AreEqual(0, container.Length);
     }
-#endif
 }

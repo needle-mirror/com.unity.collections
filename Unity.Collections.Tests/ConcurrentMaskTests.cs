@@ -238,9 +238,7 @@ internal class ConcurrentMaskTests
         storage.Dispose();
     }    
             
-#if !UNITY_DOTSRUNTIME
     [BurstCompile(CompileSynchronously = true)]
-#endif
     struct AllocateJob : IJobParallelFor
     {
         [NativeDisableContainerSafetyRestriction] public NativeList<long> m_storage;

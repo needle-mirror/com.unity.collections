@@ -333,8 +333,7 @@ namespace Unity.Collections
                 }
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-            [BurstDiscard]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckKeySize(int isHash64)
             {
                 if (State.IsHash64 != isHash64)

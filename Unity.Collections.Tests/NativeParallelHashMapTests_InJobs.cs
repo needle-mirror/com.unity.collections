@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Burst;
 using Unity.Collections;
 using Assert = FastAssert;
+using Unity.Collections.Tests;
 
 internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFixture
 {
@@ -21,6 +22,7 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_NestedJob_Error()
     {
         var map = new NativeParallelHashMap<int, NativeParallelHashMap<int, int>>(hashMapSize, CommonRwdAllocator.Handle);
@@ -75,7 +77,7 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
     }
 
     [Test]
-    [IgnoreInPortableTests("The hash map exception is fatal.")]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_Read_And_Write_Full()
     {
         var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
@@ -179,7 +181,7 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
     }
 
     [Test]
-    [IgnoreInPortableTests("Hash map throws when full.")]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_Clear_And_Write()
     {
         var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
@@ -221,33 +223,18 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
 
         var disposeJob0 = container0.Dispose(default);
         Assert.False(container0.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container0.ContainsKey(0); });
+#endif
 
         var disposeJob = container1.Dispose(disposeJob0);
         Assert.False(container1.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container1.ContainsKey(1); });
+#endif
 
         disposeJob.Complete();
-    }
-
-    [Test]
-    public void NativeParallelHashMap_DisposeJobWithMissingDependencyThrows()
-    {
-        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
-        var deps = new Clear { hashMap = hashMap }.Schedule();
-        Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
-        deps.Complete();
-        hashMap.Dispose();
-    }
-
-    [Test]
-    public void NativeParallelHashMap_DisposeJobCantBeScheduled()
-    {
-        var hashMap = new NativeParallelHashMap<int, int>(hashMapSize / 2, CommonRwdAllocator.Handle);
-        var deps = hashMap.Dispose(default);
-        Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
-        deps.Complete();
     }
 }

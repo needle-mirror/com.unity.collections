@@ -62,6 +62,22 @@ namespace Unity.Collections.LowLevel.Unsafe
             get => this.AsUnsafeListOfBytesRO().IsCreated;
         }
 
+        internal static UnsafeText* Alloc(AllocatorManager.AllocatorHandle allocator)
+        {
+            UnsafeText* data = (UnsafeText*)Memory.Unmanaged.Allocate(sizeof(UnsafeText), UnsafeUtility.AlignOf<UnsafeText>(), allocator);
+            return data;
+        }
+
+        internal static void Free(UnsafeText* data)
+        {
+            if (data == null)
+            {
+                throw new InvalidOperationException("UnsafeText has yet to be created or has been destroyed!");
+            }
+            var allocator = data->m_UntypedListData.Allocator;
+            data->Dispose();
+            Memory.Unmanaged.Free(data, allocator);
+        }
 
         /// <summary>
         /// Releases all resources (memory).

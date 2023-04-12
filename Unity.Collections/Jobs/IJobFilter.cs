@@ -9,13 +9,13 @@ using Unity.Mathematics;
 namespace Unity.Jobs
 {
     /// <summary>
-    /// 
+    ///  **Obsolete.** Use <see cref="IJobFilterExtensions"/> instead.
     /// </summary>
     [Obsolete("'JobParallelIndexListExtensions' has been deprecated; Use 'IJobFilterExtensions' instead.", false)]
     public static class JobParallelIndexListExtensions
     {
         /// <summary>
-        /// 
+        /// **Obsolete.**
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="jobData"></param>
@@ -29,7 +29,7 @@ namespace Unity.Jobs
             => jobData.ScheduleAppend(indices, arrayLength, dependsOn);
 
         /// <summary>
-        /// 
+        /// **Obsolete.**
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="jobData"></param>
@@ -43,7 +43,7 @@ namespace Unity.Jobs
     }
 
     /// <summary>
-    /// 
+    /// **Obsolete.** Use <see cref="IJobFilter"/> instead.
     /// </summary>
     [Obsolete("'IJobParallelForFilter' has been deprecated; use 'IJobFilter' instead. (UnityUpgradable) -> IJobFilter")]
     public interface IJobParallelForFilter
@@ -58,10 +58,13 @@ namespace Unity.Jobs
 
 
     /// <summary>
+    /// Filters a list of indices.
+    /// </summary>
+    /// <remarks>
     /// IJobFilter allows for custom jobs to implement a bool Execute(int index) job function used to filter a list of indices.
     /// For a provided list and index range, the list will be modified to append all indices for which Execute returns true or to exclude all indices for which Execute returns false
     /// depending on if ScheduleAppend or Schedule is used, respectfully, for enqueuing the job with the job system.
-    /// </summary>
+    /// </remarks>
     [JobProducerType(typeof(IJobFilterExtensions.JobFilterProducer<>))]
     public interface IJobFilter
     {

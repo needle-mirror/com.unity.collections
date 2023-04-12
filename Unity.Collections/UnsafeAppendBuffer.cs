@@ -63,7 +63,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Length = 0;
             Capacity = 0;
 
-            SetCapacity(initialCapacity);
+            SetCapacity(math.max(initialCapacity, 1));
         }
 
         /// <summary>
@@ -107,6 +107,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 Memory.Unmanaged.Free(Ptr, Allocator);
@@ -125,6 +130,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this append buffer. The new job depends upon inputDeps.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);

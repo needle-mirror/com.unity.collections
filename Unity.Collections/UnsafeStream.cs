@@ -150,7 +150,13 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal static void AllocateBlock(out UnsafeStream stream, AllocatorManager.AllocatorHandle allocator)
         {
-            int blockCount = JobsUtility.MaxJobThreadCount;
+#if UNITY_2022_2_14F1_OR_NEWER
+            int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+            int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
+
+            int blockCount = maxThreadCount;
 
             int allocationSize = sizeof(UnsafeStreamBlockData) + sizeof(UnsafeStreamBlock*) * blockCount;
 
@@ -321,6 +327,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             Deallocate();
         }
 
@@ -331,6 +342,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this stream.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             var jobHandle = new DisposeJob { Container = this }.Schedule(inputDeps);
 
             m_BlockData = default;

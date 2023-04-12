@@ -30,7 +30,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, 0, 256, allocator);
+            m_Data.Init(initialCapacity, 0, HashMapHelper<T>.kMinimumCapacity, allocator);
         }
 
         /// <summary>
@@ -58,7 +58,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>The number of values that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,6 +80,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             m_Data.Dispose();
         }
 
@@ -91,6 +95,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this set.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.Allocator }.Schedule(inputDeps);
             m_Data.Ptr = null;
 

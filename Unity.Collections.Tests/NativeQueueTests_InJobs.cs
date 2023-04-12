@@ -5,6 +5,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.Tests;
 using Assert = FastAssert;
+using System;
 
 internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 {
@@ -21,6 +22,7 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeQueue_NestedJob_Error()
     {
         var container = new NativeQueue<NativeQueue<int>>(CommonRwdAllocator.Handle);

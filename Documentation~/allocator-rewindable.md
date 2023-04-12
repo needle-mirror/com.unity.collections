@@ -1,6 +1,6 @@
-# Add a rewindable allocator to a structure
+# Rewindable allocator overview
 
-A rewindable allocator is a custom allocator that works in a similar way to a linear allocator. It's fast and thread safe. A rewindable allocator pre-allocates blocks of memory in advance. 
+A rewindable allocator is a [custom allocator](allocator-custom-define.md) that works in a similar way to a linear allocator. It's fast and thread safe. A rewindable allocator pre-allocates blocks of memory in advance. 
 
 When you request memory from a rewindable allocator, it selects a range of memory from its pre-allocated block and assigns it to use. The minimum alignment of rewindable allocations is 64 bytes. After it uses all the existing blocks of memory, the rewindable allocator allocates another block of memory. 
 
@@ -18,9 +18,9 @@ To create a rewindable allocator, you must do the following:
 * Add an entry in the global allocator table to register the allocator
 * Pre-allocate the allocator's first memory block to initialize it.  
 
-You can use the wrapper [`AllocatorHelper`](xref:Unity.Collections.AllocatorHelper`1) to help create a rewindable allocator. The following are examples show how to declare and create a rewindable allocator.  
+You can use the wrapper [`AllocatorHelper`](xref:Unity.Collections.AllocatorHelper`1) to create a rewindable allocator.
 
-The following example shows how to declare and create a rewindable allocator:
+The following example declares and creates a rewindable allocator:
 
 ```c#
 // Example user structure
@@ -59,21 +59,23 @@ This example method `UseRewindableAllocator` shows how to use a rewindable alloc
 ## Free all allocated memory of a rewindable allocator
 
 When you `Rewind` the rewindable allocator, it performs the following operations:
-- Invalidates and unregisters all the allocator handle's child allocators
-- Invalidates all its child safety handles
+
+* Invalidates and unregisters all the allocator handle's child allocators
+* Invalidates all its child safety handles
 
 The example method `FreeRewindableAllocator` shows how to Free all allocations from the rewindable allocator, with [`Rewind`](xref:Unity.Collections.RewindableAllocator.Rewind).
 
 [!code-cs[Free all allocations from the rewindable allocator](../Unity.Collections.Tests/AllocatorRewindableTests.cs#allocator-rewindable-free)]
 
 ## Dispose a rewindable allocator
+
 To dispose a rewindable allocator, you must do the following:
 
 * Dispose all the memory blocks of the rewindable allocator from `Allocator.Persistant`. 
 * Unregister the allocator
 * Dispose the memory used to store the allocator
 
-The example below adds a method `DisposeRewindableAllocator` to show how to dispose a rewindable allocator using [`Dispose`](xref:Unity.Collections.AllocatorHelper`1.Dispose):
+The following example adds a method `DisposeRewindableAllocator`that disposes a rewindable allocator using [`Dispose`](xref:Unity.Collections.AllocatorHelper`1.Dispose):
 
 [!code-cs[Dispose a rewindable allocator](../Unity.Collections.Tests/AllocatorRewindableTests.cs#allocator-rewindable-dispose)]
 

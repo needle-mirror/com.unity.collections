@@ -84,6 +84,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_Full_HashMap_Throws()
     {
         var hashMap = new NativeParallelHashMap<int, int>(16, Allocator.Temp);
@@ -94,15 +95,6 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         var cHashMap = hashMap.AsParallelWriter();
         Assert.Throws<System.InvalidOperationException>(() => { cHashMap.TryAdd(100, 100); });
         hashMap.Dispose();
-    }
-
-    [Test]
-    public void NativeParallelHashMap_Double_Deallocate_Throws()
-    {
-        var hashMap = new NativeParallelHashMap<int, int>(16, CommonRwdAllocator.Handle);
-        hashMap.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-        () => { hashMap.Dispose(); });
     }
 
     [Test]
@@ -136,7 +128,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     unsafe struct LargeKey : IEquatable<LargeKey>
     {
         [FieldOffset(0)]
-        public int* Ptr;
+        public ulong Ptr;
 
         [FieldOffset(300)]
         int x;
@@ -147,7 +139,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         }
         public override int GetHashCode()
         {
-            return (int)Ptr;
+            return ((int)(Ptr>>32) * 1327) ^ (int)(Ptr & 0x7FFFFFFF);
         }
     }
 
@@ -170,12 +162,10 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     [Test]
     public unsafe void NativeParallelHashMap_Key_Collisions_FromJobs()
     {
-        //        Assert.True(false);
-
         var keys = CollectionHelper.CreateNativeArray<LargeKey>(4, CommonRwdAllocator.Handle);
         for (var i = 0; i < keys.Length; i++)
         {
-            keys[i] = new LargeKey { Ptr = (int*)(((ulong)i) << 32) };
+            keys[i] = new LargeKey { Ptr = (((ulong)i) << 32) };
         }
 
         for (var spin = 0; spin < 1024; spin++)
@@ -195,7 +185,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
             for (var i = 0; i < keys.Length; ++i)
             {
-                var key = new LargeKey { Ptr = (int*)(((ulong)i) << 32) };
+                var key = new LargeKey { Ptr = (((ulong)i) << 32) };
                 Assert.IsTrue(hashMap.ContainsKey(key));
             }
 
@@ -230,7 +220,9 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         using (var hashMap = new NativeParallelHashMap<int, int>(0, Allocator.Persistent))
         {
             Assert.DoesNotThrow(() => hashMap.Add(0, 0));
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             Assert.Throws<ArgumentException>(() => hashMap.Add(0, 0));
+#endif
         }
 
         using (var hashMap = new NativeParallelHashMap<int, int>(0, Allocator.Persistent))
@@ -520,8 +512,10 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container[0] = 2; });
+#endif
 
         kv.Dispose(disposeJob);
 
@@ -534,6 +528,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeParallelHashMap<int, int>(10, CommonRwdAllocator.Handle);
@@ -557,6 +552,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     }
 
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -742,6 +738,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_ForEach_Throws_When_Modified()
     {
         using (var container = new NativeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -789,6 +786,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_ForEach_Throws_Job_Iterator()
     {
         using (var container = new NativeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -817,6 +815,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_ForEach_Throws()
     {
         using (var container = new NativeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle))

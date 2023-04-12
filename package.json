@@ -1,14 +1,15 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.1.0-pre.18",
+  "version": "2.1.1",
   "unity": "2022.2",
-  "unityRelease": "2f1",
+  "unityRelease": "15f1",
   "dependencies": {
-    "com.unity.burst": "1.8.3",
+    "com.unity.burst": "1.8.4",
     "com.unity.modules.unityanalytics": "1.0.0",
     "com.unity.nuget.mono-cecil": "1.11.4",
-    "com.unity.test-framework": "1.3.2"
+    "com.unity.test-framework": "1.3.3",
+    "com.unity.test-framework.performance": "3.0.0-pre.1"
   },
   "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
   "keywords": [
@@ -17,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Added\n\n* UnsafeParallelHashMap.ParallelWriter.ThreadIndex is a public read-only property to mirror functionality in NativeParallelHashMap\n* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage\n* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument for advanced usage\n* `Starts/EndsWith` to `Native/UnsafeText` and `FixedStringN`.\n\n### Changed\n\n* `NativeReference/NativeList.GetUnsafePtr` returns typed pointer `T*` instead of typeless `void*`.\n* Updated Burst version in use to 1.8.3\n* Updated auto-generated allocator performance comparison documentation\n* NativeParallelHashMap.ParallelWriter.m_ThreadIndex public property renamed to ThreadIndex\n* Allocator benchmark documentation updated to reflect corrected performance measurements\n* NativeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now\n* UnsafeParallelHashMap.ParallelWriter.TryAdd that takes a thread index argument is internal now\n* Significant performance improvements, especially when not burst compiled, across the board in all containers\n* Implementation for NativeRingQueue simplified and performance increased greatly\n\n### Deprecated\n\n\n### Removed\n\n* GenPerformanceComparisonMd\n* InternalsVisibleTo reference to Tiny\n\n### Fixed\n\n* All HashMap and HashSet types are now consistently initialized with a capacity no less than the `minGrowth` specified\n* Incorrect markdown syntax for header anchors\n* `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.\n\n### Security"
+    "changelog": "### Added\n\n* `IJobParallelBatch` provides `.Schedule`, `.ScheduleByRef`, `.ScheduleParallel`, `.ScheduleParallelByRef`, `.Run` and .`RunByRef` forms. `.ScheduleParallel` is equivalent to calling `.ScheduleBatch`.\n* Added `Trim`, `TrimStart`, `TrimEnd`, `ToLowerAscii`, `ToUpperAscii` methods to strings.\n* `NativeQueue.ReadOnly`.\n* `UnsafeParallelHashMap.ReadOnly`.\n* UnsafeQueue container type\n* `Unsafe/NativeParallelMultiHashMap.ReadOnly` view into container.\n* `UnsafeList.ReadOnly` enumerator.\n\n### Changed\n\n* Added additional `UNITY_DOTS_DEBUG` checks to collection types to help with standalone player debugging (since `ENABLE_UNITY_COLLECTION_CHECKS` safety checks are unavailable in standalone player builds)\n* Updated Burst version to 1.8.4\n* Reduced the amount of memory allocated by allocating based on the maximum number of worker threads the running platform requires rather than defaulting to using a theoretical upper-bound of 128 worker threads.\n\n### Fixed\n\n* Calling `Dispose` on uninitialized container will not throw.\n* Properly tracks allocations made from the collections package such that when `Unity.Collections.NativeLeakDetectionMode` is `NativeLeakDetectionMode.Enabled` or `NativeLeakDetectionMode.EnabledWithStackTrace`, native memory leaks will be reported upon domain reload.\n* UnsafeParallelHashSet.ReadOnly was not usable in jobs due to extraneous [NativeContainer] attribute\n* NativeRingQueue.Dispose(JobHandle) allowed scheduling as a race condition\n* Dispose(JobHandle) for many native containers adhere to proper safety system expectations\n* Lowered benchmark memory usage in non-desktop player builds to avoid out-of-memory failures\n* Fixed container types could provide unaligned access to `T` elements which could violate platform alignment requirements resulting in native exceptions / crashes in player builds. All fixed types like `FixedList<T>` now provide 8 byte alignment for the `FixedList<T>` type itself, whereas the elements `T` remain naturally aligned in the contiguous storage buffer inside `FixedList<T>`"
   },
   "upmCi": {
-    "footprint": "d6b518e9bc31de707a9ff3a39d2adbff6e59ac69"
+    "footprint": "0c59278b48a8fc5d32fd45fd50671f5f52c3a7de"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.1/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "15bf392224681c22f76277c3db22b5656ac4c1a5"
+    "revision": "ff8e5a60b10664839edcd054cc90b3d92cb32dc9"
   }
 }

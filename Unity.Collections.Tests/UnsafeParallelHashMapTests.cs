@@ -150,4 +150,57 @@ internal class UnsafeParallelHashMapTests : CollectionsTestCommonBase
         Assert.AreEqual(1024, container.Count());
         container.Dispose();
     }
+
+    struct UnsafeParallelHashMap_ForEach_Job : IJob
+    {
+        public UnsafeParallelHashMap<int, int>.ReadOnly Input;
+
+        [ReadOnly]
+        public int Num;
+
+        public void Execute()
+        {
+            var seen = new NativeArray<int>(Num, Allocator.Temp);
+
+            var count = 0;
+            foreach (var kv in Input)
+            {
+                int value;
+                Assert.True(Input.TryGetValue(kv.Key, out value));
+                Assert.AreEqual(value, kv.Value);
+                Assert.AreEqual(kv.Key * 37, kv.Value);
+
+                seen[kv.Key] = seen[kv.Key] + 1;
+                ++count;
+            }
+
+            Assert.AreEqual(Input.Count(), count);
+            for (int i = 0; i < Num; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect key count {i}");
+            }
+
+            seen.Dispose();
+        }
+    }
+
+    [Test]
+    public void UnsafeParallelHashMap_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
+        using (var container = new UnsafeParallelHashMap<int, int>(32, CommonRwdAllocator.Handle))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i, i * 37);
+            }
+
+            new UnsafeParallelHashMap_ForEach_Job
+            {
+                Input = container.AsReadOnly(),
+                Num = n,
+
+            }.Run();
+        }
+    }
 }

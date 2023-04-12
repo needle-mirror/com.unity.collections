@@ -76,7 +76,7 @@ namespace Unity.Collections
                     {
                         long bytesToAllocate = newCount * size;
                         CheckByteCountIsReasonable(bytesToAllocate);
-                        newPointer = UnsafeUtility.Malloc(bytesToAllocate, alignment, allocator.ToAllocator);
+                        newPointer = UnsafeUtility.MallocTracked(bytesToAllocate, alignment, allocator.ToAllocator, 0);
                         if (oldCount > 0)
                         {
                             long count = math.min(oldCount, newCount);
@@ -86,7 +86,7 @@ namespace Unity.Collections
                         }
                     }
                     if (oldCount > 0)
-                        UnsafeUtility.Free(oldPointer, allocator.ToAllocator);
+                        UnsafeUtility.FreeTracked(oldPointer, allocator.ToAllocator);
                     return newPointer;
                 }
 
@@ -143,7 +143,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckByteCountIsReasonable(long size)
         {
             if (size < 0)

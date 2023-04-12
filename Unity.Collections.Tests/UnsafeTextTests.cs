@@ -1,4 +1,3 @@
-#if !UNITY_DOTSRUNTIME
 using System;
 using NUnit.Framework;
 using Unity.Collections;
@@ -7,7 +6,7 @@ using System.Text;
 using Unity.Burst;
 using Unity.Jobs;
 
-namespace FixedStringTests
+namespace Unity.Collections.Tests
 {
     internal class UnsafeTextTests
     {
@@ -485,6 +484,43 @@ namespace FixedStringTests
             Assert.True(actual.StartsWith((FixedString64Bytes)starts));
             Assert.True(actual.EndsWith((FixedString64Bytes)ends));
         }
+
+        [TestCase("red  ", ' ', "red  ", "red", "red")]
+        [TestCase("  red  ", ' ', "red  ", "  red", "red")]
+        [TestCase("       ", ' ', "", "", "")]
+        public void UnsafeText_TrimStart(String a, char trim, String expectedStart, String expectedEnd, String expected)
+        {
+            UnsafeText actual = new UnsafeText(16, Allocator.Temp);
+            actual.Append(a);
+
+            Assert.AreEqual(expectedStart, actual.TrimStart(Allocator.Temp).ToString());
+            Assert.AreEqual(expectedEnd, actual.TrimEnd(Allocator.Temp).ToString());
+            Assert.AreEqual(expected, actual.Trim(Allocator.Temp).ToString());
+        }
+
+        [TestCase("  red  ", "ed  ", "  red", "ed")]
+        [TestCase("црвена", "црвена", "црвена", "црвена")]
+        [TestCase("       ", "", "", "")]
+        public void UnsafeText_TrimStartWithRunes(String a, String expectedStart, String expectedEnd, String expected)
+        {
+            UnsafeText actual = new UnsafeText(16, Allocator.Temp);
+            actual.Append(a);
+
+            Assert.AreEqual(expectedStart, actual.TrimStart(Allocator.Temp, new Unicode.Rune[] { ' ', 'r' }).ToString());
+            Assert.AreEqual(expectedEnd, actual.TrimEnd(Allocator.Temp, new Unicode.Rune[] { ' ', 'r' }).ToString());
+            Assert.AreEqual(expected, actual.Trim(Allocator.Temp, new Unicode.Rune[] { ' ', 'r' }).ToString());
+        }
+
+        [TestCase("Red", "red", "RED")]
+        [TestCase("црвена", "црвена", "црвена")]
+        [TestCase("       ", "       ", "       ")]
+        public void UnsafeText_ToLowerUpperAscii(String a, String expectedLower, String expectedUpped)
+        {
+            UnsafeText actual = new UnsafeText(16, Allocator.Temp);
+            actual.Append(a);
+
+            Assert.AreEqual(expectedLower, actual.ToLowerAscii(Allocator.Temp).ToString());
+            Assert.AreEqual(expectedUpped, actual.ToUpperAscii(Allocator.Temp).ToString());
+        }
     }
 }
-#endif

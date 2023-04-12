@@ -1,4 +1,3 @@
-#if !NET_DOTS
 using System;
 using NUnit.Framework;
 using Unity.Collections;
@@ -7,9 +6,8 @@ using System.Text;
 using Unity.Burst;
 using Unity.Jobs;
 
-namespace FixedStringTests
+namespace Unity.Collections.Tests
 {
-
     internal class NativeTextTests
     {
         [Test]
@@ -374,9 +372,12 @@ namespace FixedStringTests
         public void NativeTextNSubstring()
         {
             NativeText a = new NativeText("This is substring.", Allocator.Temp);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(-8, 9));
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(200, 9));
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(8, -9));
+#endif
 
             {
                 NativeText b = a.Substring(8, 9);
@@ -687,6 +688,7 @@ namespace FixedStringTests
         }
 
         [Test]
+        [TestRequiresDotsDebugOrCollectionChecks]
         public void NativeTextReadOnlyIsNotWritable()
         {
             using (var a = new NativeText("apple", Allocator.Temp))
@@ -720,7 +722,9 @@ namespace FixedStringTests
                 var a = new NativeText("Keep it secret, ", allocator.Handle);
                 var ro = a.AsReadOnly();
                 a.Dispose(); // Invalidate the string we are referring to
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 Assert.Throws<ObjectDisposedException>(() => { UnityEngine.Debug.Log(ro.ToString()); });
+#endif
 
                 Assert.IsTrue(allocator.WasUsed);
                 allocator.Dispose();
@@ -747,7 +751,9 @@ namespace FixedStringTests
 
                 a.Dispose();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 Assert.Throws<ObjectDisposedException>(() => { UnityEngine.Debug.Log(ro.ToString()); });
+#endif
 
                 Assert.IsTrue(allocator.WasUsed);
                 allocator.Dispose();
@@ -758,6 +764,7 @@ namespace FixedStringTests
 
 
         [Test]
+        [TestRequiresCollectionChecks]
         public void NativeTextReadOnlyModificationDuringEnumerationThrows()
         {
             AllocatorManager.Initialize();
@@ -807,6 +814,7 @@ namespace FixedStringTests
         }
 
         [Test]
+        [TestRequiresCollectionChecks]
         public void NativeTextReadOnlyCannotScheduledSourceTextForWrite()
         {
             AllocatorManager.Initialize();
@@ -921,6 +929,7 @@ namespace FixedStringTests
         }
 
         [Test]
+        [TestRequiresCollectionChecks]
         public void NativeTextReadOnlyThrowWhenUsingReadOnlyInJobAfterSourceHasBeenDisposed()
         {
             AllocatorManager.Initialize();
@@ -950,4 +959,3 @@ namespace FixedStringTests
         }
     }
 }
-#endif

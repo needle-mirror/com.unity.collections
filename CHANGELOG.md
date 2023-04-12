@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.1.1] - 2023-04-12
+
+### Added
+
+* `IJobParallelBatch` provides `.Schedule`, `.ScheduleByRef`, `.ScheduleParallel`, `.ScheduleParallelByRef`, `.Run` and .`RunByRef` forms. `.ScheduleParallel` is equivalent to calling `.ScheduleBatch`.
+* Added `Trim`, `TrimStart`, `TrimEnd`, `ToLowerAscii`, `ToUpperAscii` methods to strings.
+* `NativeQueue.ReadOnly`.
+* `UnsafeParallelHashMap.ReadOnly`.
+* UnsafeQueue container type
+* `Unsafe/NativeParallelMultiHashMap.ReadOnly` view into container.
+* `UnsafeList.ReadOnly` enumerator.
+
+### Changed
+
+* Added additional `UNITY_DOTS_DEBUG` checks to collection types to help with standalone player debugging (since `ENABLE_UNITY_COLLECTION_CHECKS` safety checks are unavailable in standalone player builds)
+* Updated Burst version to 1.8.4
+* Reduced the amount of memory allocated by allocating based on the maximum number of worker threads the running platform requires rather than defaulting to using a theoretical upper-bound of 128 worker threads.
+
+### Fixed
+
+* Calling `Dispose` on uninitialized container will not throw.
+* Properly tracks allocations made from the collections package such that when `Unity.Collections.NativeLeakDetectionMode` is `NativeLeakDetectionMode.Enabled` or `NativeLeakDetectionMode.EnabledWithStackTrace`, native memory leaks will be reported upon domain reload.
+* UnsafeParallelHashSet.ReadOnly was not usable in jobs due to extraneous [NativeContainer] attribute
+* NativeRingQueue.Dispose(JobHandle) allowed scheduling as a race condition
+* Dispose(JobHandle) for many native containers adhere to proper safety system expectations
+* Lowered benchmark memory usage in non-desktop player builds to avoid out-of-memory failures
+* Fixed container types could provide unaligned access to `T` elements which could violate platform alignment requirements resulting in native exceptions / crashes in player builds. All fixed types like `FixedList<T>` now provide 8 byte alignment for the `FixedList<T>` type itself, whereas the elements `T` remain naturally aligned in the contiguous storage buffer inside `FixedList<T>`
+
+
+
 ## [2.1.0-pre.18] - 2023-03-21
 
 ### Added
@@ -21,9 +51,6 @@
 * Significant performance improvements, especially when not burst compiled, across the board in all containers
 * Implementation for NativeRingQueue simplified and performance increased greatly
 
-### Deprecated
-
-
 ### Removed
 
 * GenPerformanceComparisonMd
@@ -34,10 +61,6 @@
 * All HashMap and HashSet types are now consistently initialized with a capacity no less than the `minGrowth` specified
 * Incorrect markdown syntax for header anchors
 * `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.
-
-### Security
-
-
 
 
 ## [2.1.0-pre.11] - 2023-02-13

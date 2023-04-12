@@ -176,10 +176,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             Allocator = allocator;
             padding = 0;
 
-            if (initialCapacity != 0)
-            {
-                SetCapacity(initialCapacity);
-            }
+            SetCapacity(math.max(initialCapacity, 1));
 
             if (options == NativeArrayOptions.ClearMemory && Ptr != null)
             {
@@ -265,6 +262,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 AllocatorManager.Free(Allocator, Ptr, m_capacity);
@@ -283,6 +285,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and frees the memory of this list.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
@@ -409,7 +416,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Increments the length by 1. Never increases the capacity.
         /// </remarks>
         /// <param name="value">The value to add to the end of the list.</param>
-        /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if incrementing the length would exceed the capacity.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddNoResize(T value)
         {
@@ -426,7 +433,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="ptr">The buffer to copy from.</param>
         /// <param name="count">The number of elements to copy from the buffer.</param>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationExceptionv">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(void* ptr, int count)
         {
             CheckNoResizeHasEnoughCapacity(count);
@@ -443,7 +450,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public void AddRangeNoResize(UnsafeList<T> list)
         {
@@ -734,6 +741,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public unsafe struct ReadOnly
+            : IEnumerable<T>
         {
             /// <summary>
             /// The internal buffer of the list.
@@ -751,10 +759,39 @@ namespace Unity.Collections.LowLevel.Unsafe
                 Ptr = ptr;
                 Length = length;
             }
+
+            /// <summary>
+            /// Returns an enumerator over the elements of the list.
+            /// </summary>
+            /// <returns>An enumerator over the elements of the list.</returns>
+            public Enumerator GetEnumerator()
+            {
+                return new Enumerator { m_Ptr = Ptr, m_Length = Length, m_Index = -1 };
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
-        /// Returns a parallel reader of this list.
+        /// **Obsolete.** Use <see cref="AsReadOnly"/> instead.
         /// </summary>
         /// <returns>A parallel reader of this list.</returns>
 //        [Obsolete("'AsParallelReader' has been deprecated; use 'AsReadOnly' instead. (UnityUpgradable) -> AsReadOnly")]
@@ -764,7 +801,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// A parallel reader for an UnsafeList&lt;T&gt;.
+        /// **Obsolete.** Use <see cref="ReadOnly"/> instead.
         /// </summary>
         /// <remarks>
         /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
@@ -839,7 +876,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if incrementing the length would exceed the capacity.</exception>
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddNoResize(T value)
             {
@@ -856,7 +893,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by `count`. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddRangeNoResize(void* ptr, int count)
             {
@@ -873,7 +910,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
             [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
             public void AddRangeNoResize(UnsafeList<T> list)
             {
@@ -981,7 +1018,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (listData == null)
             {
-                throw new Exception("UnsafeList has yet to be created or has been destroyed!");
+                throw new InvalidOperationException("UnsafeList has yet to be created or has been destroyed!");
             }
         }
 
@@ -1052,7 +1089,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             if (Capacity < index + length)
             {
-                throw new Exception($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
+                throw new InvalidOperationException($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
             }
         }
     }
@@ -1120,7 +1157,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Finds the index of the first occurrence of a particular value in the list.
+        /// **Obsolete.** Use <see cref="UnsafeList{T}.ReadOnly"/> instead.
         /// </summary>
         /// <typeparam name="T">The type of elements in the list.</typeparam>
         /// <typeparam name="U">The type of value to locate.</typeparam>
@@ -1135,7 +1172,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns true if a particular value is present in the list.
+        /// **Obsolete.** Use <see cref="UnsafeList{T}.ReadOnly"/> instead. 
         /// </summary>
         /// <typeparam name="T">The type of elements in the list.</typeparam>
         /// <typeparam name="U">The type of value to locate.</typeparam>
@@ -1460,7 +1497,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Increments the length by 1. Never increases the capacity.
         /// </remarks>
         /// <param name="value">The pointer to add to the end of the list.</param>
-        /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if incrementing the length would exceed the capacity.</exception>
         public void AddNoResize(void* value)
         {
             this.ListData().AddNoResize((IntPtr)value);
@@ -1474,7 +1511,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="ptr">The buffer to copy from.</param>
         /// <param name="count">The number of pointers to copy from the buffer.</param>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(void** ptr, int count) => this.ListData().AddRangeNoResize(ptr, count);
 
         /// <summary>
@@ -1484,7 +1521,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Increments the length by the length of the other list. Never increases the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(UnsafePtrList<T> list) => this.ListData().AddRangeNoResize(list.Ptr, list.Length);
 
         /// <summary>
@@ -1677,7 +1714,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns a parallel reader of this list.
+        /// **Obsolete**. Use <see cref="AsReadOnly"/> instead.
         /// </summary>
         /// <returns>A parallel reader of this list.</returns>
 //        [Obsolete("'AsParallelReader' has been deprecated; use 'AsReadOnly' instead. (UnityUpgradable) -> AsReadOnly")]
@@ -1687,7 +1724,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// A parallel reader for an UnsafePtrList&lt;T&gt;.
+        /// **Obsolete.** Use <see cref="ReadOnly"/> instead.
         /// </summary>
         /// <remarks>
         /// Use <see cref="AsParallelReader"/> to create a parallel reader for a list.
@@ -1781,7 +1818,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by 1. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if incrementing the length would exceed the capacity.</exception>
             public void AddNoResize(T* value) => ListData->AddNoResize((IntPtr)value);
 
             /// <summary>
@@ -1792,7 +1829,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by `count`. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
             public void AddRangeNoResize(T** ptr, int count) => ListData->AddRangeNoResize(ptr, count);
 
             /// <summary>
@@ -1802,7 +1839,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>
             /// Increments the length by the length of the other list. Never increases the capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
             public void AddRangeNoResize(UnsafePtrList<T> list) => ListData->AddRangeNoResize(list.Ptr, list.Length);
         }
     }

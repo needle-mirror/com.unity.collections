@@ -89,8 +89,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         [FieldOffset(40)]
         internal int allocatedIndexLength;
 
+#if UNITY_2022_2_14F1_OR_NEWER
+        const int kFirstFreeTLSOffset = JobsUtility.CacheLineSize < 64 ? 64 : JobsUtility.CacheLineSize;
+        internal int* firstFreeTLS => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + kFirstFreeTLSOffset);
+#else
         [FieldOffset(JobsUtility.CacheLineSize < 64 ? 64 : JobsUtility.CacheLineSize)]
         internal fixed int firstFreeTLS[JobsUtility.MaxJobThreadCount * IntsPerCacheLine];
+#endif
 
         // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
         internal const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
@@ -116,7 +121,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             where TKey : unmanaged
             where TValue : unmanaged
         {
-            UnsafeParallelHashMapData* data = (UnsafeParallelHashMapData*)Memory.Unmanaged.Allocate(sizeof(UnsafeParallelHashMapData), UnsafeUtility.AlignOf<UnsafeParallelHashMapData>(), label);
+#if UNITY_2022_2_14F1_OR_NEWER
+            int maxThreadCount = JobsUtility.ThreadIndexCount;
+            // Calculate the size of UnsafeParallelHashMapData since we need to account for how many
+            // jow worker threads the runtime has available. -1 since UnsafeParallelHashMapData.firstFreeTLS accounts for 1 int already
+            Assert.IsTrue(sizeof(UnsafeParallelHashMapData) <= kFirstFreeTLSOffset);
+            int hashMapDataSize = kFirstFreeTLSOffset + (sizeof(int) * IntsPerCacheLine * maxThreadCount);
+#else
+            int hashMapDataSize = sizeof(UnsafeParallelHashMapData);           
+#endif
+            UnsafeParallelHashMapData* data = (UnsafeParallelHashMapData*)Memory.Unmanaged.Allocate(hashMapDataSize, JobsUtility.CacheLineSize, label);
 
             bucketLength = math.ceilpow2(bucketLength);
 
@@ -262,7 +276,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             var bucketNext = (int*)data->next;
             var freeListSize = 0;
 
-            for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
+#if UNITY_2022_2_14F1_OR_NEWER
+            int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+            int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
+            for (int tls = 0; tls < maxThreadCount; ++tls)
             {
                 for (var freeIdx = data->firstFreeTLS[tls * IntsPerCacheLine]
                     ; freeIdx >= 0
@@ -386,11 +405,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             return new UnsafeParallelHashMapBucketData(values, keys, next, buckets, bucketCapacityMask);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckHashMapReallocateDoesNotShrink(UnsafeParallelHashMapData* data, int newCapacity)
         {
             if (data->keyCapacity > newCapacity)
-                throw new Exception("Shrinking a hash map is not supported");
+                throw new InvalidOperationException("Shrinking a hash map is not supported");
         }
     }
 
@@ -434,7 +453,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             UnsafeUtility.MemSet(data->buckets, 0xff, (data->bucketCapacityMask + 1) * 4);
             UnsafeUtility.MemSet(data->next, 0xff, (data->keyCapacity) * 4);
 
-            for (int tls = 0; tls < JobsUtility.MaxJobThreadCount; ++tls)
+#if UNITY_2022_2_14F1_OR_NEWER
+            int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+            int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
+            for (int tls = 0; tls < maxThreadCount; ++tls)
             {
                 data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] = -1;
             }
@@ -506,14 +530,19 @@ namespace Unity.Collections.LowLevel.Unsafe
                     // If we reach here, then we couldn't allocate more entries for this thread, so it's completely empty.
                     Interlocked.Exchange(ref data->firstFreeTLS[threadIndex * UnsafeParallelHashMapData.IntsPerCacheLine], -1);
 
+#if UNITY_2022_2_14F1_OR_NEWER
+                    int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+                    int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
                     // Failed to get any, try to get one from another free list
                     bool again = true;
                     while (again)
                     {
                         again = false;
-                        for (int other = (threadIndex + 1) % JobsUtility.MaxJobThreadCount
+                        for (int other = (threadIndex + 1) % maxThreadCount
                              ; other != threadIndex
-                             ; other = (other + 1) % JobsUtility.MaxJobThreadCount
+                             ; other = (other + 1) % maxThreadCount
                         )
                         {
                             // Attempt to grab a free entry from another thread and switch the other thread's free head
@@ -675,7 +704,12 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (data->allocatedIndexLength >= data->keyCapacity && data->firstFreeTLS[0] < 0)
                 {
-                    for (int tls = 1; tls < JobsUtility.MaxJobThreadCount; ++tls)
+#if UNITY_2022_2_14F1_OR_NEWER
+                    int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+                    int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
+                    for (int tls = 1; tls < maxThreadCount; ++tls)
                     {
                         if (data->firstFreeTLS[tls * UnsafeParallelHashMapData.IntsPerCacheLine] >= 0)
                         {
@@ -989,10 +1023,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             get
             {
-                #if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 if (m_Index == -1)
                     throw new ArgumentException("must be valid");
-                #endif
+#endif
 
                 return ref UnsafeUtility.AsRef<TValue>(m_Buffer->values + UnsafeUtility.SizeOf<TValue>() * m_Index);
             }
@@ -1133,7 +1167,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>The number of key-value pairs that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1249,6 +1283,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
             m_Buffer = null;
         }
@@ -1260,6 +1299,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             var jobHandle = new UnsafeParallelHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
             m_Buffer = null;
             return jobHandle;
@@ -1315,12 +1359,201 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// Returns a readonly version of this UnsafeParallelHashMap instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the UnsafeParallelHashMap it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(this);
+        }
+
+        /// <summary>
+        /// A read-only alias for the value of a UnsafeParallelHashMap. Does not have its own allocated storage.
+        /// </summary>
+        [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public struct ReadOnly
+            : IEnumerable<KeyValue<TKey, TValue>>
+        {
+            internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
+
+            internal ReadOnly(UnsafeParallelHashMap<TKey, TValue> hashMapData)
+            {
+                m_HashMapData = hashMapData;
+            }
+
+            /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_HashMapData.IsCreated;
+            }
+
+            /// <summary>
+            /// Whether this hash map is empty.
+            /// </summary>
+            /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    if (!IsCreated)
+                    {
+                        return true;
+                    }
+
+                    return m_HashMapData.IsEmpty;
+                }
+            }
+
+            /// <summary>
+            /// The current number of key-value pairs in this hash map.
+            /// </summary>
+            /// <returns>The current number of key-value pairs in this hash map.</returns>
+            public readonly int Count()
+            {
+                return m_HashMapData.Count();
+            }
+
+            /// <summary>
+            /// The number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public readonly int Capacity
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return m_HashMapData.Capacity;
+                }
+            }
+
+            /// <summary>
+            /// Returns the value associated with a key.
+            /// </summary>
+            /// <param name="key">The key to look up.</param>
+            /// <param name="item">Outputs the value associated with the key. Outputs default if the key was not present.</param>
+            /// <returns>True if the key was present.</returns>
+            public readonly bool TryGetValue(TKey key, out TValue item)
+            {
+                return m_HashMapData.TryGetValue(key, out item);
+            }
+
+            /// <summary>
+            /// Returns true if a given key is present in this hash map.
+            /// </summary>
+            /// <param name="key">The key to look up.</param>
+            /// <returns>True if the key was present.</returns>
+            public readonly bool ContainsKey(TKey key)
+            {
+                return m_HashMapData.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Gets values by key.
+            /// </summary>
+            /// <remarks>Getting a key that is not present will throw.</remarks>
+            /// <param name="key">The key to look up.</param>
+            /// <value>The value associated with the key.</value>
+            /// <exception cref="ArgumentException">For getting, thrown if the key was not present.</exception>
+            public readonly TValue this[TKey key]
+            {
+                get
+                {
+                    TValue res;
+
+                    if (m_HashMapData.TryGetValue(key, out res))
+                    {
+                        return res;
+                    }
+
+                    ThrowKeyNotPresent(key);
+
+                    return default;
+                }
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's keys (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+            public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_HashMapData.GetKeyArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's values (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+            public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_HashMapData.GetValueArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
+            /// </summary>
+            /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+            public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_HashMapData.GetKeyValueArrays(allocator);
+            }
+
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+            readonly void ThrowKeyNotPresent(TKey key)
+            {
+                throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
+            }
+
+            /// <summary>
+            /// Returns an enumerator over the key-value pairs of this hash map.
+            /// </summary>
+            /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+            public readonly Enumerator GetEnumerator()
+            {
+                return new Enumerator
+                {
+                    m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_HashMapData.m_Buffer),
+                };
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
         /// A parallel writer for a NativeParallelHashMap.
         /// </summary>
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelHashMap.
         /// </remarks>
-        [NativeContainerIsAtomicWriteOnly]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {

@@ -6,7 +6,7 @@ using Unity.Mathematics;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Provides extension methods for FixedString*N*.
+    /// Provides extension methods for string, UnsafeText, and NativeText.
     /// </summary>
     [GenerateTestsForBurstCompatibility]
     public unsafe static partial class FixedStringMethods
@@ -31,13 +31,13 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieves a substring of this FixedString*N*. The substring starts from a specific character index, and has a specified length.
+        /// Retrieves a substring of this string. The substring starts from a specific character index, and has a specified length.
         /// </summary>
-        /// <typeparam name="T">A <see cref="FixedString"/> type.</typeparam>
-        /// <param name="str">A FixedString*N* to get the substring from.</param>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="str">A string to get the substring from.</param>
         /// <param name="startIndex">Start index of substring.</param>
         /// <param name="length">Length of substring.</param>
-        /// <returns>A new FixedString*N* with length equivalent to `length` that begins at `startIndex`.</returns>
+        /// <returns>A new string with length equivalent to `length` that begins at `startIndex`.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if startIndex or length parameter is negative, or if startIndex is larger than the string length.</exception>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static T Substring<T>(ref this T str, int startIndex, int length)
@@ -52,12 +52,12 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Retrieves a substring of this FixedString*N*. The substring starts from a specific character index and continues to the end of the string.
+        /// Retrieves a substring of this string. The substring starts from a specific character index and continues to the end of the string.
         /// </summary>
-        /// <typeparam name="T">A <see cref="FixedString"/> type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="str">A string to get the substring from.</param>
         /// <param name="startIndex">Start index of substring.</param>
-        /// <returns>A new FixedString*N* that begins at `startIndex`.</returns>
+        /// <returns>A new string that begins at `startIndex`.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
         public static T Substring<T>(ref this T str, int startIndex)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -123,7 +123,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the first occurrence of a single Unicode rune in this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="rune">A single UTF-8 Unicode Rune to search for within this string.</param>
         /// <returns>The index of the first occurrence of the byte sequence in this string. Returns -1 if no occurrence is found.</returns>
@@ -149,7 +149,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the first occurrence of a byte sequence in this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -174,7 +174,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the first occurrence of a byte sequence within a subrange of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -202,8 +202,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the first occurrence of a substring within this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <returns>The index of the first occurrence of the second string within this string. Returns -1 if no occurrence is found.</returns>
@@ -219,8 +219,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the first occurrence of a substring within a subrange of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <param name="startIndex">The first index in this string to consider as an occurrence of the second string.</param>
@@ -238,8 +238,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if a given substring occurs within this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <returns>True if the substring occurs within this string.</returns>
@@ -254,7 +254,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the last occurrence of a single Unicode rune within this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="rune">A single Unicode.Rune to search for within this string.</param>
         /// <returns>The index of the last occurrence of the byte sequence within this string. Returns -1 if no occurrence is found.</returns>
@@ -280,7 +280,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the last occurrence of a byte sequence within this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -305,7 +305,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the last occurrence of a byte sequence within a subrange of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="bytes">A byte sequence to search for within this string.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -334,8 +334,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the last occurrence of a substring within this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for in the this string.</param>
         /// <returns>The index of the last occurrence of the substring within this string. Returns -1 if no occurrence is found.</returns>
@@ -351,8 +351,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the index of the last occurrence of a substring within a subrange of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to search.</param>
         /// <param name="other">A substring to search for within this string.</param>
         /// <param name="startIndex">The greatest index in this string to consider as an occurrence of the substring.</param>
@@ -370,7 +370,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the sort position of this string relative to a byte sequence.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to compare.</param>
         /// <param name="bytes">A byte sequence to compare.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -404,8 +404,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the sort position of this string relative to another.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to compare.</param>
         /// <param name="other">Another string to compare.</param>
         /// <returns>A number denoting the relative sort position of the strings:
@@ -426,7 +426,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if this string and a byte sequence are equal (meaning they have the same length and content).
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to compare for equality.</param>
         /// <param name="bytes">A sequence of bytes to compare for equality.</param>
         /// <param name="bytesLen">The number of bytes in the byte sequence.</param>
@@ -447,8 +447,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns true if this string is equal to another.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
-        /// <typeparam name="T2">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <typeparam name="T2">A string type.</typeparam>
         /// <param name="fs">A string to compare for equality.</param>
         /// <param name="other">Another string to compare for equality.</param>
         /// <returns>true if the two strings have the same length and matching content.</returns>
@@ -464,7 +464,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the Unicode.Rune at an index of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to read.</param>
         /// <param name="index">A reference to an index in bytes (not characters).</param>
         /// <returns>The Unicode.Rune (character) which starts at the byte index. Returns Unicode.BadRune
@@ -482,7 +482,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns the Unicode.Rune at an index of this string. Increments the index to the position of the next character.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to read.</param>
         /// <param name="index">A reference to an index in bytes (not characters). Incremented by 1 to 4 depending upon the UTF-8 encoded size of the character read.</param>
         /// <returns>The character (as a `Unicode.Rune`) which starts at the byte index. Returns `Unicode.BadRune`
@@ -500,7 +500,7 @@ namespace Unity.Collections
         /// <summary>
         /// Writes a Unicode.Rune at an index of this string. Increments the index to the position of the next character.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to modify.</param>
         /// <param name="index">A reference to an index in bytes (not characters). Incremented by 1 to 4 depending upon the UTF-8 encoded size of the character written.</param>
         /// <param name="rune">A rune to write to the string, encoded as UTF-8.</param>
@@ -518,7 +518,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a copy of this string as a managed string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to copy.</param>
         /// <returns>A copy of this string as a managed string.</returns>
         [ExcludeFromBurstCompatTesting("Returns managed string")]
@@ -534,7 +534,7 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a hash code of this string.
         /// </summary>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to get a hash code of.</param>
         /// <returns>A hash code of this string.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -551,9 +551,9 @@ namespace Unity.Collections
         /// "Effective size" is `Length + 3`, the number of bytes you need to copy when serializing the string.
         /// (The plus 3 accounts for the null-terminator byte and the 2 bytes that store the Length).
         ///
-        /// Useful for checking whether this string will fit in the space of a smaller FixedString*N*.
+        /// Useful for checking whether this string will fit in the space of a smaller string.
         /// </remarks>
-        /// <typeparam name="T">A FixedString*N* type.</typeparam>
+        /// <typeparam name="T">A string type.</typeparam>
         /// <param name="fs">A string to get the effective size of.</param>
         /// <returns>The effective size in bytes of this string.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
@@ -633,6 +633,599 @@ namespace Unity.Collections
             return fs.Length >= len
                 && 0 == UTF8ArrayUnsafeUtility.StrCmp(fs.GetUnsafePtr() + fs.Length - len, len, other.GetUnsafePtr(), len)
                 ;
+        }
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        internal static int TrimStartIndex<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            int index = 0;
+            while (true)
+            {
+                var prev = index;
+                var error = Unicode.Utf8ToUcs(out var rune, ptr, ref index, lengthInBytes);
+                if (error != ConversionError.None
+                || !rune.IsWhiteSpace())
+                {
+                    index -= index - prev;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        internal static int TrimStartIndex<T>(ref this T fs, ReadOnlySpan<Unicode.Rune> trimRunes)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            int index = 0;
+            while (true)
+            {
+                var prev = index;
+                var error = Unicode.Utf8ToUcs(out var rune, ptr, ref index, lengthInBytes);
+
+                var doTrim = false;
+                for (int i = 0, num = trimRunes.Length; i < num && !doTrim; i++)
+                {
+                    doTrim |= trimRunes[i] == rune;
+                }
+
+                if (error != ConversionError.None
+                || !doTrim)
+                {
+                    index -= index - prev;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        internal static int TrimEndIndex<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            int index = lengthInBytes;
+            while (true)
+            {
+                var prev = index;
+                var error = Unicode.Utf8ToUcsReverse(out var rune, ptr, ref index, lengthInBytes);
+                if (error != ConversionError.None
+                || !rune.IsWhiteSpace())
+                {
+                    index += prev - index;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        internal static int TrimEndIndex<T>(ref this T fs, ReadOnlySpan<Unicode.Rune> trimRunes)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            int index = lengthInBytes;
+            while (true)
+            {
+                var prev = index;
+                var error = Unicode.Utf8ToUcsReverse(out var rune, ptr, ref index, lengthInBytes);
+
+                var doTrim = false;
+                for (int i = 0, num = trimRunes.Length; i < num && !doTrim; i++)
+                {
+                    doTrim |= trimRunes[i] == rune;
+                }
+
+                if (error != ConversionError.None
+                || !doTrim)
+                {
+                    index += prev - index;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from begining of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the start of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T TrimStart<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var index = fs.TrimStartIndex();
+            var result = new T();
+            result.Append(fs.GetUnsafePtr() + index, fs.Length - index);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from begining of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the start of the string.</returns>
+        public static UnsafeText TrimStart(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var index = fs.TrimStartIndex();
+            var lengthInBytes = fs.Length - index;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + index, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from begining of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the start of the string.</returns>
+        public static NativeText TrimStart(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var index = fs.TrimStartIndex();
+            var lengthInBytes = fs.Length - index;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + index, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from begining of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the start of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T TrimStart<T>(ref this T fs, ReadOnlySpan<Unicode.Rune> trimRunes)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var index = fs.TrimStartIndex(trimRunes);
+            var result = new T();
+            result.Append(fs.GetUnsafePtr() + index, fs.Length - index);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters characters from begining of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the start of the string.</returns>
+        public static UnsafeText TrimStart(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var index = fs.TrimStartIndex(trimRunes);
+            var lengthInBytes = fs.Length - index;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + index, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from begining of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the start of the string.</returns>
+        public static NativeText TrimStart(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var index = fs.TrimStartIndex(trimRunes);
+            var lengthInBytes = fs.Length - index;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + index, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the end of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the end of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T TrimEnd<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var index = fs.TrimEndIndex();
+            var result = new T();
+            result.Append(fs.GetUnsafePtr(), index);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the end of the string.</returns>
+        public static UnsafeText TrimEnd(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var index = fs.TrimEndIndex();
+            var lengthInBytes = index;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr(), lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the end of the string.</returns>
+        public static NativeText TrimEnd(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var index = fs.TrimEndIndex();
+            var lengthInBytes = index;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr(), lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the end of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the end of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T TrimEnd<T>(ref this T fs, ReadOnlySpan<Unicode.Rune> trimRunes)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var index = fs.TrimEndIndex(trimRunes);
+            var result = new T();
+            result.Append(fs.GetUnsafePtr(), index);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the end of the string.</returns>
+        public static UnsafeText TrimEnd(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var index = fs.TrimEndIndex(trimRunes);
+            var lengthInBytes = index;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr(), lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the end of the string.</returns>
+        public static NativeText TrimEnd(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var index = fs.TrimEndIndex(trimRunes);
+            var lengthInBytes = index;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr(), lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the begining and the end of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the begining and the end of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T Trim<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var start = fs.TrimStartIndex();
+            if (start == fs.Length)
+            {
+                return new T();
+            }
+
+            var end = fs.TrimEndIndex();
+            var result = new T();
+            result.Append(fs.GetUnsafePtr() + start, end - start);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the begining and the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the begining and the end of the string.</returns>
+        public static UnsafeText Trim(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var start = fs.TrimStartIndex();
+            if (start == fs.Length)
+            {
+                return new UnsafeText(0, allocator);
+            }
+
+            var end = fs.TrimEndIndex();
+            var lengthInBytes = end - start;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + start, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes whitespace characters from the begining and the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns instance of this string with whitespace characters removed from the begining and the end of the string.</returns>
+        public static NativeText Trim(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var start = fs.TrimStartIndex();
+            if (start == fs.Length)
+            {
+                return new NativeText(0, allocator);
+            }
+
+            var end = fs.TrimEndIndex();
+            var lengthInBytes = end - start;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + start, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the begining and the end of the string.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the begining and the end of the string.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T Trim<T>(ref this T fs, ReadOnlySpan<Unicode.Rune> trimRunes)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var start = fs.TrimStartIndex(trimRunes);
+            if (start == fs.Length)
+            {
+                return new T();
+            }
+
+            var end = fs.TrimEndIndex(trimRunes);
+            var result = new T();
+            result.Append(fs.GetUnsafePtr() + start, end - start);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the begining and the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the begining and the end of the string.</returns>
+        public static UnsafeText Trim(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var start = fs.TrimStartIndex(trimRunes);
+            if (start == fs.Length)
+            {
+                return new UnsafeText(0, allocator);
+            }
+
+            var end = fs.TrimEndIndex();
+            var lengthInBytes = end - start;
+            var result = new UnsafeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + start, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes specific characters from the begining and the end of the string.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <param name="trimRunes">Runes that should be trimmed.</param>
+        /// <returns>Returns instance of this string with specific characters removed from the begining and the end of the string.</returns>
+        public static NativeText Trim(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator, ReadOnlySpan<Unicode.Rune> trimRunes)
+        {
+            var start = fs.TrimStartIndex(trimRunes);
+            if (start == fs.Length)
+            {
+                return new NativeText(0, allocator);
+            }
+
+            var end = fs.TrimEndIndex();
+            var lengthInBytes = end - start;
+            var result = new NativeText(lengthInBytes, allocator);
+            result.Append(fs.GetUnsafePtr() + start, lengthInBytes);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to lowercase only ASCII characters.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <returns>Returns a copy of this string converted to lowercase ASCII.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T ToLowerAscii<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            T result = new T();
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToLowerAscii());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to lowercase only ASCII characters.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns a copy of this string converted to lowercase ASCII.</returns>
+        public static UnsafeText ToLowerAscii(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            var result = new UnsafeText(lengthInBytes, allocator);
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToLowerAscii());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to lowercase only ASCII characters.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns a copy of this string converted to lowercase ASCII.</returns>
+        public static NativeText ToLowerAscii(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            var result = new NativeText(lengthInBytes, allocator);
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToLowerAscii());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to uppercase only ASCII characters.
+        /// </summary>
+        /// <typeparam name="T">A string type.</typeparam>
+        /// <param name="fs">A string to perform operation.</param>
+        /// <returns>Returns a copy of this string converted to uppercase ASCII.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes) })]
+        public static T ToUpperAscii<T>(ref this T fs)
+            where T : unmanaged, INativeList<byte>, IUTF8Bytes
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            T result = new T();
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToUpperAscii());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to uppercase only ASCII characters.
+        /// </summary>
+        /// <param name="fs">A <see cref="UnsafeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns a copy of this string converted to uppercase ASCII.</returns>
+        public static UnsafeText ToUpperAscii(ref this UnsafeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            var result = new UnsafeText(lengthInBytes, allocator);
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToUpperAscii());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts string to uppercase only ASCII characters.
+        /// </summary>
+        /// <param name="fs">A <see cref="NativeText"/> string to perform operation.</param>
+        /// <param name="allocator">The <see cref="AllocatorManager.AllocatorHandle"/> allocator type to use.</param>
+        /// <returns>Returns a copy of this string converted to uppercase ASCII.</returns>
+        public static NativeText ToUpperAscii(ref this NativeText fs, AllocatorManager.AllocatorHandle allocator)
+        {
+            var lengthInBytes = fs.Length;
+            var ptr = fs.GetUnsafePtr();
+
+            var result = new NativeText(lengthInBytes, allocator);
+
+            Unicode.Rune rune;
+            var error = ConversionError.None;
+            for (var i = 0; i < lengthInBytes && error == ConversionError.None;)
+            {
+                error = Unicode.Utf8ToUcs(out rune, ptr, ref i, lengthInBytes);
+                result.Append(rune.ToUpperAscii());
+            }
+
+            return result;
         }
     }
 }

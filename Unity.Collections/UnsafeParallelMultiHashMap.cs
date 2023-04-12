@@ -60,7 +60,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <remarks>Key-value pairs with matching keys are counted as separate, individual pairs.</remarks>
         /// <returns>The current number of key-value pairs in this hash map.</returns>
-        public int Count()
+        public readonly int Count()
         {
             if (m_Buffer->allocatedIndexLength <= 0)
             {
@@ -75,7 +75,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>The number of key-value pairs that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -156,7 +156,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">Outputs the associated value represented by the iterator.</param>
         /// <param name="it">Outputs an iterator.</param>
         /// <returns>True if the key was present.</returns>
-        public bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
+        public readonly bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
         {
             return UnsafeParallelHashMapBase<TKey, TValue>.TryGetFirstValueAtomic(m_Buffer, key, out item, out it);
         }
@@ -167,7 +167,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="item">Outputs the next value.</param>
         /// <param name="it">A reference to the iterator to advance.</param>
         /// <returns>True if the key was present and had another value.</returns>
-        public bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
+        public readonly bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
         {
             return UnsafeParallelHashMapBase<TKey, TValue>.TryGetNextValueAtomic(m_Buffer, out item, ref it);
         }
@@ -177,7 +177,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="key">The key to look up.</param>
         /// <returns>True if the key was present in this hash map.</returns>
-        public bool ContainsKey(TKey key)
+        public readonly bool ContainsKey(TKey key)
         {
             return TryGetFirstValue(key, out var temp0, out var temp1);
         }
@@ -187,7 +187,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <param name="key">The key to look up.</param>
         /// <returns>The number of values associated with the key. Returns 0 if the key was not present.</returns>
-        public int CountValuesForKey(TKey key)
+        public readonly int CountValuesForKey(TKey key)
         {
             if (!TryGetFirstValue(key, out var value, out var iterator))
             {
@@ -229,6 +229,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             UnsafeParallelHashMapData.DeallocateHashMap(m_Buffer, m_AllocatorLabel);
             m_Buffer = null;
         }
@@ -240,6 +245,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             var jobHandle = new UnsafeParallelHashMapDisposeJob { Data = m_Buffer, Allocator = m_AllocatorLabel }.Schedule(inputDeps);
             m_Buffer = null;
             return jobHandle;
@@ -253,7 +263,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// Use `GetUniqueKeyArray` of <see cref="Unity.Collections.NativeParallelHashMapExtensions"/> instead if you only want one occurrence of each key.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the keys (in no particular order).</returns>
-        public NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
         {
             var result = CollectionHelper.CreateNativeArray<TKey>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeParallelHashMapData.GetKeyArray(m_Buffer, result);
@@ -267,7 +277,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// you can use <see cref="Unity.Collections.NativeParallelHashMapExtensions.Unique{T}"/> to remove duplicate values.</remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>An array with a copy of all the values (in no particular order).</returns>
-        public NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
         {
             var result = CollectionHelper.CreateNativeArray<TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeParallelHashMapData.GetValueArray(m_Buffer, result);
@@ -281,7 +291,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </remarks>
         /// <param name="allocator">The allocator to use.</param>
         /// <returns>A NativeKeyValueArrays with a copy of all the keys and values (in no particular order).</returns>
-        public NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+        public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
         {
             var result = new NativeKeyValueArrays<TKey, TValue>(Count(), allocator, NativeArrayOptions.UninitializedMemory);
             UnsafeParallelHashMapData.GetKeyValueArrays(m_Buffer, result);
@@ -384,7 +394,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>
         /// Use <see cref="AsParallelWriter"/> to create a parallel writer for a NativeParallelMultiHashMap.
         /// </remarks>
-        [NativeContainerIsAtomicWriteOnly]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public unsafe struct ParallelWriter
         {
@@ -489,6 +498,179 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
 
             object IEnumerator.Current => Current;
+        }
+
+        /// <summary>
+        /// Returns a readonly version of this NativeParallelHashMap instance.
+        /// </summary>
+        /// <remarks>ReadOnly containers point to the same underlying data as the NativeParallelHashMap it is made from.</remarks>
+        /// <returns>ReadOnly instance for this.</returns>
+        public ReadOnly AsReadOnly()
+        {
+            return new ReadOnly(this);
+        }
+
+        /// <summary>
+        /// A read-only alias for the value of a UnsafeParallelHashMap. Does not have its own allocated storage.
+        /// </summary>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(int) })]
+        public struct ReadOnly
+            : IEnumerable<KeyValue<TKey, TValue>>
+        {
+            internal UnsafeParallelMultiHashMap<TKey, TValue> m_MultiHashMapData;
+
+            internal ReadOnly(UnsafeParallelMultiHashMap<TKey, TValue> container)
+            {
+                m_MultiHashMapData = container;
+            }
+
+            /// <summary>
+            /// Whether this hash map has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this hash map has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => m_MultiHashMapData.IsCreated;
+            }
+
+            /// <summary>
+            /// Whether this hash map is empty.
+            /// </summary>
+            /// <value>True if this hash map is empty or if the map has not been constructed.</value>
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    if (!IsCreated)
+                    {
+                        return true;
+                    }
+
+                    return m_MultiHashMapData.IsEmpty;
+                }
+            }
+
+            /// <summary>
+            /// The current number of key-value pairs in this hash map.
+            /// </summary>
+            /// <returns>The current number of key-value pairs in this hash map.</returns>
+            public readonly int Count()
+            {
+                return m_MultiHashMapData.Count();
+            }
+
+            /// <summary>
+            /// The number of key-value pairs that fit in the current allocation.
+            /// </summary>
+            /// <value>The number of key-value pairs that fit in the current allocation.</value>
+            public readonly int Capacity
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    return m_MultiHashMapData.Capacity;
+                }
+            }
+
+            /// <summary>
+            /// Gets an iterator for a key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="item">Outputs the associated value represented by the iterator.</param>
+            /// <param name="it">Outputs an iterator.</param>
+            /// <returns>True if the key was present.</returns>
+            public readonly bool TryGetFirstValue(TKey key, out TValue item, out NativeParallelMultiHashMapIterator<TKey> it)
+            {
+                return m_MultiHashMapData.TryGetFirstValue(key, out item, out it);
+            }
+
+            /// <summary>
+            /// Advances an iterator to the next value associated with its key.
+            /// </summary>
+            /// <param name="item">Outputs the next value.</param>
+            /// <param name="it">A reference to the iterator to advance.</param>
+            /// <returns>True if the key was present and had another value.</returns>
+            public readonly bool TryGetNextValue(out TValue item, ref NativeParallelMultiHashMapIterator<TKey> it)
+            {
+                return m_MultiHashMapData.TryGetNextValue(out item, ref it);
+            }
+
+            /// <summary>
+            /// Returns true if a given key is present in this hash map.
+            /// </summary>
+            /// <param name="key">The key to look up.</param>
+            /// <returns>True if the key was present.</returns>
+            public readonly bool ContainsKey(TKey key)
+            {
+                return m_MultiHashMapData.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's keys (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's keys (in no particular order).</returns>
+            public readonly NativeArray<TKey> GetKeyArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_MultiHashMapData.GetKeyArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns an array with a copy of all this hash map's values (in no particular order).
+            /// </summary>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>An array with a copy of all this hash map's values (in no particular order).</returns>
+            public readonly NativeArray<TValue> GetValueArray(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_MultiHashMapData.GetValueArray(allocator);
+            }
+
+            /// <summary>
+            /// Returns a NativeKeyValueArrays with a copy of all this hash map's keys and values.
+            /// </summary>
+            /// <remarks>The key-value pairs are copied in no particular order. For all `i`, `Values[i]` will be the value associated with `Keys[i]`.</remarks>
+            /// <param name="allocator">The allocator to use.</param>
+            /// <returns>A NativeKeyValueArrays with a copy of all this hash map's keys and values.</returns>
+            public readonly NativeKeyValueArrays<TKey, TValue> GetKeyValueArrays(AllocatorManager.AllocatorHandle allocator)
+            {
+                return m_MultiHashMapData.GetKeyValueArrays(allocator);
+            }
+
+            /// <summary>
+            /// Returns an enumerator over the key-value pairs of this hash map.
+            /// </summary>
+            /// <remarks>A key with *N* values is visited by the enumerator *N* times.</remarks>
+            /// <returns>An enumerator over the key-value pairs of this hash map.</returns>
+            public KeyValueEnumerator GetEnumerator()
+            {
+                return new KeyValueEnumerator
+                {
+                    m_Enumerator = new UnsafeParallelHashMapDataEnumerator(m_MultiHashMapData.m_Buffer),
+                };
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator<KeyValue<TKey, TValue>> IEnumerable<KeyValue<TKey, TValue>>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// This method is not implemented. Use <see cref="GetEnumerator"/> instead.
+            /// </summary>
+            /// <returns>Throws NotImplementedException.</returns>
+            /// <exception cref="NotImplementedException">Method is not implemented.</exception>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
         }
     }
 

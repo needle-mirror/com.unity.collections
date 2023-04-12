@@ -15,6 +15,15 @@ using Assert = FastAssert;
 internal class NativeBitArrayTests : CollectionsTestFixture
 {
     [Test]
+    public void NativeBitArray_Init()
+    {
+        var container = new NativeBitArray(0, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        Assert.True(container.IsCreated);
+        Assert.True(container.IsEmpty);
+        Assert.DoesNotThrow(() => container.Dispose());
+    }
+
+    [Test]
     public void NativeBitArray_Get_Set_Long()
     {
         var numBits = 256;
@@ -183,6 +192,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void NativeBitArray_Throws()
     {
         var numBits = 256;
@@ -374,17 +384,17 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
-    [IgnoreInPortableTests("Portable Test Runner can't do the FixedString128 compare.")]
     public unsafe void NativeBitArray_CopyBetweenBitArrays()
     {
         var numBits = 512;
 
         var str = new FixedString128Bytes("aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ");
 
-        AtomicSafetyHandle ash = CollectionHelper.CreateSafetyHandle(Allocator.Temp);
-
         var test0 = NativeBitArrayUnsafeUtility.ConvertExistingDataToNativeBitArray(&str.bytes.offset0000, 64, Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        AtomicSafetyHandle ash = CollectionHelper.CreateSafetyHandle(Allocator.Temp);
         NativeBitArrayUnsafeUtility.SetAtomicSafetyHandle(ref test0, ash);
+#endif
 
         var test1 = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
         var test2 = new NativeBitArray(numBits, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -411,6 +421,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void NativeBitArray_Copy_Throws()
     {
         var numBits = 512;
@@ -504,6 +515,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void NativeBitArray_Find_Throws()
     {
         var numBits = 512;
@@ -541,8 +553,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
             NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
-        test0.Dispose();
         test1.Dispose();
+        test0.Dispose();
     }
 
     [Test]
@@ -562,8 +574,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
             NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
-        test0.Dispose();
         test1.Dispose();
+        test0.Dispose();
     }
 
     [Test]
@@ -582,8 +594,8 @@ internal class NativeBitArrayTests : CollectionsTestFixture
             NUnit.Framework.Assert.AreEqual(i, test0.GetBits(i * 4, 4));
         }
 
-        test0.Dispose();
         test1.Dispose();
+        test0.Dispose();
     }
 
     [StructLayout(LayoutKind.Explicit, Size = 16)]
@@ -597,6 +609,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void NativeBitArray_AsNativeArray_ThrowsOnSizeMismatch()
     {
         var numBits = 64;
@@ -624,6 +637,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeBitArray_ReadOnly()
     {
         var numBits = 256;
@@ -646,6 +660,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test,DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeBitArray_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var numBits = 256;
@@ -659,6 +674,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
     }
 
     [Test,DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeBitArray_AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
         var numBits = 256;
@@ -701,6 +717,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
 
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime does throw an exception.
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeBitArray_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists

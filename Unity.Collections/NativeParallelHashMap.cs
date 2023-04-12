@@ -152,7 +152,7 @@ namespace Unity.Collections
         /// </summary>
         /// <value>The number of key-value pairs that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -289,6 +289,17 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
             m_HashMapData.Dispose();
@@ -301,6 +312,17 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             var jobHandle = new UnsafeParallelHashMapDataDisposeJob { Data = new UnsafeParallelHashMapDataDispose { m_Buffer = m_HashMapData.m_Buffer, m_AllocatorLabel = m_HashMapData.m_AllocatorLabel, m_Safety = m_Safety } }.Schedule(inputDeps);
 
@@ -386,7 +408,7 @@ namespace Unity.Collections
         [DebuggerDisplay("Count = {m_HashMapData.Count()}, Capacity = {m_HashMapData.Capacity}, IsCreated = {m_HashMapData.IsCreated}, IsEmpty = {IsEmpty}")]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         public struct ReadOnly
-        : IEnumerable<KeyValue<TKey, TValue>>
+            : IEnumerable<KeyValue<TKey, TValue>>
         {
             internal UnsafeParallelHashMap<TKey, TValue> m_HashMapData;
 
@@ -552,7 +574,7 @@ namespace Unity.Collections
     #endif
             }
 
-            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             readonly void ThrowKeyNotPresent(TKey key)
             {
                 throw new ArgumentException($"Key: {key} is not present in the NativeParallelHashMap.");
@@ -626,7 +648,7 @@ namespace Unity.Collections
             /// <value>The index of the current thread.</value>
             public int ThreadIndex => m_Writer.m_ThreadIndex;
 
-            /// <inheritdoc cref="ThreadIndex"/>
+            /// <summary> **Obsolete. Use <see cref="ThreadIndex"/> instead.</summary>
             [Obsolete("'m_ThreadIndex' has been deprecated; use 'ThreadIndex' instead. (UnityUpgradable) -> ThreadIndex")]
             public int m_ThreadIndex => m_Writer.m_ThreadIndex;
 

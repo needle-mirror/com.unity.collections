@@ -36,6 +36,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal int SizeOfTValue;
         internal AllocatorManager.AllocatorHandle Allocator;
 
+        internal const int kMinimumCapacity = 256;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int CalcCapacityCeilPow2(int capacity)
         {
@@ -116,11 +118,18 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal static void Free(HashMapHelper<TKey>* data)
         {
+            if (data == null)
+            {
+                throw new InvalidOperationException("Hash based container has yet to be created or has been destroyed!");
+            }
+            data->Dispose();
+
             Memory.Unmanaged.Free(data, data->Allocator);
         }
 
         internal void Resize(int newCapacity)
         {
+            newCapacity = math.max(newCapacity, Count);
             var newBucketCapacity = math.ceilpow2(GetBucketSize(newCapacity));
 
             if (Capacity == newCapacity && BucketCapacity == newBucketCapacity)
@@ -532,7 +541,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, sizeof(TValue), 256, allocator);
+            m_Data.Init(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
         }
 
         /// <summary>
@@ -540,6 +549,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             m_Data.Dispose();
         }
 
@@ -551,8 +565,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             var jobHandle = new UnsafeDisposeJob { Ptr = m_Data.Ptr, Allocator = m_Data.Allocator }.Schedule(inputDeps);
-            m_Data.Ptr = null;
+            m_Data = default;
 
             return jobHandle;
         }
@@ -592,7 +611,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>The number of key-value pairs that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

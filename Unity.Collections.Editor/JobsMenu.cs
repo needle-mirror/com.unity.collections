@@ -5,6 +5,8 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 
+// This menu is available from the editor directly on later versions
+#if !UNITY_2022_2_14F1_OR_NEWER
 class JobsMenu
 {
     private static int savedJobWorkerCount = JobsUtility.JobWorkerCount;
@@ -119,3 +121,4 @@ class JobsMenu
         NativeLeakDetection.Mode = value;
     }
 }
+#endif

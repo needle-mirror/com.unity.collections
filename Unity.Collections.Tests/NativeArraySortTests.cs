@@ -272,6 +272,7 @@ internal class NativeArraySortTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void SortNativeSlice_WithCustomStride_ThrowsInvalidOperationException()
     {
         var random = new Unity.Mathematics.Random(1);

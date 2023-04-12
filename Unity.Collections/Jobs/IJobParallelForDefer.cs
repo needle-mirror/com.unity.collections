@@ -8,15 +8,30 @@ using Unity.Burst;
 namespace Unity.Jobs
 {
     /// <summary>
-    /// A replacement for IJobParallelFor when the number of work items is not known at Schedule time.
-    /// IJobParallelForDefer lets you calculate the number of iterations to perform in a job that must execute before the IJobParallelForDefer job.
-    ///
-    /// When Scheduling the job's Execute(int index) method will be invoked on multiple worker threads in parallel to each other.
-    /// Execute(int index) will be executed once for each index from 0 to the provided length. Each iteration must be independent from other iterations (The safety system enforces this rule for you). The indices have no guaranteed order and are executed on multiple cores in parallel.
-    /// Unity automatically splits the work into chunks of no less than the provided batchSize, and schedules an appropriate number of jobs based on the number of worker threads, the length of the array and the batch size.
-    /// Batch size should generally be chosen depending on the amount of work performed in the job. A simple job, for example adding a couple of float3 to each other should probably have a batch size of 32 to 128. However if the work performed is very expensive then it is best to use a small batch size, for expensive work a batch size of 1 is totally fine. IJobParallelFor performs work stealing using atomic operations. Batch sizes can be small but they are not for free.
-    /// The returned JobHandle can be used to ensure that the job has completed. Or it can be passed to other jobs as a dependency, thus ensuring the jobs are executed one after another on the worker threads.
+    /// Calculates the number of iterations to perform in a job that must execute before an IJobParallelForDefer job.
     /// </summary>
+    /// <remarks>
+    /// A replacement for IJobParallelFor when the number of work items is not known at Schedule time.
+    ///
+    /// When Scheduling the job's Execute(int index) method will be invoked on multiple worker threads in 
+    /// parallel to each other.
+    ///
+    /// Execute(int index) will be executed once for each index from 0 to the provided length. Each iteration
+    /// must be independent from other iterations and the safety system enforces this rule for you. The indices 
+    /// have no guaranteed order and are executed on multiple cores in parallel.
+    ///
+    /// Unity automatically splits the work into chunks of no less than the provided batchSize, and schedules 
+    /// an appropriate number of jobs based on the number of worker threads, the length of the array and the batch size.
+    ///
+    /// Choose a batch size sbased on the amount of work performed in the job. A simple job, 
+    /// for example adding a couple of float3 to each other could have a batch size of 32 to 128. However, 
+    /// if the work performed is very expensive then it's best to use a small batch size, such as a batch 
+    /// size of 1. IJobParallelFor performs work stealing using atomic operations. Batch sizes can be 
+    /// small but they aren't free.
+    ///
+    /// The returned JobHandle can be used to ensure that the job has completed. Or it can be passed to other jobs as 
+    /// a dependency, ensuring that the jobs are executed one after another on the worker threads.
+    /// </remarks>
     [JobProducerType(typeof(IJobParallelForDeferExtensions.JobParallelForDeferProducer<>))]
     public interface IJobParallelForDefer
     {

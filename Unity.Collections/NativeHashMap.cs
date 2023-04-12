@@ -12,10 +12,10 @@ namespace Unity.Collections
 {
     [NativeContainer]
     [GenerateTestsForBurstCompatibility]
-    internal unsafe struct NativeDataDispose
+    internal unsafe struct NativeHashMapDispose
     {
         [NativeDisableUnsafePtrRestriction]
-        internal void* m_Ptr;
+        internal UnsafeHashMap<int, int>* m_HashMapData;
         internal AllocatorManager.AllocatorHandle m_Allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -24,14 +24,15 @@ namespace Unity.Collections
 
         internal void Dispose()
         {
-            AllocatorManager.Free(m_Allocator, m_Ptr);
+            var hashMapData = (HashMapHelper<int>*)m_HashMapData;
+            HashMapHelper<int>.Free(hashMapData);
         }
     }
 
     [BurstCompile]
-    internal unsafe struct NativeDisposeJob : IJob
+    internal unsafe struct NativeHashMapDisposeJob : IJob
     {
-        internal NativeDataDispose Data;
+        internal NativeHashMapDispose Data;
 
         public void Execute()
         {
@@ -85,7 +86,7 @@ namespace Unity.Collections
         {
             get
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (m_Index == -1)
                     throw new ArgumentException("must be valid");
 #endif
@@ -148,7 +149,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         public NativeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), 256, allocator);
+            m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -167,10 +168,20 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            m_Data->Dispose();
             HashMapHelper<TKey>.Free(m_Data);
             m_Data = null;
         }
@@ -182,22 +193,23 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will dispose this hash map.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new NativeDisposeJob
-            {
-                Data = new NativeDataDispose
-                {
-                    m_Ptr = m_Data->Ptr,
-                    m_Allocator = m_Data->Allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    m_Safety = m_Safety,
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
 #endif
-                }
-            }.Schedule(inputDeps);
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)m_Data, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)m_Data } }.Schedule(inputDeps);
 #endif
-            HashMapHelper<TKey>.Free(m_Data);
             m_Data = null;
 
             return jobHandle;
@@ -251,7 +263,6 @@ namespace Unity.Collections
         /// </summary>
         /// <value>The number of key-value pairs that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than the current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

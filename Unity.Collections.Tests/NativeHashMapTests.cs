@@ -83,15 +83,6 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void NativeHashMap_Double_Deallocate_Throws()
-    {
-        var hashMap = new NativeHashMap<int, int>(16, CommonRwdAllocator.Handle);
-        hashMap.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-        () => { hashMap.Dispose(); });
-    }
-
-    [Test]
     public void NativeHashMap_Key_Collisions()
     {
         var hashMap = new NativeHashMap<int, int>(16, Allocator.Temp);
@@ -156,6 +147,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void NativeHashMap_HashMapSameKey()
     {
         using (var hashMap = new NativeHashMap<int, int>(0, Allocator.Persistent))
@@ -445,6 +437,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeHashMap<int, int>(10, CommonRwdAllocator.Handle);
@@ -468,6 +461,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -678,6 +672,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeHashMap_ForEach_Throws_When_Modified()
     {
         using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -725,6 +720,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeHashMap_ForEach_Throws_Job_Iterator()
     {
         using (var container = new NativeHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -868,6 +864,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void NativeHashMap_SameKey()
     {
         using (var container = new NativeHashMap<int, int>(0, Allocator.Persistent))
@@ -936,45 +933,19 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
 
         var disposeJob0 = container0.Dispose(default);
         Assert.False(container0.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container0.ContainsKey(0); });
+#endif
 
         var disposeJob = container1.Dispose(disposeJob0);
         Assert.False(container1.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container1.ContainsKey(1); });
+#endif
 
         disposeJob.Complete();
-    }
-
-    [BurstCompile(CompileSynchronously = true)]
-    struct Clear : IJob
-    {
-        public NativeHashMap<int, int> hashMap;
-
-        public void Execute()
-        {
-            hashMap.Clear();
-        }
-    }
-
-    [Test]
-    public void NativeHashMap_DisposeJobWithMissingDependencyThrows()
-    {
-        var hashMap = new NativeHashMap<int, int>(1024, CommonRwdAllocator.Handle);
-        var deps = new Clear { hashMap = hashMap }.Schedule();
-        Assert.Throws<InvalidOperationException>(() => { hashMap.Dispose(default); });
-        deps.Complete();
-        hashMap.Dispose();
-    }
-
-    [Test]
-    public void NativeHashMap_DisposeJobCantBeScheduled()
-    {
-        var hashMap = new NativeHashMap<int, int>(1024, CommonRwdAllocator.Handle);
-        var deps = hashMap.Dispose(default);
-        Assert.Throws<InvalidOperationException>(() => { new Clear { hashMap = hashMap }.Schedule(deps); });
-        deps.Complete();
     }
 
     [Test]

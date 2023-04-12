@@ -106,7 +106,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return ref ILSupport.AsRef(in value);
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static unsafe void CheckMemSwapOverlap(byte* dst, byte* src, long size)
         {
             if (dst + size > src && src + size > dst)
@@ -115,7 +115,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckIndexRange(int index, int capacity)
         {
             if ((index > capacity - 1) || (index < 0))

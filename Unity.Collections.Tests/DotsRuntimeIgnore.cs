@@ -20,10 +20,3 @@ namespace Unity.Collections.Tests
     }
 #endif
 }
-
-class IgnoreInPortableTestsAttribute : Attribute
-{
-    public IgnoreInPortableTestsAttribute(string reason)
-    {
-    }
-}

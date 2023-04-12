@@ -102,11 +102,20 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            var allocator = m_RingQueue->Allocator;
-            m_RingQueue->Dispose();
-            UnsafeRingQueue<T>.Free(m_RingQueue, allocator);
+            UnsafeRingQueue<T>.Free(m_RingQueue);
             m_RingQueue = null;
         }
 
@@ -117,14 +126,23 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will dispose this queue. The new job depends upon inputDeps.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var allocator = m_RingQueue->Allocator;
-            var jobHandle = m_RingQueue->Dispose(inputDeps);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeRingQueueDisposeJob { Data = new NativeRingQueueDispose { m_QueueData = (UnsafeRingQueue<int>*)m_RingQueue, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeRingQueueDisposeJob { Data = new NativeRingQueueDispose { m_QueueData = (UnsafeRingQueue<int>*)m_RingQueue } }.Schedule(inputDeps);
 #endif
-
-            UnsafeRingQueue<T>.Free(m_RingQueue, allocator);
             m_RingQueue = null;
 
             return jobHandle;
@@ -221,6 +239,34 @@ namespace Unity.Collections
 
                 return result;
             }
+        }
+    }
+
+    [NativeContainer]
+    [GenerateTestsForBurstCompatibility]
+    internal unsafe struct NativeRingQueueDispose
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public UnsafeRingQueue<int>* m_QueueData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        public AtomicSafetyHandle m_Safety;
+#endif
+
+        public void Dispose()
+        {
+            UnsafeRingQueue<int>.Free(m_QueueData);
+        }
+    }
+
+    [BurstCompile]
+    internal unsafe struct NativeRingQueueDisposeJob : IJob
+    {
+        public NativeRingQueueDispose Data;
+
+        public void Execute()
+        {
+            Data.Dispose();
         }
     }
 }

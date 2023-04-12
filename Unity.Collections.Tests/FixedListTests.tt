@@ -48,7 +48,6 @@ internal class FixedListTests : CollectionsTestFixture
             var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
 #>
     [Test]
-    [IgnoreInPortableTests("Crashes in IL2CPP on unsupported feature.")]
     public void <#=TYPENAME #>DebugView()
     {
         var list = new <#=TYPENAME #><NonComparableStruct>();
@@ -86,7 +85,7 @@ internal class FixedListTests : CollectionsTestFixture
                 var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
                 var TYPENAME_IDENTIFIER = String.Format("FixedList{0}{1}_", BYTES, new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE));
                 var EXPECTEDCAPACITY = (BYTES - 2) / TYPESIZE;
-                var BUFFERTYPE = String.Format("FixedBytes{0}", MAXLENGTH);
+                var BUFFERTYPE = String.Format("FixedBytes{0}Align8", BYTES);
 #>
 
     public readonly unsafe struct <#=TYPENAME_IDENTIFIER #>Wrapper
@@ -164,17 +163,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (<#=TYPE #>)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<<#=TYPE#>>() + sizeof(<#=TYPE #>) * i, &s, sizeof(<#=TYPE #>));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, <#=BYTES #>));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, <#=BYTES #>));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void <#=TYPENAME_IDENTIFIER #>GenericHasExpectedCapacity()
     {
         var list = new <#=TYPENAME #><<#=TYPE#>>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((<#=TYPE #>)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
 <#
@@ -193,7 +194,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -212,7 +215,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -228,7 +233,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -247,7 +254,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -265,7 +274,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -417,17 +428,19 @@ internal class FixedListTests : CollectionsTestFixture
               var s = (<#=TYPE #>)i;
               UnsafeUtility.MemCpy(e + 2 + FixedList.PaddingBytes<<#=TYPE#>>() + sizeof(<#=TYPE #>) * i, &s, sizeof(<#=TYPE #>));
             }
-            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.length, <#=BYTES #>));
+            Assert.AreEqual(0, UnsafeUtility.MemCmp(e, &actual.data, <#=BYTES #>));
         }
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void <#=TYPENAME_IDENTIFIER #>HasExpectedCapacity()
     {
         var list = new <#=TYPENAME #>();
         var expectedCapacity = list.Capacity;
         for(int i = 0; i < expectedCapacity; ++i)
             list.Add((<#=TYPE #>)i);
+
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
 
@@ -464,7 +477,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.Add(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -483,7 +498,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRange(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -499,7 +516,9 @@ internal class FixedListTests : CollectionsTestFixture
             Assert.AreEqual(i, list[i]);
         }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddNoResize(0); });
+#endif
         Assert.AreEqual(capacity, list.Length); // Verify length didn't change
     }
 
@@ -518,7 +537,9 @@ internal class FixedListTests : CollectionsTestFixture
         for (var i = 0; i < half; ++i)
             Assert.AreEqual(i, list[i]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddRangeNoResize(items, capacity); });
+#endif
         Assert.AreEqual(half, list.Length); // Verify length didn't change
     }
 
@@ -536,7 +557,9 @@ internal class FixedListTests : CollectionsTestFixture
         foreach (var item in list)
             Assert.AreEqual(42, item);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<IndexOutOfRangeException>(() => { list.AddReplicate(42, 1000); });
+#endif
         Assert.AreEqual(5, list.Length); // Verify length didn't change
     }
 
@@ -642,6 +665,37 @@ internal class FixedListTests : CollectionsTestFixture
     }
 
     [Test]
+    public unsafe void <#=TYPENAME_IDENTIFIER #>Unaligned_Read_Write()
+    {
+        int alignment = UnsafeUtility.AlignOf<<#=TYPE #>>();
+        if(alignment == 1)
+            return;
+
+        // Create a unaligned <#=TYPENAME #> and ensure we can still read+write safely
+        const int buffSize = <#=BYTES #> * 2;
+        byte* buff = stackalloc byte[buffSize];
+        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
+
+        int offset = 0;
+        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
+            offset++;
+        ulong unalignedBuff = (ulong)buff + (ulong)offset;
+
+        var list = (<#=TYPENAME #>*)(unalignedBuff);
+        list->Length = 0;
+
+        for (var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
+            list->Add((<#=TYPE #>)i);
+
+        for (var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
+            Assert.AreEqual(i, list->ElementAt(i));
+
+        // Ensure we didn't write outside of our fixed list byte range
+        for(int i = UnsafeUtility.SizeOf<<#=TYPENAME #>>() + offset; i < buffSize; ++i)
+            Assert.AreEqual(buff[i], 0xCD);
+    }
+
+    [Test]
     public void <#=TYPENAME_IDENTIFIER #>Sort()
     {
         var list = new <#=TYPENAME #>();
@@ -678,7 +732,7 @@ internal class FixedListTests : CollectionsTestFixture
                         }
                         else
                             WriteLine(
-                                "        Assert.Throws<IndexOutOfRangeException> (() => {{ var b = new {0}(a); }} );",
+                                "#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG\n        Assert.Throws<IndexOutOfRangeException> (() => {{ var b = new {0}(a); }} );\n#endif",
                                 OTHERTYPENAME);
 #>
     }

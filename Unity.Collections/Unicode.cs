@@ -128,6 +128,54 @@ namespace Unity.Collections
             public static implicit operator Rune(char codepoint) => new Rune { value = codepoint };
 
             /// <summary>
+            /// Evaluates if one is equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's is equal to the right-hand side's.</returns>
+            public static bool operator ==(Rune lhs, Rune rhs)
+            {
+                return lhs.value == rhs.value;
+            }
+
+            /// <summary>
+            /// Returns true if the value stored in this Rune is equal to an object.
+            /// </summary>
+            /// <remarks>Can only be equal if the object is itself a Rune.</remarks>
+            /// <param name="obj">An object to compare with.</param>
+            /// <returns>True if the value stored in this Rune is equal to the object.</returns>
+            [ExcludeFromBurstCompatTesting("Takes managed object")]
+            public override bool Equals(object obj)
+            {
+                if (obj is Rune)
+                {
+                    return value == ((Rune)obj).value;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// A hash used for comparisons.
+            /// </summary>
+            /// <returns>A unique hash code.</returns>
+            public override int GetHashCode()
+            {
+                return value;
+            }
+
+            /// <summary>
+            /// Evaluates if one is not equal to the other.
+            /// </summary>
+            /// <param name="lhs">The left-hand side</param>
+            /// <param name="rhs">The right-hand side</param>
+            /// <returns>True if the left-hand side's is not equal to the right-hand side's.</returns>
+            public static bool operator !=(Rune lhs, Rune rhs)
+            {
+                return lhs.value != rhs.value;
+            }
+
+            /// <summary>
             /// Returns true if a rune is a numerical digit character.
             /// </summary>
             /// <param name="r">The rune.</param>
@@ -154,13 +202,45 @@ namespace Unity.Collections
 
             internal bool IsWhiteSpace()
             {
-                return value == ' '
-                    || value == '\t'
-                    || value == '\n'
-                    || value == '\r'
-                    || value == '\v'
-                    || value == '\f'
+                // https://en.wikipedia.org/wiki/Whitespace_character#Unicode
+
+                if (IsLatin1())
+                {
+                    return value == ' '
+                        || (value >= 0x9 && value <= 0xD) // CHARACTER TABULATION (U+0009), LINE FEED (U+000A), LINE TABULATION (U+000B), FORM FEED (U+000C), CARRIAGE RETURN (U+000D)
+                        || value == 0xA0 // NO-BREAK SPACE
+                        || value == 0x85 // NEXT LINE
+                        ;
+                }
+
+                return value == 0x1680 // OGHAM SPACE MARK
+                    || (value >= 0x2000 && value <= 0x200A) // EN QUAD(U+2000)
+                                                            // EM QUAD(U+2001)
+                                                            // EN SPACE(U+2002)
+                                                            // EM SPACE(U+2003)
+                                                            // THREE - PER - EM SPACE(U + 2004)
+                                                            // FOUR - PER - EM SPACE(U + 2005)
+                                                            // SIX - PER - EM SPACE(U + 2006)
+                                                            // FIGURE SPACE(U+2007)
+                                                            // PUNCTUATION SPACE(U+2008)
+                                                            // THIN SPACE(U+2009)
+                                                            // HAIR SPACE(U+200A)
+                    || value == 0x2028 // LINE SEPARATOR
+                    || value == 0x2029 // PARAGRAPH SEPARATOR
+                    || value == 0x202F // NARROW NO-BREAK SPACE
+                    || value == 0x205F // MEDIUM MATHEMATICAL SPACE
+                    || value == 0x3000 // IDEOGRAPHIC SPACE
                     ;
+            }
+
+            internal Rune ToLowerAscii()
+            {
+                return new Rune(value + (((uint)(value - 'A') <= ('Z' - 'A')) ? 0x20 : 0));
+            }
+
+            internal Rune ToUpperAscii()
+            {
+                return new Rune(value - (((uint)(value - 'a') <= ('z' - 'a')) ? 0x20 : 0));
             }
 
             /// <summary>
@@ -315,6 +395,39 @@ namespace Unity.Collections
 
             index += 1;
             return ConversionError.Encoding;
+        }
+
+        static int FindUtf8CharStartInReverse(byte* ptr, ref int index)
+        {
+            do
+            {
+                if (index <= 0)
+                {
+                    return 0;
+                }
+
+                --index;
+
+            } while ((ptr[index] & 0xC0) == 0x80);
+
+            return index;
+        }
+
+        internal static ConversionError Utf8ToUcsReverse(out Rune rune, byte* buffer, ref int index, int capacity)
+        {
+            var prev = index;
+            --index;
+
+            index = FindUtf8CharStartInReverse(buffer, ref index);
+
+            if (index == prev)
+            {
+                rune = ReplacementCharacter;
+                return ConversionError.Overflow;
+            }
+
+            var ignore = index;
+            return Utf8ToUcs(out rune, buffer, ref ignore, capacity);
         }
 
         /// <summary>

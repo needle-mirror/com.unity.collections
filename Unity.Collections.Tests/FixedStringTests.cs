@@ -5,16 +5,12 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using System.Text;
-#if !UNITY_DOTSRUNTIME
-using UnityEditor.VersionControl;
-#endif
 
 // change this to change the core type under test
 using FixedStringN = Unity.Collections.FixedString128Bytes;
 
-namespace FixedStringTests
+namespace Unity.Collections.Tests
 {
-
     internal static class FixedStringTestUtils
     {
         internal unsafe static void Junk<T>(ref this T fs)
@@ -305,9 +301,12 @@ namespace FixedStringTests
         public void FixedStringNSubstring()
         {
             FixedStringN a = "This is substring.";
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(-8, 9));
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(200, 9));
             Assert.Throws<ArgumentOutOfRangeException>(() => a.Substring(8, -9));
+#endif
 
             {
                 FixedStringN b = a.Substring(8, 9);
@@ -411,6 +410,38 @@ namespace FixedStringTests
             FixedStringN actual = a;
             Assert.True(actual.StartsWith((FixedStringN)starts));
             Assert.True(actual.EndsWith((FixedStringN)ends));
+        }
+
+        [TestCase("red  ", ' ', "red  ", "red", "red")]
+        [TestCase("  red  ", ' ', "red  ", "  red", "red")]
+        [TestCase("       ", ' ', "", "", "")]
+        public void FixedStringTrimStart(String a, char trim, String expectedStart, String expectedEnd, String expected)
+        {
+            FixedStringN actual = a;
+            Assert.AreEqual(expectedStart, actual.TrimStart());
+            Assert.AreEqual(expectedEnd, actual.TrimEnd());
+            Assert.AreEqual(expected, actual.Trim());
+        }
+
+        [TestCase("  red  ", "ed  ", "  red", "ed")]
+        [TestCase("црвена", "црвена", "црвена", "црвена")]
+        [TestCase("       ", "", "", "")]
+        public void FixedStringTrimStartWithRunes(String a, String expectedStart, String expectedEnd, String expected)
+        {
+            FixedStringN actual = a;
+            Assert.AreEqual(expectedStart, actual.TrimStart(new Unicode.Rune[]{ ' ', 'r'}));
+            Assert.AreEqual(expectedEnd, actual.TrimEnd(new Unicode.Rune[] { ' ', 'r' }));
+            Assert.AreEqual(expected, actual.Trim(new Unicode.Rune[] { ' ', 'r' }));
+        }
+
+        [TestCase("Red", "red", "RED")]
+        [TestCase("црвена", "црвена", "црвена")]
+        [TestCase("       ", "       ", "       ")]
+        public void FixedStringToLowerUpperAscii(String a, String expectedLower, String expectedUpped)
+        {
+            FixedStringN actual = a;
+            Assert.AreEqual(expectedLower, actual.ToLowerAscii());
+            Assert.AreEqual(expectedUpped, actual.ToUpperAscii());
         }
     }
 }

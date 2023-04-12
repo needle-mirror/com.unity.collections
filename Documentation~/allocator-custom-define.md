@@ -1,6 +1,6 @@
-# Define a custom allocator
+# Custom allocator overview
 
-A custom allocator is useful if you have specific memory allocation needs. To create a custom allocator, it must contain an allocator handle of type [`AllocatorManager.AllocatorHandle`](xref:Unity.Collections.AllocatorManager.AllocatorHandle) and implement the interface, [`AllocatorManager.IAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator). After you create a custom allocator, you need to register it in a global allocator table in [`AllocatorManager`](xref:Unity.Collections.AllocatorManager).
+You can use a custom allocator for specific memory allocation needs. To create a custom allocator, it must contain an allocator handle of type [`AllocatorManager.AllocatorHandle`](xref:Unity.Collections.AllocatorManager.AllocatorHandle) and implement the interface, [`AllocatorManager.IAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator). After you create a custom allocator, you need to register it in a global allocator table in [`AllocatorManager`](xref:Unity.Collections.AllocatorManager).
 
 ## Add the AllocatorManager.AllocatorHandle type to the custom allocator
 
@@ -10,7 +10,7 @@ A custom allocator must contain an allocator handle of type [`AllocatorManager.A
 * `Index`: A 2 byte unsigned index of the global allocator table obtained during registration.
 * Method to add a safety handle to the list of child safety handles of the allocator handle.
 * Method to add a child allocator to the list of child allocators of the allocator handle.
-* A rewind method to invalidate and unregister all of the child allocators, invalide all the child safety handles of the allocator handle, and increment the allocator handle' `Version` and `OfficialVersion`.
+* A rewind method to invalidate and unregister all the child allocators, invalidate all the child safety handles of the allocator handle, and increment the allocator handle' `Version` and `OfficialVersion`.
 
 ## Implement AllocatorManager.IAllocator interface
 
@@ -21,11 +21,11 @@ To define a custom allocator, you must implement the interface [`AllocatorManage
 * [`Handle`](xref:Unity.Collections.AllocatorManager.IAllocator.Handle): A property that gets and sets the allocator handle which is of type [`AllocatorManager.AllocatorHandle`](xref:Unity.Collections.AllocatorManager.AllocatorHandle).
 * [`ToAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.ToAllocator): A property that casts the allocator handle index to the enum `Allocator`.
 * [`IsCustomAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.IsCustomAllocator): A property that checks whether the allocator is a custom allocator. An allocator is a custom allocator if its handle `Index` is larger or equal to [`AllocatorManager.FirstUserIndex`](xref:Unity.Collections.AllocatorManager.FirstUserIndex).
-* [`IsIndividualDisposable`](xref:Unity.Collections.AllocatorManager.IAllocator.AllowIndividualDispose): A property that checks whether the allocator is able to dispose individual allocations.  False if disposing an individual allocation is a no-op.
+* [`IsAutoDispose`](xref:Unity.Collections.AllocatorManager.AllocatorHandle.IsAutoDispose): A property that checks whether the allocator is able to dispose individual allocations. False if disposing an individual allocation is a no-op.
 
 Because `AllocatorManager.IAllocator` implements `IDisposable`, your custom allocator must implement the `Dispose` method.
 
-The following is an example of how to set up the `IAllocator` interface as well as the required properties except `Try` and `AllocatorFunction` method:
+The following is an example of how to set up the `IAllocator` interface and its required properties except the `Try` and `AllocatorFunction` method:
 
 ```c#
 // A custom allocator must implement AllocatorManager.IAllocator interface
@@ -74,6 +74,7 @@ Example method `AllocatorFunction` below shows an allocator function of the cust
 [!code-cs[Allocator function](../Unity.Collections.Tests/AllocatorCustomTests.cs#allocator-custom-allocator-function)]
 
 ## Global allocator table
+
 The global allocator table in [`AllocatorManager`](xref:Unity.Collections.AllocatorManager) stores all the necessary information for custom allocators to work. When you instantiate a custom allocator, you must register the allocator in the global allocator table. The table stores the following information:
 
 * A pointer to the custom allocator instance
@@ -85,10 +86,10 @@ The global allocator table in [`AllocatorManager`](xref:Unity.Collections.Alloca
 
 ## Custom allocator example
 
-The following is an example of a custom allocator that contains an `AllocatorManager.AllocatorHandle` and initializes the allocated memory with a user configured value and increments the allocation count. It also uses `AllocatorManager.TryFunction` to register the allocator on the global allocator table:
+The following is an example of a custom allocator that has an `AllocatorManager.AllocatorHandle` and initializes the allocated memory with a user configured value and increments the allocation count. It also uses `AllocatorManager.TryFunction` to register the allocator on the global allocator table:
 
 [!code-cs[Custom allocator example](../Unity.Collections.Tests/AllocatorCustomTests.cs#allocator-custom-example)]
 
 ## Further information
 
-* [How to use a custom allocator](allocator-custom-use.md)
+* [Use a custom allocator](allocator-custom-use.md)

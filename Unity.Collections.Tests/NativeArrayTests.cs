@@ -73,8 +73,10 @@ internal class NativeArrayTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container[0] = 2; });
+#endif
 
         disposeJob.Complete();
     }
@@ -93,6 +95,7 @@ internal class NativeArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeArray_DisposeJobWithMissingDependencyThrows()
     {
         var array = new NativeArray<int>(1, Allocator.Persistent);
@@ -103,6 +106,7 @@ internal class NativeArrayTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeArray_DisposeJobCantBeScheduled()
     {
         var array = new NativeArray<int>(1, Allocator.Persistent);
@@ -126,8 +130,10 @@ internal class NativeArrayTests : CollectionsTestFixture
 
         var nativeArray = CollectionHelper.ConvertExistingDataToNativeArray<int>(nativeList.GetUnsafePtr(), nativeList.Length, allocatorHelper.Allocator.Handle);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         var listSafety = NativeListUnsafeUtility.GetAtomicSafetyHandle(ref nativeList);
         NativeArrayUnsafeUtility.SetAtomicSafetyHandle<int>(ref nativeArray, listSafety);
+#endif
 
         for (int i = 0; i < 20; i++)
         {

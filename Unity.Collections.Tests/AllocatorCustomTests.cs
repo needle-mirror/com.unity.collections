@@ -260,6 +260,7 @@ internal class ExampleCustomAllocatorStructUsage
         // Dispose the native list
         nativeList.Dispose();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         // Object disposed exception throws because nativeArray is already disposed
         Assert.Throws<ObjectDisposedException>(() =>
         {
@@ -271,6 +272,7 @@ internal class ExampleCustomAllocatorStructUsage
         {
             nativeList[10] = 0x10;
         });
+#endif
 
         // Check allocation count after dispose the native array and native list
         Assert.AreEqual(0, exampleStruct.AllocationCount);
@@ -296,6 +298,7 @@ internal class ExampleCustomAllocatorStructUsage
         // Dispose the native list
         nativeList.Dispose();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         // Object disposed exception throws because nativeArray is already disposed
         Assert.Throws<ObjectDisposedException>(() =>
         {
@@ -307,6 +310,7 @@ internal class ExampleCustomAllocatorStructUsage
         {
             nativeList[10] = 0x10;
         });
+#endif
 
         // Check allocation count after dispose the native array and native list
         Assert.AreEqual(0, exampleStruct.AllocationCount);

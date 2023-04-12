@@ -30,7 +30,7 @@ using Unity.Properties;
 
 namespace Unity.Collections
 {
-    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes30) })]
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(FixedBytes32Align8) })]
     [Serializable]
     internal struct FixedList<T,U>
     : INativeList<T>
@@ -438,7 +438,7 @@ namespace Unity.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int StorageBytes<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
-            return UnsafeUtility.SizeOf<BUFFER>() - PaddingBytes<T>();
+            return UnsafeUtility.SizeOf<BUFFER>() - UnsafeUtility.SizeOf<ushort>() - PaddingBytes<T>();
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
@@ -463,7 +463,7 @@ var SIZES = new int[]{32,64,128,512,4096};
 for(var size = 0; size < 5; ++size)
 {
     var BYTES = SIZES[size];
-    var BUFFER_BYTES = BYTES - 2;
+    var BUFFER_BYTES = BYTES;
     var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
     var OLD_TYPENAME = String.Format("FixedList{0}", BYTES);
 
@@ -487,8 +487,43 @@ for(var size = 0; size < 5; ++size)
     }
 #>    where T : unmanaged
     {
-        [SerializeField] internal ushort length;
-        [SerializeField] internal FixedBytes<#=BUFFER_BYTES#> buffer;
+        [SerializeField] internal FixedBytes<#=BUFFER_BYTES#>Align8 data;
+
+        internal ushort length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                unsafe
+                {
+                    fixed(void* ptr = &data)
+                        return *((ushort*)ptr);
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                unsafe
+                {
+                    fixed (void* ptr = &data)
+                        *((ushort*)ptr) = value;
+                }
+            }
+        }
+
+        internal readonly unsafe byte* buffer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                unsafe
+                {
+                    fixed (void* ptr = &data)
+                        return ((byte*)ptr) + UnsafeUtility.SizeOf<ushort>();
+                }
+            }
+        }
 
         /// <summary>
         /// The current number of items in this list.
@@ -501,7 +536,7 @@ for(var size = 0; size < 5; ++size)
             readonly get => length;
             set
             {
-                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,T>(value);
+                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>Align8,T>(value);
                 length = (ushort)value;
             }
         }
@@ -537,8 +572,7 @@ for(var size = 0; size < 5; ++size)
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                fixed(byte* b = &buffer.offset0000.byte0000)
-                    return b + FixedList.PaddingBytes<T>();
+                return buffer + FixedList.PaddingBytes<T>();
             }
         }
 
@@ -553,7 +587,7 @@ for(var size = 0; size < 5; ++size)
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get
             {
-                return FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>,T>();
+                return FixedList.Capacity<FixedBytes<#=BUFFER_BYTES#>Align8,T>();
             }
 
             set
@@ -881,7 +915,7 @@ for(var size = 0; size < 5; ++size)
 <#
     foreach(var OTHERBYTES in SIZES)
     {
-        var OTHER_BUFFER_BYTES = OTHERBYTES - 2;
+        var OTHER_BUFFER_BYTES = OTHERBYTES;
         var OTHERTYPENAME = String.Format("FixedList{0}Bytes", OTHERBYTES);
 #>
 
@@ -928,20 +962,18 @@ for(var size = 0; size < 5; ++size)
         {
             unsafe
             {
-                fixed(byte* a = &buffer.offset0000.byte0000)
+                byte* a = buffer;
+                byte* b = other.buffer;
+                var aa = a + FixedList.PaddingBytes<T>();
+                var bb = b + FixedList.PaddingBytes<T>();
+                var mini = math.min(Length, other.Length);
+                for(var i = 0; i < mini; ++i)
                 {
-                    byte* b = &other.buffer.offset0000.byte0000;
-                    var aa = a + FixedList.PaddingBytes<T>();
-                    var bb = b + FixedList.PaddingBytes<T>();
-                    var mini = math.min(Length, other.Length);
-                    for(var i = 0; i < mini; ++i)
-                    {
-                        var j = UnsafeUtility.MemCmp(aa + sizeof(T) * i, bb + sizeof(T) * i, sizeof(T));
-                        if(j != 0)
-                            return j;
-                    }
-                    return Length.CompareTo(other.Length);
+                    var j = UnsafeUtility.MemCmp(aa + sizeof(T) * i, bb + sizeof(T) * i, sizeof(T));
+                    if(j != 0)
+                        return j;
                 }
+                return Length.CompareTo(other.Length);
             }
         }
 
@@ -971,7 +1003,7 @@ for(var size = 0; size < 5; ++size)
             this = default;
             var error = Initialize(other);
             if(error != 0)
-                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>,T>(other.Length);
+                FixedList.CheckResize<FixedBytes<#=BUFFER_BYTES#>Align8,T>(other.Length);
         }
 
         /// <summary>
@@ -984,7 +1016,6 @@ for(var size = 0; size < 5; ++size)
             if(other.Length > Capacity)
                 return (int)CopyError.Truncation;
             length = other.length;
-            buffer = new FixedBytes<#=BUFFER_BYTES#>();
             unsafe
             {
                 UnsafeUtility.MemCpy(Buffer, other.Buffer, LengthInBytes);
@@ -1230,7 +1261,7 @@ for(var size = 0; size < 5; ++size)
     var BYTES = SIZES[size];
     var TYPE = TYPES[type];
     var TYPESIZE = TYPESIZES[type];
-    var BUFFER_BYTES = BYTES - 2;
+    var BUFFER_BYTES = BYTES;
     var TYPENAME = String.Format("FixedList{0}{1}", new CultureInfo("en-US").TextInfo.ToTitleCase(TYPE), BYTES);
     var NEW_TYPENAME = $"FixedList{BYTES}Bytes<{TYPE}>";
 #>
@@ -1248,7 +1279,7 @@ for(var size = 0; size < 5; ++size)
 for(var size = 0; size < 5; ++size)
 {
     var BYTES = SIZES[size];
-    var BUFFER_BYTES = BYTES - 2;
+    var BUFFER_BYTES = BYTES;
     var TYPENAME = String.Format("FixedList{0}Bytes", BYTES);
 #>
 
@@ -1263,11 +1294,8 @@ for(var size = 0; size < 5; ++size)
         {
             unsafe
             {
-                fixed(byte* b = &list.buffer.offset0000.byte0000)
-                {
-                    var c = b + FixedList.PaddingBytes<T>();
-                    NativeSortExtension.Sort((T*)c, list.Length);
-                }
+                var c = list.buffer + FixedList.PaddingBytes<T>();
+                NativeSortExtension.Sort((T*)c, list.Length);
             }
         }
 
@@ -1285,11 +1313,8 @@ for(var size = 0; size < 5; ++size)
         {
             unsafe
             {
-                fixed(byte* b = &list.buffer.offset0000.byte0000)
-                {
-                    var c = b + FixedList.PaddingBytes<T>();
-                    NativeSortExtension.Sort((T*)c, list.Length, comp);
-                }
+                var c = list.buffer + FixedList.PaddingBytes<T>();
+                NativeSortExtension.Sort((T*)c, list.Length, comp);
             }
         }
 

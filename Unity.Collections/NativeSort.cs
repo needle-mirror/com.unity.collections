@@ -877,7 +877,7 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckStrideMatchesSize<T>(int stride) where T : unmanaged
         {
             if (stride != UnsafeUtility.SizeOf<T>())
@@ -990,7 +990,13 @@ namespace Unity.Collections
             if (Length == 0)
                 return inputDeps;
             var segmentCount = (Length + 1023) / 1024;
-            var workerCount = math.max(1, JobsUtility.MaxJobThreadCount);
+
+#if UNITY_2022_2_14F1_OR_NEWER
+            int maxThreadCount = JobsUtility.ThreadIndexCount;
+#else
+            int maxThreadCount = JobsUtility.MaxJobThreadCount;
+#endif
+            var workerCount = math.max(1, maxThreadCount);
             var workerSegmentCount = segmentCount / workerCount;
             var segmentSortJob = new SegmentSort { Data = Data, Comp = Comp, Length = Length, SegmentWidth = 1024 };
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);

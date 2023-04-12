@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using Unity.Jobs;
 using Unity.Mathematics;
+using System.Runtime.InteropServices;
 
 namespace Unity.Collections.LowLevel.Unsafe
 {
@@ -14,6 +15,7 @@ namespace Unity.Collections.LowLevel.Unsafe
     [DebuggerDisplay("Length = {Length}, IsCreated = {IsCreated}")]
     [DebuggerTypeProxy(typeof(UnsafeBitArrayDebugView))]
     [GenerateTestsForBurstCompatibility]
+    [StructLayout(LayoutKind.Sequential)]
     public unsafe struct UnsafeBitArray
         : INativeDisposable
     {
@@ -81,8 +83,14 @@ namespace Unity.Collections.LowLevel.Unsafe
             return data;
         }
 
-        internal static void Free(UnsafeBitArray* data, AllocatorManager.AllocatorHandle allocator)
+        internal static void Free(UnsafeBitArray* data)
         {
+            if (data == null)
+            {
+                throw new InvalidOperationException("UnsafeBitArray has yet to be created or has been destroyed!");
+            }
+            var allocator = data->Allocator;
+            data->Dispose();
             Memory.Unmanaged.Free(data, allocator);
         }
 
@@ -91,6 +99,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>True if this array has been allocated (and not yet deallocated).</value>
         public readonly bool IsCreated => Ptr != null;
+
+        /// <summary>
+        /// Whether the container is empty.
+        /// </summary>
+        /// <value>True if the container is empty or the container has not been constructed.</value>
+        public readonly bool IsEmpty => !IsCreated || Length == 0;
 
         void Realloc(int capacityInBits)
         {
@@ -127,9 +141,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             CollectionHelper.CheckAllocator(Allocator);
 
-            if (numBits > Capacity)
+            var minCapacity = math.max(numBits, 1);
+
+            if (minCapacity > Capacity)
             {
-                SetCapacity(numBits);
+                SetCapacity(minCapacity);
             }
 
             var oldLength = Length;
@@ -170,6 +186,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         public void Dispose()
         {
+            if (!IsCreated)
+            {
+                return;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 Memory.Unmanaged.Free(Ptr, Allocator);
@@ -187,6 +208,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <returns>The handle of a new job that will dispose this array. The new job depends upon inputDeps.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
+
             if (CollectionHelper.ShouldDeallocate(Allocator))
             {
                 var jobHandle = new UnsafeDisposeJob { Ptr = Ptr, Allocator = Allocator }.Schedule(inputDeps);
@@ -744,7 +770,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckSizeMultipleOf8(int sizeInBytes)
         {
             if ((sizeInBytes & 7) != 0)
@@ -753,7 +779,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckArgs(int pos, int numBits)
         {
             if (pos < 0
@@ -764,7 +790,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckArgsPosCount(int begin, int count, int numBits)
         {
             if (begin < 0 || begin >= Length)
@@ -783,7 +809,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         void CheckArgsUlong(int pos, int numBits)
         {
             CheckArgs(pos, numBits);
@@ -799,7 +825,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckArgsCopy(ref UnsafeBitArray dstBitArray, int dstPos, ref UnsafeBitArray srcBitArray, int srcPos, int numBits)
         {
             if (srcPos + numBits > srcBitArray.Length)

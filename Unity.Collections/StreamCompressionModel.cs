@@ -6,23 +6,27 @@ using Unity.Mathematics;
 namespace Unity.Collections
 {
     /// <summary>
-    /// This type uses Huffman encoding to encode values in a lossless manner.
-    /// When sending something like a 32-bit integer over the network, it is impractical to create a Huffman tree
-    /// that encompasses every value the integer can take as it would require a tree with 2^32 leaves.
-    /// To make this more practical, we lump values into a manageable number of power-of-two-sized buckets
-    /// and then only code the bucket index with Huffman and code the position in the bucket using several raw bits
-    /// corresponding to the size of the bucket.
+    /// A type that uses Huffman encoding to encode values in a lossless manner.
+    /// </summary>
+    /// <remarks>
+    /// This type puts values into a manageable number of power-of-two-sized buckets.
+    /// It codes the bucket index with Huffman, and uses several raw bits that correspond
+    /// to the size of the bucket to code the position in the bucket.
     ///
-    /// The buckets are small, around 0, and become progressively larger as you move away from zero.
-    /// As most data is deltas against predictions; we expect values to be small and expect most of the redundancy
-    /// to be in the error's size and not in exactly which of the values of that size we end up hitting.
+    /// For example, if you want to send a 32-bit integer over the network, it's 
+    /// impractical to create a Huffman tree that encompasses every value the integer 
+    /// can take because it requires a tree with 2^32 leaves. This type manages that situation.
+    ///
+    /// The buckets are small, around 0, and become progressively larger as the data moves away from zero.
+    /// Because most data is deltas against predictions, most values are small and most of the redundancy
+    /// is in the error's size and not in the values of that size we end up hitting.
     ///
     /// The context is as a sub-model that has its own statistics and uses its own Huffman tree.
     /// When using the context to read and write a specific value, the context must always be the same.
     /// The benefit of using multiple contexts is that it allows you to separate the statistics of things that have
     /// different expected distributions, which leads to more precise statistics, which again yields better compression.
     /// More contexts does, however, result in a marginal cost of a slightly larger model.
-    /// </summary>
+    /// </remarks>
     [GenerateTestsForBurstCompatibility]
     public unsafe struct StreamCompressionModel
     {
@@ -240,7 +244,7 @@ namespace Unity.Collections
             return bucketIndex;
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckAlphabetSize(int alphabetSize)
         {
             if (alphabetSize != k_AlphabetSize)
@@ -249,21 +253,21 @@ namespace Unity.Collections
             }
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckSymbolLength(NativeArray<byte> symbolLengths, int symbolLengthsOffset, int symbol, int length)
         {
             if (symbolLengths[symbol + symbolLengthsOffset] != length)
                 throw new InvalidOperationException("Incorrect symbol length");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckAlphabetAndMaxCodeLength(int alphabetSize, int maxCodeLength)
         {
             if (alphabetSize > 256 || maxCodeLength > 8)
                 throw new InvalidOperationException("Can only generate huffman codes up to alphabet size 256 and maximum code length 8");
         }
 
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         static void CheckExceedMaxCodeLength(int length, int maxCodeLength)
         {
             if (length > maxCodeLength)

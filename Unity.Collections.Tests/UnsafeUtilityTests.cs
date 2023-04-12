@@ -76,6 +76,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void MismatchThrows1()
     {
         using (var src = MakeTestArray(0.0f, 1.0f, 2.0f))
@@ -85,6 +86,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void MismatchThrows2()
     {
         using (var src = MakeTestArray(12))
@@ -105,17 +107,16 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void CannotUseAliasAfterSourceIsDisposed()
     {
         NativeArray<float> alias;
-        using (var src = MakeTestArray(12))
-        {
-            alias = src.Reinterpret<int, float>();
+        var src = MakeTestArray(12);
+        alias = src.Reinterpret<int, float>();
 
-            // `Free` of memory allocated by world update allocator is an no-op.
-            // World update allocator needs to be rewound in order to free the memory.
-            CommonRwdAllocator.Rewind();
-        }
+        // `Free` of memory allocated by world update allocator is an no-op.
+        // World update allocator needs to be rewound in order to free the memory.
+        CommonRwdAllocator.Rewind();
 
         Assert.Throws<ObjectDisposedException>(
             () => alias[0] = 1.0f);
@@ -209,6 +210,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public unsafe void UnsafeUtility_MemSwap_DoesThrow_Overlapped()
     {
         using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
@@ -225,6 +227,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void UnsafeUtility_ReadArrayElementBoundsChecked_Works()
     {
         using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))
@@ -240,6 +243,7 @@ internal class UnsafeUtilityTests : CollectionsTestCommonBase
 
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void UnsafeUtility_WriteArrayElementBoundsChecked_Works()
     {
         using (var array0 = MakeTestArray(0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678, 0x12345678))

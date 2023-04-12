@@ -15,15 +15,6 @@ internal class UnsafeAppendBufferTests : CollectionsTestCommonBase
     }
 
     [Test]
-    public void UnsafeAppendBuffer_DisposeEmpty()
-    {
-        var buffer = new UnsafeAppendBuffer(0, 8, Allocator.Temp);
-        Assert.False(buffer.IsCreated);
-        Assert.True(buffer.IsEmpty);
-        buffer.Dispose();
-    }
-
-    [Test]
     public void UnsafeAppendBuffer_DisposeAllocated()
     {
         var buffer = new UnsafeAppendBuffer(1, 8, Allocator.Temp);
@@ -43,6 +34,7 @@ internal class UnsafeAppendBufferTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void UnsafeAppendBuffer_ThrowZeroAlignment()
     {
         Assert.Throws<ArgumentException>(() =>

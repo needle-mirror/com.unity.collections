@@ -8,10 +8,12 @@ using Unity.Burst;
 namespace Unity.Jobs
 {
     /// <summary>
-    /// Job type allowing for data to be operated on in parallel batches. When scheduling an IJobParallelForBatch
-    /// job the number of elements to work on is specied along with a batch size. Jobs will then run in parallel
-    /// invoking Execute at a particular 'startIndex' of your working set and for a specified 'count' number of elements.
+    /// Job type allowing for data to be operated on in parallel batches. 
     /// </summary>
+    /// <remarks>
+    /// When scheduling an IJobParallelForBatch job the number of elements to work on is specified along with a batch size. Jobs will then run in parallel
+    /// invoking Execute at a particular 'startIndex' of your working set and for a specified 'count' number of elements.
+    /// </remarks>
     [JobProducerType(typeof(IJobParallelForBatchExtensions.JobParallelForBatchProducer<>))]
     public interface IJobParallelForBatch
     {
@@ -93,7 +95,44 @@ namespace Unity.Jobs
         /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
         /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
         /// <typeparam name="T">Job type</typeparam>
-        public static unsafe JobHandle ScheduleBatch<T>(this T jobData, int arrayLength, int indicesPerJobCount,
+        public static unsafe JobHandle Schedule<T>(this T jobData, int arrayLength, int indicesPerJobCount,
+            JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
+        {
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), dependsOn, ScheduleMode.Single);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, indicesPerJobCount);
+        }
+
+        /// <summary>
+        /// Schedules a job that will execute the parallel batch job for all `arrayLength` elements in batches of `indicesPerJobCount`.
+        /// The Execute() method for Job T will be provided the start index and number of elements to safely operate on.
+        /// In cases where `indicesPerJobCount` is not a multiple of `arrayLength`, the `count` provided to the Execute method of Job T will be smaller than the `indicesPerJobCount` specified here.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule. In this variant, the jobData is
+        /// passed by reference, which may be necessary for unusually large job structs.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch.</param>
+        /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
+        /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        public static unsafe JobHandle ScheduleByRef<T>(this ref T jobData, int arrayLength, int indicesPerJobCount,
+            JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
+        {
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), dependsOn, ScheduleMode.Single);
+            return JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, indicesPerJobCount);
+        }
+
+        /// <summary>
+        /// Schedules a job that will execute the parallel batch job for all `arrayLength` elements in batches of `indicesPerJobCount`.
+        /// The Execute() method for Job T will be provided the start index and number of elements to safely operate on.
+        /// In cases where `indicesPerJobCount` is not a multiple of `arrayLength`, the `count` provided to the Execute method of Job T will be smaller than the `indicesPerJobCount` specified here.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch.</param>
+        /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
+        /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        public static unsafe JobHandle ScheduleParallel<T>(this T jobData, int arrayLength, int indicesPerJobCount,
             JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
         {
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), dependsOn, ScheduleMode.Parallel);
@@ -112,11 +151,76 @@ namespace Unity.Jobs
         /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
         /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
         /// <typeparam name="T">Job type</typeparam>
-        public static unsafe JobHandle ScheduleBatchByRef<T>(this ref T jobData, int arrayLength, int indicesPerJobCount,
+        public static unsafe JobHandle ScheduleParallelByRef<T>(this ref T jobData, int arrayLength, int indicesPerJobCount,
             JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
         {
             var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), dependsOn, ScheduleMode.Parallel);
             return JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, indicesPerJobCount);
+        }
+
+        /// <summary>
+        /// Schedules a job that will execute the parallel batch job for all `arrayLength` elements in batches of `indicesPerJobCount`.
+        /// The Execute() method for Job T will be provided the start index and number of elements to safely operate on.
+        /// In cases where `indicesPerJobCount` is not a multiple of `arrayLength`, the `count` provided to the Execute method of Job T will be smaller than the `indicesPerJobCount` specified here.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch.</param>
+        /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
+        /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        public static unsafe JobHandle ScheduleBatch<T>(this T jobData, int arrayLength, int indicesPerJobCount,
+            JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
+        {
+            return ScheduleParallel(jobData, arrayLength, indicesPerJobCount, dependsOn);
+        }
+
+        /// <summary>
+        /// Schedules a job that will execute the parallel batch job for all `arrayLength` elements in batches of `indicesPerJobCount`.
+        /// The Execute() method for Job T will be provided the start index and number of elements to safely operate on.
+        /// In cases where `indicesPerJobCount` is not a multiple of `arrayLength`, the `count` provided to the Execute method of Job T will be smaller than the `indicesPerJobCount` specified here.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule. In this variant, the jobData is
+        /// passed by reference, which may be necessary for unusually large job structs.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch.</param>
+        /// <param name="dependsOn">Dependencies are used to ensure that a job executes on workerthreads after the dependency has completed execution. Making sure that two jobs reading or writing to same data do not run in parallel.</param>
+        /// <returns>JobHandle The handle identifying the scheduled job. Can be used as a dependency for a later job or ensure completion on the main thread.</returns>
+        /// <typeparam name="T">Job type</typeparam>
+        public static unsafe JobHandle ScheduleBatchByRef<T>(this ref T jobData, int arrayLength, int indicesPerJobCount,
+            JobHandle dependsOn = new JobHandle()) where T : struct, IJobParallelForBatch
+        {
+            return ScheduleParallelByRef(ref jobData, arrayLength, indicesPerJobCount, dependsOn);
+        }
+
+        /// <summary>
+        /// Executes the parallel batch job but on the main thread. See IJobParallelForBatchExtensions.Schedule for more information on how appending is performed.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch. This argument is ignored when using .Run()</param>
+        /// <typeparam name="T">Job type</typeparam>
+        /// <remarks>
+        /// Unlike Schedule, since the job is running on the main thread no parallelization occurs and thus no `indicesPerJobCount` batch size is required to be specified.
+        /// </remarks>
+        public static unsafe void Run<T>(this T jobData, int arrayLength, int indicesPerJobCount) where T : struct, IJobParallelForBatch
+        {
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), new JobHandle(), ScheduleMode.Run);
+            JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, arrayLength);
+        }
+
+        /// <summary>
+        /// Executes the parallel batch job but on the main thread. See IJobParallelForBatchExtensions.Schedule for more information on how appending is performed.
+        /// </summary>
+        /// <param name="jobData">The job and data to schedule. In this variant, the jobData is
+        /// passed by reference, which may be necessary for unusually large job structs.</param>
+        /// <param name="arrayLength">Total number of elements to consider when batching.</param>
+        /// <param name="indicesPerJobCount">Number of elements to consider in a single parallel batch. This argument is ignored when using .RunByRef()</param>
+        /// <typeparam name="T">Job type</typeparam>
+        public static unsafe void RunByRef<T>(this ref T jobData, int arrayLength, int indicesPerJobCount) where T : struct, IJobParallelForBatch
+        {
+            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), new JobHandle(), ScheduleMode.Run);
+            JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, arrayLength);
         }
 
         /// <summary>
@@ -130,8 +234,7 @@ namespace Unity.Jobs
         /// </remarks>
         public static unsafe void RunBatch<T>(this T jobData, int arrayLength) where T : struct, IJobParallelForBatch
         {
-            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), new JobHandle(), ScheduleMode.Run);
-            JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, arrayLength);
+            Run(jobData, arrayLength, arrayLength);
         }
 
         /// <summary>
@@ -143,8 +246,7 @@ namespace Unity.Jobs
         /// <typeparam name="T">Job type</typeparam>
         public static unsafe void RunBatchByRef<T>(this ref T jobData, int arrayLength) where T : struct, IJobParallelForBatch
         {
-            var scheduleParams = new JobsUtility.JobScheduleParameters(UnsafeUtility.AddressOf(ref jobData), GetReflectionData<T>(), new JobHandle(), ScheduleMode.Run);
-            JobsUtility.ScheduleParallelFor(ref scheduleParams, arrayLength, arrayLength);
+            RunByRef(ref jobData, arrayLength, arrayLength);
         }
     }
 }

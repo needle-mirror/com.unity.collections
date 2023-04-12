@@ -365,6 +365,7 @@ internal class UnsafeHashMapTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void UnsafeHashMap_SameKey()
     {
         using (var container = new UnsafeHashMap<int, int>(0, Allocator.Persistent))

@@ -52,6 +52,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
 
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashSet_Full_Throws()
     {
         var container = new NativeParallelHashSet<int>(16, Allocator.Temp);
@@ -82,15 +83,6 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
         container.Dispose();
-    }
-
-    [Test]
-    public void NativeParallelHashSet_Double_Deallocate_Throws()
-    {
-        var hashMap = new NativeParallelHashSet<int>(16, CommonRwdAllocator.Handle);
-        hashMap.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-            () => { hashMap.Dispose(); });
     }
 
     [Test]
@@ -337,6 +329,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashSet_ForEach_Throws_When_Modified()
     {
         using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
@@ -371,6 +364,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashSet_ForEach_Throws()
     {
         using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
@@ -408,6 +402,7 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelHashSet_ForEach_Throws_Job_Iterator()
     {
         using (var container = new NativeParallelHashSet<int>(32, CommonRwdAllocator.Handle))

@@ -102,6 +102,7 @@ internal class ExampleStructSampleUsage
         // No need to dispose the native array and native list
         exampleStruct.FreeRewindableAllocator();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         // Object disposed exception throws because nativeArray is already disposed
         Assert.Throws<ObjectDisposedException>(() =>
         {
@@ -113,6 +114,7 @@ internal class ExampleStructSampleUsage
         {
             nativeList[10] = 0x10;
         });
+#endif
 
         // Dispose the user structure
         exampleStruct.Dispose();

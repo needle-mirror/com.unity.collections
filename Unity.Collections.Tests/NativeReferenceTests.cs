@@ -50,6 +50,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeReference_NullThrows()
     {
         var reference = new NativeReference<int>();
@@ -106,8 +107,10 @@ class NativeReferenceTests : CollectionsTestCommonBase
         var job = new TempNativeReferenceInJob() { Output = reference };
         var jobHandle = job.Schedule();
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<InvalidOperationException>(() => reference.GetUnsafePtr());
         Assert.Throws<InvalidOperationException>(() => reference.GetUnsafeReadOnlyPtr());
+#endif
         Assert.DoesNotThrow(() => reference.GetUnsafePtrWithoutChecks());
 
         jobHandle.Complete();
@@ -131,7 +134,9 @@ class NativeReferenceTests : CollectionsTestCommonBase
         var disposeJob = reference.Dispose(default);
         Assert.That(reference.IsCreated, Is.False);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(() => reference.Value = 3);
+#endif
 
         disposeJob.Complete();
     }
@@ -280,6 +285,7 @@ class NativeReferenceTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeReference_NestedJob_Error()
     {
         var container = new NativeReference<NativeReference<int>>(CommonRwdAllocator.Handle);

@@ -109,7 +109,16 @@ namespace Unity.Collections
         /// </summary>
         public void Dispose()
         {
-            CheckNotDisposed();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
 
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
@@ -130,7 +139,16 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this reference.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            CheckNotDisposed();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
             if (CollectionHelper.ShouldDeallocate(m_AllocatorLabel))
             {
@@ -317,13 +335,6 @@ namespace Unity.Collections
                     return *(T*)m_Data;
                 }
             }
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        void CheckNotDisposed()
-        {
-            if (m_Data == null)
-                throw new ObjectDisposedException("The NativeReference is already disposed.");
         }
     }
 

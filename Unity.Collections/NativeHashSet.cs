@@ -42,7 +42,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         public NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, 256, allocator);
+            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, HashMapHelper<T>.kMinimumCapacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -93,7 +93,6 @@ namespace Unity.Collections
         /// </summary>
         /// <value>The number of values that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,10 +125,20 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
 
-            m_Data->Dispose();
             HashMapHelper<T>.Free(m_Data);
             m_Data = null;
         }
@@ -141,22 +150,23 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will dispose this set.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = new NativeDisposeJob
-            {
-                Data = new NativeDataDispose
-                {
-                    m_Ptr = m_Data->Ptr,
-                    m_Allocator = m_Data->Allocator,
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-                    m_Safety = m_Safety,
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
 #endif
-                }
-            }.Schedule(inputDeps);
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)m_Data, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeHashMapDisposeJob { Data = new NativeHashMapDispose { m_HashMapData = (UnsafeHashMap<int, int>*)m_Data } }.Schedule(inputDeps);
 #endif
-            HashMapHelper<T>.Free(m_Data);
             m_Data = null;
 
             return jobHandle;

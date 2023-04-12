@@ -10,7 +10,7 @@ using System.Text;
 // change this to change the core type under test
 using FixedStringN = Unity.Collections.FixedString128Bytes;
 
-namespace FixedStringTests
+namespace Unity.Collections.Tests
 {
 
 [TestFixture("en-US")]

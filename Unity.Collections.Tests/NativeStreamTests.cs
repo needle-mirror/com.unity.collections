@@ -521,6 +521,7 @@ internal class NativeStreamTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeStream_NestedJob_Error()
     {
         var inner = new NativeList<int>(CommonRwdAllocator.Handle);

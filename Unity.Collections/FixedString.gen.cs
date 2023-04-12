@@ -31,6 +31,26 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
+    /// For internal use only. This type is 8 byte aligned
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=16)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes16Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] public ulong byte0000;
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(8)] public ulong byte0008;
+
+    }
+
+    /// <summary>
     /// For internal use only.
     /// </summary>
     [Serializable]
@@ -118,6 +138,1290 @@ namespace Unity.Collections
         /// </summary>
         [FieldOffset(15)] public byte byte0015;
 
+    }
+
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=32)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes32Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] internal FixedBytes16Align8 offset0000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(16)] internal FixedBytes16Align8 offset0016;
+    }
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=64)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes64Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] internal FixedBytes16Align8 offset0000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(16)] internal FixedBytes16Align8 offset0016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(32)] internal FixedBytes16Align8 offset0032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(48)] internal FixedBytes16Align8 offset0048;
+    }
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=128)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes128Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] internal FixedBytes16Align8 offset0000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(16)] internal FixedBytes16Align8 offset0016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(32)] internal FixedBytes16Align8 offset0032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(48)] internal FixedBytes16Align8 offset0048;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(64)] internal FixedBytes16Align8 offset0064;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(80)] internal FixedBytes16Align8 offset0080;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(96)] internal FixedBytes16Align8 offset0096;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(112)] internal FixedBytes16Align8 offset0112;
+    }
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=512)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes512Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] internal FixedBytes16Align8 offset0000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(16)] internal FixedBytes16Align8 offset0016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(32)] internal FixedBytes16Align8 offset0032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(48)] internal FixedBytes16Align8 offset0048;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(64)] internal FixedBytes16Align8 offset0064;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(80)] internal FixedBytes16Align8 offset0080;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(96)] internal FixedBytes16Align8 offset0096;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(112)] internal FixedBytes16Align8 offset0112;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(128)] internal FixedBytes16Align8 offset0128;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(144)] internal FixedBytes16Align8 offset0144;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(160)] internal FixedBytes16Align8 offset0160;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(176)] internal FixedBytes16Align8 offset0176;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(192)] internal FixedBytes16Align8 offset0192;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(208)] internal FixedBytes16Align8 offset0208;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(224)] internal FixedBytes16Align8 offset0224;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(240)] internal FixedBytes16Align8 offset0240;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(256)] internal FixedBytes16Align8 offset0256;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(272)] internal FixedBytes16Align8 offset0272;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(288)] internal FixedBytes16Align8 offset0288;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(304)] internal FixedBytes16Align8 offset0304;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(320)] internal FixedBytes16Align8 offset0320;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(336)] internal FixedBytes16Align8 offset0336;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(352)] internal FixedBytes16Align8 offset0352;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(368)] internal FixedBytes16Align8 offset0368;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(384)] internal FixedBytes16Align8 offset0384;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(400)] internal FixedBytes16Align8 offset0400;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(416)] internal FixedBytes16Align8 offset0416;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(432)] internal FixedBytes16Align8 offset0432;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(448)] internal FixedBytes16Align8 offset0448;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(464)] internal FixedBytes16Align8 offset0464;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(480)] internal FixedBytes16Align8 offset0480;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(496)] internal FixedBytes16Align8 offset0496;
+    }
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=4096)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes4096Align8
+    {
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(0)] internal FixedBytes16Align8 offset0000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(16)] internal FixedBytes16Align8 offset0016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(32)] internal FixedBytes16Align8 offset0032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(48)] internal FixedBytes16Align8 offset0048;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(64)] internal FixedBytes16Align8 offset0064;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(80)] internal FixedBytes16Align8 offset0080;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(96)] internal FixedBytes16Align8 offset0096;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(112)] internal FixedBytes16Align8 offset0112;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(128)] internal FixedBytes16Align8 offset0128;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(144)] internal FixedBytes16Align8 offset0144;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(160)] internal FixedBytes16Align8 offset0160;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(176)] internal FixedBytes16Align8 offset0176;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(192)] internal FixedBytes16Align8 offset0192;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(208)] internal FixedBytes16Align8 offset0208;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(224)] internal FixedBytes16Align8 offset0224;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(240)] internal FixedBytes16Align8 offset0240;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(256)] internal FixedBytes16Align8 offset0256;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(272)] internal FixedBytes16Align8 offset0272;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(288)] internal FixedBytes16Align8 offset0288;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(304)] internal FixedBytes16Align8 offset0304;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(320)] internal FixedBytes16Align8 offset0320;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(336)] internal FixedBytes16Align8 offset0336;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(352)] internal FixedBytes16Align8 offset0352;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(368)] internal FixedBytes16Align8 offset0368;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(384)] internal FixedBytes16Align8 offset0384;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(400)] internal FixedBytes16Align8 offset0400;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(416)] internal FixedBytes16Align8 offset0416;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(432)] internal FixedBytes16Align8 offset0432;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(448)] internal FixedBytes16Align8 offset0448;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(464)] internal FixedBytes16Align8 offset0464;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(480)] internal FixedBytes16Align8 offset0480;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(496)] internal FixedBytes16Align8 offset0496;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(512)] internal FixedBytes16Align8 offset0512;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(528)] internal FixedBytes16Align8 offset0528;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(544)] internal FixedBytes16Align8 offset0544;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(560)] internal FixedBytes16Align8 offset0560;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(576)] internal FixedBytes16Align8 offset0576;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(592)] internal FixedBytes16Align8 offset0592;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(608)] internal FixedBytes16Align8 offset0608;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(624)] internal FixedBytes16Align8 offset0624;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(640)] internal FixedBytes16Align8 offset0640;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(656)] internal FixedBytes16Align8 offset0656;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(672)] internal FixedBytes16Align8 offset0672;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(688)] internal FixedBytes16Align8 offset0688;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(704)] internal FixedBytes16Align8 offset0704;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(720)] internal FixedBytes16Align8 offset0720;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(736)] internal FixedBytes16Align8 offset0736;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(752)] internal FixedBytes16Align8 offset0752;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(768)] internal FixedBytes16Align8 offset0768;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(784)] internal FixedBytes16Align8 offset0784;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(800)] internal FixedBytes16Align8 offset0800;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(816)] internal FixedBytes16Align8 offset0816;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(832)] internal FixedBytes16Align8 offset0832;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(848)] internal FixedBytes16Align8 offset0848;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(864)] internal FixedBytes16Align8 offset0864;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(880)] internal FixedBytes16Align8 offset0880;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(896)] internal FixedBytes16Align8 offset0896;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(912)] internal FixedBytes16Align8 offset0912;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(928)] internal FixedBytes16Align8 offset0928;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(944)] internal FixedBytes16Align8 offset0944;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(960)] internal FixedBytes16Align8 offset0960;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(976)] internal FixedBytes16Align8 offset0976;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(992)] internal FixedBytes16Align8 offset0992;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1008)] internal FixedBytes16Align8 offset1008;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1024)] internal FixedBytes16Align8 offset1024;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1040)] internal FixedBytes16Align8 offset1040;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1056)] internal FixedBytes16Align8 offset1056;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1072)] internal FixedBytes16Align8 offset1072;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1088)] internal FixedBytes16Align8 offset1088;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1104)] internal FixedBytes16Align8 offset1104;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1120)] internal FixedBytes16Align8 offset1120;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1136)] internal FixedBytes16Align8 offset1136;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1152)] internal FixedBytes16Align8 offset1152;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1168)] internal FixedBytes16Align8 offset1168;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1184)] internal FixedBytes16Align8 offset1184;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1200)] internal FixedBytes16Align8 offset1200;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1216)] internal FixedBytes16Align8 offset1216;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1232)] internal FixedBytes16Align8 offset1232;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1248)] internal FixedBytes16Align8 offset1248;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1264)] internal FixedBytes16Align8 offset1264;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1280)] internal FixedBytes16Align8 offset1280;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1296)] internal FixedBytes16Align8 offset1296;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1312)] internal FixedBytes16Align8 offset1312;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1328)] internal FixedBytes16Align8 offset1328;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1344)] internal FixedBytes16Align8 offset1344;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1360)] internal FixedBytes16Align8 offset1360;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1376)] internal FixedBytes16Align8 offset1376;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1392)] internal FixedBytes16Align8 offset1392;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1408)] internal FixedBytes16Align8 offset1408;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1424)] internal FixedBytes16Align8 offset1424;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1440)] internal FixedBytes16Align8 offset1440;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1456)] internal FixedBytes16Align8 offset1456;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1472)] internal FixedBytes16Align8 offset1472;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1488)] internal FixedBytes16Align8 offset1488;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1504)] internal FixedBytes16Align8 offset1504;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1520)] internal FixedBytes16Align8 offset1520;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1536)] internal FixedBytes16Align8 offset1536;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1552)] internal FixedBytes16Align8 offset1552;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1568)] internal FixedBytes16Align8 offset1568;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1584)] internal FixedBytes16Align8 offset1584;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1600)] internal FixedBytes16Align8 offset1600;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1616)] internal FixedBytes16Align8 offset1616;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1632)] internal FixedBytes16Align8 offset1632;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1648)] internal FixedBytes16Align8 offset1648;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1664)] internal FixedBytes16Align8 offset1664;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1680)] internal FixedBytes16Align8 offset1680;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1696)] internal FixedBytes16Align8 offset1696;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1712)] internal FixedBytes16Align8 offset1712;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1728)] internal FixedBytes16Align8 offset1728;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1744)] internal FixedBytes16Align8 offset1744;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1760)] internal FixedBytes16Align8 offset1760;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1776)] internal FixedBytes16Align8 offset1776;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1792)] internal FixedBytes16Align8 offset1792;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1808)] internal FixedBytes16Align8 offset1808;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1824)] internal FixedBytes16Align8 offset1824;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1840)] internal FixedBytes16Align8 offset1840;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1856)] internal FixedBytes16Align8 offset1856;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1872)] internal FixedBytes16Align8 offset1872;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1888)] internal FixedBytes16Align8 offset1888;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1904)] internal FixedBytes16Align8 offset1904;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1920)] internal FixedBytes16Align8 offset1920;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1936)] internal FixedBytes16Align8 offset1936;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1952)] internal FixedBytes16Align8 offset1952;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1968)] internal FixedBytes16Align8 offset1968;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(1984)] internal FixedBytes16Align8 offset1984;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2000)] internal FixedBytes16Align8 offset2000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2016)] internal FixedBytes16Align8 offset2016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2032)] internal FixedBytes16Align8 offset2032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2048)] internal FixedBytes16Align8 offset2048;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2064)] internal FixedBytes16Align8 offset2064;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2080)] internal FixedBytes16Align8 offset2080;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2096)] internal FixedBytes16Align8 offset2096;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2112)] internal FixedBytes16Align8 offset2112;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2128)] internal FixedBytes16Align8 offset2128;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2144)] internal FixedBytes16Align8 offset2144;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2160)] internal FixedBytes16Align8 offset2160;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2176)] internal FixedBytes16Align8 offset2176;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2192)] internal FixedBytes16Align8 offset2192;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2208)] internal FixedBytes16Align8 offset2208;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2224)] internal FixedBytes16Align8 offset2224;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2240)] internal FixedBytes16Align8 offset2240;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2256)] internal FixedBytes16Align8 offset2256;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2272)] internal FixedBytes16Align8 offset2272;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2288)] internal FixedBytes16Align8 offset2288;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2304)] internal FixedBytes16Align8 offset2304;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2320)] internal FixedBytes16Align8 offset2320;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2336)] internal FixedBytes16Align8 offset2336;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2352)] internal FixedBytes16Align8 offset2352;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2368)] internal FixedBytes16Align8 offset2368;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2384)] internal FixedBytes16Align8 offset2384;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2400)] internal FixedBytes16Align8 offset2400;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2416)] internal FixedBytes16Align8 offset2416;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2432)] internal FixedBytes16Align8 offset2432;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2448)] internal FixedBytes16Align8 offset2448;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2464)] internal FixedBytes16Align8 offset2464;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2480)] internal FixedBytes16Align8 offset2480;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2496)] internal FixedBytes16Align8 offset2496;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2512)] internal FixedBytes16Align8 offset2512;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2528)] internal FixedBytes16Align8 offset2528;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2544)] internal FixedBytes16Align8 offset2544;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2560)] internal FixedBytes16Align8 offset2560;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2576)] internal FixedBytes16Align8 offset2576;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2592)] internal FixedBytes16Align8 offset2592;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2608)] internal FixedBytes16Align8 offset2608;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2624)] internal FixedBytes16Align8 offset2624;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2640)] internal FixedBytes16Align8 offset2640;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2656)] internal FixedBytes16Align8 offset2656;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2672)] internal FixedBytes16Align8 offset2672;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2688)] internal FixedBytes16Align8 offset2688;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2704)] internal FixedBytes16Align8 offset2704;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2720)] internal FixedBytes16Align8 offset2720;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2736)] internal FixedBytes16Align8 offset2736;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2752)] internal FixedBytes16Align8 offset2752;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2768)] internal FixedBytes16Align8 offset2768;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2784)] internal FixedBytes16Align8 offset2784;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2800)] internal FixedBytes16Align8 offset2800;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2816)] internal FixedBytes16Align8 offset2816;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2832)] internal FixedBytes16Align8 offset2832;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2848)] internal FixedBytes16Align8 offset2848;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2864)] internal FixedBytes16Align8 offset2864;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2880)] internal FixedBytes16Align8 offset2880;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2896)] internal FixedBytes16Align8 offset2896;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2912)] internal FixedBytes16Align8 offset2912;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2928)] internal FixedBytes16Align8 offset2928;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2944)] internal FixedBytes16Align8 offset2944;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2960)] internal FixedBytes16Align8 offset2960;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2976)] internal FixedBytes16Align8 offset2976;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(2992)] internal FixedBytes16Align8 offset2992;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3008)] internal FixedBytes16Align8 offset3008;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3024)] internal FixedBytes16Align8 offset3024;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3040)] internal FixedBytes16Align8 offset3040;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3056)] internal FixedBytes16Align8 offset3056;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3072)] internal FixedBytes16Align8 offset3072;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3088)] internal FixedBytes16Align8 offset3088;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3104)] internal FixedBytes16Align8 offset3104;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3120)] internal FixedBytes16Align8 offset3120;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3136)] internal FixedBytes16Align8 offset3136;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3152)] internal FixedBytes16Align8 offset3152;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3168)] internal FixedBytes16Align8 offset3168;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3184)] internal FixedBytes16Align8 offset3184;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3200)] internal FixedBytes16Align8 offset3200;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3216)] internal FixedBytes16Align8 offset3216;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3232)] internal FixedBytes16Align8 offset3232;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3248)] internal FixedBytes16Align8 offset3248;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3264)] internal FixedBytes16Align8 offset3264;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3280)] internal FixedBytes16Align8 offset3280;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3296)] internal FixedBytes16Align8 offset3296;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3312)] internal FixedBytes16Align8 offset3312;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3328)] internal FixedBytes16Align8 offset3328;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3344)] internal FixedBytes16Align8 offset3344;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3360)] internal FixedBytes16Align8 offset3360;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3376)] internal FixedBytes16Align8 offset3376;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3392)] internal FixedBytes16Align8 offset3392;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3408)] internal FixedBytes16Align8 offset3408;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3424)] internal FixedBytes16Align8 offset3424;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3440)] internal FixedBytes16Align8 offset3440;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3456)] internal FixedBytes16Align8 offset3456;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3472)] internal FixedBytes16Align8 offset3472;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3488)] internal FixedBytes16Align8 offset3488;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3504)] internal FixedBytes16Align8 offset3504;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3520)] internal FixedBytes16Align8 offset3520;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3536)] internal FixedBytes16Align8 offset3536;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3552)] internal FixedBytes16Align8 offset3552;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3568)] internal FixedBytes16Align8 offset3568;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3584)] internal FixedBytes16Align8 offset3584;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3600)] internal FixedBytes16Align8 offset3600;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3616)] internal FixedBytes16Align8 offset3616;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3632)] internal FixedBytes16Align8 offset3632;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3648)] internal FixedBytes16Align8 offset3648;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3664)] internal FixedBytes16Align8 offset3664;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3680)] internal FixedBytes16Align8 offset3680;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3696)] internal FixedBytes16Align8 offset3696;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3712)] internal FixedBytes16Align8 offset3712;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3728)] internal FixedBytes16Align8 offset3728;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3744)] internal FixedBytes16Align8 offset3744;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3760)] internal FixedBytes16Align8 offset3760;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3776)] internal FixedBytes16Align8 offset3776;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3792)] internal FixedBytes16Align8 offset3792;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3808)] internal FixedBytes16Align8 offset3808;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3824)] internal FixedBytes16Align8 offset3824;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3840)] internal FixedBytes16Align8 offset3840;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3856)] internal FixedBytes16Align8 offset3856;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3872)] internal FixedBytes16Align8 offset3872;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3888)] internal FixedBytes16Align8 offset3888;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3904)] internal FixedBytes16Align8 offset3904;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3920)] internal FixedBytes16Align8 offset3920;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3936)] internal FixedBytes16Align8 offset3936;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3952)] internal FixedBytes16Align8 offset3952;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3968)] internal FixedBytes16Align8 offset3968;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(3984)] internal FixedBytes16Align8 offset3984;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4000)] internal FixedBytes16Align8 offset4000;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4016)] internal FixedBytes16Align8 offset4016;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4032)] internal FixedBytes16Align8 offset4032;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4048)] internal FixedBytes16Align8 offset4048;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4064)] internal FixedBytes16Align8 offset4064;
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(4080)] internal FixedBytes16Align8 offset4080;
     }
 
 
@@ -6855,4 +8159,5 @@ namespace Unity.Collections
                 throw new ArgumentException("Source is too long to fit into fixed string of this size");
         }
     }
+
 }

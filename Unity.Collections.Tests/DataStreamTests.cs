@@ -275,6 +275,7 @@ namespace Unity.Collections.Tests
             }
 
             [Test, DotsRuntimeIgnore]
+            [TestRequiresDotsDebugOrCollectionChecks]
             public void ReadOutSideOfCapacity_Fails()
             {
                 var model = StreamCompressionModel.Default;
@@ -420,6 +421,7 @@ namespace Unity.Collections.Tests
             }
 
             [Test, DotsRuntimeIgnore]
+            [TestRequiresDotsDebugOrCollectionChecks]
             public void UInt_OutOfCapacity()
             {
                 var model = StreamCompressionModel.Default;
@@ -468,8 +470,10 @@ namespace Unity.Collections.Tests
                 Assert.AreEqual(byteArray[i], reader.ReadByte());
             }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             LogAssert.Expect(LogType.Error, "Trying to read 1 bytes from a stream where only 0 are available");
             Assert.AreEqual(0, reader.ReadByte());
+#endif
         }
 
         [Test]

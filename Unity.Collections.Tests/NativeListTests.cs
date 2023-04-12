@@ -20,6 +20,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NullListThrow()
     {
         var list = new NativeList<int>();
@@ -60,6 +61,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeArrayFromNativeListInvalidatesOnAdd()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -81,6 +83,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeArrayFromNativeListInvalidatesOnCapacityChange()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -99,6 +102,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeArrayFromNativeListInvalidatesOnDispose()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -268,13 +272,14 @@ internal class NativeListTests : CollectionsTestFixture
         job.Output.Dispose();
     }
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
     [Test]
     public void SetCapacityLessThanLength()
     {
         var list = new NativeList<int>(Allocator.Persistent);
         list.Resize(10, NativeArrayOptions.UninitializedMemory);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ArgumentOutOfRangeException>(() => { list.Capacity = 5; });
+#endif
 
         list.Dispose();
     }
@@ -291,8 +296,6 @@ internal class NativeListTests : CollectionsTestFixture
         list.Dispose();
     }
 
-#endif
-
     [Test]
     public void NativeList_DisposeJob()
     {
@@ -303,8 +306,10 @@ internal class NativeListTests : CollectionsTestFixture
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container.Contains(0); });
+#endif
 
         disposeJob.Complete();
     }
@@ -335,42 +340,12 @@ internal class NativeListTests : CollectionsTestFixture
         container.Dispose();
     }
 
-    struct NativeQueueAddJob : IJob
-    {
-        NativeQueue<int> queue;
-
-        public NativeQueueAddJob(NativeQueue<int> queue) { this.queue = queue; }
-
-        public void Execute()
-        {
-            queue.Enqueue(1);
-        }
-    }
-
-    [Test]
-    public void NativeQueue_DisposeJobWithMissingDependencyThrows()
-    {
-        var queue = new NativeQueue<int>(Allocator.Persistent);
-        var deps = new NativeQueueAddJob(queue).Schedule();
-        Assert.Throws<InvalidOperationException>(() => { queue.Dispose(default); });
-        deps.Complete();
-        queue.Dispose();
-    }
-
-    [Test]
-    public void NativeQueue_DisposeJobCantBeScheduled()
-    {
-        var queue = new NativeQueue<int>(Allocator.Persistent);
-        var deps = queue.Dispose(default);
-        Assert.Throws<InvalidOperationException>(() => { new NativeQueueAddJob(queue).Schedule(deps); });
-        deps.Complete();
-    }
-
     // These tests require:
     // - JobsDebugger support for static safety IDs (added in 2020.1)
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test,DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeList_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var list = new NativeList<int>(10, CommonRwdAllocator.Handle);
@@ -382,6 +357,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test,DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
         // All collections that use Allocator.Temp share the same core AtomicSafetyHandle.
@@ -414,6 +390,7 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test,DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeList_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -463,8 +440,10 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(4);
         Assert.AreEqual(3, list.Length);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
+#endif
 
         Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
         Assert.AreEqual(5, list.Length);
@@ -501,8 +480,10 @@ internal class NativeListTests : CollectionsTestFixture
         list.Add(4);
         Assert.AreEqual(3, list.Length);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRange(3, -1));
+#endif
 
         Assert.DoesNotThrow(() => list.InsertRange(1, 0));
         Assert.AreEqual(3, list.Length);
@@ -599,7 +580,9 @@ internal class NativeListTests : CollectionsTestFixture
 
             list.Add(1);
             Assert.AreEqual(2, list.Length);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             Assert.Throws<ArgumentOutOfRangeException>(() => list.SetCapacity(1));
+#endif
 
             list.RemoveAtSwapBack(0);
             Assert.AreEqual(1, list.Length);

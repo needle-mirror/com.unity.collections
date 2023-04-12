@@ -1,3 +1,4 @@
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
 using UnityEngine;
 using NUnit.Framework;
 using System;
@@ -50,6 +51,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeList_NestedJob_Error()
     {
         var container = new NativeList<NativeList<int>>(CommonRwdAllocator.Handle);
@@ -68,6 +70,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
 #endif
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void AddElementToListFromJobInvalidatesArray()
     {
         var list = new NativeList<int>(CommonRwdAllocator.Handle);
@@ -109,6 +112,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void AccessBefore()
     {
         var list = new NativeList<int>(CommonRwdAllocator.Handle);
@@ -124,6 +128,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void AccessAfter()
     {
         var list = new NativeList<int>(CommonRwdAllocator.Handle);
@@ -156,6 +161,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void ScheduleDerivedArrayExceptions()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -170,6 +176,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void ScheduleDerivedArrayExceptions2()
     {
         var list = new NativeList<int>(1, Allocator.Persistent);
@@ -268,6 +275,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void WriteToArrayFromJobThenReadListFromMainThread()
     {
         var list = new NativeList<float>(1, Allocator.Persistent);
@@ -297,25 +305,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         deps.Complete();
     }
 
-    [Test]
-    public void NativeList_DisposeJobWithMissingDependencyThrows()
-    {
-        var list = new NativeList<int>(Allocator.Persistent);
-        var deps = new NativeListAddJob(list).Schedule();
-        Assert.Throws<InvalidOperationException>(() => { list.Dispose(default); });
-        deps.Complete();
-        list.Dispose();
-    }
-
-    [Test]
-    public void NativeList_DisposeJobCantBeScheduled()
-    {
-        var list = new NativeList<int>(Allocator.Persistent);
-        var deps = list.Dispose(default);
-        Assert.Throws<InvalidOperationException>(() => { new NativeListAddJob(list).Schedule(deps); });
-        deps.Complete();
-    }
-
     struct InvalidArrayAccessFromListJob : IJob
     {
         public NativeList<int> list;
@@ -329,7 +318,9 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
             // Assert.Throws<InvalidOperationException>(() => { array[0] = 5; }); - temporarily commenting out updated assert checks to ensure editor version promotion succeeds
         }
     }
+
     [Test]
+    [TestRequiresCollectionChecks]
     public void InvalidatedArrayAccessFromListThrowsInsideJob()
     {
         var job = new InvalidArrayAccessFromListJob { list = new NativeList<int>(CommonRwdAllocator.Handle) };
@@ -381,6 +372,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void ReadOnlyAliasedArrayThrows()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -408,6 +400,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeList_AsArray_Jobs()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -431,6 +424,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeList_AsReadOnly_Jobs()
     {
         var list = new NativeList<int>(Allocator.Persistent);
@@ -554,6 +548,7 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeList_AsReadOnlyAndParallelWriter()
     {
         NativeList<int> list;
@@ -622,3 +617,4 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         list.Dispose();
     }
 }
+#endif

@@ -35,6 +35,29 @@ namespace Unity.Collections
     // and includes no 'fixed' array. This is why we name every byte in the following struct.
 
     /// <summary>
+    /// For internal use only. This type is 8 byte aligned
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=16)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes16Align8
+    {
+<#
+    for(var i = 0; i < 2; ++i)
+    {
+       var offset = (i*8).ToString("D4");
+#>
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(<#=i*8#>)] public ulong byte<#=offset#>;
+
+<#
+    }
+#>
+    }
+
+    /// <summary>
     /// For internal use only.
     /// </summary>
     [Serializable]
@@ -56,6 +79,42 @@ namespace Unity.Collections
     }
 #>
     }
+
+<#
+{
+    var SIZES = new [] {32,64,128,512,4096};
+    foreach (var BYTES in SIZES) {
+#>
+
+    // A temporary copy of a struct is made before it is displayed in a C# debugger.
+    // However, only the first element of data members with names is copied at this time.
+    // Therefore, it's important that all data visible in the debugger, has a name
+    // and includes no 'fixed' array. This is why we name every byte in the following struct.
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    [Serializable]
+    [StructLayout(LayoutKind.Explicit, Size=<#=BYTES#>)]
+    [GenerateTestsForBurstCompatibility]
+    internal struct FixedBytes<#=BYTES#>Align8
+    {
+<#
+      for(var i = 0; i < (BYTES/16)*16; i += 16)
+      {
+        var offset = i.ToString("D4");
+#>
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        [SerializeField] [FieldOffset(<#=i#>)] internal FixedBytes16Align8 offset<#=offset#>;
+<#
+      }
+#>
+    }
+<#
+}}
+#>
 
 <#
 {
@@ -760,4 +819,5 @@ namespace Unity.Collections
         }
     }
 <#}}#>
+
 }

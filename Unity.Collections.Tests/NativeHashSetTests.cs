@@ -38,7 +38,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
-    public void UnsafeParallelHashSet_Capacity()
+    public void NativeHashSet_Capacity()
     {
         var container = new NativeHashSet<int>(0, Allocator.Persistent);
         Assert.IsTrue(container.IsEmpty);
@@ -50,21 +50,26 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    public void NativeHashSet_CapacityAtLeastCount()
+    {
+        var container = new NativeHashSet<int>(0, Allocator.Persistent);
+
+        for (int i = 0; i < 300; i++)
+            container.Add(i);
+
+        container.Capacity = 3;
+        Assert.IsTrue(container.Capacity >= container.Count);
+
+        container.Dispose();
+    }
+
+    [Test]
     public void NativeHashSet_RemoveOnEmptyMap_DoesNotThrow()
     {
         var container = new NativeHashSet<int>(0, Allocator.Temp);
         Assert.DoesNotThrow(() => container.Remove(0));
         Assert.DoesNotThrow(() => container.Remove(-425196));
         container.Dispose();
-    }
-
-    [Test]
-    public void NativeHashSet_Double_Deallocate_Throws()
-    {
-        var hashMap = new NativeHashSet<int>(16, CommonRwdAllocator.Handle);
-        hashMap.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-            () => { hashMap.Dispose(); });
     }
 
     [Test]
@@ -307,6 +312,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeHashSet_ForEach_Throws_When_Modified()
     {
         using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))
@@ -354,6 +360,7 @@ internal class NativeHashSetTests: CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeHashSet_ForEach_Throws_Job_Iterator()
     {
         using (var container = new NativeHashSet<int>(32, CommonRwdAllocator.Handle))

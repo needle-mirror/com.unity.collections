@@ -92,8 +92,7 @@ namespace Unity.Collections
                     {
                         CheckNull(m_Data);
                         m_Data->Dispose();
-                        var ptr = allocator.Allocate(sizeof(UnsafeText), 16, 1);
-                        m_Data = (UnsafeText*)ptr;
+                        m_Data = UnsafeText.Alloc(allocator);
                         *m_Data = default(UnsafeText);
                         ThrowCopyError(error, source);
                     }
@@ -133,8 +132,7 @@ namespace Unity.Collections
 
             AtomicSafetyHandle.SetBumpSecondaryVersionOnScheduleWrite(m_Safety, true);
 #endif
-            var ptr = allocator.Allocate(sizeof(UnsafeText), 16, 1);
-            m_Data = (UnsafeText*)ptr;
+            m_Data = UnsafeText.Alloc(allocator);
             *m_Data = new UnsafeText(capacity, allocator);
         }
 
@@ -176,7 +174,7 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeText(in FixedString32Bytes source, Allocator allocator)
-        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+            : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
 
@@ -202,7 +200,7 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeText(in FixedString64Bytes source, Allocator allocator)
-        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+            : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
 
@@ -228,7 +226,7 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeText(in FixedString128Bytes source, Allocator allocator)
-        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+            : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
 
@@ -254,7 +252,7 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeText(in FixedString512Bytes source, Allocator allocator)
-        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+            : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
 
@@ -280,7 +278,7 @@ namespace Unity.Collections
         /// <param name="source">A string to copy characters from.</param>
         /// <param name="allocator">The allocator to use.</param>
         public NativeText(in FixedString4096Bytes source, Allocator allocator)
-        : this(source, (AllocatorManager.AllocatorHandle)allocator)
+            : this(source, (AllocatorManager.AllocatorHandle)allocator)
         {
         }
 
@@ -520,13 +518,22 @@ namespace Unity.Collections
         /// </summary>
         public void Dispose()
         {
-            CheckNull(m_Data);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            var allocator = m_Data->m_UntypedListData.Allocator;
-            m_Data->Dispose();
-            AllocatorManager.Free(allocator, m_Data);
+            UnsafeText.Free(m_Data);
+            m_Data = null;
         }
 
         /// <summary>
@@ -536,11 +543,25 @@ namespace Unity.Collections
         /// <returns>The handle of the new job. The job depends upon `inputDeps` and releases all resources (memory and safety handles) of this NativeText.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = m_Data->Dispose(inputDeps);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeTextDisposeJob { Data = new NativeTextDispose { m_TextData = m_Data, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeTextDisposeJob { Data = new NativeTextDispose { m_TextData = m_Data } }.Schedule(inputDeps);
 #endif
+            m_Data = null;
+
             return jobHandle;
         }
 
@@ -1037,7 +1058,7 @@ namespace Unity.Collections
         {
             if (dataPtr == null)
             {
-                throw new Exception("NativeText has yet to be created or has been destroyed!");
+                throw new InvalidOperationException("NativeText has yet to be created or has been destroyed!");
             }
         }
 
@@ -1278,7 +1299,7 @@ namespace Unity.Collections
             {
                 if (dataPtr == null)
                 {
-                    throw new Exception("NativeText.ReadOnly has yet to be created or has been destroyed!");
+                    throw new InvalidOperationException("NativeText.ReadOnly has yet to be created or has been destroyed!");
                 }
             }
 
@@ -1295,9 +1316,7 @@ namespace Unity.Collections
             [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void ErrorWrite()
             {
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 throw new NotSupportedException("Trying to write to a NativeText.ReadOnly. Write operations are not permitted and are ignored.");
-#endif
             }
 
             /// <summary>
@@ -1770,6 +1789,34 @@ namespace Unity.Collections
 #else
             return new ReadOnly(m_Data);
 #endif
+        }
+    }
+
+    [NativeContainer]
+    [GenerateTestsForBurstCompatibility]
+    internal unsafe struct NativeTextDispose
+    {
+        [NativeDisableUnsafePtrRestriction]
+        public UnsafeText* m_TextData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        public AtomicSafetyHandle m_Safety;
+#endif
+
+        public void Dispose()
+        {
+            UnsafeText.Free(m_TextData);
+        }
+    }
+
+    [BurstCompile]
+    internal unsafe struct NativeTextDisposeJob : IJob
+    {
+        public NativeTextDispose Data;
+
+        public void Execute()
+        {
+            Data.Dispose();
         }
     }
 }

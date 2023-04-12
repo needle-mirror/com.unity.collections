@@ -1,6 +1,3 @@
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-#define ENABLE_UNITY_ALLOCATION_CHECKS
-#endif
 #pragma warning disable 0649
 
 using System;
@@ -220,7 +217,7 @@ namespace Unity.Collections
 
             internal void IncrementVersion()
             {
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 if (IsInstalled && IsCurrent)
                 {
                     // When allocator version is larger than 0x7FFF, allocator.ToAllocator
@@ -233,7 +230,7 @@ namespace Unity.Collections
 
             internal void Rewind()
             {
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 InvalidateDependents();
                 IncrementVersion();
 #endif
@@ -241,29 +238,33 @@ namespace Unity.Collections
 
             internal void Install(TableEntry tableEntry)
             {
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 // if this allocator has never been visited before, then the unsafelists for its child allocators
                 // and child safety handles are uninitialized, which means their allocator is Allocator.Invalid.
                 // rectify that here.
-                if(ChildSafetyHandles.Allocator.Value != (int)Allocator.Persistent)
+                if (ChildAllocators.Allocator.Value != (int)Allocator.Persistent)
                 {
-                    ChildSafetyHandles = new UnsafeList<AtomicSafetyHandle>(0, Allocator.Persistent);
                     ChildAllocators = new UnsafeList<AllocatorHandle>(0, Allocator.Persistent);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                    ChildSafetyHandles = new UnsafeList<AtomicSafetyHandle>(0, Allocator.Persistent);
+#endif
                 }
 #endif
                 Rewind();
                 TableEntry = tableEntry;
             }
 
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             internal ref ushort OfficialVersion => ref SharedStatics.Version.Ref.Data.ElementAt(Index);
-            internal ref UnsafeList<AtomicSafetyHandle> ChildSafetyHandles => ref SharedStatics.ChildSafetyHandles.Ref.Data.ElementAt(Index);
             internal ref UnsafeList<AllocatorHandle> ChildAllocators => ref SharedStatics.ChildAllocators.Ref.Data.ElementAt(Index);
             internal ref AllocatorHandle Parent => ref SharedStatics.Parent.Ref.Data.ElementAt(Index);
             internal ref int IndexInParent => ref SharedStatics.IndexInParent.Ref.Data.ElementAt(Index);
 
             internal bool IsCurrent => (Version == 0) || (Version == OfficialVersion);
             internal bool IsValid => (Index < FirstUserIndex) || (IsInstalled && IsCurrent);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal ref UnsafeList<AtomicSafetyHandle> ChildSafetyHandles => ref SharedStatics.ChildSafetyHandles.Ref.Data.ElementAt(Index);
 
             /// <summary>
             ///   <para>Determines if the handle is still valid, because we intend to release it if it is.</para>
@@ -292,24 +293,6 @@ namespace Unity.Collections
 #else
                 if(a.versionNode != b.versionNode)
 #endif
-                    return false;
-                return true;
-            }
-
-            internal static bool AreTheSame(AllocatorHandle a, AllocatorHandle b)
-            {
-                if(a.Index != b.Index)
-                    return false;
-                if(a.Version != b.Version)
-                    return false;
-                return true;
-            }
-
-            internal bool NeedsUseAfterFreeTracking()
-            {
-                if(IsValid == false)
-                    return false;
-                if(ChildSafetyHandles.Allocator.Value != (int)Allocator.Persistent)
                     return false;
                 return true;
             }
@@ -350,6 +333,27 @@ namespace Unity.Collections
                     --safetyHandleIndex;
                 }
                 return false;
+            }
+#endif
+
+            internal bool NeedsUseAfterFreeTracking()
+            {
+                if (IsValid == false)
+                    return false;
+
+                if (ChildAllocators.Allocator.Value != (int)Allocator.Persistent)
+                    return false;
+
+                return true;
+            }
+
+            internal static bool AreTheSame(AllocatorHandle a, AllocatorHandle b)
+            {
+                if (a.Index != b.Index)
+                    return false;
+                if (a.Version != b.Version)
+                    return false;
+                return true;
             }
 
             /// <summary>
@@ -413,6 +417,7 @@ namespace Unity.Collections
             {
                 if (!NeedsUseAfterFreeTracking())
                     return;
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
                 for (var i = 0; i < ChildSafetyHandles.Length; ++i)
                 {
                     unsafe
@@ -423,6 +428,7 @@ namespace Unity.Collections
                     }
                 }
                 ChildSafetyHandles.Clear();
+#endif
                 if (Parent.IsValid)
                     Parent.TryRemoveChildAllocator(this, IndexInParent);
                 Parent = default;
@@ -509,7 +515,7 @@ namespace Unity.Collections
                 return block;
             }
 
-            [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             static void CheckAllocatedSuccessfully(int error)
             {
                 if (error != 0)
@@ -574,6 +580,13 @@ namespace Unity.Collections
             public void Dispose()
             {
                 Rewind();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+                ChildAllocators.Dispose();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                ChildSafetyHandles.Dispose();
+#endif
+#endif
+                TableEntry = default;
             }
 
             /// <summary>
@@ -893,14 +906,14 @@ namespace Unity.Collections
                 CheckFailedToFree(error);
             }
 
-            [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckFailedToAllocate(int error)
             {
                 if (error != 0)
                     throw new ArgumentException($"Error {error}: Failed to Allocate {this}");
             }
 
-            [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+            [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
             void CheckFailedToFree(int error)
             {
                 if (error != 0)
@@ -1043,10 +1056,10 @@ namespace Unity.Collections
             TableEntry tableEntry = default;
             tableEntry = block.Range.Allocator.TableEntry;
             var function = new FunctionPointer<TryFunction>(tableEntry.function);
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             // if the allocator being passed in has a version of 0, that means "whatever the current version is."
             // so we patch it here, with whatever the current version is...
-            if(block.Range.Allocator.Version == 0)
+            if (block.Range.Allocator.Version == 0)
                 block.Range.Allocator.Version = block.Range.Allocator.OfficialVersion;
 #endif
 
@@ -1062,7 +1075,7 @@ namespace Unity.Collections
         /// <summary>
         /// A stack allocator with no storage of its own. Uses the storage of its parent.
         /// </summary>
-        [BurstCompile(CompileSynchronously = true)]
+        [BurstCompile]
         internal struct StackAllocator : IAllocator, IDisposable
         {
             public AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
@@ -1078,7 +1091,7 @@ namespace Unity.Collections
             {
                 m_storage = storage;
                 m_top = 0;
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 m_storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
             }
@@ -1116,7 +1129,7 @@ namespace Unity.Collections
                 return -1;
             }
 
-            [BurstCompile(CompileSynchronously = true)]
+            [BurstCompile]
 			[MonoPInvokeCallback(typeof(TryFunction))]
             public static unsafe int Try(IntPtr allocatorState, ref Block block)
             {
@@ -1134,7 +1147,7 @@ namespace Unity.Collections
         /// <summary>
         /// Slab allocator with no backing storage.
         /// </summary>
-        [BurstCompile(CompileSynchronously = true)]
+        [BurstCompile]
         internal struct SlabAllocator : IAllocator, IDisposable
         {
             public AllocatorHandle Handle { get { return m_handle; } set { m_handle = value; } }
@@ -1165,7 +1178,7 @@ namespace Unity.Collections
 
             internal void Initialize(Block storage, int slabSizeInBytes, long budget)
             {
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 storage.Range.Allocator.AddChildAllocator(Handle);
 #endif
                 Assert.IsTrue((slabSizeInBytes & (slabSizeInBytes - 1)) == 0);
@@ -1224,7 +1237,7 @@ namespace Unity.Collections
                 return -1;
             }
 
-            [BurstCompile(CompileSynchronously = true)]
+            [BurstCompile]
 			[MonoPInvokeCallback(typeof(TryFunction))]
             public static unsafe int Try(IntPtr allocatorState, ref Block block)
             {
@@ -1275,9 +1288,11 @@ namespace Unity.Collections
             internal sealed class IsInstalled { internal static readonly SharedStatic<Long1024> Ref = SharedStatic<Long1024>.GetOrCreate<IsInstalled>(); }
             internal sealed class TableEntry { internal static readonly SharedStatic<Array32768<AllocatorManager.TableEntry>> Ref = SharedStatic<Array32768<AllocatorManager.TableEntry>>.GetOrCreate<TableEntry>(); }
             internal sealed class IsAutoDispose { internal static readonly SharedStatic<Long1024> Ref = SharedStatic<Long1024>.GetOrCreate<IsAutoDispose>(); }
-#if ENABLE_UNITY_ALLOCATION_CHECKS
-            internal sealed class Version { internal static readonly SharedStatic<Array32768<ushort>> Ref = SharedStatic<Array32768<ushort>>.GetOrCreate<Version>(); }
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             internal sealed class ChildSafetyHandles { internal static readonly SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>> Ref = SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>>.GetOrCreate<ChildSafetyHandles>(); }
+#endif
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            internal sealed class Version { internal static readonly SharedStatic<Array32768<ushort>> Ref = SharedStatic<Array32768<ushort>>.GetOrCreate<Version>(); }
             internal sealed class ChildAllocators { internal static readonly SharedStatic<Array32768<UnsafeList<AllocatorHandle>>> Ref = SharedStatic<Array32768<UnsafeList<AllocatorHandle>>>.GetOrCreate<ChildAllocators>(); }
             internal sealed class Parent { internal static readonly SharedStatic<Array32768<AllocatorHandle>> Ref = SharedStatic<Array32768<AllocatorHandle>>.GetOrCreate<Parent>(); }
             internal sealed class IndexInParent { internal static readonly SharedStatic<Array32768<int>> Ref = SharedStatic<Array32768<int>>.GetOrCreate<IndexInParent>(); }
@@ -1419,7 +1434,7 @@ namespace Unity.Collections
                     ConcurrentMask.TryAllocate(ref SharedStatics.IsAutoDispose.Ref.Data, offset, 1);
                 }
 
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 handle.Version = handle.OfficialVersion;
 #endif
             }
@@ -1460,7 +1475,7 @@ namespace Unity.Collections
 
             Managed.RegisterDelegate(t.Handle.Index, t.Function);
 
-#if ENABLE_UNITY_ALLOCATION_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             if (!t.Handle.IsValid)
                 throw new InvalidOperationException("Allocator registration succeeded, but failed to produce valid handle.");
 #endif
@@ -1491,7 +1506,7 @@ namespace Unity.Collections
         {
             if(t.Handle.IsInstalled)
             {
-                t.Handle.Install(default);
+                t.Handle.Dispose();
                 ConcurrentMask.TryFree(ref SharedStatics.IsInstalled.Ref.Data, t.Handle.Value, 1);
                 ConcurrentMask.TryFree(ref SharedStatics.IsAutoDispose.Ref.Data, t.Handle.Value, 1);
                 Managed.UnregisterDelegate(t.Handle.Index);
@@ -1561,14 +1576,22 @@ namespace Unity.Collections
         /// <summary>
         /// Number of global scratchpad allocators reserved in the global function table.
         /// </summary>
-        /// <remarks>Number of global scratchpad allocators reserved in the global function table. Make sure it is larger than or equals to MaxJobThreadCount + 1.</remarks>
+        /// <remarks>Number of global scratchpad allocators reserved in the global function table. Make sure it is larger than or equals to the max number of jobs that can run at the same time.</remarks>
+#if UNITY_2022_2_14F1_OR_NEWER
+        internal static readonly ushort NumGlobalScratchAllocators = (ushort) (JobsUtility.ThreadIndexCount);
+#else
         internal const ushort NumGlobalScratchAllocators = JobsUtility.MaxJobThreadCount + 1;
+#endif
 
         /// <summary>
         /// Max number of global allocators reserved in the global function table.
         /// </summary>
         /// <remarks>Max number of global allocators reserved in the global function table. Make sure it is larger than or equals to NumGlobalScratchAllocators.</remarks>
+#if UNITY_2022_2_14F1_OR_NEWER
+        internal static readonly ushort MaxNumGlobalAllocators = (ushort)(JobsUtility.ThreadIndexCount);
+#else
         internal const ushort MaxNumGlobalAllocators = JobsUtility.MaxJobThreadCount + 1;
+#endif
 
         /// <summary>
         /// Base index in the global function table for global allocators.
@@ -1576,39 +1599,39 @@ namespace Unity.Collections
         /// <remarks>The indexes from `GlobalAllocatorBaseIndex` up to `MaxNumCustomAllocators` are reserved which
         /// should not be used for your own allocators.</remarks>
         /// <value>Base index in the global function table for global allocators.</value>
-        internal const uint GlobalAllocatorBaseIndex = MaxNumCustomAllocators - MaxNumGlobalAllocators;
+        static internal readonly uint GlobalAllocatorBaseIndex = (uint)(MaxNumCustomAllocators - MaxNumGlobalAllocators);
 
         /// <summary>
         /// Index in the global function table of the first global scratchpad allocator.
         /// </summary>
         /// <remarks>The indexes from `GlobalAllocatorBaseIndex` up to `NumGlobalScratchAllocators` are reserved for global scratchpad allocators.</remarks>
         /// <value>Index in the global function table of the first global scratchpad allocator.</value>
-        internal const uint FirstGlobalScratchpadAllocatorIndex = GlobalAllocatorBaseIndex;
+        internal static readonly uint FirstGlobalScratchpadAllocatorIndex = GlobalAllocatorBaseIndex;
 
         internal static bool IsCustomAllocator(AllocatorHandle allocator)
         {
             return allocator.Index >= FirstUserIndex;
         }
 
-        [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckFailedToAllocate(int error)
         {
             if (error != 0)
                 throw new ArgumentException("failed to allocate");
         }
 
-        [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckFailedToFree(int error)
         {
             if (error != 0)
                 throw new ArgumentException("failed to free");
         }
 
-        [Conditional("ENABLE_UNITY_ALLOCATION_CHECKS")]
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
         internal static void CheckValid(AllocatorHandle handle)
         {
-#if ENABLE_UNITY_ALLOCATION_CHECKS
-            if(handle.IsValid == false)
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+            if (handle.IsValid == false)
                 throw new ArgumentException("allocator handle is not valid.");
 #endif
         }

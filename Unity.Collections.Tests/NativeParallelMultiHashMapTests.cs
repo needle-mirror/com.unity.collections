@@ -17,6 +17,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeParallelMultiHashMap<int, int>(10, CommonRwdAllocator.Handle);
@@ -40,6 +41,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
         // Make sure this isn't the first container of this type ever created, so that valid static safety data exists
@@ -167,15 +169,6 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         hashMap.Dispose();
     }
 
-    [Test]
-    public void NativeParallelMultiHashMap_Double_Deallocate_Throws()
-    {
-        var hashMap = new NativeParallelMultiHashMap<int, int>(16, CommonRwdAllocator.Handle);
-        hashMap.Dispose();
-        Assert.Throws<ObjectDisposedException>(
-            () => { hashMap.Dispose(); });
-    }
-
     static void ExpectedCount<TKey, TValue>(ref NativeParallelMultiHashMap<TKey, TValue> container, int expected)
         where TKey : unmanaged, IEquatable<TKey>
         where TValue : unmanaged
@@ -273,7 +266,6 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void NativeParallelMultiHashMap_GetUniqueKeysEmpty()
     {
@@ -302,8 +294,6 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         }
         keys.Item1.Dispose();
     }
-
-#endif
 
     [Test]
     public void NativeParallelMultiHashMap_GetValues()
@@ -458,6 +448,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_ForEach_Throws_When_Modified()
     {
         using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -500,6 +491,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_ForEach_Throws_Job_Iterator()
     {
         using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))
@@ -528,6 +520,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_ForEach_Throws_When_Modified_From_Job()
     {
         using (var container = new NativeParallelMultiHashMap<int, int>(32, CommonRwdAllocator.Handle))

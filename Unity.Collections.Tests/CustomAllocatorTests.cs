@@ -43,16 +43,16 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
             var oldIndex = allocator.Handle.Index;
             var oldVersion = allocator.Handle.Version;
             allocator.Dispose();
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             var newVersion = AllocatorManager.SharedStatics.Version.Ref.Data.ElementAt(oldIndex);
             Assert.AreEqual(oldVersion + 1, newVersion);
+#endif
             allocatorHelper.Dispose();
         }
         storage.Dispose();
         AllocatorManager.Shutdown();
     }
 
-
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void ReleasingChildHandlesWorks()
     {
@@ -65,10 +65,12 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         var list = NativeList<int>.New(10, ref allocator);
         list.Add(0); // put something in the list, so it'll have a size for later
         allocator.Dispose(); // ok to tear down the storage that the stack allocator used, too.
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
         () => {
             list[0] = 0; // we haven't disposed this list, but it was released automatically already. so this is an error.
         });
+#endif
         storage.Dispose();
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
@@ -92,17 +94,17 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
 
         parent.Dispose(); // tear down the parent allocator
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentException>(() =>
         {
             childHelper.Allocator.Allocate(default(byte), 1000); // try to allocate from the child - it should fail.
         });
-
+#endif
         parentStorage.Dispose();
         parentHelper.Dispose();
         childHelper.Dispose();
         AllocatorManager.Shutdown();
     }
-#endif
 
     [Test]
     public void AllocatesAndFreesFromMono()
@@ -210,7 +212,7 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         {
             m_parent = parent.Handle;
             m_clearValue = ClearValue;
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             parent.Handle.AddChildAllocator(m_handle);
 #endif
         }
@@ -371,8 +373,8 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         AllocatorManager.Shutdown();
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public void CustomAllocatorNativeListThrowsWhenAllocatorIsWrong()
     {
         AllocatorManager.Initialize();
@@ -385,7 +387,6 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         list.Dispose(ref allocator0);
         AllocatorManager.Shutdown();
     }
-#endif
 
     // this is testing for the case where we want to install a custom allocator that clears memory to a constant
     // byte value, and then have an UnsafeList use that custom allocator.
@@ -446,10 +447,12 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
         allocator.FreeBlock(ref block1);
         Assert.AreEqual(0, allocator.Occupied[0]);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentException>(() =>
         {
             allocatorHelper.Allocator.AllocateBlock(default(int), 65);
         });
+#endif
 
         allocator.Dispose();
         backingStorage.Dispose();
@@ -460,9 +463,11 @@ internal class CustomAllocatorTests : CollectionsTestCommonBase
     [Test]
     public unsafe void CollectionHelper_IsAligned()
     {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x0, 0)); // value is 0
         Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x1000, 0)); // alignment is 0
         Assert.Throws<ArgumentException>(() => CollectionHelper.IsAligned((void*)0x1000, 3)); // alignment is not pow2
+#endif
 
         for (var i = 0; i < 31; ++i)
         {

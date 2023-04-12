@@ -11,12 +11,14 @@ using UnityEngine.Scripting.APIUpdating;
 namespace Unity.Collections
 {
     /// <summary>
-    /// Data streams can be used to serialize data (e.g. over the network). The
-    /// <c>DataStreamWriter</c> and <c>DataStreamReader</c> classes work together
-    /// to serialize data for sending and then to deserialize when receiving.
+    /// Writes data in an endian format to serialize data.
     /// </summary>
     /// <remarks>
-    /// DataStreamWriter writes this data in the endian format native to the current machine architecture. <see cref="IsLittleEndian"/>
+    /// Data streams can be used to serialize data (e.g. over the network). The
+    /// DataStreamWriter and <see cref="DataStreamReader"/> classes work together
+    /// to serialize data for sending and then to deserialize when receiving.
+    ///
+    /// DataStreamWriter writes data in the endian format native to the current machine architecture. 
     /// For network byte order use the so named methods.
     /// <br/>
     /// The reader can be used to deserialize the data from a NativeArray&lt;byte&gt;, writing data
@@ -39,6 +41,7 @@ namespace Unity.Collections
     /// is stored it can be used to overwrite the data later on. This is particularly useful when
     /// the size of the data is written at the start and you want to write it at
     /// the end when you know the value.
+    /// <seealso cref="IsLittleEndian"/>
     ///
     /// <code>
     /// using (var data = new NativeArray&lt;byte&gt;(16, Allocator.Persistent))

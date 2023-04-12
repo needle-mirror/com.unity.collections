@@ -245,7 +245,7 @@ namespace Unity.Collections
         /// <remarks>
         /// Length is incremented by 1. Will not increase the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if incrementing the length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if incrementing the length would exceed the capacity.</exception>
         public void AddNoResize(T value)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -262,7 +262,7 @@ namespace Unity.Collections
         /// <remarks>
         /// Length is increased by the count. Will not increase the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(void* ptr, int count)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -279,7 +279,7 @@ namespace Unity.Collections
         /// <remarks>
         /// Length is increased by the length of the other list. Will not increase the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRangeNoResize(NativeList<T> list)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -310,7 +310,7 @@ namespace Unity.Collections
         /// <remarks>
         /// Length is increased by the number of new elements. Does not increase the capacity.
         /// </remarks>
-        /// <exception cref="Exception">Thrown if the increased length would exceed the capacity.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the increased length would exceed the capacity.</exception>
         public void AddRange(NativeArray<T> array)
         {
             AddRange(array.GetUnsafeReadOnlyPtr(), array.Length);
@@ -490,6 +490,17 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
             UnsafeList<T>.Destroy(m_ListData);
@@ -505,7 +516,18 @@ namespace Unity.Collections
         internal void Dispose<U>(ref U allocator) where U : unmanaged, AllocatorManager.IAllocator
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
             CheckHandleMatches(allocator.Handle);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
             UnsafeList<T>.Destroy(m_ListData, ref allocator);
@@ -520,8 +542,18 @@ namespace Unity.Collections
         public JobHandle Dispose(JobHandle inputDeps)
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var jobHandle = new NativeListDisposeJob { Data = new NativeListDispose { m_ListData = (UntypedUnsafeList*)m_ListData, m_Safety = m_Safety } }.Schedule(inputDeps);
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeListDisposeJob { Data = new NativeListDispose { m_ListData = (UntypedUnsafeList*)m_ListData, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
 #else
             var jobHandle = new NativeListDisposeJob { Data = new NativeListDispose { m_ListData = (UntypedUnsafeList*)m_ListData } }.Schedule(inputDeps);
@@ -544,8 +576,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns a native array that aliases the content of a list.
+        /// **Obsolete.** Use <see cref="AsArray"/> method to do explicit cast instead.
         /// </summary>
+        /// <remarks>
+        /// Returns a native array that aliases the content of a list.
+        /// </remarks>
         /// <param name="nativeList">The list to alias.</param>
         /// <returns>A native array that aliases the content of the list.</returns>
         [Obsolete("Implicit cast from `NativeList<T>` to `NativeArray<T>` has been deprecated; Use '.AsArray()' method to do explicit cast instead.", false)]
@@ -882,7 +917,7 @@ namespace Unity.Collections
             /// <remarks>
             /// Increments the length by 1 unless doing so would exceed the current capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if adding an element would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if adding an element would exceed the capacity.</exception>
             public void AddNoResize(T value)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -902,7 +937,7 @@ namespace Unity.Collections
             /// <remarks>
             /// Increments the length by `count` unless doing so would exceed the current capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if adding the elements would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if adding the elements would exceed the capacity.</exception>
             public void AddRangeNoResize(void* ptr, int count)
             {
                 CheckArgPositive(count);
@@ -925,7 +960,7 @@ namespace Unity.Collections
             /// <remarks>
             /// Increments the length of this list by the length of the other list unless doing so would exceed the current capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if adding the elements would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if adding the elements would exceed the capacity.</exception>
             public void AddRangeNoResize(UnsafeList<T> list)
             {
                 AddRangeNoResize(list.Ptr, list.Length);
@@ -938,7 +973,7 @@ namespace Unity.Collections
             /// <remarks>
             /// Increments the length of this list by the length of the other list unless doing so would exceed the current capacity.
             /// </remarks>
-            /// <exception cref="Exception">Thrown if adding the elements would exceed the capacity.</exception>
+            /// <exception cref="InvalidOperationException">Thrown if adding the elements would exceed the capacity.</exception>
             public void AddRangeNoResize(NativeList<T> list)
             {
                 AddRangeNoResize(*list.m_ListData);
@@ -966,7 +1001,7 @@ namespace Unity.Collections
         static void CheckSufficientCapacity(int capacity, int length)
         {
             if (capacity < length)
-                throw new Exception($"Length {length} exceeds Capacity {capacity}");
+                throw new InvalidOperationException($"Length {length} exceeds Capacity {capacity}");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]

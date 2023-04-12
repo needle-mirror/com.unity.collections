@@ -4,6 +4,35 @@ using Unity.Jobs.LowLevel.Unsafe;
 
 namespace Unity.Collections.Tests
 {
+    // If ENABLE_UNITY_COLLECTIONS_CHECKS is not defined we will ignore the test
+    // When using this attribute, consider it to logically AND with any other TestRequiresxxxx attrubute
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+    internal class TestRequiresCollectionChecks : System.Attribute
+    {
+        public TestRequiresCollectionChecks(string msg = null) { }
+    }
+#else
+    internal class TestRequiresCollectionChecks : IgnoreAttribute
+    {
+        public TestRequiresCollectionChecks(string msg = null) : base($"Test requires ENABLE_UNITY_COLLECTION_CHECKS which is not defined{(msg == null ? "." : $": {msg}")}") { }
+    }
+#endif
+
+    // If ENABLE_UNITY_COLLECTIONS_CHECKS and UNITY_DOTS_DEBUG is not defined we will ignore the test
+    // conversely if either of them are defined the test will be run.
+    // When using this attribute, consider it to logically AND with any other TestRequiresxxxx attrubute
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+    internal class TestRequiresDotsDebugOrCollectionChecks : System.Attribute
+    {
+        public TestRequiresDotsDebugOrCollectionChecks(string msg = null) { }
+    }
+#else
+    internal class TestRequiresDotsDebugOrCollectionChecks : IgnoreAttribute
+    {
+        public TestRequiresDotsDebugOrCollectionChecks(string msg = null) : base($"Test requires UNITY_DOTS_DEBUG || ENABLE_UNITY_COLLECTION_CHECKS which neither are defined{(msg == null ? "." : $": {msg}")}") { }
+    }
+#endif
+
     internal class CollectionsTestCommonBase
     {
         AllocatorHelper<RewindableAllocator> rwdAllocatorHelper;

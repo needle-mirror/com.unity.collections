@@ -7,6 +7,7 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using Assert = FastAssert;
 
+[BurstCompile]
 internal class NativeQueueTests : CollectionsTestCommonBase
 {
     static void ExpectedCount<T>(ref NativeQueue<T> container, int expected) where T : unmanaged
@@ -20,14 +21,22 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         ExpectedCount(ref queue, 16);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
@@ -37,14 +46,22 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         for (int i = 0; i < 16; ++i)
             cQueue.Enqueue(i);
         ExpectedCount(ref queue, 16);
         for (int i = 0; i < 16; ++i)
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
@@ -53,7 +70,11 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         ExpectedCount(ref queue, 16);
@@ -63,7 +84,11 @@ internal class NativeQueueTests : CollectionsTestCommonBase
             queue.Dequeue();
         }
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
@@ -72,7 +97,11 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     {
         var queue = new NativeQueue<int>(Allocator.Temp);
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         for (int i = 0; i < 16; ++i)
             queue.Enqueue(i);
         ExpectedCount(ref queue, 16);
@@ -81,11 +110,16 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         ExpectedCount(ref queue, 8);
         queue.Clear();
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
     [Test]
+    [TestRequiresCollectionChecks]
     public void Double_Deallocate_Throws()
     {
         var queue = new NativeQueue<int>(CommonRwdAllocator.Handle);
@@ -118,7 +152,9 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         var queue = new NativeQueue<int>(Allocator.Temp);
         ExpectedCount(ref queue, 0);
 
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
 
         for (int i = 0; i < 256; ++i)
             queue.Enqueue(i);
@@ -140,7 +176,10 @@ internal class NativeQueueTests : CollectionsTestCommonBase
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         ExpectedCount(ref queue, 0);
 
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
@@ -150,7 +189,10 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         var queue = new NativeQueue<int>(Allocator.Temp);
         var cQueue = queue.AsParallelWriter();
         ExpectedCount(ref queue, 0);
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
 
         for (int i = 0; i < 256; ++i)
             cQueue.Enqueue(i);
@@ -172,7 +214,10 @@ internal class NativeQueueTests : CollectionsTestCommonBase
             Assert.AreEqual(i, queue.Dequeue(), "Got the wrong value from the queue");
         ExpectedCount(ref queue, 0);
 
-        Assert.Throws<System.InvalidOperationException>(() => {queue.Dequeue(); });
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<System.InvalidOperationException>(() => { queue.Dequeue(); });
+#endif
+
         queue.Dispose();
     }
 
@@ -185,8 +230,11 @@ internal class NativeQueueTests : CollectionsTestCommonBase
 
         var disposeJob = container.Dispose(default);
         Assert.False(container.IsCreated);
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
         Assert.Throws<ObjectDisposedException>(
             () => { container.Enqueue(0); });
+#endif
 
         disposeJob.Complete();
     }
@@ -261,7 +309,8 @@ internal class NativeQueueTests : CollectionsTestCommonBase
     // - JobsDebugger support for static safety IDs (added in 2020.1)
     // - Asserting throws
 #if !UNITY_DOTSRUNTIME
-    [Test,DotsRuntimeIgnore]
+    [Test, DotsRuntimeIgnore]
+    [TestRequiresCollectionChecks]
     public void NativeQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
@@ -291,7 +340,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         AllocatorManager.Shutdown();
     }
 
-    [BurstCompile]
+    [BurstCompile(CompileSynchronously = true)]
     struct BurstedCustomAllocatorJob : IJob
     {
         [NativeDisableUnsafePtrRestriction]
@@ -320,7 +369,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         var allocatorPtr = (CustomAllocatorTests.CountingAllocator*)UnsafeUtility.AddressOf<CustomAllocatorTests.CountingAllocator>(ref allocator);
         unsafe
         {
-            var handle = new BurstedCustomAllocatorJob {Allocator = allocatorPtr}.Schedule();
+            var handle = new BurstedCustomAllocatorJob { Allocator = allocatorPtr }.Schedule();
             handle.Complete();
         }
 
@@ -350,5 +399,231 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         containerNested.Dispose();
         containerNestedStruct.Dispose();
         inner.Dispose();
+    }
+
+
+    [Test]
+    public void NativeQueue_ReadOnly()
+    {
+        var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        container.Enqueue(123);
+        container.Enqueue(456);
+        container.Enqueue(789);
+
+        var ro = container.AsReadOnly();
+        Assert.AreEqual(3, ro.Count);
+        Assert.AreEqual(123, ro[0]);
+        Assert.AreEqual(456, ro[1]);
+        Assert.AreEqual(789, ro[2]);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[3]; });
+        Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[-1]; });
+        Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[int.MaxValue]; });
+        Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[int.MinValue]; });
+#endif
+
+        container.Dispose();
+    }
+
+    // Burst error BC1071: Unsupported assert type
+    // [BurstCompile(CompileSynchronously = true)]
+    struct NativeQueueTestAsReadOnly : IJob
+    {
+        [ReadOnly]
+        NativeQueue<int>.ReadOnly container;
+
+        public NativeQueueTestAsReadOnly(NativeQueue<int>.ReadOnly container) { this.container = container; }
+
+        public void Execute()
+        {
+            var ro = container;
+            Assert.AreEqual(3, ro.Count);
+            Assert.AreEqual(123, ro[0]);
+            Assert.AreEqual(456, ro[1]);
+            Assert.AreEqual(789, ro[2]);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[3]; });
+            Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[-1]; });
+            Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[int.MaxValue]; });
+            Assert.Throws<IndexOutOfRangeException>(() => { _ = ro[int.MinValue]; });
+#endif
+        }
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks]
+    public void NativeQueue_ReadOnlyJob()
+    {
+        var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        container.Enqueue(123);
+        container.Enqueue(456);
+        container.Enqueue(789);
+
+        var job = new NativeQueueTestAsReadOnly(container.AsReadOnly()).Schedule();
+
+        Assert.Throws<InvalidOperationException>(() => { container.Enqueue(987); });
+        Assert.Throws<InvalidOperationException>(() => { container.Dequeue(); });
+        Assert.Throws<InvalidOperationException>(() => { container.Dispose(); });
+
+        job.Complete();
+
+        Assert.DoesNotThrow(() => { container.Enqueue(987); });
+        Assert.DoesNotThrow(() => { container.Dequeue(); });
+        Assert.DoesNotThrow(() => { container.Dispose(); });
+    }
+
+    struct NativeQueueTestWriteMappedToReadOnly : IJob
+    {
+        [WriteOnly]
+        public NativeQueue<int>.ParallelWriter Container;
+        public void Execute() { }
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks]
+    public void NativeQueue_ReadOnlyCannotScheduledForWrite()
+    {
+        var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        container.Enqueue(123);
+        container.Enqueue(456);
+        container.Enqueue(789);
+
+        var ro = container.AsReadOnly();
+        var job = new NativeQueueTestWriteMappedToReadOnly { Container = container.AsParallelWriter() }.Schedule();
+
+        Assert.Throws<InvalidOperationException>(() => { _ = ro.Count; });
+        Assert.Throws<InvalidOperationException>(() => { _ = ro[0]; });
+        Assert.Throws<InvalidOperationException>(() => { _ = ro[1]; });
+        Assert.Throws<InvalidOperationException>(() => { _ = ro[2]; });
+        Assert.Throws<InvalidOperationException>(() => { foreach (var item in ro) { } });
+
+        job.Complete();
+
+        Assert.AreEqual(3, ro.Count);
+        Assert.AreEqual(123, ro[0]);
+        Assert.AreEqual(456, ro[1]);
+        Assert.AreEqual(789, ro[2]);
+        Assert.DoesNotThrow(() => { foreach (var item in ro) { } });
+
+        container.Dispose();
+    }
+
+    [Test]
+    public void NativeQueue_ReadOnlyForEach()
+    {
+        var container = new NativeQueue<int>(CommonRwdAllocator.Handle);
+        container.Enqueue(123);
+        container.Enqueue(456);
+        container.Enqueue(789);
+
+        var ro = container.AsReadOnly();
+
+        var idx = 0;
+        foreach (var item in ro)
+        {
+            Assert.AreEqual(item, ro[idx++]);
+        }
+
+        container.Dispose();
+    }
+
+    struct NativeQueue_ForEachIterator : IJob
+    {
+        [ReadOnly]
+        public NativeQueue<int>.Enumerator Iter;
+
+        public void Execute()
+        {
+            while (Iter.MoveNext())
+            {
+            }
+        }
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks]
+    public void NativeQueue_ForEach_Throws_Job_Iterator()
+    {
+        using (var container = new NativeQueue<int>(CommonRwdAllocator.Handle))
+        {
+            var jobHandle = new NativeQueue_ForEachIterator
+            {
+                Iter = container.AsReadOnly().GetEnumerator()
+
+            }.Schedule();
+
+            Assert.Throws<InvalidOperationException>(() => { container.Enqueue(987); });
+
+            jobHandle.Complete();
+        }
+    }
+
+    struct NativeQueueParallelWriteJob : IJobParallelFor
+    {
+        [WriteOnly]
+        public NativeQueue<int>.ParallelWriter Writer;
+
+        public void Execute(int index)
+        {
+            Writer.Enqueue(index);
+        }
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks]
+    public void NativeQueue_ForEach_Throws()
+    {
+        using (var container = new NativeQueue<int>(CommonRwdAllocator.Handle))
+        {
+            var iter = container.AsReadOnly().GetEnumerator();
+
+            var jobHandle = new NativeQueueParallelWriteJob
+            {
+                Writer = container.AsParallelWriter()
+
+            }.Schedule(1, 2);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                while (iter.MoveNext())
+                {
+                }
+            });
+
+            jobHandle.Complete();
+        }
+    }
+
+    struct NativeQueue_ForEach_Job : IJob
+    {
+        public NativeQueue<int>.ReadOnly Input;
+
+        public void Execute()
+        {
+            var index = 0;
+            foreach (var value in Input)
+            {
+                Assert.AreEqual(value, Input[index++]);
+            }
+        }
+    }
+
+    [Test]
+    public void NativeQueue_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        var seen = new NativeArray<int>(n, Allocator.Temp);
+        using (var container = new NativeQueue<int>(CommonRwdAllocator.Handle))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Enqueue(i * 37);
+            }
+
+            new NativeQueue_ForEach_Job
+            {
+                Input = container.AsReadOnly(),
+
+            }.Run();
+        }
     }
 }

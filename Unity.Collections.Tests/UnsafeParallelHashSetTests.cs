@@ -50,6 +50,7 @@ internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
 
 #if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
+    [TestRequiresCollectionChecks]
     public void UnsafeParallelHashSet_Full_Throws()
     {
         var container = new UnsafeParallelHashSet<int>(16, Allocator.Temp);
@@ -343,5 +344,54 @@ internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
         allocator.Dispose();
         allocatorHelper.Dispose();
         AllocatorManager.Shutdown();
+    }
+
+    struct UnsafeParallelHashSet_ForEach_Job : IJob
+    {
+        [ReadOnly]
+        public UnsafeParallelHashSet<int>.ReadOnly Input;
+
+        [ReadOnly]
+        public int Num;
+
+        public void Execute()
+        {
+            var seen = new NativeArray<int>(Num, Allocator.Temp);
+
+            var count = 0;
+            foreach (var item in Input)
+            {
+                Assert.True(Input.Contains(item));
+                seen[item] = seen[item] + 1;
+                ++count;
+            }
+
+            Assert.AreEqual(Input.Count(), count);
+            for (int i = 0; i < Num; i++)
+            {
+                Assert.AreEqual(1, seen[i], $"Incorrect item count {i}");
+            }
+
+            seen.Dispose();
+        }
+    }
+
+    [Test]
+    public void UnsafeParallelHashSet_ForEach_From_Job([Values(10, 1000)] int n)
+    {
+        using (var container = new UnsafeParallelHashSet<int>(32, CommonRwdAllocator.Handle))
+        {
+            for (int i = 0; i < n; i++)
+            {
+                container.Add(i);
+            }
+
+            new UnsafeParallelHashSet_ForEach_Job
+            {
+                Input = container.AsReadOnly(),
+                Num = n,
+
+            }.Run();
+        }
     }
 }

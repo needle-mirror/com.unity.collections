@@ -33,7 +33,7 @@ namespace Unity.Collections
     /// </remarks>
     [NativeContainer]
     [GenerateTestsForBurstCompatibility]
-    public unsafe struct NativeStream : IDisposable
+    public unsafe struct NativeStream : INativeDisposable
     {
         UnsafeStream m_Stream;
 
@@ -183,6 +183,17 @@ namespace Unity.Collections
         public void Dispose()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return;
+            }
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
             m_Stream.Dispose();
@@ -195,11 +206,25 @@ namespace Unity.Collections
         /// <returns>The handle of a new job that will release all resources (memory and safety handles) of this stream.</returns>
         public JobHandle Dispose(JobHandle inputDeps)
         {
-            var jobHandle = m_Stream.Dispose(inputDeps);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            if (!AtomicSafetyHandle.IsDefaultValue(m_Safety))
+            {
+                AtomicSafetyHandle.CheckExistsAndThrow(m_Safety);
+            }
+#endif
+            if (!IsCreated)
+            {
+                return inputDeps;
+            }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var jobHandle = new NativeStreamDisposeJob { Data = new NativeStreamDispose { m_StreamData = m_Stream, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
+#else
+            var jobHandle = new NativeStreamDisposeJob { Data = new NativeStreamDispose { m_StreamData = m_Stream } }.Schedule(inputDeps);
 #endif
+            m_Stream = default;
+
             return jobHandle;
         }
 
@@ -354,7 +379,7 @@ namespace Unity.Collections
                 CheckEndForEachIndex();
                 m_Writer.EndForEachIndex();
 
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
                 m_Writer.m_ForeachIndex = int.MinValue;
 #endif
             }
@@ -425,7 +450,7 @@ namespace Unity.Collections
                 }
                 var blockData = (UnsafeStreamBlockData*)m_Writer.m_BlockData.Range.Pointer;
                 var ranges = (UnsafeStreamRange*)blockData->Ranges.Range.Pointer;
-#endif
+
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 if (foreachIndex < m_MinIndex || foreachIndex > m_MaxIndex)
                 {
@@ -445,7 +470,7 @@ namespace Unity.Collections
                     }
                 }
 #endif
-#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+
                 if (m_Writer.m_ForeachIndex != int.MinValue)
                 {
                     throw new ArgumentException($"BeginForEachIndex must always be balanced by a EndForEachIndex call");
@@ -754,6 +779,33 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
 #endif
+        }
+    }
+
+    [NativeContainer]
+    [GenerateTestsForBurstCompatibility]
+    internal unsafe struct NativeStreamDispose
+    {
+        public UnsafeStream m_StreamData;
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+        internal AtomicSafetyHandle m_Safety;
+#endif
+
+        public void Dispose()
+        {
+            m_StreamData.Dispose();
+        }
+    }
+
+    [BurstCompile]
+    struct NativeStreamDisposeJob : IJob
+    {
+        public NativeStreamDispose Data;
+
+        public void Execute()
+        {
+            Data.Dispose();
         }
     }
 }

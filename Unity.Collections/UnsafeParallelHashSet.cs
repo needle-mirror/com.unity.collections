@@ -53,7 +53,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// </summary>
         /// <value>The number of values that fit in the current allocation.</value>
         /// <param name="value">A new capacity. Must be larger than current capacity.</param>
-        /// <exception cref="Exception">Thrown if `value` is less than the current capacity.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if `value` is less than the current capacity.</exception>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -247,8 +247,6 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <summary>
         /// A read-only alias for the value of a UnsafeParallelHashSet. Does not have its own allocated storage.
         /// </summary>
-        [NativeContainer]
-        [NativeContainerIsReadOnly]
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) })]
         public struct ReadOnly
             : IEnumerable<T>

@@ -9,6 +9,15 @@ using Unity.Jobs;
 internal class UnsafeListTests : CollectionsTestCommonBase
 {
     [Test]
+    public void UnsafeListT_Init()
+    {
+        var container = new UnsafeList<int>(0, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        Assert.True(container.IsCreated);
+        Assert.True(container.IsEmpty);
+        Assert.DoesNotThrow(() => container.Dispose());
+    }
+
+    [Test]
     public unsafe void UnsafeListT_Init_ClearMemory()
     {
         var list = new UnsafeList<int>(10, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -25,6 +34,8 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     public unsafe void UnsafeListT_Allocate_Deallocate_Read_Write()
     {
         var list = new UnsafeList<int>(0, Allocator.Persistent);
+        Assert.True(list.IsCreated);
+        Assert.True(list.IsEmpty);
 
         list.Add(1);
         list.Add(2);
@@ -96,7 +107,9 @@ internal class UnsafeListTests : CollectionsTestCommonBase
 
             list.Add(1);
             Assert.AreEqual(2, list.Length);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
             Assert.Throws<ArgumentOutOfRangeException>(() => list.SetCapacity(1));
+#endif
 
             list.RemoveAtSwapBack(0);
             Assert.AreEqual(1, list.Length);
@@ -178,14 +191,19 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         // List's capacity is always cache-line aligned, number of items fills up whole cache-line.
         int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
-        Assert.Throws<Exception>(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+        Assert.Throws<InvalidOperationException>(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
+#endif
 
         list.SetCapacity(17);
         Assert.DoesNotThrow(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
 
         list.Length = 16;
         list.TrimExcess();
-        Assert.Throws<Exception>(() => { list.AddNoResize(16); });
+
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
+        Assert.Throws<InvalidOperationException>(() => { list.AddNoResize(16); });
+#endif
     }
 
     [Test]
@@ -326,6 +344,7 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void UnsafeListT_Remove_Throws()
     {
         var list = new UnsafeList<int>(10, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -504,8 +523,10 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.Add(4);
         Assert.AreEqual(3, list.Length);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRangeWithBeginEnd(-1, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRangeWithBeginEnd(3, 1));
+#endif
 
         Assert.DoesNotThrow(() => list.InsertRangeWithBeginEnd(1, 3));
         Assert.AreEqual(5, list.Length);
@@ -542,8 +563,10 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.Add(4);
         Assert.AreEqual(3, list.Length);
 
+#if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
         Assert.Throws<ArgumentOutOfRangeException>(() => list.InsertRange(-1, 8));
         Assert.Throws<ArgumentException>(() => list.InsertRange(3, -1));
+#endif
 
         Assert.DoesNotThrow(() => list.InsertRange(1, 0));
         Assert.AreEqual(3, list.Length);
@@ -715,23 +738,30 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     }
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void UnsafeListT_TestInterfaces() => TestInterfacesDispose(new UnsafeList<int>(1, CommonRwdAllocator.Handle));
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void NativeList_TestInterfaces() => TestInterfacesDispose(new NativeList<int>(1, CommonRwdAllocator.Handle));
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void FixedList32Bytes_TestInterfaces() => TestInterfaces(new FixedList32Bytes<int>());
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void FixedList64Bytes_TestInterfaces() => TestInterfaces(new FixedList64Bytes<int>());
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void FixedList128Bytes_TestInterfaces() => TestInterfaces(new FixedList128Bytes<int>());
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void FixedList512Bytes_TestInterfaces() => TestInterfaces(new FixedList512Bytes<int>());
 
     [Test]
+    [TestRequiresDotsDebugOrCollectionChecks]
     public unsafe void FixedList4096Bytes_TestInterfaces() => TestInterfaces(new FixedList4096Bytes<int>());
 }
