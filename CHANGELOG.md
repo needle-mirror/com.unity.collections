@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.4] - 2023-04-25
+
+### Changed
+* Updated test-framework to 1.1.33
+
+### Removed
+
+* Dependency on com.unity.test-framework.performance
+
+
 ## [2.1.1] - 2023-04-12
 
 ### Added
@@ -27,7 +37,6 @@
 * Dispose(JobHandle) for many native containers adhere to proper safety system expectations
 * Lowered benchmark memory usage in non-desktop player builds to avoid out-of-memory failures
 * Fixed container types could provide unaligned access to `T` elements which could violate platform alignment requirements resulting in native exceptions / crashes in player builds. All fixed types like `FixedList<T>` now provide 8 byte alignment for the `FixedList<T>` type itself, whereas the elements `T` remain naturally aligned in the contiguous storage buffer inside `FixedList<T>`
-
 
 
 ## [2.1.0-pre.18] - 2023-03-21

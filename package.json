@@ -1,15 +1,13 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.1.1",
+  "version": "2.1.4",
   "unity": "2022.2",
   "unityRelease": "15f1",
   "dependencies": {
     "com.unity.burst": "1.8.4",
     "com.unity.modules.unityanalytics": "1.0.0",
-    "com.unity.nuget.mono-cecil": "1.11.4",
-    "com.unity.test-framework": "1.3.3",
-    "com.unity.test-framework.performance": "3.0.0-pre.1"
+    "com.unity.nuget.mono-cecil": "1.11.4"
   },
   "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
   "keywords": [
@@ -18,15 +16,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Added\n\n* `IJobParallelBatch` provides `.Schedule`, `.ScheduleByRef`, `.ScheduleParallel`, `.ScheduleParallelByRef`, `.Run` and .`RunByRef` forms. `.ScheduleParallel` is equivalent to calling `.ScheduleBatch`.\n* Added `Trim`, `TrimStart`, `TrimEnd`, `ToLowerAscii`, `ToUpperAscii` methods to strings.\n* `NativeQueue.ReadOnly`.\n* `UnsafeParallelHashMap.ReadOnly`.\n* UnsafeQueue container type\n* `Unsafe/NativeParallelMultiHashMap.ReadOnly` view into container.\n* `UnsafeList.ReadOnly` enumerator.\n\n### Changed\n\n* Added additional `UNITY_DOTS_DEBUG` checks to collection types to help with standalone player debugging (since `ENABLE_UNITY_COLLECTION_CHECKS` safety checks are unavailable in standalone player builds)\n* Updated Burst version to 1.8.4\n* Reduced the amount of memory allocated by allocating based on the maximum number of worker threads the running platform requires rather than defaulting to using a theoretical upper-bound of 128 worker threads.\n\n### Fixed\n\n* Calling `Dispose` on uninitialized container will not throw.\n* Properly tracks allocations made from the collections package such that when `Unity.Collections.NativeLeakDetectionMode` is `NativeLeakDetectionMode.Enabled` or `NativeLeakDetectionMode.EnabledWithStackTrace`, native memory leaks will be reported upon domain reload.\n* UnsafeParallelHashSet.ReadOnly was not usable in jobs due to extraneous [NativeContainer] attribute\n* NativeRingQueue.Dispose(JobHandle) allowed scheduling as a race condition\n* Dispose(JobHandle) for many native containers adhere to proper safety system expectations\n* Lowered benchmark memory usage in non-desktop player builds to avoid out-of-memory failures\n* Fixed container types could provide unaligned access to `T` elements which could violate platform alignment requirements resulting in native exceptions / crashes in player builds. All fixed types like `FixedList<T>` now provide 8 byte alignment for the `FixedList<T>` type itself, whereas the elements `T` remain naturally aligned in the contiguous storage buffer inside `FixedList<T>`"
+    "changelog": "### Changed\n* Updated test-framework to 1.1.33\n\n### Removed\n\n* Dependency on com.unity.test-framework.performance"
   },
   "upmCi": {
-    "footprint": "0c59278b48a8fc5d32fd45fd50671f5f52c3a7de"
+    "footprint": "7d025363153e4cc16917732892930d9d1aba1200"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.1/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "ff8e5a60b10664839edcd054cc90b3d92cb32dc9"
+    "revision": "70c2a66d8670be047d7b9c6d7057a8b71b7303fb"
   }
 }
