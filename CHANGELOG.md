@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.1] - 2023-06-15
+
+### Changed
+* `UnsafeAppendBuffer` now constrains methods consuming generic parameter `T` to be `unmanaged` instead of `struct`.
+* Updated LICENSE.md
+
+### Fixed
+* `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.
+
 ## [1.4.0] - 2022-07-12
 
 ### Changed

@@ -51,6 +51,79 @@ internal class UnsafeAppendBufferTests : CollectionsTestCommonBase
         });
     }
 
+    void AddAndVerify<T>(ref UnsafeAppendBuffer buffer, T value, ref int expectedLength) where T : unmanaged
+    {
+        buffer.Add(value);
+        expectedLength += UnsafeUtility.SizeOf<T>();
+        Assert.AreEqual(expectedLength, buffer.Length);
+    }
+
+    [Test]
+    public unsafe void UnsafeAppendBuffer_AddAndPop_MixedAlignment()
+    {
+        int expectedLength = 0;
+        byte value = 0;
+        var buffer = new UnsafeAppendBuffer(0, 8, Allocator.Temp);
+        Assert.IsTrue(buffer.IsEmpty);
+        Assert.AreEqual(expectedLength, buffer.Length);
+
+        AddAndVerify<int>(ref buffer, value++, ref expectedLength);
+        AddAndVerify<byte>(ref buffer, value++, ref expectedLength);
+        AddAndVerify<int>(ref buffer, value++, ref expectedLength);
+        Assert.AreEqual(9, buffer.Length);
+        AddAndVerify<byte>(ref buffer, value++, ref expectedLength);
+        AddAndVerify<int>(ref buffer, value++, ref expectedLength);
+        Assert.AreEqual(14, buffer.Length);
+
+        {
+            var array = new NativeArray<int>(3, Allocator.Temp);
+            for (int i = 0; i < array.Length; ++i)
+                array[i] = value++;
+
+            int oldLen = buffer.Length;
+            buffer.AddArray<int>(array.GetUnsafePtr(), 3);
+
+            Assert.AreEqual(30, buffer.Length);
+        }
+
+        {
+            var array = new NativeArray<int>(3, Allocator.Temp);
+            for (int i = 0; i < array.Length; ++i)
+                array[i] = value++;
+
+            int oldLen = buffer.Length;
+            buffer.AddArray<int>(array.GetUnsafePtr(), 3);
+
+            Assert.AreEqual(46, buffer.Length);
+        }
+
+        // popping
+
+        // array elements + count
+        for (int i = 0; i < 3; ++i)
+        {
+            Assert.AreEqual(--value, buffer.Pop<int>());
+        }
+        Assert.AreEqual(3, buffer.Pop<int>());
+
+        // array elements + count
+        for (int i = 0; i < 3; ++i)
+        {
+            Assert.AreEqual(--value, buffer.Pop<int>());
+        }
+        // array count
+        Assert.AreEqual(3, buffer.Pop<int>());
+
+        Assert.AreEqual(--value, buffer.Pop<int>());
+        Assert.AreEqual(--value, buffer.Pop<byte>());
+        Assert.AreEqual(--value, buffer.Pop<int>());
+        Assert.AreEqual(--value, buffer.Pop<byte>());
+        Assert.AreEqual(--value, buffer.Pop<int>());
+
+        Assert.IsTrue(buffer.IsEmpty);
+        Assert.AreEqual(0, buffer.Length);
+    }
+
     [Test]
     public unsafe void UnsafeAppendBuffer_PushHeadersWithPackets()
     {

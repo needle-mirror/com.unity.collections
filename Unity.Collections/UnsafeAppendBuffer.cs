@@ -183,12 +183,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the element.</typeparam>
         /// <param name="value">The value to be appended.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Add<T>(T value) where T : struct
+        public void Add<T>(T value) where T : unmanaged
         {
             var structSize = UnsafeUtility.SizeOf<T>();
 
             SetCapacity(Length + structSize);
-            UnsafeUtility.CopyStructureToPtr(ref value, Ptr + Length);
+
+            void* addr = Ptr + Length;
+            if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                UnsafeUtility.CopyStructureToPtr(ref value, addr);
+            else
+                UnsafeUtility.MemCpy(addr, &value, structSize);
+
             Length += structSize;
         }
 
@@ -213,7 +219,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="ptr">A pointer to the buffer whose values will be appended.</param>
         /// <param name="length">The number of elements to append.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void AddArray<T>(void* ptr, int length) where T : struct
+        public void AddArray<T>(void* ptr, int length) where T : unmanaged
         {
             Add(length);
 
@@ -227,7 +233,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="value">The array whose elements will all be appended.</param>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public void Add<T>(NativeArray<T> value) where T : struct
+        public void Add<T>(NativeArray<T> value) where T : unmanaged
         {
             Add(value.Length);
             Add(NativeArrayUnsafeUtility.GetUnsafeReadOnlyPtr(value), UnsafeUtility.SizeOf<T>() * value.Length);
@@ -253,14 +259,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <remarks>It is your responsibility to specify the correct type. Do not pop when the append buffer is empty.</remarks>
         /// <returns>The element removed from the end of this append buffer.</returns>
         [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-        public T Pop<T>() where T : struct
+        public T Pop<T>() where T : unmanaged
         {
             int structSize = UnsafeUtility.SizeOf<T>();
             long ptr = (long)Ptr;
             long size = Length;
             long addr = ptr + size - structSize;
 
-            var data = UnsafeUtility.ReadArrayElement<T>((void*)addr, 0);
+            T data;
+            if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                data = UnsafeUtility.ReadArrayElement<T>((void*)addr, 0);
+            else
+                UnsafeUtility.MemCpy(&data, (void*)addr, structSize);
+
             Length -= structSize;
             return data;
         }
@@ -359,12 +370,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T">The type of element to read.</typeparam>
             /// <param name="value">Output for the element read.</param>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void ReadNext<T>(out T value) where T : struct
+            public void ReadNext<T>(out T value) where T : unmanaged
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
 
-                UnsafeUtility.CopyPtrToStructure<T>(Ptr + Offset, out value);
+                void* addr = Ptr + Offset;
+                if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                    UnsafeUtility.CopyPtrToStructure<T>(addr, out value);
+                else
+                    fixed (void* pValue = &value) UnsafeUtility.MemCpy(pValue, addr, structSize);
+
                 Offset += structSize;
             }
 
@@ -375,12 +391,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <typeparam name="T">The type of element to read.</typeparam>
             /// <returns>The element read.</returns>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public T ReadNext<T>() where T : struct
+            public T ReadNext<T>() where T : unmanaged
             {
                 var structSize = UnsafeUtility.SizeOf<T>();
                 CheckBounds(structSize);
 
-                T value = UnsafeUtility.ReadArrayElement<T>(Ptr + Offset, 0);
+                T value;
+                void* addr = Ptr + Offset;
+                if (CollectionHelper.IsAligned((ulong)addr, UnsafeUtility.AlignOf<T>()))
+                    value = UnsafeUtility.ReadArrayElement<T>(addr, 0);
+                else
+                    UnsafeUtility.MemCpy(&value, addr, structSize);
+
                 Offset += structSize;
                 return value;
             }
@@ -408,7 +430,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="value">Outputs a new array with length of 1. The read element is copied to the single index of this array.</param>
             /// <param name="allocator">The allocator to use.</param>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : struct
+            public void ReadNext<T>(out NativeArray<T> value, AllocatorManager.AllocatorHandle allocator) where T : unmanaged
             {
                 var length = ReadNext<int>();
                 value = CollectionHelper.CreateNativeArray<T>(length, allocator);
@@ -431,7 +453,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="length">Output which is the number of elements in the read array.</param>
             /// <returns>A pointer to where the first element of the read array resides in the append buffer.</returns>
             [BurstCompatible(GenericTypeArguments = new [] { typeof(int) })]
-            public void* ReadNextArray<T>(out int length) where T : struct
+            public void* ReadNextArray<T>(out int length) where T : unmanaged
             {
                 length = ReadNext<int>();
                 return (length == 0) ? null : ReadNext(length * UnsafeUtility.SizeOf<T>());
