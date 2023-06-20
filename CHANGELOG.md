@@ -1,13 +1,23 @@
 # Changelog
 
-## [2.1.4] - 2023-04-25
+## [2.2.0] - 2023-06-20
+
 
 ### Changed
-* Updated test-framework to 1.1.33
+* Made `SegmentSort` and `SegmentSortMerge` public to allow generic job type registration.
+
+
+### Fixed
+
+* Previously it was possible to change the length of a `NativeList` via the `Length` property setter while the NativeList is being used inside of a job without an InvalidOperationExcpetion being thrown for the unsafe access.
+
+
+## [2.1.4] - 2023-04-25
 
 ### Removed
 
 * Dependency on com.unity.test-framework.performance
+* Dependency on com.unity.test-framework
 
 
 ## [2.1.1] - 2023-04-12

@@ -21,7 +21,7 @@ To define a custom allocator, you must implement the interface [`AllocatorManage
 * [`Handle`](xref:Unity.Collections.AllocatorManager.IAllocator.Handle): A property that gets and sets the allocator handle which is of type [`AllocatorManager.AllocatorHandle`](xref:Unity.Collections.AllocatorManager.AllocatorHandle).
 * [`ToAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.ToAllocator): A property that casts the allocator handle index to the enum `Allocator`.
 * [`IsCustomAllocator`](xref:Unity.Collections.AllocatorManager.IAllocator.IsCustomAllocator): A property that checks whether the allocator is a custom allocator. An allocator is a custom allocator if its handle `Index` is larger or equal to [`AllocatorManager.FirstUserIndex`](xref:Unity.Collections.AllocatorManager.FirstUserIndex).
-* [`IsAutoDispose`](xref:Unity.Collections.AllocatorManager.AllocatorHandle.IsAutoDispose): A property that checks whether the allocator is able to dispose individual allocations. False if disposing an individual allocation is a no-op.
+* [`IsAutoDispose`](xref:Unity.Collections.AllocatorManager.AllocatorHandle.IsAutoDispose): A property that checks whether the allocator is able to dispose individual allocations. True if disposing an individual allocation is a no-op.
 
 Because `AllocatorManager.IAllocator` implements `IDisposable`, your custom allocator must implement the `Dispose` method.
 

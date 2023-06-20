@@ -890,6 +890,9 @@ namespace Unity.Collections
     /// <summary>
     /// Returned by the `SortJob` methods of <see cref="Unity.Collections.NativeSortExtension"/>. Call `Schedule` to schedule the sorting.
     /// </summary>
+    /// <remarks>
+    /// When `RegisterGenericJobType` is used on SortJob, to complete registration you must register `SortJob&lt;T,U&gt;.SegmentSort` and `SortJob&lt;T,U&gt;.SegmentSortMerge`.
+    /// </remarks>
     /// <typeparam name="T">The type of the elements to sort.</typeparam>
     /// <typeparam name="U">The type of the comparer.</typeparam>
     [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
@@ -912,16 +915,23 @@ namespace Unity.Collections
         /// </summary>
         public int Length;
 
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [BurstCompile]
-        struct SegmentSort : IJobParallelFor
+        public struct SegmentSort : IJobParallelFor
         {
             [NativeDisableUnsafePtrRestriction]
-            public T* Data;
-            public U Comp;
+            internal T* Data;
+            internal U Comp;
 
-            public int Length;
-            public int SegmentWidth;
+            internal int Length;
+            internal int SegmentWidth;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="index"><undoc /></param>
             public void Execute(int index)
             {
                 var startIndex = index * SegmentWidth;
@@ -930,16 +940,22 @@ namespace Unity.Collections
             }
         }
 
+        /// <summary>
+        /// <undoc />
+        /// </summary>
         [BurstCompile]
-        struct SegmentSortMerge : IJob
+        public struct SegmentSortMerge : IJob
         {
             [NativeDisableUnsafePtrRestriction]
-            public T* Data;
-            public U Comp;
+            internal T* Data;
+            internal U Comp;
 
-            public int Length;
-            public int SegmentWidth;
+            internal int Length;
+            internal int SegmentWidth;
 
+            /// <summary>
+            /// <undoc />
+            /// </summary>
             public void Execute()
             {
                 var segmentCount = (Length + (SegmentWidth - 1)) / SegmentWidth;

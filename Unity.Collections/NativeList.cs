@@ -201,6 +201,15 @@ namespace Unity.Collections
 
             set
             {
+                // Unity 2022.2.16f1 removes the global temp safety handle so only
+                // from this version onward is it not a breaking change to perform this check
+                // since all previous versions did not have this safety check and will
+                // likely break from safe usage that is blurred by sharing the temp safety handle
+                // between multiple containers
+#if ENABLE_UNITY_COLLECTIONS_CHECKS && UNITY_2022_2_16F1_OR_NEWER
+
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
                 m_ListData->Resize(value, NativeArrayOptions.ClearMemory);
             }
         }

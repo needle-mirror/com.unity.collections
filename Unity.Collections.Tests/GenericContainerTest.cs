@@ -42,6 +42,15 @@ internal struct GenericContainerJob<T> : IJob
     }
 }
 
+internal struct GenericContainerReadonlyJob<T> : IJob
+{
+    [ReadOnly] public T data;
+    public void Execute()
+    {
+        // We just care about creating job dependencies
+    }
+}
+
 internal class GenericContainerTests : CollectionsTestFixture
 {
     UnsafeAppendBuffer CreateEmpty_UnsafeAppendBuffer()
@@ -447,6 +456,51 @@ internal class GenericContainerTests : CollectionsTestFixture
         Test_Dispose_Job_Then_Schedule_Work(new NativeStream(16, Allocator.Persistent));
         Test_Dispose_Job_Then_Schedule_Work(new NativeText(16, Allocator.Persistent));
     }
+
+    //-------------------------------------------------------------------------------------------------------
+
+    // Avoid running this test when on older unity releases since those editor versions
+    // used a global safety handle for temp allocations which could lead to invalid safety errors
+    // if we were to perform the safety checks when writing the Length that this test validates
+    // (The test uses Persistent allocations, but the code in NativeList.Length is conditional on
+    // this define so we make the tests conditional as well)
+#if UNITY_2022_2_16F1_OR_NEWER
+    void Test_Change_Length_Missing_Dependency<T, U>(T container)
+        where T : unmanaged, IIndexable<U>
+        where U : unmanaged
+    {
+        int localLength = 0;
+        // Readonly Job
+        {
+            var job = new GenericContainerReadonlyJob<T>() { data = container };
+            var jobHandle = job.Schedule();
+            Assert.DoesNotThrow(() => localLength = container.Length); // Reading is safe
+            Assert.Throws<InvalidOperationException>(() => container.Length = 0); // Writing while a job is in flight it not safe
+            jobHandle.Complete();
+            Assert.DoesNotThrow(() => container.Length = 0);
+        }
+
+        // ReadWrite job
+        {
+            var job = new GenericContainerJob<T>() { data = container };
+            var jobHandle = job.Schedule();
+            Assert.Throws<InvalidOperationException>(() => localLength = container.Length); // Reading is not safe
+            Assert.Throws<InvalidOperationException>(() => container.Length = 0); // Writing while a job is in flight it not safe
+            jobHandle.Complete();
+            Assert.DoesNotThrow(() => localLength = container.Length);
+            Assert.DoesNotThrow(() => container.Length = 0);
+        }
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks()]
+    [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
+    public void IIndexable_Change_Length_Missing_Dependency()
+    {
+        Test_Change_Length_Missing_Dependency<NativeList<int>, int>(new NativeList<int>(16, Allocator.Persistent));
+    }
+#endif
+    //-------------------------------------------------------------------------------------------------------
 
     struct NativeHashMapJobForEach : IJob
     {
