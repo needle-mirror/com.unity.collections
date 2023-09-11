@@ -1,13 +1,14 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.2.0",
-  "unity": "2022.2",
-  "unityRelease": "15f1",
+  "version": "2.2.1",
+  "unity": "2022.3",
+  "unityRelease": "0f1",
   "dependencies": {
-    "com.unity.burst": "1.8.4",
+    "com.unity.burst": "1.8.8",
     "com.unity.modules.unityanalytics": "1.0.0",
-    "com.unity.nuget.mono-cecil": "1.11.4"
+    "com.unity.nuget.mono-cecil": "1.11.4",
+    "com.unity.test-framework.performance": "3.0.2"
   },
   "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
   "keywords": [
@@ -16,15 +17,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Changed\n* Made `SegmentSort` and `SegmentSortMerge` public to allow generic job type registration.\n\n\n### Fixed\n\n* Previously it was possible to change the length of a `NativeList` via the `Length` property setter while the NativeList is being used inside of a job without an InvalidOperationExcpetion being thrown for the unsafe access."
+    "changelog": "### Changed\n\n* Updated Burst dependency to version 1.8.7\n* Updated Burst dependency to version 1.8.8\n\n### Fixed\n\n* Previously the `Sort` extension for NativeContainers could access memory out of bounds of the container when an invalid `IComparer<T>` was implemented for `T`: Comparers must return three states (<0, 0, >0). Sort will now no longer access invalid memory and when running with collection checks enabled (e.g. always on in Editor) or using `UNITY_DOTS_DEBUG` in player builds, an additional check at the beginning of the sort will validate the comparer is implemented correctly and inform users otherwise.\n\n### Added\n\n* Added a dependency on the com.unity.test-framework.performance package"
   },
   "upmCi": {
-    "footprint": "08b1d3f6dd36b3f5b7faa97b01b8b1efabf1c57d"
+    "footprint": "ad327970d2e63d17e41cc4ef08f50edd8e4ae1aa"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.2/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "4d6114f4b7f3318a17fa7173dbfb3f3091418631"
+    "revision": "bf84b98e2ecdc7075ddf1271b62a793be86ae20f"
   }
 }

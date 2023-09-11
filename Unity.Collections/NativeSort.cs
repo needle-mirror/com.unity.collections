@@ -95,6 +95,7 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
+            CheckComparer(array, length, comp);
             return new SortJob<T, U>() {Data = array, Length = length, Comp = comp};
         }
 
@@ -130,6 +131,7 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
+            CheckComparer(ptr, length, comp);
             var offset = 0;
 
             for (var l = length; l != 0; l >>= 1)
@@ -176,7 +178,10 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            IntroSortStruct<T, U>(array.GetUnsafePtr(), array.Length, comp);
+            var ptr = (T*)array.GetUnsafePtr();
+            var len = array.Length;
+            CheckComparer(ptr, len, comp);
+            IntroSortStruct<T, U>(ptr, len, comp);
         }
 
         /// <summary>
@@ -207,10 +212,14 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
+            var ptr = (T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array);
+            var len = array.Length;
+            CheckComparer(ptr, len, comp);
+
             return new SortJob<T, U>
             {
-                Data = (T*)NativeArrayUnsafeUtility.GetUnsafeBufferPointerWithoutChecks(array),
-                Length = array.Length,
+                Data = ptr,
+                Length = len,
                 Comp = comp
             };
         }
@@ -321,7 +330,7 @@ namespace Unity.Collections
         public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this NativeList<T> list)
             where T : unmanaged, IComparable<T>
         {
-            return SortJob((T*)list.GetUnsafePtr(), list.Length,new DefaultComparer<T>());
+            return SortJob(list.GetUnsafePtr(), list.Length,new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -338,7 +347,7 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            return SortJob((T*)list.GetUnsafePtr(), list.Length, comp);
+            return SortJob(list.GetUnsafePtr(), list.Length, comp);
         }
 
         /// <summary>
@@ -411,7 +420,7 @@ namespace Unity.Collections
         public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this UnsafeList<T> list)
             where T : unmanaged, IComparable<T>
         {
-            return SortJob((T*)list.Ptr, list.Length, new DefaultComparer<T>());
+            return SortJob(list.Ptr, list.Length, new DefaultComparer<T>());
         }
 
         /// <summary>
@@ -488,8 +497,12 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
+            var ptr = (T*)slice.GetUnsafePtr();
+            var len = slice.Length;
+            CheckComparer(ptr, len, comp);
+
             CheckStrideMatchesSize<T>(slice.Stride);
-            IntroSortStruct<T, U>(slice.GetUnsafePtr(), slice.Length, comp);
+            IntroSortStruct<T, U>(ptr, len, comp);
         }
 
         /// <summary>
@@ -565,11 +578,14 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            IntroSort<T, U>(array, 0, length - 1, 2 * CollectionHelper.Log2Floor(length), comp);
+            CheckComparer((T*)array, length, comp);
+            IntroSort_R<T, U>(array, 0, length - 1, 2 * CollectionHelper.Log2Floor(length), comp);
         }
 
         const int k_IntrosortSizeThreshold = 16;
-        unsafe static void IntroSort<T, U>(void* array, int lo, int hi, int depth, U comp)
+
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) })]
+        unsafe internal static void IntroSort_R<T, U>(void* array, int lo, int hi, int depth, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
@@ -607,7 +623,7 @@ namespace Unity.Collections
                 depth--;
 
                 int p = Partition<T, U>(array, lo, hi, comp);
-                IntroSort<T, U>(array, p + 1, hi, depth, comp);
+                IntroSort_R<T, U>(array, p + 1, hi, depth, comp);
                 hi = p - 1;
             }
         }
@@ -621,13 +637,15 @@ namespace Unity.Collections
             for (i = lo; i < hi; i++)
             {
                 j = i;
+
                 t = UnsafeUtility.ReadArrayElement<T>(array, i + 1);
                 while (j >= lo && comp.Compare(t, UnsafeUtility.ReadArrayElement<T>(array, j)) < 0)
                 {
-                    UnsafeUtility.WriteArrayElement<T>(array, j + 1, UnsafeUtility.ReadArrayElement<T>(array, j));
+                    UnsafeUtility.WriteArrayElement(array, j + 1, UnsafeUtility.ReadArrayElement<T>(array, j));
                     j--;
                 }
-                UnsafeUtility.WriteArrayElement<T>(array, j + 1, t);
+
+                UnsafeUtility.WriteArrayElement(array, j + 1, t);
             }
         }
 
@@ -646,8 +664,13 @@ namespace Unity.Collections
 
             while (left < right)
             {
-                while (comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, ++left)) > 0) ;
-                while (comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, --right)) < 0) ;
+                while (left < hi && comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, ++left)) > 0)
+                {
+                }
+
+                while (right > left && comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, --right)) < 0)
+                {
+                }
 
                 if (left >= right)
                     break;
@@ -686,16 +709,21 @@ namespace Unity.Collections
             while (i <= n / 2)
             {
                 child = 2 * i;
+
                 if (child < n && (comp.Compare(UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1), UnsafeUtility.ReadArrayElement<T>(array, (lo + child))) < 0))
                 {
                     child++;
                 }
+
                 if (comp.Compare(UnsafeUtility.ReadArrayElement<T>(array, (lo + child - 1)), val) < 0)
+                {
                     break;
+                }
 
                 UnsafeUtility.WriteArrayElement(array, lo + i - 1, UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1));
                 i = child;
             }
+
             UnsafeUtility.WriteArrayElement(array, lo + i - 1, val);
         }
 
@@ -723,13 +751,15 @@ namespace Unity.Collections
             where T : unmanaged
             where U : IComparer<T>
         {
-            IntroSortStruct<T, U>(array, 0, length - 1, 2 * CollectionHelper.Log2Floor(length), comp);
+            IntroSortStruct_R<T, U>(array, 0, length - 1, 2 * CollectionHelper.Log2Floor(length), comp);
         }
 
-        unsafe static void IntroSortStruct<T, U>(void* array, int lo, int hi, int depth, U comp)
+        unsafe static void IntroSortStruct_R<T, U>(void* array, in int lo, in int _hi, int depth, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
+            var hi = _hi;
+
             while (hi > lo)
             {
                 int partitionSize = hi - lo + 1;
@@ -764,12 +794,12 @@ namespace Unity.Collections
                 depth--;
 
                 int p = PartitionStruct<T, U>(array, lo, hi, comp);
-                IntroSortStruct<T, U>(array, p + 1, hi, depth, comp);
+                IntroSortStruct_R<T, U>(array, p + 1, hi, depth, comp);
                 hi = p - 1;
             }
         }
 
-        unsafe static void InsertionSortStruct<T, U>(void* array, int lo, int hi, U comp)
+        unsafe static void InsertionSortStruct<T, U>(void* array, in int lo, in int hi, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
@@ -781,14 +811,14 @@ namespace Unity.Collections
                 t = UnsafeUtility.ReadArrayElement<T>(array, i + 1);
                 while (j >= lo && comp.Compare(t, UnsafeUtility.ReadArrayElement<T>(array, j)) < 0)
                 {
-                    UnsafeUtility.WriteArrayElement<T>(array, j + 1, UnsafeUtility.ReadArrayElement<T>(array, j));
+                    UnsafeUtility.WriteArrayElement(array, j + 1, UnsafeUtility.ReadArrayElement<T>(array, j));
                     j--;
                 }
-                UnsafeUtility.WriteArrayElement<T>(array, j + 1, t);
+                UnsafeUtility.WriteArrayElement(array, j + 1, t);
             }
         }
 
-        unsafe static int PartitionStruct<T, U>(void* array, int lo, int hi, U comp)
+        unsafe static int PartitionStruct<T, U>(void* array, in int lo, in int hi, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
@@ -803,8 +833,13 @@ namespace Unity.Collections
 
             while (left < right)
             {
-                while (comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, ++left)) > 0) ;
-                while (comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, --right)) < 0) ;
+                while (left < hi && comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, ++left)) > 0)
+                {
+                }
+
+                while (right > left && comp.Compare(pivot, UnsafeUtility.ReadArrayElement<T>(array, --right)) < 0)
+                {
+                }
 
                 if (left >= right)
                     break;
@@ -816,7 +851,7 @@ namespace Unity.Collections
             return left;
         }
 
-        unsafe static void HeapSortStruct<T, U>(void* array, int lo, int hi, U comp)
+        unsafe static void HeapSortStruct<T, U>(void* array, in int lo, in int hi, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
@@ -834,7 +869,7 @@ namespace Unity.Collections
             }
         }
 
-        unsafe static void HeapifyStruct<T, U>(void* array, int i, int n, int lo, U comp)
+        unsafe static void HeapifyStruct<T, U>(void* array, int i, int n, in int lo, U comp)
             where T : unmanaged
             where U : IComparer<T>
         {
@@ -843,16 +878,21 @@ namespace Unity.Collections
             while (i <= n / 2)
             {
                 child = 2 * i;
+
                 if (child < n && (comp.Compare(UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1), UnsafeUtility.ReadArrayElement<T>(array, (lo + child))) < 0))
                 {
                     child++;
                 }
+
                 if (comp.Compare(UnsafeUtility.ReadArrayElement<T>(array, (lo + child - 1)), val) < 0)
+                {
                     break;
+                }
 
                 UnsafeUtility.WriteArrayElement(array, lo + i - 1, UnsafeUtility.ReadArrayElement<T>(array, lo + child - 1));
                 i = child;
             }
+
             UnsafeUtility.WriteArrayElement(array, lo + i - 1, val);
         }
 
@@ -883,6 +923,50 @@ namespace Unity.Collections
             if (stride != UnsafeUtility.SizeOf<T>())
             {
                 throw new InvalidOperationException("Sort requires that stride matches the size of the source type");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        unsafe static void CheckComparer<T, U>(T* array, int length, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            if (length > 0)
+            {
+                T a = array[0];
+
+                if (0 != comp.Compare(a, a))
+                {
+                    throw new InvalidOperationException("Comparison function is incorrect. Compare(a, a) must return 0/equal.");
+                }
+
+                for (int i = 1, len = math.min(length, 8); i < len; ++i)
+                {
+                    T b = array[i];
+
+                    if (0 == comp.Compare(a, b) &&
+                        0 == comp.Compare(b, a))
+                    {
+                        continue;
+                    }
+
+                    if (0 == comp.Compare(a, b))
+                    {
+                        throw new InvalidOperationException("Comparison function is incorrect. Compare(a, b) of two different values should not return 0/equal.");
+                    }
+
+                    if (0 == comp.Compare(b, a))
+                    {
+                        throw new InvalidOperationException("Comparison function is incorrect. Compare(b, a) of two different values should not return 0/equal.");
+                    }
+
+                    if (comp.Compare(a, b) == comp.Compare(b, a))
+                    {
+                        throw new InvalidOperationException("Comparison function is incorrect. Compare(a, b) when a and b are different values should not return the same value as Compare(b, a).");
+                    }
+
+                    break;
+                }
             }
         }
     }

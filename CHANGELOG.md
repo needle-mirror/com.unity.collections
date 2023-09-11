@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.2.1] - 2023-09-11
+
+### Changed
+
+* Updated Burst dependency to version 1.8.7
+* Updated Burst dependency to version 1.8.8
+
+### Fixed
+
+* Previously the `Sort` extension for NativeContainers could access memory out of bounds of the container when an invalid `IComparer<T>` was implemented for `T`: Comparers must return three states (<0, 0, >0). Sort will now no longer access invalid memory and when running with collection checks enabled (e.g. always on in Editor) or using `UNITY_DOTS_DEBUG` in player builds, an additional check at the beginning of the sort will validate the comparer is implemented correctly and inform users otherwise.
+
+### Added
+
+* Added a dependency on the com.unity.test-framework.performance package
+
+
+
 ## [2.2.0] - 2023-06-20
 
 
@@ -47,6 +64,7 @@
 * Dispose(JobHandle) for many native containers adhere to proper safety system expectations
 * Lowered benchmark memory usage in non-desktop player builds to avoid out-of-memory failures
 * Fixed container types could provide unaligned access to `T` elements which could violate platform alignment requirements resulting in native exceptions / crashes in player builds. All fixed types like `FixedList<T>` now provide 8 byte alignment for the `FixedList<T>` type itself, whereas the elements `T` remain naturally aligned in the contiguous storage buffer inside `FixedList<T>`
+
 
 
 ## [2.1.0-pre.18] - 2023-03-21
