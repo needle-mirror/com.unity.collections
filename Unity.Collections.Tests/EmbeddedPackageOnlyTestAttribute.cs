@@ -1,18 +1,10 @@
-﻿using System;
+using System;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
 namespace Unity.Collections.Tests
 {
-#if UNITY_DOTSRUNTIME
-    // Always ignore these tests
-    internal class EmbeddedPackageOnlyTestAttribute : IgnoreAttribute {
-        public EmbeddedPackageOnlyTestAttribute() : base("Only runs in the editor when this package is embedded or referenced locally.")
-        {
-        }
-    }
-#else
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     internal class EmbeddedPackageOnlyTestAttribute : NUnitAttribute, IApplyToTest
     {
@@ -43,5 +35,4 @@ namespace Unity.Collections.Tests
             test.Properties.Add(PropertyNames.SkipReason, "Only runs in the editor when this package is embedded or referenced locally.");
         }
     }
-#endif
 }

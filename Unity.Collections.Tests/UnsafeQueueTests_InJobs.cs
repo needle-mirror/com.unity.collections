@@ -8,8 +8,6 @@ using Assert = FastAssert;
 
 internal class UnsafeQueueTests_InJobs : CollectionsTestCommonBase
 {
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedContainerJob : IJob
     {
         public UnsafeQueue<UnsafeQueue<int>> nestedContainer;
@@ -19,7 +17,6 @@ internal class UnsafeQueueTests_InJobs : CollectionsTestCommonBase
             nestedContainer.Clear();
         }
     }
-#endif
 
     [BurstCompile(CompileSynchronously = true)]
     struct ConcurrentEnqueue : IJobParallelFor

@@ -273,14 +273,8 @@ namespace Unity.Collections
             internal static unsafe bool CheckExists(AtomicSafetyHandle handle)
             {
                 bool res = false;
-#if UNITY_DOTSRUNTIME
-                // In DOTS Runtime, AtomicSaftyHandle version is at 8 bytes offset of nodePtr
-                int* versionNode = (int*)((byte *)handle.nodePtr + sizeof(void *));
-                res = (handle.version == (*versionNode & AtomicSafetyNodeVersionMask.ReadWriteDisposeUnprotect));
-#else
                 int* versionNode = (int*) (void*) handle.versionNode;
                 res = (handle.version == (*versionNode & AtomicSafetyHandle.ReadWriteDisposeCheck));
-#endif
                 return res;
             }
 
@@ -288,11 +282,7 @@ namespace Unity.Collections
             {
                 if(a.version != b.version)
                     return false;
-#if UNITY_DOTSRUNTIME
-                if(a.nodePtr != b.nodePtr)
-#else
                 if(a.versionNode != b.versionNode)
-#endif
                     return false;
                 return true;
             }
@@ -1599,7 +1589,7 @@ namespace Unity.Collections
         /// <remarks>The indexes from `GlobalAllocatorBaseIndex` up to `MaxNumCustomAllocators` are reserved which
         /// should not be used for your own allocators.</remarks>
         /// <value>Base index in the global function table for global allocators.</value>
-        static internal readonly uint GlobalAllocatorBaseIndex = (uint)(MaxNumCustomAllocators - MaxNumGlobalAllocators);
+        internal static readonly uint GlobalAllocatorBaseIndex = (uint)(MaxNumCustomAllocators - MaxNumGlobalAllocators);
 
         /// <summary>
         /// Index in the global function table of the first global scratchpad allocator.

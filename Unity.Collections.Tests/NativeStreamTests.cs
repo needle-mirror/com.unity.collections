@@ -505,8 +505,6 @@ internal class NativeStreamTests : CollectionsTestFixture
         AllocatorManager.Shutdown();
     }
 
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedContainerJob : IJob
     {
         public NativeStream nestedContainer;
@@ -544,5 +542,4 @@ internal class NativeStreamTests : CollectionsTestFixture
 
         container.Dispose();
     }
-#endif
 }

@@ -9,8 +9,6 @@ using System;
 
 internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 {
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedContainerJob : IJob
     {
         public NativeQueue<NativeQueue<int>> nestedContainer;
@@ -38,7 +36,6 @@ internal class NativeQueueTests_InJobs : CollectionsTestCommonBase
 
         container.Dispose();
     }
-#endif
 
     [BurstCompile(CompileSynchronously = true)]
     struct ConcurrentEnqueue : IJobParallelFor

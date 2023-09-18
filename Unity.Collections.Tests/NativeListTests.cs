@@ -340,11 +340,7 @@ internal class NativeListTests : CollectionsTestFixture
         container.Dispose();
     }
 
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test,DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeList_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -356,7 +352,7 @@ internal class NativeListTests : CollectionsTestFixture
                 .With.Message.Contains($"The {list.GetType()} has been deallocated"));
     }
 
-    [Test,DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
@@ -389,7 +385,7 @@ internal class NativeListTests : CollectionsTestFixture
         }
     }
 
-    [Test,DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeList_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
@@ -409,7 +405,6 @@ internal class NativeListTests : CollectionsTestFixture
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(list.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-#endif
 
     [Test]
     public unsafe void NativeList_IndexOf()

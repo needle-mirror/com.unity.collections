@@ -125,12 +125,9 @@ namespace Unity.Collections
         [BurstDiscard]
         static void AppDomainOnDomainUnload()
         {
-#if !UNITY_DOTSRUNTIME
             AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
-#endif
         }
 
-#if !UNITY_DOTSRUNTIME
         static void OnDomainUnload(object sender, EventArgs e)
         {
             var pData = (UnsafeQueueBlockPoolData**)Data.UnsafeDataPointer;
@@ -146,7 +143,6 @@ namespace Unity.Collections
             Memory.Unmanaged.Free(data, Allocator.Persistent);
             *pData = null;
         }
-#endif
     }
 
     [StructLayout(LayoutKind.Sequential)]

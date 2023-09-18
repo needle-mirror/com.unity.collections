@@ -23,9 +23,7 @@ using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
-#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
 using UnityEngine;
-#endif
 
 internal class FixedListTests : CollectionsTestFixture
 {
@@ -115,6 +113,14 @@ internal class FixedListTests : CollectionsTestFixture
         var list = new <#=TYPENAME_IDENTIFIER #>Wrapper(17, 23);
         <#=TYPE #>* values = list.Values;
         <#=TYPENAME_IDENTIFIER #>ReadonlyWorksFunc1(list, values);
+    }
+
+    [Test]
+    public unsafe void <#=TYPENAME_IDENTIFIER #><#=BUFFERTYPE#>IsAlignedGeneric()
+    {
+        var list = new FixedList<<#=TYPE#>,<#=BUFFERTYPE#>>();
+
+        Assert.IsTrue((((ulong)list.Buffer) & (sizeof(<#=TYPE#>) - 1)) == 0);
     }
 
     [Test]
@@ -444,7 +450,6 @@ internal class FixedListTests : CollectionsTestFixture
         Assert.Throws<IndexOutOfRangeException> (() => { list.Add((<#=TYPE #>)expectedCapacity); });
     }
 
-#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObject<#=TYPENAME_IDENTIFIER#> : UnityEngine.ScriptableObject
     {
         public <#=TYPENAME#> List;
@@ -459,7 +464,6 @@ internal class FixedListTests : CollectionsTestFixture
         var b = UnityEngine.Object.Instantiate(a);
         CollectionAssert.AreEqual(a.List, b.List);
     }
-#endif
 
 <#
                 if (EXPECTEDCAPACITY >= 5)
@@ -662,37 +666,6 @@ internal class FixedListTests : CollectionsTestFixture
         list.Insert(2,2);
         for(var i = 0; i < 5; ++i)
             Assert.AreEqual(i, list[i]);
-    }
-
-    [Test]
-    public unsafe void <#=TYPENAME_IDENTIFIER #>Unaligned_Read_Write()
-    {
-        int alignment = UnsafeUtility.AlignOf<<#=TYPE #>>();
-        if(alignment == 1)
-            return;
-
-        // Create a unaligned <#=TYPENAME #> and ensure we can still read+write safely
-        const int buffSize = <#=BYTES #> * 2;
-        byte* buff = stackalloc byte[buffSize];
-        UnsafeUtility.MemSet(buff, 0xCD, buffSize);
-
-        int offset = 0;
-        while (CollectionHelper.IsAligned((ulong)buff + (ulong)offset, alignment))
-            offset++;
-        ulong unalignedBuff = (ulong)buff + (ulong)offset;
-
-        var list = (<#=TYPENAME #>*)(unalignedBuff);
-        list->Length = 0;
-
-        for (var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
-            list->Add((<#=TYPE #>)i);
-
-        for (var i = 0; i < <#=EXPECTEDCAPACITY #>; ++i)
-            Assert.AreEqual(i, list->ElementAt(i));
-
-        // Ensure we didn't write outside of our fixed list byte range
-        for(int i = UnsafeUtility.SizeOf<<#=TYPENAME #>>() + offset; i < buffSize; ++i)
-            Assert.AreEqual(buff[i], 0xCD);
     }
 
     [Test]

@@ -14,14 +14,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-#if !UNITY_DOTSRUNTIME
 using System;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.Tests;
-#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
 using UnityEngine;
-#endif
 
 namespace Unity.Collections.Tests
 {
@@ -37,7 +34,6 @@ foreach(var BYTES in SIZES)
     var TOO_BIG = new String('o', BYTES - 2);
 #>
 
-#if !UNITY_DOTSRUNTIME        // DOTS-Runtime doesn't support UnityEngine
     class ScriptableObjectFixedString<#=BYTES#>Bytes : UnityEngine.ScriptableObject
     {
         public FixedString<#=BYTES#>Bytes String;
@@ -51,7 +47,6 @@ foreach(var BYTES in SIZES)
         var b = UnityEngine.Object.Instantiate(a);
         Assert.AreEqual(a.String, b.String);
     }
-#endif
 
     [TestCase("<#=ALMOST_TOO_BIG#>", FormatError.None, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Almost")]
     [TestCase("<#=TOO_BIG#>", FormatError.Overflow, TestName="FixedString<#=BYTES#>AtMaximumSizeWorks_Over")]
@@ -127,4 +122,3 @@ foreach(var BYTES in SIZES)
 }
 
 }
-#endif

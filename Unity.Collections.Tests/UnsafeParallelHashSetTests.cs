@@ -48,7 +48,6 @@ internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
         container.Dispose();
     }
 
-#if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
     [TestRequiresCollectionChecks]
     public void UnsafeParallelHashSet_Full_Throws()
@@ -72,7 +71,6 @@ internal class UnsafeParallelHashSetTests : CollectionsTestCommonBase
 
         container.Dispose();
     }
-#endif
 
     [Test]
     public void UnsafeParallelHashSet_RemoveOnEmptyMap_DoesNotThrow()

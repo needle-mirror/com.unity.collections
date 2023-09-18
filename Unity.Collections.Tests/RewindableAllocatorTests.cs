@@ -5,7 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections.Tests;
 using Unity.Jobs.LowLevel.Unsafe;
 
-#if !UNITY_DOTSRUNTIME && ENABLE_UNITY_COLLECTIONS_CHECKS
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
 internal class RewindableAllocatorTests
 {
     AllocatorHelper<RewindableAllocator> m_AllocatorHelper;

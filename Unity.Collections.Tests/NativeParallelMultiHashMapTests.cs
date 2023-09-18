@@ -12,11 +12,7 @@ using System.Text.RegularExpressions;
 
 internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 {
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -40,7 +36,7 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeParallelMultiHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
@@ -60,7 +56,6 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-#endif
 
     [Test]
     public void NativeParallelMultiHashMap_IsEmpty()

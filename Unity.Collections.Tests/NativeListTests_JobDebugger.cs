@@ -38,8 +38,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
         }
     }
 
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedContainerJob : IJob
     {
         public NativeList<NativeList<int>> nestedContainer;
@@ -67,7 +65,6 @@ internal class NativeListJobDebuggerTests : CollectionsTestFixture
 
         container.Dispose();
     }
-#endif
 
     [Test]
     [TestRequiresCollectionChecks]

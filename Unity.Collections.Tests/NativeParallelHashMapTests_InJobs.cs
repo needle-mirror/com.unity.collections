@@ -9,8 +9,6 @@ using Unity.Collections.Tests;
 
 internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFixture
 {
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedMapJob : IJob
     {
         public NativeParallelHashMap<int, NativeParallelHashMap<int, int>> nestedMap;
@@ -38,7 +36,6 @@ internal class NativeParallelHashMapTests_InJobs : NativeParallelHashMapTestsFix
 
         map.Dispose();
     }
-#endif
 
     [Test]
     public void NativeParallelHashMap_Read_And_Write()

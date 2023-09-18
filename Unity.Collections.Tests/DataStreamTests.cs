@@ -274,7 +274,7 @@ namespace Unity.Collections.Tests
                 Assert.That(writer.HasFailedWrites);
             }
 
-            [Test, DotsRuntimeIgnore]
+            [Test]
             [TestRequiresDotsDebugOrCollectionChecks]
             public void ReadOutSideOfCapacity_Fails()
             {
@@ -420,7 +420,7 @@ namespace Unity.Collections.Tests
                 Assert.AreEqual(expected, uf.floatValue);
             }
 
-            [Test, DotsRuntimeIgnore]
+            [Test]
             [TestRequiresDotsDebugOrCollectionChecks]
             public void UInt_OutOfCapacity()
             {
@@ -451,7 +451,7 @@ namespace Unity.Collections.Tests
             Assert.That(dataStream.LengthInBits, Is.EqualTo(3 * 8));
         }
 
-        [Test, DotsRuntimeIgnore]
+        [Test]
         public void CreateStreamWithPartOfSourceByteArray()
         {
             byte[] byteArray =
@@ -540,6 +540,20 @@ namespace Unity.Collections.Tests
             Assert.AreEqual('d', reader.ReadByte());
             Assert.AreEqual('e', reader.ReadByte());
             Assert.AreEqual('f', reader.ReadByte());
+        }
+
+        [Test]
+        public void GetStreamReaderUnsafePtr()
+        {
+            var a = new NativeArray<byte>(1, Allocator.Temp);
+            a[0] = (byte)42;
+            var reader = new DataStreamReader(a);
+
+            unsafe
+            {
+                var ptr = (byte*)reader.GetUnsafeReadOnlyPtr();
+                Assert.AreEqual((byte)42, *ptr);
+            }
         }
 
         [Test]

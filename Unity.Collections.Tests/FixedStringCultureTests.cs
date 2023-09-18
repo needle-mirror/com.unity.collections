@@ -1,4 +1,3 @@
-#if !UNITY_DOTSRUNTIME
 using System;
 using System.Globalization;
 using System.Threading;
@@ -415,4 +414,3 @@ internal class FixedStringCultureTests
 }
 
 }
-#endif

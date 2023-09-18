@@ -410,7 +410,6 @@ internal class GenericContainerTests : CollectionsTestFixture
 
     [Test]
     [TestRequiresCollectionChecks("Tests dispose job while another job is scheduled - crashes without safety system")]
-    [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
     public void INativeDisposable_Dispose_Job_Missing_Dependency()
     {
         Test_Dispose_Job_Missing_Dependency(new NativeBitArray(16, Allocator.Persistent));
@@ -440,7 +439,6 @@ internal class GenericContainerTests : CollectionsTestFixture
 
     [Test]
     [TestRequiresCollectionChecks("Tests job depending on a dispose job with same data - crashes without safety system")]
-    [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
     public void INativeDisposable_Dispose_Job_Then_Schedule_Work()
     {
         Test_Dispose_Job_Then_Schedule_Work(new NativeBitArray(16, Allocator.Persistent));
@@ -494,7 +492,6 @@ internal class GenericContainerTests : CollectionsTestFixture
 
     [Test]
     [TestRequiresCollectionChecks()]
-    [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
     public void IIndexable_Change_Length_Missing_Dependency()
     {
         Test_Change_Length_Missing_Dependency<NativeList<int>, int>(new NativeList<int>(16, Allocator.Persistent));

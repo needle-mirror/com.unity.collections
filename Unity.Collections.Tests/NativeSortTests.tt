@@ -224,7 +224,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void NativeArraySlice_BinarySearch_NotFound_Reference_ArrayList()
     {
@@ -296,7 +295,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
 
 <#
@@ -350,7 +348,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void <#=ContainerType#>_BinarySearch_NotFound_Reference_ArrayList()
     {
@@ -395,7 +392,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
     [Test]
     public void <#=ContainerType#>_GenericSortJob_NoBurst()

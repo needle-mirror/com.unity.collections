@@ -1,10 +1,23 @@
 # Changelog
 
+## [2.3.0-exp.1] - 2023-09-18
+
+### Added
+
+* Added a new `GetUnsafeReadOnlyPtr` method to `DataStreamReader`. This can be used as an escape hatch if access to the underlying buffer of the stream reader is required.
+
+### Fixed
+
+* A previous release did not allow `unsafeList.RemoveRange(unsafeList.Length, 0)` anymore, which could cause failures in many common algorithms. This has been fixed.
+* Made `SortJob.SegmentSort`, and `SortJob.SegmentSortMerge` public to allow generic job type registration.
+* `UnsafeList.RemoveAtSwapBack` could read invalid memory when the last element of the list is removed
+* Data elements in FixedList<T, U> now respect natural alignment for the type T
+
+
 ## [2.2.1] - 2023-09-11
 
 ### Changed
 
-* Updated Burst dependency to version 1.8.7
 * Updated Burst dependency to version 1.8.8
 
 ### Fixed
@@ -14,7 +27,6 @@
 ### Added
 
 * Added a dependency on the com.unity.test-framework.performance package
-
 
 
 ## [2.2.0] - 2023-06-20
@@ -98,7 +110,6 @@
 * All HashMap and HashSet types are now consistently initialized with a capacity no less than the `minGrowth` specified
 * Incorrect markdown syntax for header anchors
 * `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements.
-
 
 ## [2.1.0-pre.11] - 2023-02-13
 

@@ -50,7 +50,6 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
         container.Dispose();
     }
 
-#if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
     [TestRequiresCollectionChecks]
     public void NativeParallelHashSet_Full_Throws()
@@ -74,7 +73,6 @@ internal class NativeParallelHashSetTests: CollectionsTestFixture
 
         container.Dispose();
     }
-#endif
 
     [Test]
     public void NativeParallelHashSet_RemoveOnEmptyMap_DoesNotThrow()

@@ -24,22 +24,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
         RunByRef,
     }
 
-#if UNITY_DOTSRUNTIME
-    internal class DotsRuntimeFixmeAttribute : IgnoreAttribute
-    {
-        public DotsRuntimeFixmeAttribute(string msg = null) : base(msg == null ? "Test should work in DOTS Runtime but currently doesn't. Ignoring until fixed..." : msg)
-        {
-        }
-    }
-#else
-    internal class DotsRuntimeFixmeAttribute : Attribute
-	{
-        public DotsRuntimeFixmeAttribute(string msg = null)
-        {
-        }
-	}
-#endif
-
 	[JobProducerType(typeof(IJobTestExtensions.JobTestProducer<>))]
     internal interface IJobTest
 	{
@@ -112,8 +96,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
 		}
     }
 
-    // DOTS Runtime doesn't support multiple producers
-#if !UNITY_DOTSRUNTIME
     [JobProducerType(typeof(IJobTestInheritProducerExtensions.JobTestProducer<>))]
     internal interface IJobTestInheritWithProducer : IJob
     {
@@ -179,8 +161,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
             return JobsUtility.Schedule(ref scheduleParams);
         }
     }
-#endif
-
     internal struct MyGenericResizeJob<T> : IJob where T : unmanaged
     {
 		public int m_ListLength;
@@ -315,7 +295,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
         
         [Test]
         [TestRequiresCollectionChecks]
-        [DotsRuntimeFixme("DOTS Runtime doesn't detect safety handles in the generic container")]
         public void SchedulingGenericJobFromGenericContextUnsafelyThrows()
         {
             var list = new NativeList<DontReferenceThisTypeOutsideOfThisTest>(1, RwdAllocator.ToAllocator);
@@ -637,8 +616,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
             l1.Dispose();
         }
 
-        // DOTS Runtime doesn't support multiple producers
-#if !UNITY_DOTSRUNTIME
         [BurstCompile(CompileSynchronously = true)]
         public struct InheritWithProducerJob : IJobTestInheritWithProducer
         {
@@ -674,6 +651,5 @@ namespace Unity.Jobs.Tests.ManagedJobs
             l2.Dispose();
             l1.Dispose();
         }
-#endif
     }
 }

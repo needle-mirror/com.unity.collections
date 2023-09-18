@@ -339,6 +339,10 @@ internal class UnsafeListTests : CollectionsTestCommonBase
         list.RemoveRange(0, 10);
         Expected(ref list, 0, new int[] { 0 });
         list.Clear();
+        
+        // Test removing at the end of the list with a zero length.
+        // This simply must not throw.
+        list.RemoveRange(list.Length, 0);
 
         list.Dispose();
     }

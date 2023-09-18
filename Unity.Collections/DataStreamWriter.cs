@@ -4,9 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
-#if !UNITY_DOTSRUNTIME
 using UnityEngine.Scripting.APIUpdating;
-#endif
 
 namespace Unity.Collections
 {
@@ -65,9 +63,7 @@ namespace Unity.Collections
     /// }
     /// </code>
     /// </remarks>
-#if !UNITY_DOTSRUNTIME
     [MovedFrom(true, "Unity.Networking.Transport", "Unity.Networking.Transport")]
-#endif
     [StructLayout(LayoutKind.Sequential)]
     [GenerateTestsForBurstCompatibility]
     public unsafe struct DataStreamWriter

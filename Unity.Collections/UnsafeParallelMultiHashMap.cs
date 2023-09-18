@@ -378,11 +378,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             ParallelWriter writer;
 
-#if UNITY_DOTSRUNTIME
-            writer.m_ThreadIndex = -1;    // aggressively check that code-gen has patched the ThreadIndex
-#else
             writer.m_ThreadIndex = 0;
-#endif
             writer.m_Buffer = m_Buffer;
 
             return writer;

@@ -23,13 +23,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
             m_AllocatorHelper.Dispose();
         }
 
-        [SetUp]
-        public void Setup()
-        {
-#if UNITY_DOTSRUNTIME
-            Unity.Runtime.TempMemoryScope.EnterScope();
-#endif
-        }
 
         [TearDown]
         public void Teardown()
@@ -38,10 +31,6 @@ namespace Unity.Jobs.Tests.ManagedJobs
             // This is test only behavior for determinism.  Rewind twice such that all
             // tests start with an allocator containing only one memory block.
             RwdAllocator.Rewind();
-
-#if UNITY_DOTSRUNTIME
-            Unity.Runtime.TempMemoryScope.ExitScope();
-#endif
         }
     }
 

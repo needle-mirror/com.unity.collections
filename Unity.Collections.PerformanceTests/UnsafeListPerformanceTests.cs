@@ -4,7 +4,6 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-#if !UNITY_DOTSRUNTIME
 using Unity.PerformanceTesting;
 
 namespace Unity.Collections.PerformanceTests
@@ -119,5 +118,3 @@ namespace Unity.Collections.PerformanceTests
         }
     }
 }
-
-#endif

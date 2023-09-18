@@ -305,11 +305,7 @@ internal class NativeQueueTests : CollectionsTestCommonBase
         }
     }
 
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -320,7 +316,6 @@ internal class NativeQueueTests : CollectionsTestCommonBase
             Throws.Exception.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {container.GetType()} has been deallocated"));
     }
-#endif
 
     [Test]
     public void NativeQueue_CustomAllocatorTest()

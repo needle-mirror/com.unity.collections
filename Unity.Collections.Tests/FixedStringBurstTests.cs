@@ -1,4 +1,3 @@
-#if !UNITY_DOTSRUNTIME
 using System;
 using System.Globalization;
 using System.Threading;
@@ -40,4 +39,3 @@ namespace FixedStringTests
         }
     }
 }
-#endif

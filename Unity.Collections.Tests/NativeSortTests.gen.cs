@@ -220,7 +220,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void NativeArraySlice_BinarySearch_NotFound_Reference_ArrayList()
     {
@@ -292,7 +291,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
 
 
@@ -339,7 +337,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void NativeList_BinarySearch_NotFound_Reference_ArrayList()
     {
@@ -384,7 +381,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
     [Test]
     public void NativeList_GenericSortJob_NoBurst()
@@ -544,7 +540,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
         }
     }
 
-#if !UNITY_DOTSRUNTIME
     [Test]
     public void UnsafeList_BinarySearch_NotFound_Reference_ArrayList()
     {
@@ -589,7 +584,6 @@ internal class NativeSortTests : CollectionsTestCommonBase
             }
         }
     }
-#endif
 
     [Test]
     public void UnsafeList_GenericSortJob_NoBurst()

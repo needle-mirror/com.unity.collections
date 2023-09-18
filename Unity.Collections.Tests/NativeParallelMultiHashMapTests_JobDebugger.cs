@@ -37,8 +37,6 @@ internal class NativeParallelMultiHashMapTests_JobDebugger : NativeParallelMulti
         readValues.Dispose();
     }
 
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedMapJob : IJob
     {
         public NativeParallelMultiHashMap<int, NativeParallelMultiHashMap<int, int>> nestedMap;
@@ -65,6 +63,5 @@ internal class NativeParallelMultiHashMapTests_JobDebugger : NativeParallelMulti
 
         map.Dispose();
     }
-#endif
 }
 #endif

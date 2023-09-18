@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
 using Unity.Collections.LowLevel.Unsafe;
-#if !UNITY_DOTSRUNTIME
 using UnityEngine.Scripting.APIUpdating;
-#endif
 
 namespace Unity.Collections
 {
@@ -14,7 +12,7 @@ namespace Unity.Collections
     /// The DataStreamReader class is the counterpart of the
     /// <see cref="DataStreamWriter"/> class and can be be used to deserialize
     /// data which was prepared with it.
-    /// 
+    ///
     /// DataStreamWriter writes this data in the endian format native
     /// to the current machine architecture.
     /// <br/>
@@ -42,9 +40,7 @@ namespace Unity.Collections
     /// <seealso cref="DataStreamWriter"/>
     /// <seealso cref="IsLittleEndian"/>
     /// </remarks>
-#if !UNITY_DOTSRUNTIME
     [MovedFrom(true, "Unity.Networking.Transport")]
-#endif
     [GenerateTestsForBurstCompatibility]
     public unsafe struct DataStreamReader
     {
@@ -56,7 +52,7 @@ namespace Unity.Collections
             public int m_FailedReads;
         }
 
-        [NativeDisableUnsafePtrRestriction] byte* m_BufferPtr;
+        [NativeDisableUnsafePtrRestriction] internal byte* m_BufferPtr;
         Context m_Context;
         int m_Length;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -136,7 +132,7 @@ namespace Unity.Collections
             if (GetBytesRead() + length > m_Length)
             {
                 ++m_Context.m_FailedReads;
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to read {length} bytes from a stream where only {m_Length - GetBytesRead()} are available");
 #endif
                 UnsafeUtility.MemClear(data, length);
@@ -190,7 +186,7 @@ namespace Unity.Collections
             if (pos > m_Length)
             {
                 ++m_Context.m_FailedReads;
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to seek to {pos} in a stream of length {m_Length}");
 #endif
                 return;
@@ -366,7 +362,7 @@ namespace Unity.Collections
             if (m_Context.m_BitIndex < length)
             {
                 ++m_Context.m_FailedReads;
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to read {length} bits from a stream where only {m_Context.m_BitIndex} are available");
 #endif
                 return 0;
@@ -396,7 +392,7 @@ namespace Unity.Collections
             if (m_Context.m_BitIndex < numbits)
             {
                 ++m_Context.m_FailedReads;
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to read {numbits} bits from a stream where only {m_Context.m_BitIndex} are available");
 #endif
                 return 0;
@@ -663,7 +659,7 @@ namespace Unity.Collections
             ushort length = ReadUShort();
             if (length > maxLength)
             {
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to read a string of length {length} but max length is {maxLength}");
 #endif
                 return 0;
@@ -760,7 +756,7 @@ namespace Unity.Collections
             uint length = ReadPackedUIntDelta(baseLength, model);
             if (length > (uint)maxLength)
             {
-#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG) && !UNITY_DOTSRUNTIME
+#if (ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG)
                 UnityEngine.Debug.LogError($"Trying to read a string of length {length} but max length is {maxLength}");
 #endif
                 return 0;
@@ -781,7 +777,7 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS")]
-        readonly void CheckRead()
+        internal readonly void CheckRead()
         {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);

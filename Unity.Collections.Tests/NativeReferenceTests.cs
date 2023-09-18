@@ -272,8 +272,6 @@ class NativeReferenceTests : CollectionsTestCommonBase
         inner.Dispose();
     }
 
-// DOTS-6203 Nested containers aren't detected in DOTS Runtime currently
-#if !UNITY_DOTSRUNTIME
     struct NestedContainerJob : IJob
     {
         public NativeReference<NativeReference<int>> nestedContainer;
@@ -301,5 +299,4 @@ class NativeReferenceTests : CollectionsTestCommonBase
 
         container.Dispose();
     }
-#endif
 }

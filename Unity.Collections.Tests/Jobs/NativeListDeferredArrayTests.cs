@@ -67,10 +67,6 @@ internal class NativeListDeferredArrayTests : JobTestsFixtureBasic
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         JobsUtility.JobDebuggerEnabled = true;
 #endif
-
-#if UNITY_DOTSRUNTIME
-        Unity.Runtime.TempMemoryScope.EnterScope();
-#endif
     }
 
     [Test]
@@ -197,10 +193,6 @@ internal class NativeListDeferredArrayTests : JobTestsFixtureBasic
     [TearDown]
     public void TearDown()
     {
-#if UNITY_DOTSRUNTIME
-        Unity.Runtime.TempMemoryScope.ExitScope();
-#endif
-
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         JobsUtility.JobDebuggerEnabled = JobsDebuggerWasEnabled;
 #endif

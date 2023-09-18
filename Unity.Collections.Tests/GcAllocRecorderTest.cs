@@ -2,8 +2,6 @@ using System;
 using NUnit.Framework;
 using Unity.Collections.Tests;
 
-#if !UNITY_DOTSRUNTIME
-
 internal class GcAllocRecorderTest
 {
     [Test]
@@ -38,13 +36,9 @@ internal class GcAllocRecorderTest
 
 #pragma warning restore 219
 }
-#endif
-
 
 namespace Unity.Collections.Tests
 {
-#if !UNITY_DOTSRUNTIME
-
     internal static class GCAllocRecorder
     {
         static UnityEngine.Profiling.Recorder AllocRecorder;
@@ -93,21 +87,4 @@ namespace Unity.Collections.Tests
                 throw new AssertionException($"Expected 0 GC allocations but there were {count}");
         }
     }
-#else
-    public static class GCAllocRecorder
-    {
-        public static void ValidateNoGCAllocs(Action action)
-        {
-            action();
-        }
-
-        public static void BeginNoGCAlloc()
-        {
-        }
-
-        public static void EndNoGCAlloc()
-        {
-        }
-    }
-#endif
 }

@@ -634,7 +634,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <exception cref="IndexOutOfRangeException">Thrown if `index` is out of bounds.</exception>
         public void RemoveAtSwapBack(int index)
         {
-            RemoveRangeSwapBack(index, 1);
+            CollectionHelper.CheckIndexInRange(index, m_length);
+
+            index = CollectionHelper.AssumePositive(index);
+            int copyFrom = m_length - 1;
+            T* dst = (T*)Ptr + index;
+            T* src = (T*)Ptr + copyFrom;
+            (*dst) = (*src);
+            m_length -= 1;
         }
 
         /// <summary>
@@ -1035,7 +1042,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new IndexOutOfRangeException($"Value for index {index} must be positive.");
             }
 
-            if (index >= Length)
+            if (index > Length)
             {
                 throw new IndexOutOfRangeException($"Value for index {index} is out of bounds.");
             }

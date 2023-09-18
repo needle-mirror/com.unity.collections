@@ -1,7 +1,5 @@
 using System;
-#if !UNITY_DOTSRUNTIME
 using System.IO;
-#endif
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Unity.CompilationPipeline.Common.Diagnostics;

@@ -152,11 +152,7 @@ namespace Unity.Jobs.CodeGen
             {
                 var ctorFuncDef = new MethodDefinition("EarlyInit", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, asmDef.MainModule.ImportReference(typeof(void)));
 
-#if !UNITY_DOTSRUNTIME
-                // Note that DOTS Runtime fills out a predefined method "InvokeEarlyInitMethods" with the EarlyInit() calls
-                // from generated here from its own post processor.
-
-                if (!Defines.Contains("UNITY_DOTSRUNTIME") && !Defines.Contains("UNITY_EDITOR"))
+                if (!Defines.Contains("UNITY_EDITOR"))
                 {
                     // Needs to run automatically in the player, but we need to
                     // exclude this attribute when building for the editor, or
@@ -167,14 +163,12 @@ namespace Unity.Jobs.CodeGen
                     attribute.ConstructorArguments.Add(new CustomAttributeArgument(loadTypeEnumType, UnityEngine.RuntimeInitializeLoadType.AfterAssembliesLoaded));
                     ctorFuncDef.CustomAttributes.Add(attribute);
                 }
-
-                if (Defines.Contains("UNITY_EDITOR"))
+                else
                 {
                     // Needs to run automatically in the editor.
                     var attributeCtor2 = asmDef.MainModule.ImportReference(typeof(UnityEditor.InitializeOnLoadMethodAttribute).GetConstructor(Type.EmptyTypes));
                     ctorFuncDef.CustomAttributes.Add(new CustomAttribute(attributeCtor2));
                 }
-#endif
                 
                 ctorFuncDef.Body.InitLocals = false;
 

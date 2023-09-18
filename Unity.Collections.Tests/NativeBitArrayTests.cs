@@ -655,11 +655,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         readerJob.Complete();
     }
 
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test,DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeBitArray_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -673,7 +669,7 @@ internal class NativeBitArrayTests : CollectionsTestFixture
                 .With.Message.Contains($"The {test.GetType()} has been deallocated"));
     }
 
-    [Test,DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeBitArray_AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
@@ -698,7 +694,6 @@ internal class NativeBitArrayTests : CollectionsTestFixture
             Throws.Exception.With.TypeOf<ObjectDisposedException>()
                 .With.Message.Contains($"The {test1.GetType()} has been deallocated"));
     }
-#endif
 
     [BurstCompile(CompileSynchronously = true)]
     struct NativeBitArrayCreateAndUseAfterFreeBurst : IJob
@@ -715,7 +710,6 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         }
     }
 
-#if !UNITY_DOTSRUNTIME    // DOTS-Runtime does throw an exception.
     [Test]
     [TestRequiresCollectionChecks]
     public void NativeBitArray_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
@@ -738,8 +732,6 @@ internal class NativeBitArrayTests : CollectionsTestFixture
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(test.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-#endif
-
     void findWithPattern(ref NativeBitArray test, byte pattern, int numBits)
     {
         for (int pos = 0; pos < test.Length; pos += 8)

@@ -432,11 +432,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
         hashMap.Dispose();
     }
 
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -460,7 +456,7 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
@@ -480,7 +476,6 @@ internal class NativeHashMapTests : CollectionsTestCommonBase
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-#endif
 
     [Test]
     public void NativeHashMap_ForEach_FixedStringInHashMap()

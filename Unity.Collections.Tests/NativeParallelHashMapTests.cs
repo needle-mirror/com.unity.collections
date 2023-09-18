@@ -158,7 +158,6 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         }
     }
 
-    #if !(UNITY_DOTSRUNTIME && UNITY_WEBGL) // https://unity3d.atlassian.net/browse/DOTSR-2039
     [Test]
     public unsafe void NativeParallelHashMap_Key_Collisions_FromJobs()
     {
@@ -194,7 +193,6 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
         keys.Dispose();
     }
-    #endif
 
     [Test]
     public void NativeParallelHashMap_HashMapSupportsAutomaticCapacityChange()
@@ -497,7 +495,6 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         hashMap.Dispose();
     }
 
-#if !UNITY_DOTSRUNTIME    // DOTS-Runtime has an assertion in the C++ layer, that can't be caught in C#
     [Test]
     public void NativeParallelHashMap_NativeKeyValueArrays_DisposeJob()
     {
@@ -521,13 +518,8 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
 
         disposeJob.Complete();
     }
-#endif
 
-    // These tests require:
-    // - JobsDebugger support for static safety IDs (added in 2020.1)
-    // - Asserting throws
-#if !UNITY_DOTSRUNTIME
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_UseAfterFree_UsesCustomOwnerTypeName()
     {
@@ -551,7 +543,7 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeParallelHashMap_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {
@@ -571,7 +563,6 @@ internal class NativeParallelHashMapTests : CollectionsTestFixture
         LogAssert.Expect(LogType.Exception,
             new Regex($"InvalidOperationException: The {Regex.Escape(container.GetType().ToString())} has been declared as \\[ReadOnly\\] in the job, but you are writing to it"));
     }
-#endif
 
     [Test]
     public void NativeParallelHashMap_ForEach_FixedStringInHashMap()

@@ -94,5 +94,18 @@ namespace Unity.Collections.LowLevel.Unsafe
 #endif
             return reader.ReadPackedFixedStringDelta(current, baseline, model);
         }
+
+        /// <summary>
+        /// Get a pointer to the stream's data. Note that the pointer always points at the
+        /// beginning of the data, no matter how much was read from the stream.
+        /// </summary>
+        /// <remarks>Performs a job safety check for read-only access.</remarks>
+        /// <param name="reader">Data stream reader.</param>
+        /// <returns>A pointer to the stream's data.</returns>
+        public static unsafe void* GetUnsafeReadOnlyPtr(this ref DataStreamReader reader)
+        {
+            reader.CheckRead();
+            return reader.m_BufferPtr;
+        }
     }
 }

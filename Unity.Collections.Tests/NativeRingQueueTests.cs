@@ -11,7 +11,7 @@ using UnityEngine.TestTools;
 internal class NativeRingQueueTests
 {
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeRingQueue_UseAfterFree_UsesCustomOwnerTypeName()
     {
         var test = new NativeRingQueue<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
@@ -23,7 +23,7 @@ internal class NativeRingQueueTests
 #endif
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     public void NativeRingQueue_AtomicSafetyHandle_AllocatorTemp_UniqueStaticSafetyIds()
     {
         var test = new NativeRingQueue<int>(1, Allocator.Temp, NativeArrayOptions.ClearMemory);
@@ -65,7 +65,7 @@ internal class NativeRingQueueTests
         }
     }
 
-    [Test, DotsRuntimeIgnore]
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeRingQueue_CreateAndUseAfterFreeInBurstJob_UsesCustomOwnerTypeName()
     {

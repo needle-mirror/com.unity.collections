@@ -40,19 +40,16 @@ namespace Unity.Collections.Tests
         protected AllocatorHelper<RewindableAllocator> CommonRwdAllocatorHelper => rwdAllocatorHelper;
         protected ref RewindableAllocator CommonRwdAllocator => ref rwdAllocatorHelper.Allocator;
 
+        [SetUp]
+        public virtual void Setup()
+        {
+        }
+
         [OneTimeSetUp]
         public void OneTimeSetup()
         {
             rwdAllocatorHelper = new AllocatorHelper<RewindableAllocator>(Allocator.Persistent);
             CommonRwdAllocator.Initialize(128 * 1024, true);
-        }
-
-        [SetUp]
-        public virtual void Setup()
-        {
-#if UNITY_DOTSRUNTIME
-            Unity.Runtime.TempMemoryScope.EnterScope();
-#endif
         }
 
         [OneTimeTearDown]
@@ -70,9 +67,6 @@ namespace Unity.Collections.Tests
             // tests start with an allocator containing only one memory block.
             CommonRwdAllocator.Rewind();
 
-#if UNITY_DOTSRUNTIME
-            Unity.Runtime.TempMemoryScope.ExitScope();
-#endif
         }
     }
 
@@ -85,9 +79,7 @@ namespace Unity.Collections.Tests
     /// </remarks>
     internal abstract class CollectionsTestFixture : CollectionsTestCommonBase
     {
-#if !UNITY_DOTSRUNTIME
         static string SafetyChecksMenu = "Jobs > Burst > Safety Checks";
-#endif
         private bool JobsDebuggerWasEnabled;
 
         [SetUp]
@@ -99,9 +91,7 @@ namespace Unity.Collections.Tests
             // force it enabled for all tests, and restore the original value at teardown.
             JobsDebuggerWasEnabled = JobsUtility.JobDebuggerEnabled;
             JobsUtility.JobDebuggerEnabled = true;
-#if !UNITY_DOTSRUNTIME
             Assert.IsTrue(BurstCompiler.Options.EnableBurstSafetyChecks, $"Collections tests must have Burst safety checks enabled! To enable, go to {SafetyChecksMenu}");
-#endif
         }
 
         [TearDown]
