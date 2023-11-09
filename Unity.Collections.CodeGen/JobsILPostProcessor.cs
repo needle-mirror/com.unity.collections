@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 using Unity.CompilationPipeline.Common.Diagnostics;
 using Unity.CompilationPipeline.Common.ILPostProcessing;
 
@@ -18,12 +15,12 @@ namespace Unity.Jobs.CodeGen
     {
         AssemblyDefinition AssemblyDefinition;
         List<DiagnosticMessage> DiagnosticMessages = new List<DiagnosticMessage>();
-        public string[] Defines { get; private set; }
+        public HashSet<string> Defines { get; private set; }
 
         public override ILPostProcessResult Process(ICompiledAssembly compiledAssembly)
         {
             bool madeAnyChange = false;
-            Defines = compiledAssembly.Defines;
+            Defines = new HashSet<string>(compiledAssembly.Defines);
 
             try 
             {
@@ -59,7 +56,20 @@ namespace Unity.Jobs.CodeGen
                 }
             }
 
-            if (!madeAnyChange || DiagnosticMessages.Any(d => d.DiagnosticType == DiagnosticType.Error))
+            if (!madeAnyChange)
+                return new ILPostProcessResult(null, DiagnosticMessages);
+
+            bool hasError = false;
+            foreach (var d in DiagnosticMessages)
+            {
+                if (d.DiagnosticType == DiagnosticType.Error)
+                {
+                    hasError = true;
+                    break;
+                }
+            }
+
+            if (hasError)
                 return new ILPostProcessResult(null, DiagnosticMessages);
 
             var pe = new MemoryStream();
@@ -97,7 +107,7 @@ namespace Unity.Jobs.CodeGen
 
         class PostProcessorAssemblyResolver : IAssemblyResolver
         {
-            private readonly string[] _referenceDirectories;
+            private readonly HashSet<string> _referenceDirectories;
             private Dictionary<string, HashSet<string>> _referenceToPathMap;
             Dictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
             private ICompiledAssembly _compiledAssembly;
@@ -107,6 +117,7 @@ namespace Unity.Jobs.CodeGen
             {
                 _compiledAssembly = compiledAssembly;
                 _referenceToPathMap = new Dictionary<string, HashSet<string>>();
+                _referenceDirectories = new HashSet<string>();
                 foreach (var reference in compiledAssembly.References)
                 {
                     var assemblyName = Path.GetFileNameWithoutExtension(reference);
@@ -116,9 +127,8 @@ namespace Unity.Jobs.CodeGen
                         _referenceToPathMap.Add(assemblyName, fileList);
                     }
                     fileList.Add(reference);
+                    _referenceDirectories.Add(Path.GetDirectoryName(reference));
                 }
-
-                _referenceDirectories = _referenceToPathMap.Values.SelectMany(pathSet => pathSet.Select(Path.GetDirectoryName)).Distinct().ToArray();
             }
 
             public void Dispose()
@@ -163,8 +173,13 @@ namespace Unity.Jobs.CodeGen
             {
                 if (_referenceToPathMap.TryGetValue(name.Name, out var paths))
                 {
-                    if(paths.Count == 1)
-                        return paths.First();
+                    if (paths.Count == 1)
+                    {
+                        var enumerator = paths.GetEnumerator();
+                        // enumerators begin before the first element 
+                        enumerator.MoveNext();
+                        return enumerator.Current;
+                    }
 
                     // If we have more than one assembly with the same name loaded we now need to figure out which one
                     // is being requested based on the AssemblyNameReference
@@ -246,14 +261,14 @@ namespace Unity.Jobs.CodeGen
             var resolver = new PostProcessorAssemblyResolver(compiledAssembly);
             var readerParameters = new ReaderParameters
             {
-                SymbolStream = new MemoryStream(compiledAssembly.InMemoryAssembly.PdbData.ToArray()),
+                SymbolStream = new MemoryStream(compiledAssembly.InMemoryAssembly.PdbData),
                 SymbolReaderProvider = new PortablePdbReaderProvider(),
                 AssemblyResolver = resolver,
                 ReflectionImporterProvider = new PostProcessorReflectionImporterProvider(),
                 ReadingMode = ReadingMode.Immediate
             };
 
-            var peStream = new MemoryStream(compiledAssembly.InMemoryAssembly.PeData.ToArray());
+            var peStream = new MemoryStream(compiledAssembly.InMemoryAssembly.PeData);
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(peStream, readerParameters);
 
             //apparently, it will happen that when we ask to resolve a type that lives inside Unity.Jobs, and we
@@ -281,7 +296,15 @@ namespace Unity.Jobs.CodeGen
 
         public PostProcessorReflectionImporter(ModuleDefinition module) : base(module)
         {
-            _correctCorlib = module.AssemblyReferences.FirstOrDefault(a => a.Name == "mscorlib" || a.Name == "netstandard" || a.Name == SystemPrivateCoreLib);
+            _correctCorlib = default;
+            foreach (var a in module.AssemblyReferences)
+            {
+                if (a.Name == "mscorlib" || a.Name == "netstandard" || a.Name == SystemPrivateCoreLib)
+                {
+                    _correctCorlib = a;
+                    break;
+                }
+            }
         }
 
         public override AssemblyNameReference ImportReference(AssemblyName reference)

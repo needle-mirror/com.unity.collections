@@ -1,6 +1,8 @@
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace Unity.PerformanceTesting.Benchmark
@@ -53,23 +55,36 @@ namespace Unity.PerformanceTesting.Benchmark
         /// <exception cref="ArgumentException">Thrown for any errors in defining the benchmarks.</exception>
         public static void GenerateMarkdown(string title, Type benchmarkEnumType, string filePath, string description = null, string notesTitle = null, string[] notes = null)
         {
-            var attrBenchmarkComparison = benchmarkEnumType.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(BenchmarkComparisonAttribute));
+            var attrBenchmarkComparison = benchmarkEnumType.GetCustomAttribute<BenchmarkComparisonAttribute>();
             if (attrBenchmarkComparison == null)
                 throw new ArgumentException($"{benchmarkEnumType.Name} is not a valid benchmark comparison enum type as it is not decorated with [{nameof(BenchmarkComparisonAttribute)}]");
 
             Stopwatch timer = new Stopwatch();
             timer.Start();
-            var benchmarkTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetTypes().Where(
-                    t => t.CustomAttributes.Any(
-                        a => a.AttributeType == typeof(BenchmarkAttribute) &&
-                            (Type)a.ConstructorArguments[0].Value == benchmarkEnumType &&
-                            (bool)a.ConstructorArguments[1].Value == false
-                ))).ToArray();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var benchmarkTypes = new List<Type>();
+
+            foreach (Assembly assembly in assemblies)
+            {
+                var types = assembly.GetTypes();
+                foreach(var t in types)
+                {
+                    var cads = t.GetCustomAttributesData();
+                    foreach (var cad in cads)
+                    {
+                        if (cad.AttributeType != typeof(BenchmarkAttribute))
+                            continue;
+
+                        if ((Type)cad.ConstructorArguments[0].Value == benchmarkEnumType &&
+                                (bool)cad.ConstructorArguments[1].Value == false)
+                            benchmarkTypes.Add(t);
+                    }
+                }
+            }
             UnityEngine.Debug.Log($"Took {timer.Elapsed}s to find all types with [Benchmark(typeof({benchmarkEnumType.Name}))]");
 
             timer.Restart();
-            GenerateMarkdown(title, benchmarkTypes, filePath, description, notesTitle, notes);
+            GenerateMarkdown(title, benchmarkTypes.ToArray(), filePath, description, notesTitle, notes);
             UnityEngine.Debug.Log($"Took {timer.Elapsed}s to benchmark all types with [Benchmark(typeof({benchmarkEnumType.Name}))]");
         }
 

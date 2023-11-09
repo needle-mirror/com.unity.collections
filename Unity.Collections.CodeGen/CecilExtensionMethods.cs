@@ -1,12 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Unity.Burst;
-using Unity.Collections;
-using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace Unity.Jobs.CodeGen
 {

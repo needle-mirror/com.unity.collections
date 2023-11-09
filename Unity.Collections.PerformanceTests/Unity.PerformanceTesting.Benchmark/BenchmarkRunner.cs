@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Reflection;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -69,27 +69,46 @@ namespace Unity.PerformanceTesting.Benchmark
         /// Given a System.Type that contains performance test methods, reflect the setup to a benchmark comparison.
         /// Throws on any errors with the setup.
         /// </summary>
-        static BenchmarkComparisonTypeData GatherComparisonStructure(Type t)
+        unsafe static BenchmarkComparisonTypeData GatherComparisonStructure(Type t)
         {
             //--------
             // Determine and validate the benchmark comparison this type is intended for
             //--------
-
-            var attrBenchmark = t.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(BenchmarkAttribute));
-            if (attrBenchmark == null)
+            Type benchmarkEnumType = null;
+            foreach(var attributeData in t.GetCustomAttributesData())
+            {
+                if (attributeData.AttributeType == typeof(BenchmarkAttribute))
+                {
+                    benchmarkEnumType = (Type)attributeData.ConstructorArguments[0].Value;
+                    break;
+                }
+            }
+            if (benchmarkEnumType == null)
                 throw new ArgumentException($"Exactly one [{nameof(BenchmarkAttribute)}] must exist on the type {t.Name} to generate benchmark data");
-            Type benchmarkEnumType = (Type)attrBenchmark.ConstructorArguments[0].Value;
 
             // Find the baseline and the formatting for its title name (could be external to the enum or included)
-            var attrBenchmarkComparison = benchmarkEnumType.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(BenchmarkComparisonAttribute));
+            CustomAttributeData attrBenchmarkComparison = null;
+            List<CustomAttributeData> attrBenchmarkComparisonExternal = new List<CustomAttributeData>();
+            CustomAttributeData attrBenchmarkFormat = null;
+            foreach (var attributeData in benchmarkEnumType.GetCustomAttributesData())
+            {
+                if (attributeData.AttributeType == typeof(BenchmarkComparisonAttribute))
+                {
+                    attrBenchmarkComparison = attributeData;
+                }
+                // Find any other external comparisons
+                else if (attributeData.AttributeType == typeof(BenchmarkComparisonExternalAttribute))
+                {
+                    attrBenchmarkComparisonExternal.Add(attributeData);
+                }
+                // Find optional formatting of table results
+                else if (attributeData.AttributeType == typeof(BenchmarkComparisonDisplayAttribute))
+                {
+                    attrBenchmarkFormat = attributeData;
+                }
+            }
             if (attrBenchmarkComparison == null)
                 throw new ArgumentException($"Exactly one [{nameof(BenchmarkComparisonAttribute)}] must exist on the enum {benchmarkEnumType.Name} to generate benchmark data and define the baseline");
-
-            // Find any other external comparisons
-            var attrBenchmarkComparisonExternal = benchmarkEnumType.CustomAttributes.Where(x => x.AttributeType == typeof(BenchmarkComparisonExternalAttribute));
-
-            // Find optional formatting of table results
-            var attrBenchmarkFormat = benchmarkEnumType.CustomAttributes.SingleOrDefault(x => x.AttributeType == typeof(BenchmarkComparisonDisplayAttribute));
 
             //--------
             // Collect values and name formatting for enum and external
@@ -97,38 +116,59 @@ namespace Unity.PerformanceTesting.Benchmark
 
             // Enum field values
             var enumFields = benchmarkEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
-            var enumValues = enumFields.Select(x => (int)x.GetRawConstantValue());
-            var enumFormats = enumFields.Select(x =>
+            var enumCount = enumFields.Length;
+            var enumValues = stackalloc int[enumCount];
+            var enumValuesSet = new HashSet<int>(enumCount);
+            for (int i = 0; i < enumCount; i++)
             {
-                var attrEnumName = x.CustomAttributes.SingleOrDefault(a => a.AttributeType == typeof(BenchmarkNameAttribute));
-                if (attrEnumName == null)
+                int value = (int)enumFields[i].GetRawConstantValue();
+                enumValues[i] = value;
+                enumValuesSet.Add(value);
+            }
+
+            var enumFormats = new List<string>(enumCount);
+            foreach(var x in enumFields)
+            {
+                int oldCount = enumFormats.Count;
+                foreach (var attributeData in x.GetCustomAttributesData())
+                {
+                    if (attributeData.AttributeType == typeof(BenchmarkNameAttribute))
+                    {
+                        enumFormats.Add((string)attributeData.ConstructorArguments[0].Value);
+                        break;
+                    }
+                }
+                if (oldCount == enumFormats.Count)
                     throw new ArgumentException($"{x.Name} as well as all other enum values in {benchmarkEnumType.Name} must have a single [{nameof(BenchmarkNameAttribute)}] defined");
-                return (string)attrEnumName.ConstructorArguments[0].Value;
-            });
-            var enumCount = enumFields.Count();
+            }
 
             // External values
-            var externalValues = attrBenchmarkComparisonExternal.Select(x =>
+            var externalValues = new List<int>(attrBenchmarkComparisonExternal.Count);
+            foreach(var x in attrBenchmarkComparisonExternal)
             {
                 var externalValue = (int)x.ConstructorArguments[0].Value;
-                if (enumValues.Contains(externalValue))
+                if (enumValuesSet.Contains(externalValue))
                     throw new ArgumentException($"Externally-defined benchmark values for {benchmarkEnumType.Name} must not be a duplicate of another enum-defined or externally-defined benchmark value for {benchmarkEnumType.Name}");
-                return externalValue;
-            });
-            var externalFormats = attrBenchmarkComparisonExternal.Select(x => (string)x.ConstructorArguments[1].Value);
-            var externalCount = attrBenchmarkComparisonExternal.Count();
+            }
+            var externalFormats = new List<string>(attrBenchmarkComparisonExternal.Count);
+            foreach(var x in attrBenchmarkComparisonExternal)
+            {
+                externalFormats.Add((string)x.ConstructorArguments[1].Value);
+            }
+            
+            var externalCount = externalValues.Count;
 
             // Baseline value
             int baselineValue = (int)attrBenchmarkComparison.ConstructorArguments[0].Value;
             string externalBaselineFormat = null;
             if (attrBenchmarkComparison.ConstructorArguments.Count == 1)
             {
-                if (!enumValues.Contains(baselineValue))
+                if (!enumValuesSet.Contains(baselineValue))
                     throw new ArgumentException($"{baselineValue} not found in enum {benchmarkEnumType.Name}. Either specify an existing value as the baseline, or add a formatting string for the externally defined baseline value.");
             }
             else
             {
-                if (enumValues.Contains(baselineValue))
+                if (enumValuesSet.Contains(baselineValue))
                     throw new ArgumentException($"To specify an enum-defined benchmark baseline in {benchmarkEnumType.Name}, pass only the argument {baselineValue} without a name, as the name requires definition in the enum");
                 if (externalValues.Contains(baselineValue))
                     throw new ArgumentException($"To specify an external-defined benchmark baseline in {benchmarkEnumType.Name}, define only in [{nameof(BenchmarkComparisonAttribute)}] and omit also defining with [{nameof(BenchmarkComparisonExternalAttribute)}]");
@@ -143,7 +183,7 @@ namespace Unity.PerformanceTesting.Benchmark
             //--------
 
             string defaultNameOverride = null;
-            var nameOverride = new System.Collections.Generic.Dictionary<int, string>();
+            var nameOverride = new Dictionary<int, string>();
             foreach (var attr in t.CustomAttributes)
             {
                 if (attr.AttributeType == typeof(BenchmarkNameOverrideAttribute))
@@ -183,16 +223,16 @@ namespace Unity.PerformanceTesting.Benchmark
             // Enum field values
             for (int i = 0; i < enumCount; i++)
             {
-                ret.names[i] = enumFormats.ElementAt(i);
-                ret.values[i] = enumValues.ElementAt(i);
+                ret.names[i] = enumFormats[i];
+                ret.values[i] = enumValues[i];
                 ret.resultTypes[i] = baselineValue == ret.values[i] ? BenchmarkResultType.NormalBaseline : BenchmarkResultType.Normal;
             }
 
             // External values
             for (int i = 0; i < externalCount; i++)
             {
-                ret.names[enumCount + i] = externalFormats.ElementAt(i);
-                ret.values[enumCount + i] = externalValues.ElementAt(i);
+                ret.names[enumCount + i] = externalFormats[i];
+                ret.values[enumCount + i] = externalValues[i];
                 ret.resultTypes[enumCount + i] = BenchmarkResultType.External;
             }
 
@@ -211,8 +251,8 @@ namespace Unity.PerformanceTesting.Benchmark
                 else
                     ret.names[i] = string.Format(ret.names[i], ret.defaultName);
             }
-
-            if (ret.values.Distinct().Count() != ret.values.Length)
+            
+            if (new HashSet<int>(ret.values).Count != ret.values.Length)
                 throw new ArgumentException($"Each enum value and external value in {benchmarkEnumType.Name} must be unique");
 
             return ret;
@@ -235,7 +275,15 @@ namespace Unity.PerformanceTesting.Benchmark
             for (int p = 0; p < paramInfo.Length; p++)
             {
                 // It is correct to throw if a parameter doesn't include Values attribute, NUnit errors as well
-                var valuesAttribute = paramInfo[p].CustomAttributes.FirstOrDefault((p) => p.AttributeType == typeof(NUnit.Framework.ValuesAttribute));
+                CustomAttributeData valuesAttribute = null;
+                foreach (var cad in paramInfo[p].GetCustomAttributesData())
+                {
+                    if (cad.AttributeType == typeof(NUnit.Framework.ValuesAttribute))
+                    {
+                        valuesAttribute = cad;
+                        break;
+                    }
+                }
                 if (valuesAttribute == null)
                     throw new ArgumentException($"No [Values(...)] attribute found for parameter {paramInfo[p].Name} in {methodName}");
 
@@ -243,7 +291,7 @@ namespace Unity.PerformanceTesting.Benchmark
 
                 argNames[p] = paramInfo[p].Name;
 
-                if (paramInfo[p].ParameterType.IsEnum && paramInfo[p].ParameterType.CustomAttributes.Any(p => p.AttributeType == typeof(BenchmarkComparisonAttribute)))
+                if (paramInfo[p].ParameterType.IsEnum && paramInfo[p].ParameterType.GetCustomAttribute<BenchmarkComparisonAttribute>() != null)
                 {
                     // [Values] <comparisonEnumType> <paramName>
                     //
@@ -277,7 +325,7 @@ namespace Unity.PerformanceTesting.Benchmark
                     else
                     {
                         // [Values(1-to-3-arguments)] <comparisonEnumType> <paramName>
-                        var ctorValues = values.ToArray();
+                        var ctorValues = values;
 
                         if (values.Count == 1 && values[0].ArgumentType == typeof(object[]))
                         {
@@ -286,7 +334,7 @@ namespace Unity.PerformanceTesting.Benchmark
                             // This is for ValuesAttribute(params object[] args)
 
                             var arrayValue = values[0].Value as System.Collections.Generic.IList<CustomAttributeTypedArgument>;
-                            ctorValues = arrayValue.ToArray();
+                            ctorValues = arrayValue;
                         }
 
                         for (int e = 0; e < argCounts[p]; e++)
@@ -310,7 +358,7 @@ namespace Unity.PerformanceTesting.Benchmark
                         }
 
                         bool specifiedBaseline = !hasNormalBaseline;
-                        for (int ca = 0; ca < ctorValues.Length; ca++)
+                        for (int ca = 0; ca < ctorValues.Count; ca++)
                         {
                             // Ensure it's not some alternative value cast to the enum type such as an external baseline identifying value
                             // because that would end up as part of the Performance Test Framework tests.
@@ -366,14 +414,15 @@ namespace Unity.PerformanceTesting.Benchmark
                     // This is for ValuesAttribute(params object[] args)
 
                     var arrayValue = values[0].Value as System.Collections.Generic.IList<CustomAttributeTypedArgument>;
-                    argValues[p] = arrayValue.ToArray();
+                    argValues[p] = new CustomAttributeTypedArgument[arrayValue.Count];
+                    arrayValue.CopyTo(argValues[p], 0);
                     argCounts[p] = arrayValue.Count;
                 }
                 else
                 {
                     // [Values(1-to-3-arguments)] <type> <paramName>
-
-                    argValues[p] = values.ToArray();
+                    argValues[p] = new CustomAttributeTypedArgument[values.Count];
+                    values.CopyTo(argValues[p], 0);
                     argCounts[p] = values.Count;
                 }
             }
@@ -433,31 +482,29 @@ namespace Unity.PerformanceTesting.Benchmark
             uint groupFootnoteBit = BenchmarkResults.kFlagFootnotes;
 
             var allMethods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            var methods = allMethods.Where(m =>
-                m.CustomAttributes.Any((a) => a.AttributeType == typeof(NUnit.Framework.TestAttribute)) &&
-                m.CustomAttributes.Any((a) => a.AttributeType == typeof(PerformanceAttribute))).ToArray();
+            var methods = new List<MethodInfo>(allMethods.Length);
+            foreach (var m in allMethods)
+            {
+                if (m.GetCustomAttribute<NUnit.Framework.TestAttribute>() != null && m.GetCustomAttribute<PerformanceAttribute>() != null)
+                    methods.Add(m);
+            }
 
             var inst = Activator.CreateInstance(t);
-            for (int m = 0; m < methods.Length; m++)
+            for (int m = 0; m < methods.Count; m++)
             {
                 var method = methods[m];
-
-                // Must be a performance test to benchmark it
-                if (!method.CustomAttributes.Any((e) => e.AttributeType == typeof(NUnit.Framework.TestAttribute)) ||
-                    !method.CustomAttributes.Any((e) => e.AttributeType == typeof(PerformanceAttribute)))
-                {
-                    continue;
-                }
 
                 // Get ValueAttributes information for all parameters
                 GatherAllArguments(method.GetParameters(), $"{t.Name}.{method.Name}", structure,
                 out var argCounts, out var argValues, out var argNames, out var paramForComparison);
 
                 // Record any footnotes for this method
-                var footnotes = method.CustomAttributes.Where(x => x.AttributeType == typeof(BenchmarkTestFootnoteAttribute));
                 uint comparisonFootnoteFlags = 0;
-                foreach (var footnote in footnotes)
+                foreach (var cad in method.GetCustomAttributesData())
                 {
+                    if (cad.AttributeType != typeof(BenchmarkTestFootnoteAttribute))
+                        continue;
+
                     var footnoteText = new NativeText($"{method.Name}(", Allocator.Persistent);
                     int paramsShown = 0;
                     for (int p = 0; p < argNames.Length; p++)
@@ -470,8 +517,8 @@ namespace Unity.PerformanceTesting.Benchmark
                         footnoteText.Append(argNames[p]);
                     }
                     footnoteText.Append(")");
-                    if (footnote.ConstructorArguments.Count == 1)
-                        footnoteText.Append($" -- {(string)footnote.ConstructorArguments[0].Value}");
+                    if (cad.ConstructorArguments.Count == 1)
+                        footnoteText.Append($" -- {(string)cad.ConstructorArguments[0].Value}");
                     group.customFootnotes.Add(groupFootnoteBit, footnoteText);
                     comparisonFootnoteFlags |= groupFootnoteBit;
                     groupFootnoteBit <<= 1;
@@ -487,7 +534,7 @@ namespace Unity.PerformanceTesting.Benchmark
 
                 for (int i = 0; i < totalVariants; i++)
                 {
-                    SetProgressText($"Running benchmark {i + 1}/{totalVariants} for {method.Name}", (float)(m + 1) / methods.Length);
+                    SetProgressText($"Running benchmark {i + 1}/{totalVariants} for {method.Name}", (float)(m + 1) / methods.Count);
 
                     // comparisonIndex indicates the variation of a complete benchmark comparison. i.e.
                     // you could be benchmarking between 3 different variants (such as NativeArray vs UnsafeArray vs C# Array)
@@ -531,8 +578,7 @@ namespace Unity.PerformanceTesting.Benchmark
                 // Add all sets of comparisons to the full group
                 for (int i = 0; i < numComparisons; i++)
                 {
-                    foreach (var footnote in footnotes)
-                        comparison[i].footnoteFlags |= comparisonFootnoteFlags;
+                    comparison[i].footnoteFlags |= comparisonFootnoteFlags;
                     comparison[i].RankResults(structure.resultTypes);
                     group.comparisons.Add(comparison[i]);
                 }

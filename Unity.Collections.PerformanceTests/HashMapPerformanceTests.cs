@@ -5,21 +5,35 @@ using Unity.PerformanceTesting;
 using Unity.PerformanceTesting.Benchmark;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Unity.Mathematics;
+using UnityEditor;
+using Random = Unity.Mathematics.Random;
 
 namespace Unity.Collections.PerformanceTests
 {
     static class HashMapUtil
     {
+        internal const uint K_RANDOM_SEED_1 = 2210602657;
+        internal const uint K_RANDOM_SEED_2 = 2210602658;
+        internal const uint K_RANDOM_SEED_3 = 2210602659;
         static public void AllocInt(ref NativeHashMap<int, int> container, int capacity, bool addValues)
         {
             if (capacity >= 0)
             {
-                Random.InitState(0);
+                Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_1);
                 container = new NativeHashMap<int, int>(capacity, Allocator.Persistent);
                 if (addValues)
                 {
-                    for (int i = 0; i < capacity; i++)
-                        container.Add(i, i);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (container.TryAdd(randKey, keysAdded))
+                        {
+                            ++keysAdded;
+                        }
+                    }
                 }
             }
             else
@@ -29,12 +43,20 @@ namespace Unity.Collections.PerformanceTests
         {
             if (capacity >= 0)
             {
-                Random.InitState(0);
+                Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_1);
                 container = new UnsafeHashMap<int, int>(capacity, Allocator.Persistent);
                 if (addValues)
                 {
-                    for (int i = 0; i < capacity; i++)
-                        container.Add(i, i);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (container.TryAdd(randKey, keysAdded))
+                        {
+                            ++keysAdded;
+                        }
+                    }
                 }
             }
             else
@@ -45,12 +67,20 @@ namespace Unity.Collections.PerformanceTests
             if (capacity < 0)
                 return null;
 
-            Random.InitState(0);
+            Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_1);
             var bclContainer = new System.Collections.Generic.Dictionary<int, int>(capacity);
             if (addValues)
             {
-                for (int i = 0; i < capacity; i++)
-                    bclContainer.Add(i, i);
+                int keysAdded = 0;
+
+                while (keysAdded < capacity)
+                {
+                    int randKey = random.NextInt();
+                    if (bclContainer.TryAdd(randKey, keysAdded))
+                    {
+                        ++keysAdded;
+                    }
+                }
             }
             return bclContainer;
         }
@@ -59,17 +89,119 @@ namespace Unity.Collections.PerformanceTests
             if (capacity >= 0)
             {
                 keys = new UnsafeList<int>(capacity, Allocator.Persistent);
-                Random.InitState(0);
-                for (int i = 0; i < capacity; i++)
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
                 {
-                    int randKey = Random.Range(0, capacity);
-                    keys.Add(randKey);
+                    Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
                 }
+
             }
             else
                 keys.Dispose();
         }
 
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref UnsafeHashMap<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey) && !hashMap.ContainsKey(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref System.Collections.Generic.Dictionary<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey) && !hashMap.ContainsKey(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref NativeHashMap<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey) && !hashMap.ContainsKey(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void RandomlyShuffleKeys(int capacity, ref UnsafeList<int> keys)
+        {
+            if (capacity >= 0)
+            {
+                Unity.Mathematics.Random random = new Mathematics.Random(K_RANDOM_SEED_3);
+                for (int i = 0; i < capacity; i++)
+                {
+                    int keyAt = keys[i];
+                    int randomIndex = random.NextInt(0, capacity - 1);
+                    keys[i] = keys[randomIndex];
+                    keys[randomIndex] = keyAt;
+                }
+            }
+        }
     }
 
     struct HashMapIsEmpty100k : IBenchmarkContainer
@@ -197,28 +329,45 @@ namespace Unity.Collections.PerformanceTests
         int capacity;
         NativeHashMap<int, int> nativeContainer;
         UnsafeHashMap<int, int> unsafeContainer;
+        UnsafeList<int> keys;
 
         void IBenchmarkContainer.SetParams(int capacity, params int[] args) => this.capacity = capacity;
 
-        public void AllocNativeContainer(int capacity) => HashMapUtil.AllocInt(ref nativeContainer, capacity, false);
-        public void AllocUnsafeContainer(int capacity) => HashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
-        public object AllocBclContainer(int capacity) => HashMapUtil.AllocBclContainer(capacity, false);
+        public void AllocNativeContainer(int capacity)
+        {
+            HashMapUtil.AllocInt(ref nativeContainer, capacity, false);
+            HashMapUtil.CreateRandomKeys(capacity, ref keys, ref nativeContainer);
+        }
+
+        public void AllocUnsafeContainer(int capacity)
+        {
+            HashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
+            HashMapUtil.CreateRandomKeys(capacity, ref keys, ref unsafeContainer);
+        }
+
+        public object AllocBclContainer(int capacity)
+        {
+            object container = HashMapUtil.AllocBclContainer(capacity, false);
+            var bclContainer = (System.Collections.Generic.Dictionary<int, int>)container;
+            HashMapUtil.CreateRandomKeys(capacity, ref keys, ref bclContainer);
+            return container;
+        }
 
         public void MeasureNativeContainer()
         {
             for (int i = 0; i < capacity; i++)
-                nativeContainer.Add(i, i);
+                nativeContainer.Add(keys[i], i);
         }
         public void MeasureUnsafeContainer()
         {
             for (int i = 0; i < capacity; i++)
-                unsafeContainer.Add(i, i);
+                unsafeContainer.Add(keys[i], i);
         }
         public void MeasureBclContainer(object container)
         {
             var bclContainer = (System.Collections.Generic.Dictionary<int, int>)container;
             for (int i = 0; i < capacity; i++)
-                bclContainer.Add(i, i);
+                bclContainer.Add(keys[i], i);
         }
     }
 
@@ -228,6 +377,7 @@ namespace Unity.Collections.PerformanceTests
         int toAdd;
         NativeHashMap<int, int> nativeContainer;
         UnsafeHashMap<int, int> unsafeContainer;
+        UnsafeList<int> keys;
 
         void IBenchmarkContainer.SetParams(int capacity, params int[] args)
         {
@@ -235,28 +385,47 @@ namespace Unity.Collections.PerformanceTests
             toAdd = args[0];
         }
 
-        public void AllocNativeContainer(int capacity) => HashMapUtil.AllocInt(ref nativeContainer, capacity, true);
-        public void AllocUnsafeContainer(int capacity) => HashMapUtil.AllocInt(ref unsafeContainer, capacity, true);
-        public object AllocBclContainer(int capacity) => HashMapUtil.AllocBclContainer(capacity, true);
+        public void AllocNativeContainer(int capacity)
+        {
+            HashMapUtil.AllocInt(ref nativeContainer, capacity, true);
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            HashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref nativeContainer);
+        }
+
+        public void AllocUnsafeContainer(int capacity)
+        {
+            HashMapUtil.AllocInt(ref unsafeContainer, capacity, true);
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            HashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref unsafeContainer);
+        }
+
+        public object AllocBclContainer(int capacity)
+        {
+            object container = HashMapUtil.AllocBclContainer(capacity, true);
+            var bclContainer = (System.Collections.Generic.Dictionary<int, int>)container;
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            HashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref bclContainer);
+            return container;
+        }
 
         public void MeasureNativeContainer()
         {
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                nativeContainer.Add(i, i);
+            for (int i = 0; i < toAdd; i++)
+                nativeContainer.Add(keys[i], i);
         }
         public void MeasureUnsafeContainer()
         {
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                unsafeContainer.Add(i, i);
+            for (int i = 0; i < toAdd; i++)
+                unsafeContainer.Add(keys[i], i);
         }
         public void MeasureBclContainer(object container)
         {
             var bclContainer = (System.Collections.Generic.Dictionary<int, int>)container;
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                bclContainer.Add(i, i);
+            for (int i = 0; i < toAdd; i++)
+                bclContainer.Add(keys[i], i);
         }
     }
 
@@ -266,7 +435,6 @@ namespace Unity.Collections.PerformanceTests
         NativeHashMap<int, int> nativeContainer;
         UnsafeHashMap<int, int> unsafeContainer;
         UnsafeList<int> keys;
-
         void IBenchmarkContainer.SetParams(int capacity, params int[] args) => this.capacity = capacity;
 
         public void AllocNativeContainer(int capacity)
@@ -275,6 +443,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -282,6 +451,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -290,6 +460,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -328,6 +499,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -335,6 +507,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -343,6 +516,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -382,16 +556,26 @@ namespace Unity.Collections.PerformanceTests
         {
             HashMapUtil.AllocInt(ref nativeContainer, capacity, false);
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
+            for (int i = 0; i < capacity; i++)
+                nativeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
             HashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
+            for (int i = 0; i < capacity; i++)
+                unsafeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
-            object container = HashMapUtil.AllocBclContainer(capacity, false);
+            var container = HashMapUtil.AllocBclContainer(capacity, false);
+            var bclContainer = (System.Collections.Generic.Dictionary<int, int>)container;
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
+            for (int i = 0; i < capacity; i++)
+                bclContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -428,6 +612,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -435,6 +620,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -443,6 +629,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -490,6 +677,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -497,6 +685,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -505,6 +694,7 @@ namespace Unity.Collections.PerformanceTests
             HashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            HashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 

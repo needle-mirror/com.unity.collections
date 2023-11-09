@@ -16,7 +16,7 @@ namespace Unity.Collections
     /// DataStreamWriter and <see cref="DataStreamReader"/> classes work together
     /// to serialize data for sending and then to deserialize when receiving.
     ///
-    /// DataStreamWriter writes data in the endian format native to the current machine architecture. 
+    /// DataStreamWriter writes data in the endian format native to the current machine architecture.
     /// For network byte order use the so named methods.
     /// <br/>
     /// The reader can be used to deserialize the data from a NativeArray&lt;byte&gt;, writing data
@@ -300,13 +300,26 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Copy NativeArray of bytes into the writers data buffer.
+        /// Copy NativeArray of bytes into the writer's data buffer.
         /// </summary>
         /// <param name="value">Source byte array</param>
         /// <returns>Whether the write was successful</returns>
         public bool WriteBytes(NativeArray<byte> value)
         {
             return WriteBytesInternal((byte*)value.GetUnsafeReadOnlyPtr(), value.Length);
+        }
+
+        /// <summary>
+        /// Copy <c>Span</c> of bytes into the writer's data buffer.
+        /// </summary>
+        /// <param name="value">Source byte span</param>
+        /// <returns>Whether the write was successful</returns>
+        public bool WriteBytes(Span<byte> value)
+        {
+            fixed (byte* data = value)
+            {
+                return WriteBytesInternal(data, value.Length);
+            }
         }
 
         /// <summary>

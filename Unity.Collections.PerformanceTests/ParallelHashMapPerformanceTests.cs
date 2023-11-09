@@ -14,12 +14,20 @@ namespace Unity.Collections.PerformanceTests
         {
             if (capacity >= 0)
             {
-                Random.InitState(0);
+                Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_1);
                 container = new NativeParallelHashMap<int, int>(capacity, Allocator.Persistent);
                 if (addValues)
                 {
-                    for (int i = 0; i < capacity; i++)
-                        container.Add(i, i);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (container.TryAdd(randKey, keysAdded))
+                        {
+                            ++keysAdded;
+                        }
+                    }
                 }
             }
             else
@@ -29,12 +37,20 @@ namespace Unity.Collections.PerformanceTests
         {
             if (capacity >= 0)
             {
-                Random.InitState(0);
+                Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_1);
                 container = new UnsafeParallelHashMap<int, int>(capacity, Allocator.Persistent);
                 if (addValues)
                 {
-                    for (int i = 0; i < capacity; i++)
-                        container.Add(i, i);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (container.TryAdd(randKey, keysAdded))
+                        {
+                            ++keysAdded;
+                        }
+                    }
                 }
             }
             else
@@ -45,7 +61,7 @@ namespace Unity.Collections.PerformanceTests
             if (capacity < 0)
                 return null;
 
-            Random.InitState(0);
+            Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_1);
 
             // FROM MICROSOFT DOCUMENTATION
             // The higher the concurrencyLevel, the higher the theoretical number of operations
@@ -56,26 +72,137 @@ namespace Unity.Collections.PerformanceTests
 
             if (addValues)
             {
-                for (int i = 0; i < capacity; i++)
-                    bclContainer.TryAdd(i, i);
+                int keysAdded = 0;
+
+                while (keysAdded < capacity)
+                {
+                    int randKey = random.NextInt();
+                    if (bclContainer.TryAdd(randKey, keysAdded))
+                    {
+                        ++keysAdded;
+                    }
+                }
             }
             return bclContainer;
         }
         static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys)
         {
-            if (!keys.IsCreated)
+            if (capacity >= 0)
             {
                 keys = new UnsafeList<int>(capacity, Allocator.Persistent);
-                Random.InitState(0);
-                for (int i = 0; i < capacity; i++)
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
                 {
-                    int randKey = Random.Range(0, capacity);
-                    keys.Add(randKey);
+                    Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
                 }
             }
             else
                 keys.Dispose();
         }
+
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref UnsafeParallelHashMap<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref System.Collections.Concurrent.ConcurrentDictionary<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void CreateRandomKeys(int capacity, ref UnsafeList<int> keys, ref NativeParallelHashMap<int, int> hashMap)
+        {
+            if (capacity >= 0)
+            {
+                keys = new UnsafeList<int>(capacity, Allocator.Persistent);
+                using (UnsafeHashSet<int> randomFilter = new UnsafeHashSet<int>(capacity, Allocator.Persistent))
+                {
+                    Unity.Mathematics.Random random = new Unity.Mathematics.Random(HashMapUtil.K_RANDOM_SEED_2);
+                    int keysAdded = 0;
+
+                    while (keysAdded < capacity)
+                    {
+                        int randKey = random.NextInt();
+                        if (randomFilter.Add(randKey))
+                        {
+                            keys.Add(randKey);
+                            ++keysAdded;
+                        }
+                    }
+                }
+
+            }
+            else
+                keys.Dispose();
+        }
+
+        static public void RandomlyShuffleKeys(int capacity, ref UnsafeList<int> keys)
+        {
+            if (capacity >= 0)
+            {
+                Unity.Mathematics.Random random = new Mathematics.Random(HashMapUtil.K_RANDOM_SEED_3);
+                for (int i = 0; i < capacity; i++)
+                {
+                    int keyAt = keys[i];
+                    int randomIndex = random.NextInt(0, capacity - 1);
+                    keys[i] = keys[randomIndex];
+                    keys[randomIndex] = keyAt;
+                }
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void SplitForWorkers(int count, int worker, int workers, out int startInclusive, out int endExclusive)
         {
@@ -218,6 +345,7 @@ namespace Unity.Collections.PerformanceTests
         int workers;
         NativeParallelHashMap<int, int> nativeContainer;
         UnsafeParallelHashMap<int, int> unsafeContainer;
+        UnsafeList<int> keys;
 
         void IBenchmarkContainerParallel.SetParams(int capacity, params int[] args)
         {
@@ -225,30 +353,45 @@ namespace Unity.Collections.PerformanceTests
             workers = args[0];
         }
 
-        public void AllocNativeContainer(int capacity) => ParallelHashMapUtil.AllocInt(ref nativeContainer, capacity, false);
-        public void AllocUnsafeContainer(int capacity) => ParallelHashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
-        public object AllocBclContainer(int capacity) => ParallelHashMapUtil.AllocBclContainer(capacity, false);
+        public void AllocNativeContainer(int capacity)
+        {
+            ParallelHashMapUtil.AllocInt(ref nativeContainer, capacity, false);
+            ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+        }
+
+        public void AllocUnsafeContainer(int capacity)
+        {
+            ParallelHashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
+            ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+        }
+
+        public object AllocBclContainer(int capacity)
+        {
+            object container = ParallelHashMapUtil.AllocBclContainer(capacity, false);
+            ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+            return container;
+        }
 
         public void MeasureNativeContainer(int worker, int threadIndex)
         {
             var writer = nativeContainer.AsParallelWriter();
             ParallelHashMapUtil.SplitForWorkers(capacity, worker, workers, out int start, out int end);
             for (int i = start; i < end; i++)
-                writer.TryAdd(i, i, threadIndex);
+                writer.TryAdd(keys[i], i, threadIndex);
         }
         public void MeasureUnsafeContainer(int worker, int threadIndex)
         {
             var writer = unsafeContainer.AsParallelWriter();
             ParallelHashMapUtil.SplitForWorkers(capacity, worker, workers, out int start, out int end);
             for (int i = start; i < end; i++)
-                writer.TryAdd(i, i, threadIndex);
+                writer.TryAdd(keys[i], i, threadIndex);
         }
         public void MeasureBclContainer(object container, int worker)
         {
             var bclContainer = (System.Collections.Concurrent.ConcurrentDictionary<int, int>)container;
             ParallelHashMapUtil.SplitForWorkers(capacity, worker, workers, out int start, out int end);
             for (int i = start; i < end; i++)
-                bclContainer.TryAdd(i, i);
+                bclContainer.TryAdd(keys[i], i);
         }
     }
 
@@ -258,6 +401,7 @@ namespace Unity.Collections.PerformanceTests
         int toAdd;
         NativeParallelHashMap<int, int> nativeContainer;
         UnsafeParallelHashMap<int, int> unsafeContainer;
+        UnsafeList<int> keys;
 
         void IBenchmarkContainerParallel.SetParams(int capacity, params int[] args)
         {
@@ -265,28 +409,47 @@ namespace Unity.Collections.PerformanceTests
             toAdd = args[0] - capacity;
         }
 
-        public void AllocNativeContainer(int capacity) => ParallelHashMapUtil.AllocInt(ref nativeContainer, capacity, true);
-        public void AllocUnsafeContainer(int capacity) => ParallelHashMapUtil.AllocInt(ref unsafeContainer, capacity, true);
-        public object AllocBclContainer(int capacity) => ParallelHashMapUtil.AllocBclContainer(capacity, true);
+        public void AllocNativeContainer(int capacity)
+        {
+            ParallelHashMapUtil.AllocInt(ref nativeContainer, capacity, true);
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            ParallelHashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref nativeContainer);
+        }
+
+        public void AllocUnsafeContainer(int capacity)
+        {
+            ParallelHashMapUtil.AllocInt(ref unsafeContainer, capacity, true);
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            ParallelHashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref unsafeContainer);
+        }
+
+        public object AllocBclContainer(int capacity)
+        {
+            object container = ParallelHashMapUtil.AllocBclContainer(capacity, true);
+            var bclContainer = (System.Collections.Concurrent.ConcurrentDictionary<int, int>)container;
+            int toAddCount = capacity < 0 ? -1 : toAdd;
+            ParallelHashMapUtil.CreateRandomKeys(toAddCount, ref keys, ref bclContainer);
+            return container;
+        }
 
         public void MeasureNativeContainer(int _, int __)
         {
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                nativeContainer.Add(i, i);
+            for (int i = 0; i < toAdd; i++)
+                nativeContainer.Add(keys[i], i);
         }
         public void MeasureUnsafeContainer(int _, int __)
         {
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                unsafeContainer.Add(i, i);
+            for (int i = 0; i < toAdd; i++)
+                unsafeContainer.Add(keys[i], i);
         }
         public void MeasureBclContainer(object container, int _)
         {
             var bclContainer = (System.Collections.Concurrent.ConcurrentDictionary<int, int>)container;
             // Intentionally setting capacity small and growing by adding more items
-            for (int i = capacity; i < capacity + toAdd; i++)
-                bclContainer.TryAdd(i, i);
+            for (int i = 0; i < toAdd; i++)
+                bclContainer.TryAdd(keys[i], i);
         }
     }
 
@@ -310,6 +473,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -317,6 +481,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -325,6 +490,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -365,6 +531,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -372,6 +539,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -380,6 +548,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -418,16 +587,26 @@ namespace Unity.Collections.PerformanceTests
         {
             ParallelHashMapUtil.AllocInt(ref nativeContainer, capacity, false);
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+            for (int i = 0; i < capacity; i++)
+                nativeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
             ParallelHashMapUtil.AllocInt(ref unsafeContainer, capacity, false);
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+            for (int i = 0; i < capacity; i++)
+                unsafeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
             object container = ParallelHashMapUtil.AllocBclContainer(capacity, false);
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
+            var bclContainer = (System.Collections.Concurrent.ConcurrentDictionary<int, int>)container;
+            for (int i = 0; i < capacity; i++)
+                bclContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -467,6 +646,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -474,6 +654,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -482,6 +663,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 
@@ -528,6 +710,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 nativeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public void AllocUnsafeContainer(int capacity)
         {
@@ -535,6 +718,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 unsafeContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
         }
         public object AllocBclContainer(int capacity)
         {
@@ -543,6 +727,7 @@ namespace Unity.Collections.PerformanceTests
             ParallelHashMapUtil.CreateRandomKeys(capacity, ref keys);
             for (int i = 0; i < capacity; i++)
                 bclContainer.TryAdd(keys[i], i);
+            ParallelHashMapUtil.RandomlyShuffleKeys(capacity, ref keys);
             return container;
         }
 

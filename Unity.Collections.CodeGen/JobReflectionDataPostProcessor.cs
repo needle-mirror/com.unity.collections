@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using Unity.CompilationPipeline.Common.Diagnostics;
 using Unity.CompilationPipeline.Common.ILPostProcessing;
-using Unity.Jobs;
 using Unity.Jobs.LowLevel.Unsafe;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
@@ -21,7 +18,7 @@ namespace Unity.Jobs.CodeGen
 
         public static MethodReference AttributeConstructorReferenceFor(Type attributeType, ModuleDefinition module)
         {
-            return module.ImportReference(attributeType.GetConstructors().Single(c => !c.GetParameters().Any()));
+            return module.ImportReference(attributeType.GetConstructor(Array.Empty<Type>()));
         }
 
         private TypeReference LaunderTypeRef(TypeReference r_)
@@ -62,16 +59,30 @@ namespace Unity.Jobs.CodeGen
             return mod.ImportReference(result);
         }
 
+        // http://www.isthe.com/chongo/src/fnv/hash_64a.c
+        static ulong StableHash_FNV1A64(string text)
+        {
+            ulong result = 14695981039346656037;
+            foreach (var c in text)
+            {
+                result = 1099511628211 * (result ^ (byte)(c & 255));
+                result = 1099511628211 * (result ^ (byte)(c >> 8));
+            }
+            return result;
+        }
 
         bool PostProcessImpl()
         {
             bool anythingChanged = false;
 
             var asmDef = AssemblyDefinition;
-            var earlyInitHelpers = asmDef.MainModule.ImportReference(typeof(EarlyInitHelpers)).CheckedResolve();
-            var autoClassName = $"__JobReflectionRegistrationOutput__{(uint) asmDef.FullName.GetHashCode()}";
+            var funcDef = new MethodDefinition("CreateJobReflectionData",
+                MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig,
+                asmDef.MainModule.ImportReference(typeof(void)));
 
-            var funcDef = new MethodDefinition("CreateJobReflectionData", MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.HideBySig, asmDef.MainModule.ImportReference(typeof(void)));
+            // This must use a stable hash code function (do not using string.GetHashCode)
+            var autoClassName = $"__JobReflectionRegistrationOutput__{StableHash_FNV1A64(asmDef.FullName)}";
+
             funcDef.Body.InitLocals = false;
 
             var classDef = new TypeDefinition("", autoClassName, TypeAttributes.Class, asmDef.MainModule.ImportReference(typeof(object)));
@@ -126,10 +137,21 @@ namespace Unity.Jobs.CodeGen
 
             // Now that we have generated all reflection info
             // finish wrapping the ops in a try catch now
-            var lastWorkOp = processor.Body.Instructions.Last();
+            var lastWorkOp = processor.Body.Instructions[processor.Body.Instructions.Count-1];
             processor.Append(handler);
 
-            var errorHandler = asmDef.MainModule.ImportReference((asmDef.MainModule.ImportReference(typeof(EarlyInitHelpers)).Resolve().Methods.First(x => x.Name == nameof(EarlyInitHelpers.JobReflectionDataCreationFailed))));
+            var earlyInitHelpersDef = asmDef.MainModule.ImportReference(typeof(EarlyInitHelpers)).Resolve();
+            MethodDefinition jobReflectionDataCreationFailedDef = null;
+            foreach (var method in earlyInitHelpersDef.Methods)
+            {
+                if (method.Name == nameof(EarlyInitHelpers.JobReflectionDataCreationFailed))
+                {
+                    jobReflectionDataCreationFailedDef = method;
+                    break;
+                }
+            }
+
+            var errorHandler = asmDef.MainModule.ImportReference(jobReflectionDataCreationFailedDef);
             processor.Append(Instruction.Create(OpCodes.Call, errorHandler));
             processor.Append(landingPad);
 
@@ -169,7 +191,7 @@ namespace Unity.Jobs.CodeGen
                     var attributeCtor2 = asmDef.MainModule.ImportReference(typeof(UnityEditor.InitializeOnLoadMethodAttribute).GetConstructor(Type.EmptyTypes));
                     ctorFuncDef.CustomAttributes.Add(new CustomAttribute(attributeCtor2));
                 }
-                
+
                 ctorFuncDef.Body.InitLocals = false;
 
                 var p = ctorFuncDef.Body.GetILProcessor();
@@ -243,7 +265,15 @@ namespace Unity.Jobs.CodeGen
                 MethodDefinition methodToCall = null;
                 while (carrierType != null)
                 {
-                    methodToCall = carrierType.GetMethods().FirstOrDefault((x) => x.Name == "EarlyJobInit" && x.Parameters.Count == 0 && x.IsStatic && x.IsPublic);
+                    methodToCall = null;
+                    foreach (var method in carrierType.GetMethods())
+                    {
+                        if(method.IsStatic && method.IsPublic && method.Parameters.Count == 0 && method.Name == "EarlyJobInit")
+                        {
+                            methodToCall = method;
+                            break;
+                        }
+                    }
 
                     if (methodToCall != null)
                         break;
@@ -258,7 +288,7 @@ namespace Unity.Jobs.CodeGen
                 var asm = AssemblyDefinition.MainModule;
                 var mref = asm.ImportReference(asm.ImportReference(methodToCall).MakeGenericInstanceMethod(jobStructType));
                 processor.Append(Instruction.Create(OpCodes.Call, mref));
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -353,7 +383,7 @@ namespace Unity.Jobs.CodeGen
                     }
                 }
             }
-        } 
+        }
     }
 }
 

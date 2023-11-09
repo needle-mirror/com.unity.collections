@@ -1,16 +1,15 @@
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
-using System.Linq;
 using Unity.Collections.Tests;
 
 internal class ListExtensionsTests : CollectionsTestCommonBase
 {
-// https://unity3d.atlassian.net/browse/DOTSR-1432
     [Test]
     public void ListExtensions_RemoveSwapBack_Item()
     {
-        var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
+        var list = new List<char>(new[] { 'a', 'b', 'c', 'd' });
 
         Assert.True(list.RemoveSwapBack('b'));
         CollectionAssert.AreEqual(new[] { 'a', 'd', 'c', }, list);
@@ -34,7 +33,7 @@ internal class ListExtensionsTests : CollectionsTestCommonBase
     [Test]
     public void ListExtensions_RemoveSwapBack_Predicate()
     {
-        var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
+        var list = new List<char>(new[] { 'a', 'b', 'c', 'd' });
 
         Assert.True(list.RemoveSwapBack(c => c == 'b'));
         CollectionAssert.AreEqual(new[] { 'a', 'd', 'c', }, list);
@@ -59,7 +58,7 @@ internal class ListExtensionsTests : CollectionsTestCommonBase
     [Test]
     public void ListExtensions_RemoveAtSwapBack()
     {
-        var list = new[] { 'a', 'b', 'c', 'd' }.ToList();
+        var list = new List<char>(new[] { 'a', 'b', 'c', 'd' });
 
         list.RemoveAtSwapBack(1);
         CollectionAssert.AreEqual(new[] { 'a', 'd', 'c', }, list);
@@ -82,7 +81,7 @@ internal class ListExtensionsTests : CollectionsTestCommonBase
     [Test]
     public void ListExtensions_ToNativeList()
     {
-        var list = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }.ToList();
+        var list = new List<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 });
         var native = list.ToNativeList(Allocator.Persistent);
 
         for (int i = 0; i < native.Length; ++i)
@@ -96,7 +95,7 @@ internal class ListExtensionsTests : CollectionsTestCommonBase
     [Test]
     public void ListExtensions_ToNativeArray()
     {
-        var list = new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }.ToList();
+        var list = new List<int>(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 });
         var native = list.ToNativeArray(Allocator.Persistent);
 
         for (int i = 0; i < native.Length; ++i)

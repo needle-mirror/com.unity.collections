@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using Unity.Collections.NotBurstCompatible;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEngine.TestTools;
@@ -484,29 +485,25 @@ namespace Unity.Collections.Tests
             byteArray[1] = (byte)'b';
             byteArray[2] = (byte)'c';
 
-            DataStreamWriter dataStream;
-            dataStream = new DataStreamWriter(byteArray.Length, Allocator.Temp);
-            dataStream.WriteBytes(new NativeArray<byte>(byteArray, Allocator.Temp));
+            DataStreamWriter dataStream1, dataStream2;
+            dataStream1 = new DataStreamWriter(byteArray.Length, Allocator.Temp);
+            dataStream2 = new DataStreamWriter(byteArray.Length, Allocator.Temp);
+            dataStream1.WriteBytes(new NativeArray<byte>(byteArray, Allocator.Temp));
+            dataStream2.WriteBytes(byteArray);
 
-            var arr = dataStream.AsNativeArray();
-            var reader = new DataStreamReader(arr);
+            var arr1 = dataStream1.AsNativeArray();
+            var arr2 = dataStream2.AsNativeArray();
+            var reader1 = new DataStreamReader(arr1);
+            var reader2 = new DataStreamReader(arr2);
             for (var i = 0; i < byteArray.Length; ++i)
             {
-                Assert.AreEqual(byteArray[i], reader.ReadByte());
-            }
-
-            unsafe
-            {
-                var reader2 = new DataStreamReader(arr);
-                for (var i = 0; i < byteArray.Length; ++i)
-                {
-                    Assert.AreEqual(byteArray[i], reader2.ReadByte());
-                }
+                Assert.AreEqual(byteArray[i], reader1.ReadByte());
+                Assert.AreEqual(byteArray[i], reader2.ReadByte());
             }
         }
 
         [Test]
-        public void ReadIntoExistingByteArray()
+        public void ReadIntoExistingNativeByteArray()
         {
             var byteArray = new NativeArray<byte>(100, Allocator.Temp);
 
@@ -518,6 +515,27 @@ namespace Unity.Collections.Tests
                 dataStream.WriteByte((byte)'c');
                 var reader = new DataStreamReader(dataStream.AsNativeArray());
                 reader.ReadBytes(byteArray.GetSubArray(0, dataStream.Length));
+                reader = new DataStreamReader(dataStream.AsNativeArray());
+                for (int i = 0; i < reader.Length; ++i)
+                {
+                    Assert.AreEqual(byteArray[i], reader.ReadByte());
+                }
+            }
+        }
+
+        [Test]
+        public void ReadIntoExistingByteArray()
+        {
+            var byteArray = new byte[3];
+
+            DataStreamWriter dataStream;
+            dataStream = new DataStreamWriter(3, Allocator.Temp);
+            {
+                dataStream.WriteByte((byte)'a');
+                dataStream.WriteByte((byte)'b');
+                dataStream.WriteByte((byte)'c');
+                var reader = new DataStreamReader(dataStream.AsNativeArray());
+                reader.ReadBytes(byteArray);
                 reader = new DataStreamReader(dataStream.AsNativeArray());
                 for (int i = 0; i < reader.Length; ++i)
                 {

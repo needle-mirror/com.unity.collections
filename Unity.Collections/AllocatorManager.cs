@@ -1662,7 +1662,6 @@ namespace Unity.Collections
             ref var allocator = ref AllocatorManager.CreateAllocator<T>(backingAllocator, isGlobal, globalIndex);
             m_allocator = (T*)UnsafeUtility.AddressOf<T>(ref allocator);
             m_backingAllocator = backingAllocator;
-            Telemetry.SendEvent<T>(Telemetry.Action.CreateAllocator);
         }
 
         /// <summary>
@@ -1673,7 +1672,6 @@ namespace Unity.Collections
         {
             ref var allocator = ref UnsafeUtility.AsRef<T>(m_allocator);
             AllocatorManager.DestroyAllocator(ref allocator, m_backingAllocator);
-            Telemetry.SendEvent<T>(Telemetry.Action.DestroyAllocator);
         }
     }
 }

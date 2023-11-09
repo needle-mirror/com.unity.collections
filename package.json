@@ -1,15 +1,14 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.3.0-pre.3",
+  "version": "2.4.0-exp.2",
   "unity": "2022.3",
-  "unityRelease": "0f1",
+  "unityRelease": "11f1",
   "dependencies": {
     "com.unity.burst": "1.8.8",
-    "com.unity.modules.unityanalytics": "1.0.0",
     "com.unity.nuget.mono-cecil": "1.11.4",
     "com.unity.test-framework": "1.3.8",
-    "com.unity.test-framework.performance": "3.0.2"
+    "com.unity.test-framework.performance": "3.0.3"
   },
   "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
   "keywords": [
@@ -18,15 +17,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Changed\n\n* Updated version for release preparation."
+    "changelog": "### Added\n\n* `DataStreamReader.ReadBytes` and `DataStreamWriter.WriteBytes` now have a variant that takes a `Span<byte>` as a parameter, making it easier to use these APIs with regular `byte[]` arrays.\n\n### Changed\n\n* The minimum supported editor version is now 2022.3.11f1\n\n### Deprecated\n\n\n### Removed\n\n\n### Fixed\n\n\n### Security"
   },
   "upmCi": {
-    "footprint": "2f8c03b88c3d7671485f99ec1667d777eaf54b64"
+    "footprint": "8603859719bfb7ddb23cd8464ef9d03fe7494c90"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.3/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.4/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "5edeb315aa3ca0d26060290a69660b2afdabe2ff"
+    "revision": "9bfd95fb576e8fa710c8544b6706bdd73e25afef"
   }
 }

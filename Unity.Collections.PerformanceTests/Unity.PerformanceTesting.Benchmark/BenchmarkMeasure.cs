@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
 
 namespace Unity.PerformanceTesting.Benchmark
 {
@@ -94,8 +93,14 @@ namespace Unity.PerformanceTesting.Benchmark
                 // Check if NoOptimization is part of this measurement. MethodImplAttribute is not found in
                 // CustomAttributes, and instead is a special-case found in MethodImplementationFlags.
                 var methods = perfMeasureType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-                if (methods.Any(m => m.MethodImplementationFlags.HasFlag(MethodImplAttributes.NoOptimization)))
-                    LastResultsFootnotes |= BenchmarkResults.kFlagNoOptimization;
+                foreach (var m in methods)
+                {
+                    if (m.MethodImplementationFlags.HasFlag(MethodImplAttributes.NoOptimization))
+                    {
+                        LastResultsFootnotes |= BenchmarkResults.kFlagNoOptimization;
+                        break;
+                    }
+                }
             }
             else
             {

@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -325,9 +324,13 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 {
                     refStr = "ref ";
 
-                    if (info.ReturnParameter.GetRequiredCustomModifiers().Contains(typeof(InAttribute)))
+                    foreach (var attr in info.ReturnParameter.GetRequiredCustomModifiers())
                     {
-                        readonlyStr = "readonly ";
+                        if (attr == typeof(InAttribute))
+                        {
+                            readonlyStr = "readonly ";
+                            break;
+                        }
                     }
                 }
 
@@ -487,7 +490,13 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
             return true;
         }
 
-        static bool HasAttribute<T>(MemberInfo type) => type.CustomAttributes.Any(ca => ca.AttributeType.IsEquivalentTo(typeof(T)));
+        static bool HasAttribute<T>(MemberInfo type)
+        {
+            foreach (var ca in type.CustomAttributes)
+                if (ca.AttributeType.IsEquivalentTo(typeof(T)))
+                    return true;
+            return false;
+        }
 
         private static void TypeToString(Type t, StringBuilder buf, in MethodData methodData)
         {
@@ -821,18 +830,16 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                                                BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
                     foreach (var c in t.GetConstructors(flags))
                     {
-                        var attributes = c.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>().ToArray();
+                        bool hadAttributes = false;
+                        foreach (var methodAttr in c.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>())
+                        {
+                            hadAttributes = true;
+                            MaybeAddMethod(c, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, c, methodAttr.CompileTarget);
+                        }
 
-                        if (attributes.Length == 0)
+                        if(!hadAttributes)
                         {
                             MaybeAddMethod(c, EmptyGenericTypeArguments, typeAttr.GenericTypeArguments, typeAttr.RequiredUnityDefine, c, typeAttr.CompileTarget);
-                        }
-                        else
-                        {
-                            foreach (var methodAttr in attributes)
-                            {
-                                MaybeAddMethod(c, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, c, methodAttr.CompileTarget);
-                            }
                         }
                     }
 
@@ -847,18 +854,16 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                             Debug.Assert(attributeHolder != null, $"Failed to find property for {m.Name} in {m.DeclaringType.Name}");
                         }
 
-                        var attributes = attributeHolder.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>().ToArray();
+                        bool hadAttributes = false;
+                        foreach (var methodAttr in attributeHolder.GetCustomAttributes<GenerateTestsForBurstCompatibilityAttribute>())
+                        {
+                            hadAttributes = true;
+                            MaybeAddMethod(m, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, attributeHolder, methodAttr.CompileTarget);
+                        }
 
-                        if (attributes.Length == 0)
+                        if (!hadAttributes)
                         {
                             MaybeAddMethod(m, EmptyGenericTypeArguments, typeAttr.GenericTypeArguments, typeAttr.RequiredUnityDefine, attributeHolder, typeAttr.CompileTarget);
-                        }
-                        else
-                        {
-                            foreach (var methodAttr in attributes)
-                            {
-                                MaybeAddMethod(m, methodAttr.GenericTypeArguments, typeAttr.GenericTypeArguments, methodAttr.RequiredUnityDefine ?? typeAttr.RequiredUnityDefine, attributeHolder, methodAttr.CompileTarget);
-                            }
                         }
                     }
                 }
@@ -911,8 +916,13 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
         Assembly GetAssemblyByName(string name)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            return assemblies.SingleOrDefault(assembly => assembly.GetName().Name == name);
+            foreach(var assembly in assemblies)
+            {
+                if(assembly.GetName().Name == name)
+                    return assembly;
+            }
+            
+            return default;
         }
 
         private StreamWriter m_BurstCompileLogs;

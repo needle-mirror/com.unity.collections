@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.4.0-exp.2] - 2023-11-09
+
+### Added
+
+* `DataStreamReader.ReadBytes` and `DataStreamWriter.WriteBytes` now have a variant that takes a `Span<byte>` as a parameter, making it easier to use these APIs with regular `byte[]` arrays.
+
+### Changed
+
+* The minimum supported editor version is now 2022.3.11f1
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
 
 
 ## [2.3.0-pre.3] - 2023-10-17
