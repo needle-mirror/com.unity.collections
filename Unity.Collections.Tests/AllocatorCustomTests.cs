@@ -1,10 +1,13 @@
 #region allocator-custom-example
 using System;
 using AOT;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Burst;
+using System.Threading;
 
 // This is the example code used in
 // Packages/com.unity.collections/Documentation~/allocator/allocator-custom.md
@@ -77,7 +80,7 @@ internal struct ExampleCustomAllocator : AllocatorManager.IAllocator
             if (block.Range.Pointer != IntPtr.Zero)
             {
                 UnsafeUtility.MemSet((void*)block.Range.Pointer, m_initialValue, block.Bytes);
-                m_allocationCount++;
+                Interlocked.Increment(ref m_allocationCount);
 
             }
             return 0;
@@ -98,7 +101,7 @@ internal struct ExampleCustomAllocator : AllocatorManager.IAllocator
             // if deallocation succeeds, decrement the allocation count
             if (block.Range.Pointer == IntPtr.Zero)
             {
-                m_allocationCount--;
+                Interlocked.Decrement(ref m_allocationCount);
             }
 
             return 0;
@@ -317,6 +320,32 @@ internal class ExampleCustomAllocatorStructUsage
 
         // Dispose the user structure
         exampleStruct.Dispose();
+    }
+
+    [Test]
+    public void CustomAllocatorHandle_MultiThreadWorks()
+    {
+        ExampleCustomAllocatorStruct exampleStruct = new ExampleCustomAllocatorStruct(IntialValue);
+
+        var taskList = new List<Task>();
+
+        // create 128 native array with another threads
+        for (var i = 0; i < 128; i++)
+        {
+            var task = Task.Run(() =>
+            {
+                var nativeArray = CollectionHelper.CreateNativeArray<int, ExampleCustomAllocator>(100, ref exampleStruct.customAllocator,
+                    NativeArrayOptions.UninitializedMemory);
+
+                CollectionHelper.Dispose(nativeArray);
+            });
+
+            taskList.Add(task);
+        }
+
+        Task.WaitAll(taskList.ToArray());
+
+        exampleStruct.customAllocator.Dispose();
     }
 }
 #endregion // allocator-custom-user-struct

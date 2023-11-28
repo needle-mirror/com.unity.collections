@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.0-pre.2] - 2023-11-28
+
+### Changed
+
+* Updated Burst dependency to 1.8.10
+* Add lightweight spinlock to secure multithread write access to the `ChildSafetyHandles` in custom allocator framework.
+
+
 ## [2.4.0-exp.2] - 2023-11-09
 
 ### Added

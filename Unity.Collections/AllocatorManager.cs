@@ -10,9 +10,82 @@ using Unity.Mathematics;
 using UnityEngine.Assertions;
 using Unity.Jobs.LowLevel.Unsafe;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Unity.Collections
 {
+    [GenerateTestsForBurstCompatibility]
+    struct Spinner
+    {
+        int m_Lock;
+
+        /// <summary>
+        /// Continually spin until the lock can be acquired.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Acquire()
+        {
+            for (; ; )
+            {
+                // Optimistically assume the lock is free on the first try.
+                if (Interlocked.CompareExchange(ref m_Lock, 1, 0) == 0)
+                {
+                    return;
+                }
+
+                // Wait for lock to be released without generate cache misses.
+                while (Volatile.Read(ref m_Lock) == 1)
+                {
+                    continue;
+                }
+
+                // Future improvement: the 'continue` instruction above could be swapped for a 'pause' intrinsic
+                // instruction when the CPU supports it, to further reduce contention by reducing load-store unit
+                // utilization. However, this would need to be optional because if you don't use hyper-threading
+                // and you don't care about power efficiency, using the 'pause' instruction will slow down lock
+                // acquisition in the contended scenario.
+            }
+        }
+
+        /// <summary>
+        /// Try to acquire the lock and immediately return without spinning.
+        /// </summary>
+        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false"/> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAcquire()
+        {
+            // First do a memory load (read) to check if lock is free in order to prevent uncessary cache missed.
+            return Volatile.Read(ref m_Lock) == 0 &&
+                Interlocked.CompareExchange(ref m_Lock, 1, 0) == 0;
+        }
+
+        /// <summary>
+        /// Try to acquire the lock, and spin only if <paramref name="spin"/> is <see langword="true"/>.
+        /// </summary>
+        /// <param name="spin">Set to true to spin the lock.</param>
+        /// <returns><see langword="true"/> if the lock was acquired, <see langword="false" otherwise./></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAcquire(bool spin)
+        {
+            if (spin)
+            {
+                Acquire();
+                return true;
+            }
+
+            return TryAcquire();
+        }
+
+        /// <summary>
+        /// Release the lock
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void Release()
+        {
+            Volatile.Write(ref m_Lock, 0);
+        }
+    }
+
     /// <summary>
     /// Manages custom memory allocators.
     /// </summary>
@@ -264,6 +337,7 @@ namespace Unity.Collections
             internal bool IsValid => (Index < FirstUserIndex) || (IsInstalled && IsCurrent);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal ref Spinner ChildSpinLock => ref SharedStatics.ChildSpinLock.Ref.Data.ElementAt(Index);
             internal ref UnsafeList<AtomicSafetyHandle> ChildSafetyHandles => ref SharedStatics.ChildSafetyHandles.Ref.Data.ElementAt(Index);
 
             /// <summary>
@@ -297,8 +371,10 @@ namespace Unity.Collections
             {
                 if(!NeedsUseAfterFreeTracking())
                     return InvalidChildSafetyHandleIndex;
+                ChildSpinLock.Acquire();
                 var result = ChildSafetyHandles.Length;
                 ChildSafetyHandles.Add(handle);
+                ChildSpinLock.Release();
                 return result;
             }
 
@@ -308,6 +384,8 @@ namespace Unity.Collections
                     return false;
                 if(safetyHandleIndex == InvalidChildSafetyHandleIndex)
                     return false;
+
+                ChildSpinLock.Acquire();
                 safetyHandleIndex = math.min(safetyHandleIndex, ChildSafetyHandles.Length - 1);
                 while(safetyHandleIndex >= 0)
                 {
@@ -317,11 +395,13 @@ namespace Unity.Collections
                         if(AreTheSame(*safetyHandle, handle))
                         {
                             ChildSafetyHandles.RemoveAtSwapBack(safetyHandleIndex);
+                            ChildSpinLock.Release();
                             return true;
                         }
                     }
                     --safetyHandleIndex;
                 }
+                ChildSpinLock.Release();
                 return false;
             }
 #endif
@@ -408,6 +488,7 @@ namespace Unity.Collections
                 if (!NeedsUseAfterFreeTracking())
                     return;
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+                ChildSpinLock.Acquire();
                 for (var i = 0; i < ChildSafetyHandles.Length; ++i)
                 {
                     unsafe
@@ -418,6 +499,7 @@ namespace Unity.Collections
                     }
                 }
                 ChildSafetyHandles.Clear();
+                ChildSpinLock.Release();
 #endif
                 if (Parent.IsValid)
                     Parent.TryRemoveChildAllocator(this, IndexInParent);
@@ -1279,6 +1361,7 @@ namespace Unity.Collections
             internal sealed class TableEntry { internal static readonly SharedStatic<Array32768<AllocatorManager.TableEntry>> Ref = SharedStatic<Array32768<AllocatorManager.TableEntry>>.GetOrCreate<TableEntry>(); }
             internal sealed class IsAutoDispose { internal static readonly SharedStatic<Long1024> Ref = SharedStatic<Long1024>.GetOrCreate<IsAutoDispose>(); }
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
+            internal sealed class ChildSpinLock { internal static readonly SharedStatic<Array32768<Spinner>> Ref = SharedStatic<Array32768<Spinner>>.GetOrCreate<ChildSpinLock>(); }
             internal sealed class ChildSafetyHandles { internal static readonly SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>> Ref = SharedStatic<Array32768<UnsafeList<AtomicSafetyHandle>>>.GetOrCreate<ChildSafetyHandles>(); }
 #endif
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
