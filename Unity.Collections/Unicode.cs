@@ -18,6 +18,13 @@ namespace Unity.Collections
         /// Note that the format's write failed. It did not truncate.
         /// </summary>
         Overflow,
+
+        /// <summary>
+        /// The source format specifier is not itself correctly formatted, or
+        /// a format specifier tokens were found outside of accepted usage.
+        /// Note that the format's write failed.
+        /// </summary>
+        BadFormatSpecifier,
     }
 
     /// <summary>

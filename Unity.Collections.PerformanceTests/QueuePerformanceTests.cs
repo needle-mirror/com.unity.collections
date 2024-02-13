@@ -168,9 +168,9 @@ namespace Unity.Collections.PerformanceTests
 
         void IBenchmarkContainer.SetParams(int capacity, params int[] args) => this.capacity = capacity;
 
-        public void AllocNativeContainer(int capacity) => QueueUtil.AllocInt(ref nativeContainer, 0, false);
-        public void AllocUnsafeContainer(int capacity) => QueueUtil.AllocInt(ref unsafeContainer, 0, false);
-        public object AllocBclContainer(int capacity) => QueueUtil.AllocBclContainer(0, false);
+        public void AllocNativeContainer(int capacity) => QueueUtil.AllocInt(ref nativeContainer, capacity >= 0 ? 0 : -1, false);
+        public void AllocUnsafeContainer(int capacity) => QueueUtil.AllocInt(ref unsafeContainer, capacity >= 0 ? 0 : -1, false);
+        public object AllocBclContainer(int capacity) => QueueUtil.AllocBclContainer(capacity >= 0 ? 0 : -1, false);
 
         public void MeasureNativeContainer()
         {

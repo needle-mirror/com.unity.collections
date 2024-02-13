@@ -136,5 +136,7 @@ internal class NativeRingQueueTests
 
         Assert.AreEqual(987, container.Dequeue());
         Assert.AreEqual(0, container.Length);
+
+        container.Dispose();
     }
 }

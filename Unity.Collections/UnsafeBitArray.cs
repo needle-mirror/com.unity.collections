@@ -83,13 +83,12 @@ namespace Unity.Collections.LowLevel.Unsafe
             return data;
         }
 
-        internal static void Free(UnsafeBitArray* data)
+        internal static void Free(UnsafeBitArray* data, AllocatorManager.AllocatorHandle allocator)
         {
             if (data == null)
             {
                 throw new InvalidOperationException("UnsafeBitArray has yet to be created or has been destroyed!");
             }
-            var allocator = data->Allocator;
             data->Dispose();
             Memory.Unmanaged.Free(data, allocator);
         }

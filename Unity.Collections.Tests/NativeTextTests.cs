@@ -843,6 +843,7 @@ namespace Unity.Collections.Tests
                 });
                 handle.Complete();
 
+                a.Dispose();
 
                 Assert.IsTrue(allocator.WasUsed);
                 allocator.Dispose();
@@ -874,6 +875,8 @@ namespace Unity.Collections.Tests
                 {
                     UnityEngine.Debug.Log(ro.ToString());
                 });
+
+                a.Dispose();
 
                 Assert.IsTrue(allocator.WasUsed);
                 allocator.Dispose();
@@ -950,6 +953,9 @@ namespace Unity.Collections.Tests
                 {
                     a.Dispose();
                 });
+
+                handle.Complete();
+                a.Dispose();
 
                 Assert.IsTrue(allocator.WasUsed);
                 allocator.Dispose();

@@ -345,7 +345,7 @@ internal class ExampleCustomAllocatorStructUsage
 
         Task.WaitAll(taskList.ToArray());
 
-        exampleStruct.customAllocator.Dispose();
+        exampleStruct.Dispose();
     }
 }
 #endregion // allocator-custom-user-struct

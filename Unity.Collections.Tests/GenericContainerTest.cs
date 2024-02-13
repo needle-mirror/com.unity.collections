@@ -494,7 +494,9 @@ internal class GenericContainerTests : CollectionsTestFixture
     [TestRequiresCollectionChecks()]
     public void IIndexable_Change_Length_Missing_Dependency()
     {
-        Test_Change_Length_Missing_Dependency<NativeList<int>, int>(new NativeList<int>(16, Allocator.Persistent));
+        var container = new NativeList<int>(16, Allocator.Persistent);
+        Test_Change_Length_Missing_Dependency<NativeList<int>, int>(container);
+        container.Dispose();
     }
 #endif
     //-------------------------------------------------------------------------------------------------------

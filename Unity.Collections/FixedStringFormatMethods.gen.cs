@@ -37,8 +37,9 @@ namespace Unity.Collections
         /// <param name="dest">The string to append to.</param>d
         /// <param name="format">A string to be interpolated and appended.</param>
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/) })]
-        public static unsafe void AppendFormat<T, U, T0>(ref this T dest, in U format, in T0 arg0)
+        public static unsafe FormatError AppendFormat<T, U, T0>(ref this T dest, in U format, in T0 arg0)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -46,25 +47,51 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -86,8 +113,9 @@ namespace Unity.Collections
         /// <param name="format">A string to be interpolated and appended.</param>
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1>(ref this T dest, in U format, in T0 arg0, in T1 arg1)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -96,26 +124,52 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -139,8 +193,9 @@ namespace Unity.Collections
         /// <param name="arg0">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -150,27 +205,53 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -196,8 +277,9 @@ namespace Unity.Collections
         /// <param name="arg1">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -208,28 +290,54 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -257,8 +365,9 @@ namespace Unity.Collections
         /// <param name="arg2">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -270,29 +379,55 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -322,8 +457,9 @@ namespace Unity.Collections
         /// <param name="arg3">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4, T5>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -336,30 +472,56 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            case 5: dest.Append(in arg5); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            case 5: err = dest.Append(in arg5); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -391,8 +553,9 @@ namespace Unity.Collections
         /// <param name="arg4">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -406,31 +569,57 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            case 5: dest.Append(in arg5); i+=2; break;
-                            case 6: dest.Append(in arg6); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            case 5: err = dest.Append(in arg5); break;
+                            case 6: err = dest.Append(in arg6); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -464,8 +653,9 @@ namespace Unity.Collections
         /// <param name="arg5">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -480,32 +670,58 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            case 5: dest.Append(in arg5); i+=2; break;
-                            case 6: dest.Append(in arg6); i+=2; break;
-                            case 7: dest.Append(in arg7); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            case 5: err = dest.Append(in arg5); break;
+                            case 6: err = dest.Append(in arg6); break;
+                            case 7: err = dest.Append(in arg7); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -541,8 +757,9 @@ namespace Unity.Collections
         /// <param name="arg6">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -558,33 +775,59 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            case 5: dest.Append(in arg5); i+=2; break;
-                            case 6: dest.Append(in arg6); i+=2; break;
-                            case 7: dest.Append(in arg7); i+=2; break;
-                            case 8: dest.Append(in arg8); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            case 5: err = dest.Append(in arg5); break;
+                            case 6: err = dest.Append(in arg6); break;
+                            case 7: err = dest.Append(in arg7); break;
+                            case 8: err = dest.Append(in arg8); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
         /// <summary>
@@ -622,8 +865,9 @@ namespace Unity.Collections
         /// <param name="arg7">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg8">A FixedString*N*Bytes to interpolate into the format string.</param>
         /// <param name="arg9">A FixedString*N*Bytes to interpolate into the format string.</param>
+        /// <returns><see cref="FormatError.None"/> if successful.  Otherwise returns the appropriate <see cref="FormatError"/>.</returns>
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(FixedString128Bytes /*T*/), typeof(FixedString128Bytes /*U*/), typeof(FixedString128Bytes /*T0*/), typeof(FixedString128Bytes /*T1*/), typeof(FixedString128Bytes /*T2*/), typeof(FixedString128Bytes /*T3*/), typeof(FixedString128Bytes /*T4*/), typeof(FixedString128Bytes /*T5*/), typeof(FixedString128Bytes /*T6*/), typeof(FixedString128Bytes /*T7*/), typeof(FixedString128Bytes /*T8*/), typeof(FixedString128Bytes /*T9*/) })]
-        public static unsafe void AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
+        public static unsafe FormatError AppendFormat<T, U, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>(ref this T dest, in U format, in T0 arg0, in T1 arg1, in T2 arg2, in T3 arg3, in T4 arg4, in T5 arg5, in T6 arg6, in T7 arg7, in T8 arg8, in T9 arg9)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
             where U : unmanaged, INativeList<byte>, IUTF8Bytes
             where T0 : unmanaged, INativeList<byte>, IUTF8Bytes
@@ -640,34 +884,60 @@ namespace Unity.Collections
             ref var formatRef = ref UnsafeUtilityExtensions.AsRef(in format);
             int formatLength = formatRef.Length;
             byte* formatBytes = formatRef.GetUnsafePtr();
-            for (var i = 0; i < formatLength; ++i)
+            int i = 0;
+            FormatError err = FormatError.None;
+            while (i < formatLength)
             {
-                if (formatBytes[i] == (byte)'{')
+                byte currByte = formatBytes[i++];
+                if (currByte == (byte)'{')
                 {
-                    if (formatLength - i >= 3 && formatBytes[i + 1] != (byte)'{')
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        return FormatError.BadFormatSpecifier;
+
+                    if (currByte >= (byte)'0' && currByte <= (byte)'9' && i < formatLength && formatBytes[i++] == (byte)'}')
                     {
-                        var index = formatBytes[i + 1] - (byte)'0';
-                        switch (index)
+                        switch (currByte - (byte)'0')
                         {
-                            case 0: dest.Append(in arg0); i+=2; break;
-                            case 1: dest.Append(in arg1); i+=2; break;
-                            case 2: dest.Append(in arg2); i+=2; break;
-                            case 3: dest.Append(in arg3); i+=2; break;
-                            case 4: dest.Append(in arg4); i+=2; break;
-                            case 5: dest.Append(in arg5); i+=2; break;
-                            case 6: dest.Append(in arg6); i+=2; break;
-                            case 7: dest.Append(in arg7); i+=2; break;
-                            case 8: dest.Append(in arg8); i+=2; break;
-                            case 9: dest.Append(in arg9); i+=2; break;
-                            default:
-                                dest.AppendRawByte(formatBytes[i]);
-                                break;
+                            case 0: err = dest.Append(in arg0); break;
+                            case 1: err = dest.Append(in arg1); break;
+                            case 2: err = dest.Append(in arg2); break;
+                            case 3: err = dest.Append(in arg3); break;
+                            case 4: err = dest.Append(in arg4); break;
+                            case 5: err = dest.Append(in arg5); break;
+                            case 6: err = dest.Append(in arg6); break;
+                            case 7: err = dest.Append(in arg7); break;
+                            case 8: err = dest.Append(in arg8); break;
+                            case 9: err = dest.Append(in arg9); break;
+                            default: err = FormatError.BadFormatSpecifier; break;
                         }
                     }
+                    else if (currByte == (byte)'{')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
+                }
+                else if (currByte == (byte)'}')
+                {
+                    if (i < formatLength)
+                        currByte = formatBytes[i++];
+                    else
+                        err = FormatError.BadFormatSpecifier;
+
+                    if (currByte == (byte)'}')
+                        err = dest.AppendRawByte(currByte);
+                    else
+                        err = FormatError.BadFormatSpecifier;
                 }
                 else
-                    dest.AppendRawByte(formatBytes[i]);
+                    err = dest.AppendRawByte(currByte);
+
+                if (err != FormatError.None)
+                    return err;
             }
+
+            return FormatError.None;
         }
 
 

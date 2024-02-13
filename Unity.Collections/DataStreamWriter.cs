@@ -497,7 +497,7 @@ namespace Unity.Collections
         /// <param name="value">The 4-byte unsigned integer to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedUInt(uint value, StreamCompressionModel model)
+        public bool WritePackedUInt(uint value, in StreamCompressionModel model)
         {
             CheckWrite();
             int bucket = model.CalculateBucket(value);
@@ -522,7 +522,7 @@ namespace Unity.Collections
         /// <param name="value">The 8-byte unsigned long to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedULong(ulong value, StreamCompressionModel model)
+        public bool WritePackedULong(ulong value, in StreamCompressionModel model)
         {
             var data = (uint*)&value;
             return WritePackedUInt(data[0], model) &
@@ -536,7 +536,7 @@ namespace Unity.Collections
         /// <param name="value">The 4-byte signed integer to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedInt(int value, StreamCompressionModel model)
+        public bool WritePackedInt(int value, in StreamCompressionModel model)
         {
             uint interleaved = (uint)((value >> 31) ^ (value << 1));      // interleave negative values between positive values: 0, -1, 1, -2, 2
             return WritePackedUInt(interleaved, model);
@@ -548,7 +548,7 @@ namespace Unity.Collections
         /// <param name="value">The 8-byte signed long to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedLong(long value, StreamCompressionModel model)
+        public bool WritePackedLong(long value, in StreamCompressionModel model)
         {
             ulong interleaved = (ulong)((value >> 63) ^ (value << 1));      // interleave negative values between positive values: 0, -1, 1, -2, 2
             return WritePackedULong(interleaved, model);
@@ -560,7 +560,7 @@ namespace Unity.Collections
         /// <param name="value">The 4-byte floating point value to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedFloat(float value, StreamCompressionModel model)
+        public bool WritePackedFloat(float value, in StreamCompressionModel model)
         {
             return WritePackedFloatDelta(value, 0, model);
         }
@@ -571,7 +571,7 @@ namespace Unity.Collections
         /// <param name="value">The 8-byte floating point value to write.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedDouble(double value, StreamCompressionModel model)
+        public bool WritePackedDouble(double value, in StreamCompressionModel model)
         {
             return WritePackedDoubleDelta(value, 0, model);
         }
@@ -584,7 +584,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 4-byte unsigned integer value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedUIntDelta(uint value, uint baseline, StreamCompressionModel model)
+        public bool WritePackedUIntDelta(uint value, uint baseline, in StreamCompressionModel model)
         {
             int diff = (int)(baseline - value);
             return WritePackedInt(diff, model);
@@ -597,7 +597,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 4-byte signed integer value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedIntDelta(int value, int baseline, StreamCompressionModel model)
+        public bool WritePackedIntDelta(int value, int baseline, in StreamCompressionModel model)
         {
             int diff = (int)(baseline - value);
             return WritePackedInt(diff, model);
@@ -610,7 +610,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 8-byte signed long value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedLongDelta(long value, long baseline, StreamCompressionModel model)
+        public bool WritePackedLongDelta(long value, long baseline, in StreamCompressionModel model)
         {
             long diff = (long)(baseline - value);
             return WritePackedLong(diff, model);
@@ -624,7 +624,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 8-byte unsigned long, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedULongDelta(ulong value, ulong baseline, StreamCompressionModel model)
+        public bool WritePackedULongDelta(ulong value, ulong baseline, in StreamCompressionModel model)
         {
             long diff = (long)(baseline - value);
             return WritePackedLong(diff, model);
@@ -640,7 +640,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 4-byte floating value, used to compute the diff.</param>
         /// <param name="model">Not currently used.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedFloatDelta(float value, float baseline, StreamCompressionModel model)
+        public bool WritePackedFloatDelta(float value, float baseline, in StreamCompressionModel model)
         {
             CheckWrite();
             var bits = 0;
@@ -674,7 +674,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous 8-byte floating value, used to compute the diff.</param>
         /// <param name="model">Not currently used.</param>
         /// <returns>Whether the write was successful</returns>
-        public bool WritePackedDoubleDelta(double value, double baseline, StreamCompressionModel model)
+        public bool WritePackedDoubleDelta(double value, double baseline, in StreamCompressionModel model)
         {
             CheckWrite();
             var bits = 0;
@@ -769,7 +769,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString32Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public unsafe bool WritePackedFixedString32Delta(FixedString32Bytes str, FixedString32Bytes baseline, StreamCompressionModel model)
+        public unsafe bool WritePackedFixedString32Delta(FixedString32Bytes str, FixedString32Bytes baseline, in StreamCompressionModel model)
         {
             ushort length = *((ushort*)&str);
             byte* data = ((byte*)&str) + 2;
@@ -783,7 +783,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString64Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public unsafe bool WritePackedFixedString64Delta(FixedString64Bytes str, FixedString64Bytes baseline, StreamCompressionModel model)
+        public unsafe bool WritePackedFixedString64Delta(FixedString64Bytes str, FixedString64Bytes baseline, in StreamCompressionModel model)
         {
             ushort length = *((ushort*)&str);
             byte* data = ((byte*)&str) + 2;
@@ -797,7 +797,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString128Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public unsafe bool WritePackedFixedString128Delta(FixedString128Bytes str, FixedString128Bytes baseline, StreamCompressionModel model)
+        public unsafe bool WritePackedFixedString128Delta(FixedString128Bytes str, FixedString128Bytes baseline, in StreamCompressionModel model)
         {
             ushort length = *((ushort*)&str);
             byte* data = ((byte*)&str) + 2;
@@ -811,7 +811,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString512Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public unsafe bool WritePackedFixedString512Delta(FixedString512Bytes str, FixedString512Bytes baseline, StreamCompressionModel model)
+        public unsafe bool WritePackedFixedString512Delta(FixedString512Bytes str, FixedString512Bytes baseline, in StreamCompressionModel model)
         {
             ushort length = *((ushort*)&str);
             byte* data = ((byte*)&str) + 2;
@@ -825,7 +825,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString4096Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        public unsafe bool WritePackedFixedString4096Delta(FixedString4096Bytes str, FixedString4096Bytes baseline, StreamCompressionModel model)
+        public unsafe bool WritePackedFixedString4096Delta(FixedString4096Bytes str, FixedString4096Bytes baseline, in StreamCompressionModel model)
         {
             ushort length = *((ushort*)&str);
             byte* data = ((byte*)&str) + 2;
@@ -844,7 +844,7 @@ namespace Unity.Collections
         /// <param name="baseLength">The length of the previous value.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Whether the write was successful</returns>
-        unsafe bool WritePackedFixedStringDelta(byte* data, uint length, byte* baseData, uint baseLength, StreamCompressionModel model)
+        unsafe bool WritePackedFixedStringDelta(byte* data, uint length, byte* baseData, uint baseLength, in StreamCompressionModel model)
         {
             var oldData = m_Data;
             if (!WritePackedUIntDelta(length, baseLength, model))

@@ -13,8 +13,8 @@ namespace Unity.Collections
     /// It codes the bucket index with Huffman, and uses several raw bits that correspond
     /// to the size of the bucket to code the position in the bucket.
     ///
-    /// For example, if you want to send a 32-bit integer over the network, it's 
-    /// impractical to create a Huffman tree that encompasses every value the integer 
+    /// For example, if you want to send a 32-bit integer over the network, it's
+    /// impractical to create a Huffman tree that encompasses every value the integer
     /// can take because it requires a tree with 2^32 leaves. This type manages that situation.
     ///
     /// The buckets are small, around 0, and become progressively larger as the data moves away from zero.
@@ -235,13 +235,26 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="value">A 4-byte unsigned integer value to find a bucket for.</param>
         /// <returns>The bucket index where to put the value.</returns>
-        public int CalculateBucket(uint value)
+        readonly public int CalculateBucket(uint value)
         {
             int bucketIndex = k_FirstBucketCandidate[math.lzcnt(value)];
             if (bucketIndex + 1 < k_AlphabetSize && value >= bucketOffsets[bucketIndex + 1])
                 bucketIndex++;
 
             return bucketIndex;
+        }
+
+        /// <summary>
+        /// The compressed size in bits of the given unsigned integer value
+        /// </summary>
+        /// <param name="value">the unsigned int value you want to compress</param>
+        /// <returns></returns>
+        public readonly int GetCompressedSizeInBits(uint value)
+        {
+            int bucket = CalculateBucket(value);
+            int bits = bucketSizes[bucket];
+            ushort encodeEntry = encodeTable[bucket];
+            return (encodeEntry & 0xff) + bits;
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]

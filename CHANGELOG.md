@@ -1,4 +1,20 @@
-# Changelog
+## [2.4.0-pre.5] - 2024-02-13
+
+### Changed
+
+* Updated Burst dependency to version 1.8.12
+
+### Fixed
+
+* Memory leaks in unit tests.
+* Memory leak when using `NativeBitArrayUnsafeUtility.ConvertExistingDataToNativeBitArray`.
+* Brace parsing in FixedString AppendFormat handles incorrect formatting now
+
+### Updated
+
+* Upgraded Test Framework version to 1.4.3
+
+
 
 ## [2.4.0-pre.2] - 2023-11-28
 

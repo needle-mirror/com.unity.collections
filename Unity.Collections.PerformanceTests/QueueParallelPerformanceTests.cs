@@ -41,7 +41,7 @@ namespace Unity.Collections.PerformanceTests
             workers = args[0];
         }
 
-        public void AllocNativeContainer(int capacity) => QueueParallelUtil.AllocInt(ref nativeContainer, 0, false);
+        public void AllocNativeContainer(int capacity) => QueueParallelUtil.AllocInt(ref nativeContainer, capacity >= 0 ? 0 : -1, false);
         public void AllocUnsafeContainer(int capacity) { }
         public object AllocBclContainer(int capacity) => QueueParallelUtil.AllocBclContainer(0, false);
 

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Unity.Burst;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
+using static Unity.Collections.AllocatorManager;
 
 namespace Unity.Collections
 {
@@ -27,6 +28,7 @@ namespace Unity.Collections
 #endif
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeBitArray* m_BitArray;
+        internal AllocatorHandle m_Allocator;
 
         /// <summary>
         /// Initializes and returns an instance of NativeBitArray.
@@ -42,7 +44,8 @@ namespace Unity.Collections
             CollectionHelper.SetStaticSafetyId(ref m_Safety, ref s_staticSafetyId.Data, "Unity.Collections.NativeBitArray");
 #endif
             m_BitArray = UnsafeBitArray.Alloc(allocator);
-            *m_BitArray = new UnsafeBitArray(numBits, allocator, options);
+            m_Allocator = allocator;
+            * m_BitArray = new UnsafeBitArray(numBits, allocator, options);
         }
 
         /// <summary>
@@ -112,8 +115,9 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.DisposeSafetyHandle(ref m_Safety);
 #endif
-            UnsafeBitArray.Free(m_BitArray);
+            UnsafeBitArray.Free(m_BitArray, m_Allocator);
             m_BitArray = null;
+            m_Allocator = Invalid;
         }
 
         /// <summary>
@@ -135,12 +139,13 @@ namespace Unity.Collections
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
-            var jobHandle = new NativeBitArrayDisposeJob { Data = new NativeBitArrayDispose { m_BitArrayData = m_BitArray, m_Safety = m_Safety } }.Schedule(inputDeps);
+            var jobHandle = new NativeBitArrayDisposeJob { Data = new NativeBitArrayDispose { m_BitArrayData = m_BitArray, m_Allocator = m_Allocator, m_Safety = m_Safety } }.Schedule(inputDeps);
             AtomicSafetyHandle.Release(m_Safety);
 #else
-            var jobHandle = new NativeBitArrayDisposeJob { Data = new NativeBitArrayDispose { m_BitArrayData = m_BitArray } }.Schedule(inputDeps);
+            var jobHandle = new NativeBitArrayDisposeJob { Data = new NativeBitArrayDispose { m_BitArrayData = m_BitArray, m_Allocator = m_Allocator } }.Schedule(inputDeps);
 #endif
             m_BitArray = null;
+            m_Allocator = Invalid;
 
             return jobHandle;
 
@@ -612,6 +617,7 @@ namespace Unity.Collections
     {
         [NativeDisableUnsafePtrRestriction]
         public UnsafeBitArray* m_BitArrayData;
+        public AllocatorHandle m_Allocator;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
         public AtomicSafetyHandle m_Safety;
@@ -619,7 +625,7 @@ namespace Unity.Collections
 
         public void Dispose()
         {
-            UnsafeBitArray.Free(m_BitArrayData);
+            UnsafeBitArray.Free(m_BitArrayData, m_Allocator);
         }
     }
 
@@ -682,6 +688,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             return new NativeBitArray
             {
                 m_BitArray = bitArray,
+                m_Allocator = Allocator.Persistent,
             };
         }
     }

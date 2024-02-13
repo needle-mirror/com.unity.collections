@@ -186,37 +186,39 @@ internal class UnsafeListTests : CollectionsTestCommonBase
     [Test]
     public unsafe void UnsafeListT_AddNoResize()
     {
-        var list = new UnsafeList<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        var container = new UnsafeList<int>(1, Allocator.Persistent, NativeArrayOptions.ClearMemory);
 
         // List's capacity is always cache-line aligned, number of items fills up whole cache-line.
         int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-        Assert.Throws<InvalidOperationException>(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
+        Assert.Throws<InvalidOperationException>(() => { fixed (int* r = range) container.AddRangeNoResize(r, 17); });
 #endif
 
-        list.SetCapacity(17);
-        Assert.DoesNotThrow(() => { fixed (int* r = range) list.AddRangeNoResize(r, 17); });
+        container.SetCapacity(17);
+        Assert.DoesNotThrow(() => { fixed (int* r = range) container.AddRangeNoResize(r, 17); });
 
-        list.Length = 16;
-        list.TrimExcess();
+        container.Length = 16;
+        container.TrimExcess();
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS || UNITY_DOTS_DEBUG
-        Assert.Throws<InvalidOperationException>(() => { list.AddNoResize(16); });
+        Assert.Throws<InvalidOperationException>(() => { container.AddNoResize(16); });
 #endif
+
+        container.Dispose();
     }
 
     [Test]
     public unsafe void UnsafeListT_AddNoResize_Read()
     {
-        var list = new UnsafeList<int>(4, Allocator.Persistent, NativeArrayOptions.ClearMemory);
-        list.AddNoResize(4);
-        list.AddNoResize(6);
-        list.AddNoResize(4);
-        list.AddNoResize(9);
-        Expected(ref list, 4, new int[] { 4, 6, 4, 9 });
+        var container = new UnsafeList<int>(4, Allocator.Persistent, NativeArrayOptions.ClearMemory);
+        container.AddNoResize(4);
+        container.AddNoResize(6);
+        container.AddNoResize(4);
+        container.AddNoResize(9);
+        Expected(ref container, 4, new int[] { 4, 6, 4, 9 });
 
-        list.Dispose();
+        container.Dispose();
     }
 
     [Test]

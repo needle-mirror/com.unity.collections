@@ -46,7 +46,7 @@ namespace Unity.Collections.Tests
             aa.Junk();
             FixedStringN format = "{0}";
             FixedString32Bytes arg0 = "a";
-            aa.AppendFormat(format, arg0);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0));
             Assert.AreEqual("a", aa);
             aa.AssertNullTerminated();
         }
@@ -60,7 +60,7 @@ namespace Unity.Collections.Tests
             FixedStringN format = "{0} {1}";
             FixedString32Bytes arg0 = "a";
             FixedString32Bytes arg1 = "b";
-            aa.AppendFormat(format, arg0, arg1);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1));
             Assert.AreEqual("a b", aa);
             aa.AssertNullTerminated();
         }
@@ -75,7 +75,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg0 = "a";
             FixedString32Bytes arg1 = "b";
             FixedString32Bytes arg2 = "c";
-            aa.AppendFormat(format, arg0, arg1, arg2);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2));
             Assert.AreEqual("a b c", aa);
             aa.AssertNullTerminated();
         }
@@ -84,14 +84,14 @@ namespace Unity.Collections.Tests
         [Test]
         public void FixedStringNFormatExtension4Params()
         {
-            FixedStringN aa = default;
+            FixedStringN aa = default; 
             aa.Junk();
             FixedStringN format = "{0} {1} {2} {3}";
             FixedString32Bytes arg0 = "a";
             FixedString32Bytes arg1 = "b";
             FixedString32Bytes arg2 = "c";
             FixedString32Bytes arg3 = "d";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3));
             Assert.AreEqual("a b c d", aa);
             aa.AssertNullTerminated();
         }
@@ -108,7 +108,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg2 = "c";
             FixedString32Bytes arg3 = "d";
             FixedString32Bytes arg4 = "e";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4));
             Assert.AreEqual("a b c d e", aa);
             aa.AssertNullTerminated();
         }
@@ -126,7 +126,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg3 = "d";
             FixedString32Bytes arg4 = "e";
             FixedString32Bytes arg5 = "f";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5));
             Assert.AreEqual("a b c d e f", aa);
             aa.AssertNullTerminated();
         }
@@ -145,7 +145,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg4 = "e";
             FixedString32Bytes arg5 = "f";
             FixedString32Bytes arg6 = "g";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6));
             Assert.AreEqual("a b c d e f g", aa);
             aa.AssertNullTerminated();
         }
@@ -165,7 +165,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg5 = "f";
             FixedString32Bytes arg6 = "g";
             FixedString32Bytes arg7 = "h";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
             Assert.AreEqual("a b c d e f g h", aa);
             aa.AssertNullTerminated();
         }
@@ -186,7 +186,7 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg6 = "g";
             FixedString32Bytes arg7 = "h";
             FixedString32Bytes arg8 = "i";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
             Assert.AreEqual("a b c d e f g h i", aa);
             aa.AssertNullTerminated();
         }
@@ -208,8 +208,84 @@ namespace Unity.Collections.Tests
             FixedString32Bytes arg7 = "h";
             FixedString32Bytes arg8 = "i";
             FixedString32Bytes arg9 = "j";
-            aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
             Assert.AreEqual("a b c d e f g h i j", aa);
+            aa.AssertNullTerminated();
+        }
+
+        [Test]
+        public void FixedStringNFormatBadFormat()
+        {
+            FixedStringN aa = default;
+            aa.Junk();
+            FixedStringN format = "{10}";
+            FixedString32Bytes arg0 = "a";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0 } ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{ 0} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0a} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{012 ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0{ ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0{ ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0} } ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{ {0} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{{{0}} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{{0} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            format = "{0}} ";
+            Assert.AreEqual(FormatError.BadFormatSpecifier, aa.AppendFormat(format, arg0));
+            aa.AssertNullTerminated();
+        }
+
+        [Test]
+        public void FixedStringNFormatOverflow()
+        {
+            FixedString32Bytes aa = default;
+            aa.Junk();
+            FixedStringN format = "{0}";
+            FixedStringN arg0 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            Assert.AreEqual(FormatError.Overflow, aa.AppendFormat(format, arg0));
+        }
+
+        [Test]
+        public void FixedStringNFormatBraces()
+        {
+            FixedStringN aa = default;
+            aa.Junk();
+            FixedStringN format = "{{0}}";
+            FixedString32Bytes arg0 = "42";
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0));
+            Assert.AreEqual("{0}", aa);
+            aa.AssertNullTerminated();
+
+            aa = default;
+            format = "{{{0}}}";
+            arg0 = "43";
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0));
+            Assert.AreEqual("{43}", aa);
+            aa.AssertNullTerminated();
+
+            aa = default;
+            format = "{{{0}";
+            arg0 = "44";
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0));
+            Assert.AreEqual("{44", aa);
+            aa.AssertNullTerminated();
+
+            aa = default;
+            format = "{0}}}";
+            arg0 = "45";
+            Assert.AreEqual(FormatError.None, aa.AppendFormat(format, arg0));
+            Assert.AreEqual("45}", aa);
             aa.AssertNullTerminated();
         }
 

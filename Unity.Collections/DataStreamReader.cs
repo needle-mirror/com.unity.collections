@@ -359,18 +359,18 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>A 4-byte unsigned integer read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public uint ReadPackedUInt(StreamCompressionModel model)
+        public uint ReadPackedUInt(in StreamCompressionModel model)
         {
-            return ReadPackedUIntInternal(StreamCompressionModel.k_MaxHuffmanSymbolLength, model.decodeTable, model.bucketOffsets, model.bucketSizes);
+            return ReadPackedUIntInternal(StreamCompressionModel.k_MaxHuffmanSymbolLength, model);
         }
 
-        uint ReadPackedUIntInternal(int maxSymbolLength, ushort* decodeTable, uint* bucketOffsets, byte* bucketSizes)
+        uint ReadPackedUIntInternal(int maxSymbolLength, in StreamCompressionModel model)
         {
             CheckRead();
             FillBitBuffer();
             uint peekMask = (1u << maxSymbolLength) - 1u;
             uint peekBits = (uint)m_Context.m_BitBuffer & peekMask;
-            ushort huffmanEntry = decodeTable[(int)peekBits];
+            ushort huffmanEntry = model.decodeTable[(int)peekBits];
             int symbol = huffmanEntry >> 8;
             int length = huffmanEntry & 0xFF;
 
@@ -387,8 +387,8 @@ namespace Unity.Collections
             m_Context.m_BitBuffer >>= length;
             m_Context.m_BitIndex -= length;
 
-            uint offset = bucketOffsets[symbol];
-            byte bits = bucketSizes[symbol];
+            uint offset = model.bucketOffsets[symbol];
+            byte bits = model.bucketSizes[symbol];
             return ReadRawBitsInternal(bits) + offset;
         }
 
@@ -435,7 +435,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>An 8-byte unsigned long read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public ulong ReadPackedULong(StreamCompressionModel model)
+        public ulong ReadPackedULong(in StreamCompressionModel model)
         {
             ulong value;
             ((uint*)&value)[0] = ReadPackedUInt(model);
@@ -450,7 +450,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>A 4-byte signed integer read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public int ReadPackedInt(StreamCompressionModel model)
+        public int ReadPackedInt(in StreamCompressionModel model)
         {
             uint folded = ReadPackedUInt(model);
             return (int)(folded >> 1) ^ -(int)(folded & 1);    // Deinterleave values from [0, -1, 1, -2, 2...] to [..., -2, -1, -0, 1, 2, ...]
@@ -463,7 +463,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>An 8-byte signed long read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public long ReadPackedLong(StreamCompressionModel model)
+        public long ReadPackedLong(in StreamCompressionModel model)
         {
             ulong folded = ReadPackedULong(model);
             return (long)(folded >> 1) ^ -(long)(folded & 1);    // Deinterleave values from [0, -1, 1, -2, 2...] to [..., -2, -1, -0, 1, 2, ...]
@@ -474,7 +474,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>A 4-byte floating point value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public float ReadPackedFloat(StreamCompressionModel model)
+        public float ReadPackedFloat(in StreamCompressionModel model)
         {
             return ReadPackedFloatDelta(0, model);
         }
@@ -484,7 +484,7 @@ namespace Unity.Collections
         /// </summary>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for reading value in a packed manner.</param>
         /// <returns>A 8-byte floating point value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public double ReadPackedDouble(StreamCompressionModel model)
+        public double ReadPackedDouble(in StreamCompressionModel model)
         {
             return ReadPackedDoubleDelta(0, model);
         }
@@ -498,7 +498,7 @@ namespace Unity.Collections
         /// If the data did not change, this also returns 0.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public int ReadPackedIntDelta(int baseline, StreamCompressionModel model)
+        public int ReadPackedIntDelta(int baseline, in StreamCompressionModel model)
         {
             int delta = ReadPackedInt(model);
             return baseline - delta;
@@ -513,7 +513,7 @@ namespace Unity.Collections
         /// If the data did not change, this also returns 0.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public uint ReadPackedUIntDelta(uint baseline, StreamCompressionModel model)
+        public uint ReadPackedUIntDelta(uint baseline, in StreamCompressionModel model)
         {
             uint delta = (uint)ReadPackedInt(model);
             return baseline - delta;
@@ -528,7 +528,7 @@ namespace Unity.Collections
         /// If the data did not change, this also returns 0.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public long ReadPackedLongDelta(long baseline, StreamCompressionModel model)
+        public long ReadPackedLongDelta(long baseline, in StreamCompressionModel model)
         {
             long delta = ReadPackedLong(model);
             return baseline - delta;
@@ -543,7 +543,7 @@ namespace Unity.Collections
         /// If the data did not change, this also returns 0.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public ulong ReadPackedULongDelta(ulong baseline, StreamCompressionModel model)
+        public ulong ReadPackedULongDelta(ulong baseline, in StreamCompressionModel model)
         {
             ulong delta = (ulong)ReadPackedLong(model);
             return baseline - delta;
@@ -559,7 +559,7 @@ namespace Unity.Collections
         /// <returns>A 4-byte floating point value read from the current stream, or <paramref name="baseline"/> if there are no changes to the value.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public float ReadPackedFloatDelta(float baseline, StreamCompressionModel model)
+        public float ReadPackedFloatDelta(float baseline, in StreamCompressionModel model)
         {
             CheckRead();
             FillBitBuffer();
@@ -582,7 +582,7 @@ namespace Unity.Collections
         /// <returns>A 8-byte floating point value read from the current stream, or <paramref name="baseline"/> if there are no changes to the value.
         /// <br/>
         /// See: <see cref="HasFailedReads"/> to verify if the read failed.</returns>
-        public double ReadPackedDoubleDelta(double baseline, StreamCompressionModel model)
+        public double ReadPackedDoubleDelta(double baseline, in StreamCompressionModel model)
         {
             CheckRead();
             FillBitBuffer();
@@ -689,7 +689,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString32Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>A <c>FixedString32Bytes</c> value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public unsafe FixedString32Bytes ReadPackedFixedString32Delta(FixedString32Bytes baseline, StreamCompressionModel model)
+        public unsafe FixedString32Bytes ReadPackedFixedString32Delta(FixedString32Bytes baseline, in StreamCompressionModel model)
         {
             FixedString32Bytes str;
             byte* data = ((byte*)&str) + 2;
@@ -703,7 +703,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString64Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>A <c>FixedString64Bytes</c> value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public unsafe FixedString64Bytes ReadPackedFixedString64Delta(FixedString64Bytes baseline, StreamCompressionModel model)
+        public unsafe FixedString64Bytes ReadPackedFixedString64Delta(FixedString64Bytes baseline, in StreamCompressionModel model)
         {
             FixedString64Bytes str;
             byte* data = ((byte*)&str) + 2;
@@ -717,7 +717,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString128Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>A <c>FixedString128Bytes</c> value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public unsafe FixedString128Bytes ReadPackedFixedString128Delta(FixedString128Bytes baseline, StreamCompressionModel model)
+        public unsafe FixedString128Bytes ReadPackedFixedString128Delta(FixedString128Bytes baseline, in StreamCompressionModel model)
         {
             FixedString128Bytes str;
             byte* data = ((byte*)&str) + 2;
@@ -731,7 +731,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString512Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>A <c>FixedString512Bytes</c> value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public unsafe FixedString512Bytes ReadPackedFixedString512Delta(FixedString512Bytes baseline, StreamCompressionModel model)
+        public unsafe FixedString512Bytes ReadPackedFixedString512Delta(FixedString512Bytes baseline, in StreamCompressionModel model)
         {
             FixedString512Bytes str;
             byte* data = ((byte*)&str) + 2;
@@ -745,7 +745,7 @@ namespace Unity.Collections
         /// <param name="baseline">The previous <c>FixedString4096Bytes</c> value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>A <c>FixedString4096Bytes</c> value read from the current stream, or 0 if the end of the stream has been reached.</returns>
-        public unsafe FixedString4096Bytes ReadPackedFixedString4096Delta(FixedString4096Bytes baseline, StreamCompressionModel model)
+        public unsafe FixedString4096Bytes ReadPackedFixedString4096Delta(FixedString4096Bytes baseline, in StreamCompressionModel model)
         {
             FixedString4096Bytes str;
             byte* data = ((byte*)&str) + 2;
@@ -761,12 +761,12 @@ namespace Unity.Collections
         /// <param name="baseData">Array containing the previous value, used to compute the diff.</param>
         /// <param name="model"><see cref="StreamCompressionModel"/> model for writing value in a packed manner.</param>
         /// <returns>Length of data read into byte array, or zero if error occurred.</returns>
-        public ushort ReadPackedFixedStringDelta(NativeArray<byte> data, NativeArray<byte> baseData, StreamCompressionModel model)
+        public ushort ReadPackedFixedStringDelta(NativeArray<byte> data, NativeArray<byte> baseData, in StreamCompressionModel model)
         {
             return ReadPackedFixedStringDeltaInternal((byte*)data.GetUnsafePtr(), data.Length, (byte*)baseData.GetUnsafePtr(), (ushort)baseData.Length, model);
         }
 
-        unsafe ushort ReadPackedFixedStringDeltaInternal(byte* data, int maxLength, byte* baseData, ushort baseLength, StreamCompressionModel model)
+        unsafe ushort ReadPackedFixedStringDeltaInternal(byte* data, int maxLength, byte* baseData, ushort baseLength, in StreamCompressionModel model)
         {
             uint length = ReadPackedUIntDelta(baseLength, model);
             if (length > (uint)maxLength)
