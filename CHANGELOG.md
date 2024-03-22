@@ -1,3 +1,11 @@
+# Changelog
+
+## [2.4.0] - 2024-03-22
+
+### Changed
+*Release Preparation
+
+
 ## [2.4.0-pre.5] - 2024-02-13
 
 ### Changed
@@ -13,7 +21,6 @@
 ### Updated
 
 * Upgraded Test Framework version to 1.4.3
-
 
 
 ## [2.4.0-pre.2] - 2023-11-28

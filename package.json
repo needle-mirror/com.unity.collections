@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.4.0-pre.5",
+  "version": "2.4.0",
   "unity": "2022.3",
   "unityRelease": "11f1",
   "dependencies": {
@@ -17,15 +17,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Changed\n\n* Updated Burst dependency to version 1.8.12\n\n### Fixed\n\n* Memory leaks in unit tests.\n* Memory leak when using `NativeBitArrayUnsafeUtility.ConvertExistingDataToNativeBitArray`.\n* Brace parsing in FixedString AppendFormat handles incorrect formatting now\n\n### Updated\n\n* Upgraded Test Framework version to 1.4.3"
+    "changelog": "### Changed\n*Release Preparation"
   },
   "upmCi": {
-    "footprint": "9b2fc38357300d43e27e9779698eaf641422edbb"
+    "footprint": "3bfa0e6a9e6d4fe11bf7995b00db5f13dc1bf787"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.4/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "1ae43e0525b8a09c7fe52ab40c762938a4937244"
+    "revision": "ea4236421d61011e37e71d22108c5e4e70cf71d7"
   }
 }
