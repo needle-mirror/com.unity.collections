@@ -1,9 +1,17 @@
 # Changelog
 
-## [2.4.0] - 2024-03-22
+## [2.4.1] - 2024-04-26
 
 ### Changed
-*Release Preparation
+* Release preparation
+* Updated Burst dependency to version 1.8.13
+
+
+
+## [1.2.0] - 2024-03-22
+
+### Changed
+* Release Preparation
 
 
 ## [2.4.0-pre.5] - 2024-02-13
