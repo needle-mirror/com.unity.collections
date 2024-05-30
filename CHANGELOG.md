@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.2] - 2024-05-30
+* Update entities package dependencies
+
+
 ## [2.4.1] - 2024-04-26
 
 ### Changed
@@ -7,11 +11,10 @@
 * Updated Burst dependency to version 1.8.13
 
 
-
-## [1.2.0] - 2024-03-22
+## [2.4.0] - 2024-03-22
 
 ### Changed
-* Release Preparation
+* Release preparation
 
 
 ## [2.4.0-pre.5] - 2024-02-13
@@ -48,17 +51,6 @@
 ### Changed
 
 * The minimum supported editor version is now 2022.3.11f1
-
-### Deprecated
-
-
-### Removed
-
-
-### Fixed
-
-
-### Security
 
 
 ## [2.3.0-pre.3] - 2023-10-17

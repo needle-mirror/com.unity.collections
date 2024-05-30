@@ -21,8 +21,6 @@ The array-like types in this package extend the key array types in the [`UnityEn
 
 There aren't any multi-dimensional array types, but you can pack all the data into a single dimension. For example, for an `int[4][5]` array, use an `int[20]` array instead (because `4 * 5` is `20`).
 
-If you're using the [Entities package](https://docs.unity3d.com/Packages/com.unity.entities@latest), a [DynamicBuffer](https://docs.unity3d.com/Packages/com.unity.entities@latest/index.html?subfolder=/api/Unity.Entities.DynamicBuffer-1.html) component is often the best choice for an array or list like collection.
-
 Additionally, there are various extension methods in [`NativeArrayExtensions`](xref:Unity.Collections.NativeArrayExtensions), [`ListExtensions`](xref:Unity.Collections.ListExtensions), and [`NativeSortExtension`](xref:Unity.Collections.NativeSortExtension).
 
 ## Map and set types
