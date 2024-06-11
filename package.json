@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.4.2",
+  "version": "2.5.0-exp.1",
   "unity": "2022.3",
   "unityRelease": "11f1",
   "dependencies": {
@@ -17,15 +17,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "* Update entities package dependencies"
+    "changelog": "### Added\n\n* SortJobDefer type for scheduling sorting on NativeList when content of the list is not known ahead of time, and depends on dependent jobs.\n\n### Changed\n\n* Update entities package dependencies\n\n### Fixed\n\n* Clarified usage of \"front\" and \"end\" in API docs for `NativeQueue` and `UnsafeQueue`\n* Default constructed container can call IsCreated and IsEmpty properties."
   },
   "upmCi": {
-    "footprint": "7655bd34494e79591b53f53739a3b26feef160e9"
+    "footprint": "fdb1a140eaacb4cea21a16704f65b65b5984e99b"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.4/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.5/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "964c24b165e01a75458934a172bde8cce9b901f3"
+    "revision": "d5bde5f043ad76defc80bbc6be1f8630d14b108d"
   }
 }

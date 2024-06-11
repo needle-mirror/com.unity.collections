@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.Collections;
 using Unity.Collections.Tests;
+using Unity.Jobs;
 using Assert = FastAssert;
 
 internal class MathTests : CollectionsTestCommonBase
@@ -538,5 +539,37 @@ internal class NativeSliceTests : CollectionsTestCommonBase
             max = i;
         }
         array.Dispose();
+    }
+
+    struct FilterOdd : IJobFilter
+    {
+        public bool Execute(int index) => index % 2 == 0;
+    }
+
+    [Test]
+    public void SortJobNativeList_UseInPreviousJob()
+    {
+        var rng = new Unity.Mathematics.Random(123);
+        NativeList<int> indices = new NativeList<int>(10, Allocator.TempJob);
+        for (int i = 0; i < 10; i++)
+        {
+            indices.Add(rng.NextInt(100));
+        }
+
+        var handle = new FilterOdd().ScheduleFilter(indices);
+        var sortJob = indices.SortJobDefer(new DescendingComparer<int>());
+        handle = sortJob.Schedule(handle);
+
+        handle.Complete();
+
+        float max = float.MaxValue;
+        foreach (var i in indices)
+        {
+            Assert.IsTrue(0 == (i & 1));
+            Assert.GreaterOrEqual(max, i);
+            max = i;
+        }
+
+        indices.Dispose();
     }
 }

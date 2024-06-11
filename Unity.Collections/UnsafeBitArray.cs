@@ -605,6 +605,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <value>The number of bits.</value>
             public readonly int Length;
 
+            /// <summary>
+            /// Whether this array has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this array has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated => Ptr != null;
+
+            /// <summary>
+            /// Whether the container is empty.
+            /// </summary>
+            /// <value>True if the container is empty or the container has not been constructed.</value>
+            public readonly bool IsEmpty => !IsCreated || Length == 0;
+
             internal ReadOnly(ulong* ptr, int length)
             {
                 Ptr = ptr;

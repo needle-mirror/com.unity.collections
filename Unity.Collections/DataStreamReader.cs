@@ -139,9 +139,7 @@ namespace Unity.Collections
                 return;
             }
             // Restore the full bytes moved to the bit buffer but no consumed
-            m_Context.m_ReadByteIndex -= (m_Context.m_BitIndex >> 3);
-            m_Context.m_BitIndex = 0;
-            m_Context.m_BitBuffer = 0;
+            Flush();
             UnsafeUtility.MemCpy(data, m_BufferPtr + m_Context.m_ReadByteIndex, length);
             m_Context.m_ReadByteIndex += length;
         }
@@ -286,6 +284,17 @@ namespace Unity.Collections
             ulong data;
             ReadBytesInternal((byte*)&data, sizeof(ulong));
             return data;
+        }
+
+        /// <summary>
+        /// Aligns the read pointer to the next byte-aligned position. Does nothing if already aligned.
+        /// </summary>
+        /// <remarks>If you call <see cref="DataStreamWriter.Flush"/>, call this to bit-align the reader.</remarks>
+        public void Flush()
+        {
+            m_Context.m_ReadByteIndex -= (m_Context.m_BitIndex >> 3);
+            m_Context.m_BitIndex = 0;
+            m_Context.m_BitBuffer = 0;
         }
 
         /// <summary>

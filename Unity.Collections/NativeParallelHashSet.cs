@@ -331,11 +331,7 @@ namespace Unity.Collections
             public readonly bool IsCreated
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get
-                {
-                    CheckRead();
-                    return m_Data.IsCreated;
-                }
+                get => m_Data.IsCreated;
             }
 
             /// <summary>
@@ -347,12 +343,12 @@ namespace Unity.Collections
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    CheckRead();
-                    if (!m_Data.IsCreated)
+                    if (!IsCreated)
                     {
                         return true;
                     }
 
+                    CheckRead();
                     return m_Data.IsEmpty;
                 }
             }

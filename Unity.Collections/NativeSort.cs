@@ -76,7 +76,7 @@ namespace Unity.Collections
         public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(T* array, int length)
             where T : unmanaged, IComparable<T>
         {
-            return new SortJob<T, DefaultComparer<T>> {Data = array, Length = length, Comp = new DefaultComparer<T>()};
+            return new SortJob<T, DefaultComparer<T>> { Data = array, Length = length, Comp = new DefaultComparer<T>() };
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Unity.Collections
             where U : IComparer<T>
         {
             CheckComparer(array, length, comp);
-            return new SortJob<T, U>() {Data = array, Length = length, Comp = comp};
+            return new SortJob<T, U>() { Data = array, Length = length, Comp = comp };
         }
 
         /// <summary>
@@ -322,7 +322,8 @@ namespace Unity.Collections
         /// <summary>
         /// Returns a job which will sort this list in ascending order.
         /// </summary>
-        /// <remarks>This method does not schedule the job. Scheduling the job is left to you.</remarks>
+        /// <remarks>When `NativeList.Length` is not known at scheduling time use `SortJobDefer` instead.
+        /// This method does not schedule the job. Scheduling the job is left to you.</remarks>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The list to sort.</param>
         /// <returns>A job for sorting this list.</returns>
@@ -330,13 +331,14 @@ namespace Unity.Collections
         public unsafe static SortJob<T, DefaultComparer<T>> SortJob<T>(this NativeList<T> list)
             where T : unmanaged, IComparable<T>
         {
-            return SortJob(list.GetUnsafePtr(), list.Length,new DefaultComparer<T>());
+            return SortJob(list, new DefaultComparer<T>());
         }
 
         /// <summary>
         /// Returns a job which will sort this list using a custom comparison.
         /// </summary>
-        /// <remarks>This method does not schedule the job. Scheduling the job is left to you.</remarks>
+        /// <remarks>When `NativeList.Length` is not known at scheduling time use `SortJobDefer` instead.
+        /// This method does not schedule the job. Scheduling the job is left to you.</remarks>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <typeparam name="U">The type of the comparer.</typeparam>
         /// <param name="list">The list to sort.</param>
@@ -346,8 +348,43 @@ namespace Unity.Collections
         public unsafe static SortJob<T, U> SortJob<T, U>(this NativeList<T> list, U comp)
             where T : unmanaged
             where U : IComparer<T>
-        {
+        {           
             return SortJob(list.GetUnsafePtr(), list.Length, comp);
+        }
+
+        /// <summary>
+        /// Returns a job which will sort this list in ascending order.
+        /// </summary>
+        /// <remarks>`SortJobDefer` is intended for use when `NativeList.Length` is not known at scheduling time,
+        /// and it depends on completion of previosly scheduled job(s).
+        /// This method does not schedule the job. Scheduling the job is left to you.</remarks>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="list">The list to sort.</param>
+        /// <returns>A job for sorting this list.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        public unsafe static SortJobDefer<T, DefaultComparer<T>> SortJobDefer<T>(this NativeList<T> list)
+            where T : unmanaged, IComparable<T>
+        {
+            return SortJobDefer(list, new DefaultComparer<T>());
+        }
+
+        /// <summary>
+        /// Returns a job which will sort this list using a custom comparison.
+        /// </summary>
+        /// <remarks>`SortJobDefer` is intended for use when `NativeList.Length` is not known at scheduling time,
+        /// and it depends on completion of previosly scheduled job(s).
+        /// This method does not schedule the job. Scheduling the job is left to you.</remarks>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <typeparam name="U">The type of the comparer.</typeparam>
+        /// <param name="list">The list to sort.</param>
+        /// <param name="comp">The comparison function used to determine the relative order of the elements.</param>
+        /// <returns>A job for sorting this list.</returns>
+        [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+        public unsafe static SortJobDefer<T, U> SortJobDefer<T, U>(this NativeList<T> list, U comp)
+            where T : unmanaged
+            where U : IComparer<T>
+        {
+            return new SortJobDefer<T, U> { Data = list, Comp = comp };
         }
 
         /// <summary>
@@ -1102,6 +1139,130 @@ namespace Unity.Collections
             var segmentSortJobHandle = segmentSortJob.Schedule(segmentCount, workerSegmentCount, inputDeps);
             var segmentSortMergeJob = new SegmentSortMerge { Data = Data, Comp = Comp, Length = Length, SegmentWidth = 1024 };
             var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
+            return segmentSortMergeJobHandle;
+        }
+    }
+
+
+    /// <summary>
+    /// Returned by the `SortJobDefer` methods of <see cref="Unity.Collections.NativeSortExtension"/>. Call `Schedule` to schedule the sorting.
+    /// </summary>
+    /// <remarks>
+    /// When `RegisterGenericJobType` is used on SortJobDefer, to complete registration you must register `SortJobDefer&lt;T,U&gt;.SegmentSort` and `SortJobDefer&lt;T,U&gt;.SegmentSortMerge`.
+    /// </remarks>
+    /// <typeparam name="T">The type of the elements to sort.</typeparam>
+    /// <typeparam name="U">The type of the comparer.</typeparam>
+    [GenerateTestsForBurstCompatibility(GenericTypeArguments = new[] { typeof(int), typeof(NativeSortExtension.DefaultComparer<int>) }, RequiredUnityDefine = "UNITY_2020_2_OR_NEWER" /* Due to job scheduling on 2020.1 using statics */)]
+    public unsafe struct SortJobDefer<T, U>
+        where T : unmanaged
+        where U : IComparer<T>
+    {
+        /// <summary>
+        /// The data to sort.
+        /// </summary>
+        public NativeList<T> Data;
+
+        /// <summary>
+        /// Comparison function.
+        /// </summary>
+        public U Comp;
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [BurstCompile]
+        public struct SegmentSort : IJobParallelForDefer
+        {
+            [ReadOnly]
+            internal NativeList<T> DataRO;
+
+            [NativeDisableUnsafePtrRestriction]
+            internal UnsafeList<T>* Data;
+
+            internal U Comp;
+            internal int SegmentWidth;
+
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            /// <param name="index"><undoc /></param>
+            public void Execute(int index)
+            {
+                var startIndex = index * SegmentWidth;
+                var segmentLength = ((Data->Length - startIndex) < SegmentWidth) ? (Data->Length - startIndex) : SegmentWidth;
+                NativeSortExtension.Sort(Data->Ptr + startIndex, segmentLength, Comp);
+            }
+        }
+
+        /// <summary>
+        /// <undoc />
+        /// </summary>
+        [BurstCompile]
+        public struct SegmentSortMerge : IJob
+        {
+            [NativeDisableUnsafePtrRestriction]
+            internal NativeList<T> Data;
+
+            internal U Comp;
+            internal int SegmentWidth;
+
+            /// <summary>
+            /// <undoc />
+            /// </summary>
+            public void Execute()
+            {
+                var length = Data.Length;
+                var ptr = Data.GetUnsafePtr();
+                var segmentCount = (length + (SegmentWidth - 1)) / SegmentWidth;
+                var segmentIndex = stackalloc int[segmentCount];
+
+                var resultCopy = (T*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<T>() * length, 16, Allocator.Temp);
+
+                for (int sortIndex = 0; sortIndex < length; sortIndex++)
+                {
+                    // find next best
+                    int bestSegmentIndex = -1;
+                    T bestValue = default;
+
+                    for (int i = 0; i < segmentCount; i++)
+                    {
+                        var startIndex = i * SegmentWidth;
+                        var offset = segmentIndex[i];
+                        var segmentLength = ((length - startIndex) < SegmentWidth) ? (length - startIndex) : SegmentWidth;
+                        if (offset == segmentLength)
+                            continue;
+
+                        var nextValue = ptr[startIndex + offset];
+                        if (bestSegmentIndex != -1)
+                        {
+                            if (Comp.Compare(nextValue, bestValue) > 0)
+                                continue;
+                        }
+
+                        bestValue = nextValue;
+                        bestSegmentIndex = i;
+                    }
+
+                    segmentIndex[bestSegmentIndex]++;
+                    resultCopy[sortIndex] = bestValue;
+                }
+
+                UnsafeUtility.MemCpy(ptr, resultCopy, UnsafeUtility.SizeOf<T>() * length);
+            }
+        }
+
+        /// <summary>
+        /// Schedules this job.
+        /// </summary>
+        /// <param name="inputDeps">Handle of a job to depend upon.</param>
+        /// <returns>The handle of this newly scheduled job.</returns>
+        public JobHandle Schedule(JobHandle inputDeps = default)
+        {
+            var segmentSortJob = new SegmentSort { DataRO = Data, Data = Data.m_ListData, Comp = Comp, SegmentWidth = 1024 };
+            var segmentSortJobHandle = segmentSortJob.ScheduleByRef(Data, 1024, inputDeps);
+            var segmentSortMergeJob = new SegmentSortMerge { Data = Data, Comp = Comp, SegmentWidth = 1024 };
+            var segmentSortMergeJobHandle = segmentSortMergeJob.Schedule(segmentSortJobHandle);
+
             return segmentSortMergeJobHandle;
         }
     }

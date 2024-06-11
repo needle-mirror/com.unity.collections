@@ -20,8 +20,8 @@ namespace Unity.Collections.Tests
                 CheckReadWrite(sizeof(ushort), reader => reader.ReadUShort(), Write, expected);
             }
 
-            [TestCase((uint)0b101010)]
-            [TestCase((uint)0b111111)]
+            [TestCase((uint) 0b101010)]
+            [TestCase((uint) 0b111111)]
             public void RawBits(uint expected)
             {
                 bool Write(ref DataStreamWriter writer) => writer.WriteRawBits(expected, 6);
@@ -431,6 +431,94 @@ namespace Unity.Collections.Tests
                 LogAssert.Expect(LogType.Error, "Trying to read 2 bits from a stream where only 0 are available");
                 Assert.That(reader.ReadPackedUInt(model), Is.EqualTo(0));
                 Assert.That(reader.HasFailedReads);
+            }
+
+
+            // We test with a variable amount of writes to ensure we overflow the internal ulong bitBuffer.
+            [Test]
+            public void Flush_Works([Values(1, 7, 24, 65)]int numWrites)
+            {
+                const int baseline = 100;
+                var model = StreamCompressionModel.Default;
+                var writer = new DataStreamWriter(512, Allocator.Temp);
+
+                // Writer:
+                for(int i = 0; i < numWrites; i++)
+                    writer.WritePackedUIntDelta((uint) (100 + i), baseline, model);
+
+                // Flush, and write another sentinel value in.
+                writer.Flush();
+                writer.WritePackedUIntDelta(45, baseline, model);
+                writer.Flush();
+                Assert.IsFalse(writer.HasFailedWrites, "Sanity: writer.HasFailedWrites");
+
+                // Reader:
+                var reader = new DataStreamReader(writer.AsNativeArray());
+                for(int i = 0; i < numWrites; i++)
+                {
+                    var read = reader.ReadPackedUIntDelta(baseline, model);
+                    Assert.AreEqual((uint)(100 + i), read, "100 + i");
+                }
+
+                // When we flush the reader, we expect to now be aligned.
+                reader.Flush();
+                var read45 = reader.ReadPackedUIntDelta(baseline, model);
+                Assert.AreEqual(45, read45, "45");
+                reader.Flush();
+                Assert.IsFalse(reader.HasFailedReads, "reader.HasFailedReads");
+                Assert.AreEqual(writer.LengthInBits, reader.GetBitsRead(), "writer.LengthInBits vs reader.GetBitsRead()");
+                LogAssert.NoUnexpectedReceived();
+            }
+
+            [Test]
+            public void NotMirroringFlushCall_Fails()
+            {
+                const int baseline = 100;
+                var model = StreamCompressionModel.Default;
+                var writer = new DataStreamWriter(512, Allocator.Temp);
+
+                // Writer:
+                writer.WritePackedUIntDelta(100, baseline, model);
+                Assert.AreNotEqual(0, writer.LengthInBits % 8, "Sanity: Not byte aligned!");
+                writer.Flush();
+                writer.WritePackedUIntDelta(45, baseline, model);
+                writer.Flush();
+                Assert.IsFalse(writer.HasFailedWrites, "Sanity: writer.HasFailedWrites");
+
+                // Reader:
+                var reader = new DataStreamReader(writer.AsNativeArray());
+                var read = reader.ReadPackedUIntDelta(baseline, model);
+                Assert.AreEqual(100u, read, "100u");
+
+                // SKIPPED: reader.Flush();
+                // THUS: Read pointer alignment should be wrong.
+                LogAssert.ignoreFailingMessages = true; // Defensive: Technically we're reading too FEW bits,
+                                                        // so we shouldn't get error logs here.
+                Assert.AreNotEqual(45, reader.ReadPackedIntDelta(baseline, model), "!45");
+                Assert.AreNotEqual(writer.LengthInBits, reader.GetBitsRead(), "writer.LengthInBits vs reader.GetBitsRead()");
+            }
+
+            [Test]
+            public void CanMixPackedAndNonPacked()
+            {
+                const int baseline = 200;
+                var model = StreamCompressionModel.Default;
+                var writer = new DataStreamWriter(12, Allocator.Temp);
+
+                writer.WritePackedIntDelta(201, baseline, model);
+                Assert.AreNotEqual(0, writer.LengthInBits % 8, "Sanity: This test is invalid if we accidentally byte-align.");
+                writer.WriteInt(202);
+                writer.WritePackedInt(203, model);
+                writer.WriteInt(204);
+
+                Assert.IsFalse(writer.HasFailedWrites, "Sanity: writer.HasFailedWrites");
+
+                var reader = new DataStreamReader(writer.AsNativeArray());
+                Assert.AreEqual(201, reader.ReadPackedIntDelta(baseline, model));
+                Assert.AreEqual(202, reader.ReadInt());
+                Assert.AreEqual(203, reader.ReadPackedInt(model));
+                Assert.AreEqual(204, reader.ReadInt());
+                Assert.IsFalse(reader.HasFailedReads, "reader.HasFailedReads");
             }
         }
 

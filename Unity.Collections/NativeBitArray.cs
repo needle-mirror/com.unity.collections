@@ -435,6 +435,18 @@ namespace Unity.Collections
             [NativeDisableUnsafePtrRestriction]
             internal UnsafeBitArray.ReadOnly m_BitArray;
 
+            /// <summary>
+            /// Whether this array has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this array has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated => m_BitArray.IsCreated;
+
+            /// <summary>
+            /// Whether the container is empty.
+            /// </summary>
+            /// <value>True if the container is empty or the container has not been constructed.</value>
+            public readonly bool IsEmpty => m_BitArray.IsEmpty;
+
             internal ReadOnly(ref NativeBitArray data)
             {
                 m_BitArray = data.m_BitArray->AsReadOnly();

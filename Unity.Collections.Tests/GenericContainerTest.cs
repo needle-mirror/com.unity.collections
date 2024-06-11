@@ -69,6 +69,16 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeBitArray_IsCreated_Uninitialized()
+    {
+        NativeBitArray container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeBitArray.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
 
     UnsafeBitArray CreateEmpty_UnsafeBitArray()
     {
@@ -76,6 +86,17 @@ internal class GenericContainerTests : CollectionsTestFixture
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void UnsafeBitArray_IsCreated_Uninitialized()
+    {
+        UnsafeBitArray container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeBitArray.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     NativeHashMap<int, int> CreateEmpty_NativeHashMap()
@@ -86,12 +107,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeHashMap_IsCreated_Uninitialized()
+    {
+        NativeHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     UnsafeHashMap<int, int> CreateEmpty_UnsafeHashMap()
     {
         var container = new UnsafeHashMap<int, int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void UnsafeHashMap_IsCreated_Uninitialized()
+    {
+        UnsafeHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     NativeHashSet<int> CreateEmpty_NativeHashSet()
@@ -102,12 +145,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeHashSet_IsCreated_Uninitialized()
+    {
+        NativeHashSet<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeHashSet<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     UnsafeHashSet<int> CreateEmpty_UnsafeHashSet()
     {
         var container = new UnsafeHashSet<int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void UnsafeHashSet_IsCreated_Uninitialized()
+    {
+        UnsafeHashSet<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeHashSet<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     NativeList<int> CreateEmpty_NativeList()
@@ -118,12 +183,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeList_IsCreated_Uninitialized()
+    {
+        NativeList<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeArray<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        // NativeArray doesn't have IsEmpty property -> Assert.True(containerRo.IsEmpty); 
+    }
+
     UnsafeList<int> CreateEmpty_UnsafeList()
     {
         var container = new UnsafeList<int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void UnsafeList_IsCreated_Uninitialized()
+    {
+        UnsafeList<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeList<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty); 
     }
 
     UnsafePtrList<int> CreateEmpty_UnsafePtrList()
@@ -134,12 +221,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void UnsafePtrList_IsCreated_Uninitialized()
+    {
+        UnsafePtrList<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafePtrList<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     NativeParallelHashMap<int, int> CreateEmpty_NativeParallelHashMap()
     {
         var container = new NativeParallelHashMap<int, int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void NativeParallelHashMap_IsCreated_Uninitialized()
+    {
+        NativeParallelHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeParallelHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     UnsafeParallelHashMap<int, int> CreateEmpty_UnsafeParallelHashMap()
@@ -150,12 +259,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void UnsafeParallelHashMap_IsCreated_Uninitialized()
+    {
+        UnsafeParallelHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeParallelHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     NativeParallelHashSet<int> CreateEmpty_NativeParallelHashSet()
     {
         var container = new NativeParallelHashSet<int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void NativeParallelHashSet_IsCreated_Uninitialized()
+    {
+        NativeParallelHashSet<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeParallelHashSet<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     UnsafeParallelHashSet<int> CreateEmpty_UnsafeParallelHashSet()
@@ -166,12 +297,34 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void UnsafeParallelHashSet_IsCreated_Uninitialized()
+    {
+        UnsafeParallelHashSet<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeParallelHashSet<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     NativeParallelMultiHashMap<int, int> CreateEmpty_NativeParallelMultiHashMap()
     {
         var container = new NativeParallelMultiHashMap<int, int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void NativeParallelMultiHashMap_IsCreated_Uninitialized()
+    {
+        NativeParallelMultiHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        NativeParallelMultiHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
     }
 
     UnsafeParallelMultiHashMap<int, int> CreateEmpty_UnsafeParallelMultiHashMap()
@@ -182,6 +335,17 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void UnsafeParallelMultiHashMap_IsCreated_Uninitialized()
+    {
+        UnsafeParallelMultiHashMap<int, int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+
+        UnsafeParallelMultiHashMap<int, int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+        Assert.True(containerRo.IsEmpty);
+    }
+
     NativeQueue<int> CreateEmpty_NativeQueue()
     {
         var container = new NativeQueue<int>(Allocator.Persistent);
@@ -190,12 +354,30 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeQueue_IsCreated_Uninitialized()
+    {
+        NativeQueue<int> container = default;
+        Assert.False(container.IsCreated);
+
+        NativeQueue<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
+    }
+
     UnsafeQueue<int> CreateEmpty_UnsafeQueue()
     {
         var container = new UnsafeQueue<int>(Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty());
         return container;
+    }
+
+    void UnsafeQueue_IsCreated_Uninitialized()
+    {
+        UnsafeQueue<int> container = default;
+        Assert.False(container.IsCreated);
+
+        UnsafeQueue<int>.ReadOnly containerRo = default;
+        Assert.False(containerRo.IsCreated);
     }
 
     NativeReference<int> CreateEmpty_NativeReference()
@@ -213,12 +395,26 @@ internal class GenericContainerTests : CollectionsTestFixture
         return container;
     }
 
+    void NativeRingQueue_IsCreated_Uninitialized()
+    {
+        NativeRingQueue<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
+    }
+
     UnsafeRingQueue<int> CreateEmpty_UnsafeRingQueue()
     {
         var container = new UnsafeRingQueue<int>(0, Allocator.Persistent);
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    void UnsafeRingQueue_IsCreated_Uninitialized()
+    {
+        UnsafeRingQueue<int> container = default;
+        Assert.False(container.IsCreated);
+        Assert.True(container.IsEmpty);
     }
 
     NativeStream CreateEmpty_NativeStream()
@@ -251,6 +447,41 @@ internal class GenericContainerTests : CollectionsTestFixture
         Assert.True(container.IsCreated);
         Assert.True(container.IsEmpty);
         return container;
+    }
+
+    //-------------------------------------------------------------------------------------------------------
+
+    [Test]
+    public void Test_IsCreated_Uninitialized()
+    {
+        NativeBitArray_IsCreated_Uninitialized();
+        UnsafeBitArray_IsCreated_Uninitialized();
+
+        NativeHashMap_IsCreated_Uninitialized();
+        UnsafeHashMap_IsCreated_Uninitialized();
+
+        NativeHashSet_IsCreated_Uninitialized();
+        UnsafeHashSet_IsCreated_Uninitialized();
+
+        NativeList_IsCreated_Uninitialized();
+        UnsafeList_IsCreated_Uninitialized();
+
+        UnsafePtrList_IsCreated_Uninitialized();
+
+        NativeParallelHashMap_IsCreated_Uninitialized();
+        UnsafeParallelHashMap_IsCreated_Uninitialized();
+
+        NativeParallelHashSet_IsCreated_Uninitialized();
+        UnsafeParallelHashSet_IsCreated_Uninitialized();
+
+        NativeParallelMultiHashMap_IsCreated_Uninitialized();
+        UnsafeParallelMultiHashMap_IsCreated_Uninitialized();
+
+        NativeQueue_IsCreated_Uninitialized();
+        UnsafeQueue_IsCreated_Uninitialized();
+
+        NativeRingQueue_IsCreated_Uninitialized();
+        UnsafeRingQueue_IsCreated_Uninitialized();
     }
 
     //-------------------------------------------------------------------------------------------------------

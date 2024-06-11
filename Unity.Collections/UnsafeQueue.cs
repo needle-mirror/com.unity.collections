@@ -358,9 +358,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Returns the element at the end of this queue without removing it.
+        /// Returns the element at the front of this queue without removing it.
         /// </summary>
-        /// <returns>The element at the end of this queue.</returns>
+        /// <returns>The element at the front of this queue.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek()
         {
@@ -371,7 +371,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Adds an element at the front of this queue.
+        /// Adds an element at the back of this queue.
         /// </summary>
         /// <param name="value">The value to be enqueued.</param>
         public void Enqueue(T value)
@@ -382,10 +382,10 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes and returns the element at the end of this queue.
+        /// Removes and returns the element at the front of this queue.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown if this queue is empty.</exception>
-        /// <returns>The element at the end of this queue.</returns>
+        /// <returns>The element at the front of this queue.</returns>
         public T Dequeue()
         {
             if (!TryDequeue(out T item))
@@ -397,7 +397,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Removes and outputs the element at the end of this queue.
+        /// Removes and outputs the element at the front of this queue.
         /// </summary>
         /// <param name="item">Outputs the removed element.</param>
         /// <returns>True if this queue was not empty.</returns>
@@ -829,7 +829,7 @@ namespace Unity.Collections
             internal int m_ThreadIndex;
 
             /// <summary>
-            /// Adds an element at the front of the queue.
+            /// Adds an element at the back of the queue.
             /// </summary>
             /// <param name="value">The value to be enqueued.</param>
             public void Enqueue(T value)
@@ -840,7 +840,7 @@ namespace Unity.Collections
             }
 
             /// <summary>
-            /// Adds an element at the front of the queue.
+            /// Adds an element at the back of the queue.
             /// </summary>
             /// <param name="value">The value to be enqueued.</param>
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>

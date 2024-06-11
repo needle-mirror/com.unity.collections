@@ -761,6 +761,26 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// </summary>
             public readonly int Length;
 
+            /// <summary>
+            /// Whether this list has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this list has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => Ptr != null;
+            }
+
+            /// <summary>
+            /// Whether the list is empty.
+            /// </summary>
+            /// <value>True if the list is empty or the list has not been constructed.</value>
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => !IsCreated || Length == 0;
+            }
+
             internal ReadOnly(T* ptr, int length)
             {
                 Ptr = ptr;
@@ -1688,6 +1708,26 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// The number of elements.
             /// </summary>
             public readonly int Length;
+
+            /// <summary>
+            /// Whether this list has been allocated (and not yet deallocated).
+            /// </summary>
+            /// <value>True if this list has been allocated (and not yet deallocated).</value>
+            public readonly bool IsCreated
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => Ptr != null;
+            }
+
+            /// <summary>
+            /// Whether the list is empty.
+            /// </summary>
+            /// <value>True if the list is empty or the list has not been constructed.</value>
+            public readonly bool IsEmpty
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => !IsCreated || Length == 0;
+            }
 
             internal ReadOnly(T** ptr, int length)
             {

@@ -97,7 +97,6 @@ namespace Unity.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                CheckRead();
                 return m_MultiHashMapData.IsEmpty;
             }
         }

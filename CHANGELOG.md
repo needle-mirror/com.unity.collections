@@ -1,12 +1,33 @@
 # Changelog
 
+## [2.5.0-exp.1] - 2024-06-11
+
+### Added
+
+* SortJobDefer type for scheduling sorting on NativeList when content of the list is not known ahead of time, and depends on dependent jobs.
+
+### Changed
+
+* Update entities package dependencies
+
+### Fixed
+
+* Clarified usage of "front" and "end" in API docs for `NativeQueue` and `UnsafeQueue`
+* Default constructed container can call IsCreated and IsEmpty properties.
+
+
+
 ## [2.4.2] - 2024-05-30
+
+### Changed
+
 * Update entities package dependencies
 
 
 ## [2.4.1] - 2024-04-26
 
 ### Changed
+
 * Release preparation
 * Updated Burst dependency to version 1.8.13
 
@@ -14,7 +35,7 @@
 ## [2.4.0] - 2024-03-22
 
 ### Changed
-* Release preparation
+*Release Preparation
 
 
 ## [2.4.0-pre.5] - 2024-02-13
@@ -51,6 +72,17 @@
 ### Changed
 
 * The minimum supported editor version is now 2022.3.11f1
+
+### Deprecated
+
+
+### Removed
+
+
+### Fixed
+
+
+### Security
 
 
 ## [2.3.0-pre.3] - 2023-10-17
