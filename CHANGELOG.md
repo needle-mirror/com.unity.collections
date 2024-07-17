@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0-pre.2] - 2024-07-17
+
+### Changed
+
+* Updated Burst dependency to version 1.8.16
+
+
 ## [2.5.0-exp.1] - 2024-06-11
 
 ### Added

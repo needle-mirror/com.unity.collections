@@ -3,12 +3,12 @@
     {
       "ValidationTest": "API Validation",
       "ExceptionMessage": "Breaking changes require a new major version.",
-      "PackageVersion": "2.5.0-exp.1"
+      "PackageVersion": "2.5.0-pre.2"
     },
     {
       "ValidationTest": "API Validation",
       "ExceptionMessage": "Assembly \"Unity.PerformanceTesting\" no longer exists or is no longer included in build. This change requires a new major version.",
-      "PackageVersion": "2.5.0-exp.1"
+      "PackageVersion": "2.5.0-pre.2"
     }
   ],
   "WarningExceptions": []
