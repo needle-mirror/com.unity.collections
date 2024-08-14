@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.4.3] - 2024-08-14
+* Update entities package dependencies
+
+
 ## [2.4.2] - 2024-05-30
 * Update entities package dependencies
 
