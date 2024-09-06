@@ -908,12 +908,13 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        static void CheckBits(uint value, int numbits)
+        static void CheckBits(uint value, int numBits)
         {
-            if (numbits < 0 || numbits > 32)
-                throw new ArgumentOutOfRangeException("Invalid number of bits");
-            if (value >= (1UL << numbits))
-                throw new ArgumentOutOfRangeException("Value does not fit in the specified number of bits");
+            if (numBits < 0 || numBits > 32)
+                throw new ArgumentOutOfRangeException($"Invalid number of bits specified: {numBits}! Valid range is (0, 32) inclusive.");
+            var errValue = (1UL << numBits);
+            if (value >= errValue)
+                throw new ArgumentOutOfRangeException($"Value {value} does not fit in the specified number of bits: {numBits}! Range (inclusive) is (0, {errValue-1})!");
         }
     }
 }

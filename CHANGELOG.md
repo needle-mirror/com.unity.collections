@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.1] - 2024-09-06
+
+### Changed
+* Updated Burst dependency to version 1.8.17
+* Updated Unity Test Framework dependency to version 1.4.5
+* Updated entities packages dependencies
+
+### Fixed
+* Certain cases would cause an ILPostProcessor to fail, blocking compilation, but no more.
+
+
 ## [2.5.0-pre.2] - 2024-07-17
 
 ### Changed
@@ -22,6 +33,12 @@
 * Clarified usage of "front" and "end" in API docs for `NativeQueue` and `UnsafeQueue`
 * Default constructed container can call IsCreated and IsEmpty properties.
 
+
+## [2.4.3] - 2024-08-14
+
+### Changed
+
+* Update entities package dependencies
 
 
 ## [2.4.2] - 2024-05-30

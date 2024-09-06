@@ -96,6 +96,23 @@ namespace Unity.Jobs.CodeGen
             if (compiledAssembly.InMemoryAssembly.PdbData == null || compiledAssembly.InMemoryAssembly.PeData == null)
                 return false;
 
+            var referencesCollections = false;
+            if (compiledAssembly.Name == "Unity.Collections")
+            {
+                return true;
+            }
+            for (int i = 0; i < compiledAssembly.References.Length; ++i)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(compiledAssembly.References[i]);
+                if (fileName == "Unity.Collections")
+                {
+                    referencesCollections = true;
+                    break;
+                }
+            }
+
+            if (!referencesCollections) return false;
+
             return true;
         }
 
