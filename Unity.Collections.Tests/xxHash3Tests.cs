@@ -6,6 +6,10 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Random = Unity.Mathematics.Random;
+using System.IO.Hashing;
+using UnityEngine;
+using System.Text;
+using System;
 
 [TestFixture]
 [BurstCompile]
@@ -429,5 +433,47 @@ internal class xxHash3Tests : CollectionsTestCommonBase
         TestHash128(2367, Prime,
             xxHash3.ToUint4(0xCB37AEB9E5D361EDUL, 0xE89C0F6FF369B427UL),
             xxHash3.ToUint4(0x6F5360AE69C2F406UL, 0xD23AAE4B76C31ECBUL));
+    }
+
+    [Test]
+    public unsafe void xxHash3_128_vs_SystemIOHashingXxHash128()
+    {
+        {
+            byte[] input = { };
+            Span<byte> msHash = XxHash128.Hash(input);
+            msHash.Reverse();
+            uint4 ourHash = xxHash3.Hash128(null, 0);
+
+            fixed (void* msHashData = msHash)
+            {
+                Assert.AreEqual(0, UnsafeUtility.MemCmp(msHashData, &ourHash, sizeof(uint4)));
+            }
+        }
+
+        {
+            byte[] input = Encoding.UTF8.GetBytes(""
+                + "0123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789"
+                + "0123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789"
+                + "0123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789"
+                );
+            Assert.True(input.Length > 240 /* MIDSIZE_MAX */);
+
+            for (var i = 1; i < input.Length; i++)
+            {
+                var bytes = ((Span<byte>)input)[..i].ToArray();
+
+                fixed (void* data = bytes)
+                {
+                    Span<byte> msHash = XxHash128.Hash(bytes);
+                    msHash.Reverse();
+                    uint4 ourHash = xxHash3.Hash128(data, bytes.Length);
+
+                    fixed (void* msHashData = msHash)
+                    {
+                        Assert.AreEqual(0, UnsafeUtility.MemCmp(msHashData, &ourHash, sizeof(uint4)));
+                    }
+                }
+            }
+        }
     }
 }

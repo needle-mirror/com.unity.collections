@@ -51,6 +51,30 @@ apiRules:
   - exclude:
       uidRegex: ^Unity\.Collections\.LowLevel\.Unsafe\.UntypedUnsafeParallelHashMap
       type: Type
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJob\.SegmentSort
+      type: Type
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJob\.SegmentSort\.Execute
+      type: Method
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJob\.SegmentSortMerge
+      type: Type
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJob\.SegmentSortMerge\.Execute
+      type: Method
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJobDefer\.SegmentSort
+      type: Type
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJobDefer\.SegmentSort\.Execute
+      type: Method
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJobDefer\.SegmentSortMerge
+      type: Type
+  - exclude:
+      uidRegex: ^Unity\.Collections\.SortJobDefer\.SegmentSortMerge\.Execute
+      type: Method
 
 
 

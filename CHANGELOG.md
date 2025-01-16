@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.5.2] - 2025-01-16
+
+### Added
+
+* Added an explicit Mathematics 1.3.2 dependency
+
+### Fixed
+
+* Fixed incorrect behavior of `UnsafeBitArray.ReadOnly.TestNone`
+
+
+
 ## [2.5.1] - 2024-09-06
 
 ### Changed

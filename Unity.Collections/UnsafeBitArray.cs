@@ -692,7 +692,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             public readonly bool TestNone(int pos, int numBits = 1)
             {
                 CheckArgs(pos, numBits);
-                return Bitwise.TestNone(Ptr, pos, numBits);
+                return Bitwise.TestNone(Ptr, Length, pos, numBits);
             }
 
             /// <summary>

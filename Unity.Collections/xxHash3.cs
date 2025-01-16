@@ -4,6 +4,7 @@ using Unity.Burst.Intrinsics;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -203,60 +204,60 @@ namespace Unity.Collections
 
         internal static unsafe ulong Hash64Internal(byte* input, byte* dest, long length, byte* secret, ulong seed)
         {
-            if (length < 16)
+            if (dest != null && length < MIDSIZE_MAX)
+            {
+                UnsafeUtility.MemCpy(dest, input, length);
+            }
+
+            if (length <= 16)
             {
                 return Hash64Len0To16(input, length, secret, seed);
             }
 
-            if (length < 128)
+            if (length <= 128)
             {
                 return Hash64Len17To128(input, length, secret, seed);
             }
 
-            if (length < MIDSIZE_MAX)
+            if (length <= MIDSIZE_MAX)
             {
                 return Hash64Len129To240(input, length, secret, seed);
             }
 
             if (seed != 0)
             {
-                var newSecret = (byte*) Memory.Unmanaged.Allocate(SECRET_KEY_SIZE, 64, Allocator.Temp);
+                var addr = stackalloc byte[SECRET_KEY_SIZE + 31];
+
+                // Aligned the allocated address on 32 bytes
+                var newSecret = (byte*)((ulong)addr + 31 & 0xFFFFFFFFFFFFFFE0);
 
                 EncodeSecretKey(newSecret, secret, seed);
-                var result = Hash64Long(input, dest, length, newSecret);
-
-                Memory.Unmanaged.Free(newSecret, Allocator.Temp);
-
-                return result;
+                return Hash64Long(input, dest, length, newSecret);
             }
 
-            else
-            {
-                return Hash64Long(input, dest, length, secret);
-            }
+            return Hash64Long(input, dest, length, secret);
         }
 
-        internal static unsafe void Hash128Internal(byte* input, byte* dest, long length, byte* secret, ulong seed,
-            out uint4 result)
+        internal static unsafe void Hash128Internal(byte* input, byte* dest, long length, byte* secret, ulong seed, out uint4 result)
         {
             if (dest != null && length < MIDSIZE_MAX)
             {
                 UnsafeUtility.MemCpy(dest, input, length);
             }
 
-            if (length < 16)
+            if (length <= 16)
             {
                 Hash128Len0To16(input, length, secret, seed, out result);
                 return;
             }
 
-            if (length < 128)
+            if (length <= 128)
             {
                 Hash128Len17To128(input, length, secret, seed, out result);
                 return;
             }
 
-            if (length < MIDSIZE_MAX)
+            if (length <= MIDSIZE_MAX)
             {
                 Hash128Len129To240(input, length, secret, seed, out result);
                 return;
@@ -272,7 +273,6 @@ namespace Unity.Collections
                 EncodeSecretKey(newSecret, secret, seed);
                 Hash128Long(input, dest, length, newSecret, out result);
             }
-
             else
             {
                 Hash128Long(input, dest, length, secret, out result);
@@ -333,7 +333,7 @@ namespace Unity.Collections
             {
                 return Hash64Len4To8(input, length, secret, seed);
             }
-
+             
             if (length > 0)
             {
                 return Hash64Len1To3(input, length, secret, seed);

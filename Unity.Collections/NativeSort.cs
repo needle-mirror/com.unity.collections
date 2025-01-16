@@ -348,7 +348,7 @@ namespace Unity.Collections
         public unsafe static SortJob<T, U> SortJob<T, U>(this NativeList<T> list, U comp)
             where T : unmanaged
             where U : IComparer<T>
-        {           
+        {
             return SortJob(list.GetUnsafePtr(), list.Length, comp);
         }
 
@@ -1037,7 +1037,7 @@ namespace Unity.Collections
         public int Length;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [BurstCompile]
         public struct SegmentSort : IJobParallelFor
@@ -1050,9 +1050,9 @@ namespace Unity.Collections
             internal int SegmentWidth;
 
             /// <summary>
-            /// <undoc />
+            /// For internal use only.
             /// </summary>
-            /// <param name="index"><undoc /></param>
+            /// <param name="index">Index to sort from</param>
             public void Execute(int index)
             {
                 var startIndex = index * SegmentWidth;
@@ -1062,7 +1062,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [BurstCompile]
         public struct SegmentSortMerge : IJob
@@ -1075,7 +1075,7 @@ namespace Unity.Collections
             internal int SegmentWidth;
 
             /// <summary>
-            /// <undoc />
+            /// For internal use only.
             /// </summary>
             public void Execute()
             {
@@ -1168,7 +1168,7 @@ namespace Unity.Collections
         public U Comp;
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [BurstCompile]
         public struct SegmentSort : IJobParallelForDefer
@@ -1183,9 +1183,9 @@ namespace Unity.Collections
             internal int SegmentWidth;
 
             /// <summary>
-            /// <undoc />
+            /// For internal use only.
             /// </summary>
-            /// <param name="index"><undoc /></param>
+            /// <param name="index">Index to sort from</param>
             public void Execute(int index)
             {
                 var startIndex = index * SegmentWidth;
@@ -1195,7 +1195,7 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// <undoc />
+        /// For internal use only.
         /// </summary>
         [BurstCompile]
         public struct SegmentSortMerge : IJob
@@ -1207,7 +1207,7 @@ namespace Unity.Collections
             internal int SegmentWidth;
 
             /// <summary>
-            /// <undoc />
+            /// For internal use only.
             /// </summary>
             public void Execute()
             {
