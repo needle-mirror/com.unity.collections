@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.6.5] - 2025-02-16
+
+
+### Changed
+
+* Updated `com.unity.burst` dependency to version `1.8.27`
+
+
+### Security
+
 ## [2.6.4] - 2025-12-16
 
 ### Changed
@@ -10,8 +20,6 @@
 ### Fixed
 
 * Issue when `FixedStringNBytes` is compared to managed `String` to avoid use implicit cast.
-
-
 
 
 ## [2.6.3] - 2025-10-17
