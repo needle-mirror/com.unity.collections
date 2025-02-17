@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.3] - 2025-02-17
+
+### Fixed
+* xxHash3.Hash128 when length is exactly 16, 128, or 240 bytes.
+
+
 ## [2.5.2] - 2025-01-16
 
 ### Added
@@ -11,15 +17,16 @@
 * Fixed incorrect behavior of `UnsafeBitArray.ReadOnly.TestNone`
 
 
-
 ## [2.5.1] - 2024-09-06
 
 ### Changed
+
 * Updated Burst dependency to version 1.8.17
 * Updated Unity Test Framework dependency to version 1.4.5
 * Updated entities packages dependencies
 
 ### Fixed
+
 * Certain cases would cause an ILPostProcessor to fail, blocking compilation, but no more.
 
 

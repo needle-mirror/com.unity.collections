@@ -83,8 +83,8 @@ namespace Unity.Collections
         /// </code></example>
         /// <param name="size">The size to align.</param>
         /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
-        /// <returns>The smallest integer that is greater than or equal to `size` and is a multiple of `alignmentPowerOfTwo`.</returns>
-        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
+        /// <returns>The smallest integer that is greater than or equal to<paramref name="size"/> and is a multiple of <paramref name="alignmentPowerOfTwo"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="alignmentPowerOfTwo"/> is not a non-zero, positive power of two.</exception>
         public static int Align(int size, int alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
@@ -104,8 +104,8 @@ namespace Unity.Collections
         /// </code></example>
         /// <param name="size">The size to align.</param>
         /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
-        /// <returns>The smallest integer that is greater than or equal to `size` and is a multiple of `alignmentPowerOfTwo`.</returns>
-        /// <exception cref="ArgumentException">Thrown if `alignmentPowerOfTwo` is not a non-zero, positive power of two.</exception>
+        /// <returns>The smallest integer that is greater than or equal to <paramref name="size"/> and is a multiple of <paramref name="alignmentPowerOfTwo"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="alignmentPowerOfTwo"/> is not a non-zero, positive power of two.</exception>
         public static ulong Align(ulong size, ulong alignmentPowerOfTwo)
         {
             if (alignmentPowerOfTwo == 0)
@@ -114,6 +114,29 @@ namespace Unity.Collections
             CheckUlongPositivePowerOfTwo(alignmentPowerOfTwo);
 
             return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
+        }
+
+        /// <summary>
+        /// Returns a pointer whose value is rounded up to an address aligned to the provided alignment.
+        /// </summary>
+        /// <example><code>
+        /// // 0x80BD5162 aligned to 8 is 0x80BD5168
+        /// void* alignedPtr = CollectionHelper.Align(55, 16);
+        /// </code></example>
+        /// <param name="ptr">The pointer to align.</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>The smallest address that is greater than or equal to <paramref name="ptr"/> and is a multiple of <paramref name="alignmentPowerOfTwo"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="alignmentPowerOfTwo"/> is not a non-zero, positive power of two.</exception>
+        internal static unsafe void* AlignPointer(void* ptr, int alignmentPowerOfTwo)
+        {
+            if (alignmentPowerOfTwo == 0)
+                return ptr;
+
+            CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+
+            var ptrAsNuint = (nuint)ptr;
+            var alignmentAsNuint = (nuint)alignmentPowerOfTwo;
+            return (void*)( (ptrAsNuint + alignmentAsNuint - 1) & ~(alignmentAsNuint - 1) );
         }
 
         /// <summary>
