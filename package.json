@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "unity": "2020.3",
   "unityRelease": "30f1",
   "dependencies": {
@@ -16,15 +16,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Changed\n* `UnsafeAppendBuffer` now constrains methods consuming generic parameter `T` to be `unmanaged` instead of `struct`.\n* Updated LICENSE.md\n\n### Fixed\n* `UnsafeAppendBuffer` now safely reads and writes type `T`. Previously, it was possible to make unaligned reads and writes of type `T` which could violate platform architecture alignment requirements."
+    "changelog": "## Fixed\n\n* xxHash3.Hash128 when length is exactly 16, 128, or 240 bytes."
   },
   "upmCi": {
-    "footprint": "80c501718bcf24f28f8c1274f53a094ba2900814"
+    "footprint": "bf3b997fcebb359f1851eca0642a23f9a4145072"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@1.5/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "5f2d802d0087e92818f1463b9b910916a079012b"
+    "revision": "5996eb38023de74758b1116ce23517f8ea5015ac"
   }
 }
