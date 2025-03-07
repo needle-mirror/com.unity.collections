@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.6.0-exp.2] - 2025-03-07
+
+### Changed
+
+* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.5`
+* Updated the `com.unity.burst` dependency to version `1.8.19`
+* Updated the `com.unity.test-framework dependency` to version `1.4.6`
+
+### Fixed
+
+* Fixed incorrect behavior of `UnsafeBitArray.ReadOnly.TestNone`
+
+
 ## [2.5.3] - 2025-02-17
 
 ### Fixed
@@ -20,13 +33,11 @@
 ## [2.5.1] - 2024-09-06
 
 ### Changed
-
 * Updated Burst dependency to version 1.8.17
 * Updated Unity Test Framework dependency to version 1.4.5
 * Updated entities packages dependencies
 
 ### Fixed
-
 * Certain cases would cause an ILPostProcessor to fail, blocking compilation, but no more.
 
 

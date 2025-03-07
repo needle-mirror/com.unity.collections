@@ -10,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using NUnit.Framework;
 using Unity.Burst;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
@@ -921,7 +922,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
                 if(assembly.GetName().Name == name)
                     return assembly;
             }
-            
+
             return default;
         }
 
@@ -935,6 +936,7 @@ class BurstCompatibleSkipShaderVariants : IPreprocessShaders
         }
 
         [UnityTest]
+        [Timeout(1800000)]
         public IEnumerator CompatibilityTests()
         {
             int runCount = 0;

@@ -8,7 +8,9 @@
     },
     "PVP-25-1": {
       "errors": [
-        "Unity.Collections.LowLevel.ILSupport/Unity.Collections.LowLevel.ILSupport.dll"
+        "Unity.Collections.LowLevel.ILSupport/Unity.Collections.LowLevel.ILSupport.dll",
+        "Unity.Collections.Tests/System.IO.Hashing/System.IO.Hashing.dll",
+        "Unity.Collections.Tests/System.Runtime.CompilerServices.Unsafe/System.Runtime.CompilerServices.Unsafe.dll"
       ]
     },
     "PVP-41-1": {

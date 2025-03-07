@@ -1,14 +1,14 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.5.3",
+  "version": "2.6.0-exp.2",
   "unity": "2022.3",
   "unityRelease": "11f1",
   "dependencies": {
-    "com.unity.burst": "1.8.18",
+    "com.unity.burst": "1.8.19",
     "com.unity.mathematics": "1.3.2",
-    "com.unity.nuget.mono-cecil": "1.11.4",
-    "com.unity.test-framework": "1.4.5",
+    "com.unity.nuget.mono-cecil": "1.11.5",
+    "com.unity.test-framework": "1.4.6",
     "com.unity.test-framework.performance": "3.0.3"
   },
   "description": "A C# collections library providing data structures that can be used in jobs, and optimized by Burst compiler.",
@@ -18,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Fixed\n* xxHash3.Hash128 when length is exactly 16, 128, or 240 bytes."
+    "changelog": "### Changed\n\n* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.5`\n* Updated the `com.unity.burst` dependency to version `1.8.19`\n* Updated the `com.unity.test-framework dependency` to version `1.4.6`\n\n### Fixed\n\n* Fixed incorrect behavior of `UnsafeBitArray.ReadOnly.TestNone`"
   },
   "upmCi": {
-    "footprint": "d013d21ff93bcf09540911ebea43f05e2831e6f9"
+    "footprint": "9a819d95059648c703c14ef8cf89446fed8a3b8f"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.5/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.6/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "893d3250e4978302326a812dde13aa126dbcd775"
+    "revision": "1c507bcdc4eaebca77bc8a6d4eac199cdcbb391e"
   }
 }
