@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Collections.Generic;
+using static Unity.Collections.AllocatorManager;
 
 namespace Unity.Collections
 {
@@ -21,134 +22,9 @@ namespace Unity.Collections
 
     [StructLayout(LayoutKind.Sequential)]
     [GenerateTestsForBurstCompatibility]
-    internal unsafe struct UnsafeQueueBlockPoolData
-    {
-        internal IntPtr m_FirstBlock;
-        internal int m_NumBlocks;
-        internal int m_MaxBlocks;
-        internal const int m_BlockSize = 16 * 1024;
-        internal int m_AllocLock;
-
-        public UnsafeQueueBlockHeader* AllocateBlock()
-        {
-            // There can only ever be a single thread allocating an entry from the free list since it needs to
-            // access the content of the block (the next pointer) before doing the CAS.
-            // If there was no lock thread A could read the next pointer, thread B could quickly allocate
-            // the same block then free it with another next pointer before thread A performs the CAS which
-            // leads to an invalid free list potentially causing memory corruption.
-            // Having multiple threads freeing data concurrently to each other while another thread is allocating
-            // is no problems since there is only ever a single thread modifying global data in that case.
-            while (Interlocked.CompareExchange(ref m_AllocLock, 1, 0) != 0)
-            {
-            }
-
-            UnsafeQueueBlockHeader* checkBlock = (UnsafeQueueBlockHeader*)m_FirstBlock;
-            UnsafeQueueBlockHeader* block;
-
-            do
-            {
-                block = checkBlock;
-                if (block == null)
-                {
-                    Interlocked.Exchange(ref m_AllocLock, 0);
-                    Interlocked.Increment(ref m_NumBlocks);
-                    block = (UnsafeQueueBlockHeader*)Memory.Unmanaged.Allocate(m_BlockSize, 16, Allocator.Persistent);
-                    return block;
-                }
-
-                checkBlock = (UnsafeQueueBlockHeader*)Interlocked.CompareExchange(ref m_FirstBlock, (IntPtr)block->m_NextBlock, (IntPtr)block);
-            }
-            while (checkBlock != block);
-
-            Interlocked.Exchange(ref m_AllocLock, 0);
-
-            return block;
-        }
-
-        public void FreeBlock(UnsafeQueueBlockHeader* block)
-        {
-            if (m_NumBlocks > m_MaxBlocks)
-            {
-                if (Interlocked.Decrement(ref m_NumBlocks) + 1 > m_MaxBlocks)
-                {
-                    Memory.Unmanaged.Free(block, Allocator.Persistent);
-                    return;
-                }
-
-                Interlocked.Increment(ref m_NumBlocks);
-            }
-
-            UnsafeQueueBlockHeader* checkBlock = (UnsafeQueueBlockHeader*)m_FirstBlock;
-            UnsafeQueueBlockHeader* nextPtr;
-
-            do
-            {
-                nextPtr = checkBlock;
-                block->m_NextBlock = checkBlock;
-                checkBlock = (UnsafeQueueBlockHeader*)Interlocked.CompareExchange(ref m_FirstBlock, (IntPtr)block, (IntPtr)checkBlock);
-            }
-            while (checkBlock != nextPtr);
-        }
-    }
-
-    internal unsafe class UnsafeQueueBlockPool
-    {
-        static readonly SharedStatic<IntPtr> Data = SharedStatic<IntPtr>.GetOrCreate<UnsafeQueueBlockPool>();
-
-        internal static UnsafeQueueBlockPoolData* GetQueueBlockPool()
-        {
-            var pData = (UnsafeQueueBlockPoolData**)Data.UnsafeDataPointer;
-            var data = *pData;
-
-            if (data == null)
-            {
-                data = (UnsafeQueueBlockPoolData*)Memory.Unmanaged.Allocate(UnsafeUtility.SizeOf<UnsafeQueueBlockPoolData>(), 8, Allocator.Persistent);
-                *pData = data;
-                data->m_NumBlocks = data->m_MaxBlocks = 256;
-                data->m_AllocLock = 0;
-                // Allocate MaxBlocks items
-                UnsafeQueueBlockHeader* prev = null;
-
-                for (int i = 0; i < data->m_MaxBlocks; ++i)
-                {
-                    UnsafeQueueBlockHeader* block = (UnsafeQueueBlockHeader*)Memory.Unmanaged.Allocate(UnsafeQueueBlockPoolData.m_BlockSize, 16, Allocator.Persistent);
-                    block->m_NextBlock = prev;
-                    prev = block;
-                }
-                data->m_FirstBlock = (IntPtr)prev;
-
-                AppDomainOnDomainUnload();
-            }
-            return data;
-        }
-
-        [BurstDiscard]
-        static void AppDomainOnDomainUnload()
-        {
-            AppDomain.CurrentDomain.DomainUnload += OnDomainUnload;
-        }
-
-        static void OnDomainUnload(object sender, EventArgs e)
-        {
-            var pData = (UnsafeQueueBlockPoolData**)Data.UnsafeDataPointer;
-            var data = *pData;
-
-            while (data->m_FirstBlock != IntPtr.Zero)
-            {
-                UnsafeQueueBlockHeader* block = (UnsafeQueueBlockHeader*)data->m_FirstBlock;
-                data->m_FirstBlock = (IntPtr)block->m_NextBlock;
-                Memory.Unmanaged.Free(block, Allocator.Persistent);
-                --data->m_NumBlocks;
-            }
-            Memory.Unmanaged.Free(data, Allocator.Persistent);
-            *pData = null;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    [GenerateTestsForBurstCompatibility]
     internal unsafe struct UnsafeQueueData
     {
+        internal const int m_BlockSize = 16 * 1024;
         public IntPtr m_FirstBlock;
         public IntPtr m_LastBlock;
         public int m_MaxItems;
@@ -170,7 +46,7 @@ namespace Unity.Collections
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public static UnsafeQueueBlockHeader* AllocateWriteBlockMT<T>(UnsafeQueueData* data, UnsafeQueueBlockPoolData* pool, int threadIndex) where T : unmanaged
+        public static UnsafeQueueBlockHeader* AllocateWriteBlockMT<T>(UnsafeQueueData* data, AllocatorHandle allocator, int threadIndex) where T : unmanaged
         {
             UnsafeQueueBlockHeader* currentWriteBlock = data->GetCurrentWriteBlockTLS(threadIndex);
 
@@ -183,7 +59,7 @@ namespace Unity.Collections
                 currentWriteBlock = null;
             }
 
-            currentWriteBlock = pool->AllocateBlock();
+            currentWriteBlock = (UnsafeQueueBlockHeader*)Memory.Unmanaged.Allocate(m_BlockSize, 16, allocator);
             currentWriteBlock->m_NextBlock = null;
             currentWriteBlock->m_NumItems = 0;
             UnsafeQueueBlockHeader* prevLast = (UnsafeQueueBlockHeader*)Interlocked.Exchange(ref data->m_LastBlock, (IntPtr)currentWriteBlock);
@@ -202,7 +78,7 @@ namespace Unity.Collections
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int) })]
-        public unsafe static void AllocateQueue<T>(AllocatorManager.AllocatorHandle label, out UnsafeQueueData* outBuf) where T : unmanaged
+        public unsafe static void AllocateQueue<T>(AllocatorHandle allocator, out UnsafeQueueData* outBuf) where T : unmanaged
         {
 #if UNITY_2022_2_14F1_OR_NEWER
             int maxThreadCount = JobsUtility.ThreadIndexCount;
@@ -216,14 +92,14 @@ namespace Unity.Collections
                 queueDataSize
                 + JobsUtility.CacheLineSize * maxThreadCount
                 , JobsUtility.CacheLineSize
-                , label
+                , allocator
             );
 
-            data->m_CurrentWriteBlockTLS = (((byte*)data) + queueDataSize);
+            data->m_CurrentWriteBlockTLS = ((byte*)data) + queueDataSize;
 
             data->m_FirstBlock = IntPtr.Zero;
             data->m_LastBlock = IntPtr.Zero;
-            data->m_MaxItems = (UnsafeQueueBlockPoolData.m_BlockSize - UnsafeUtility.SizeOf<UnsafeQueueBlockHeader>()) / UnsafeUtility.SizeOf<T>();
+            data->m_MaxItems = (m_BlockSize - UnsafeUtility.SizeOf<UnsafeQueueBlockHeader>()) / UnsafeUtility.SizeOf<T>();
 
             data->m_CurrentRead = 0;
             for (int threadIndex = 0; threadIndex < maxThreadCount; ++threadIndex)
@@ -234,18 +110,18 @@ namespace Unity.Collections
             outBuf = data;
         }
 
-        public unsafe static void DeallocateQueue(UnsafeQueueData* data, UnsafeQueueBlockPoolData* pool, AllocatorManager.AllocatorHandle allocation)
+        public unsafe static void DeallocateQueue(UnsafeQueueData* data, AllocatorHandle allocator)
         {
             UnsafeQueueBlockHeader* firstBlock = (UnsafeQueueBlockHeader*)data->m_FirstBlock;
 
             while (firstBlock != null)
             {
                 UnsafeQueueBlockHeader* next = firstBlock->m_NextBlock;
-                pool->FreeBlock(firstBlock);
+                Memory.Unmanaged.Free(firstBlock, allocator);
                 firstBlock = next;
             }
 
-            Memory.Unmanaged.Free(data, allocation);
+            Memory.Unmanaged.Free(data, allocator);
         }
     }
 
@@ -262,21 +138,19 @@ namespace Unity.Collections
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeQueueData* m_Buffer;
         [NativeDisableUnsafePtrRestriction]
-        internal UnsafeQueueBlockPoolData* m_QueuePool;
-        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
+        internal AllocatorHandle m_AllocatorLabel;
 
         /// <summary>
         /// Initializes and returns an instance of UnsafeQueue.
         /// </summary>
         /// <param name="allocator">The allocator to use.</param>
-        public UnsafeQueue(AllocatorManager.AllocatorHandle allocator)
+        public UnsafeQueue(AllocatorHandle allocator)
         {
-            m_QueuePool = UnsafeQueueBlockPool.GetQueueBlockPool();
             m_AllocatorLabel = allocator;
             UnsafeQueueData.AllocateQueue<T>(allocator, out m_Buffer);
         }
 
-        internal static UnsafeQueue<T>* Alloc(AllocatorManager.AllocatorHandle allocator)
+        internal static UnsafeQueue<T>* Alloc(AllocatorHandle allocator)
         {
             UnsafeQueue<T>* data = (UnsafeQueue<T>*)Memory.Unmanaged.Allocate(sizeof(UnsafeQueue<T>), UnsafeUtility.AlignOf<UnsafeQueue<T>>(), allocator);
             return data;
@@ -346,17 +220,6 @@ namespace Unity.Collections
             }
         }
 
-        internal static int PersistentMemoryBlockCount
-        {
-            get { return UnsafeQueueBlockPool.GetQueueBlockPool()->m_MaxBlocks; }
-            set { Interlocked.Exchange(ref UnsafeQueueBlockPool.GetQueueBlockPool()->m_MaxBlocks, value); }
-        }
-
-        internal static int MemoryBlockSize
-        {
-            get { return UnsafeQueueBlockPoolData.m_BlockSize; }
-        }
-
         /// <summary>
         /// Returns the element at the front of this queue without removing it.
         /// </summary>
@@ -376,7 +239,7 @@ namespace Unity.Collections
         /// <param name="value">The value to be enqueued.</param>
         public void Enqueue(T value)
         {
-            UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, 0);
+            UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_AllocatorLabel, 0);
             UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
             ++writeBlock->m_NumItems;
         }
@@ -434,7 +297,7 @@ namespace Unity.Collections
                         }
                     }
 
-                    m_QueuePool->FreeBlock(firstBlock);
+                    Memory.Unmanaged.Free(firstBlock, m_AllocatorLabel);
                 }
                 return true;
             }
@@ -482,7 +345,7 @@ namespace Unity.Collections
             while (firstBlock != null)
             {
                 UnsafeQueueBlockHeader* next = firstBlock->m_NextBlock;
-                m_QueuePool->FreeBlock(firstBlock);
+                Memory.Unmanaged.Free(firstBlock, m_AllocatorLabel);
                 firstBlock = next;
             }
 
@@ -521,9 +384,8 @@ namespace Unity.Collections
                 return;
             }
 
-            UnsafeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
+            UnsafeQueueData.DeallocateQueue(m_Buffer, m_AllocatorLabel);
             m_Buffer = null;
-            m_QueuePool = null;
         }
 
         /// <summary>
@@ -538,9 +400,8 @@ namespace Unity.Collections
                 return inputDeps;
             }
 
-            var jobHandle = new UnsafeQueueDisposeJob { Data = new UnsafeQueueDispose { m_Buffer = m_Buffer, m_QueuePool = m_QueuePool, m_AllocatorLabel = m_AllocatorLabel }  }.Schedule(inputDeps);
+            var jobHandle = new UnsafeQueueDisposeJob { Data = new UnsafeQueueDispose { m_Buffer = m_Buffer, m_AllocatorLabel = m_AllocatorLabel }  }.Schedule(inputDeps);
             m_Buffer = null;
-            m_QueuePool = null;
 
             return jobHandle;
         }
@@ -804,7 +665,7 @@ namespace Unity.Collections
             ParallelWriter writer;
 
             writer.m_Buffer = m_Buffer;
-            writer.m_QueuePool = m_QueuePool;
+            writer.m_AllocatorLabel = m_AllocatorLabel;
             writer.m_ThreadIndex = 0;
 
             return writer;
@@ -822,8 +683,7 @@ namespace Unity.Collections
             [NativeDisableUnsafePtrRestriction]
             internal UnsafeQueueData* m_Buffer;
 
-            [NativeDisableUnsafePtrRestriction]
-            internal UnsafeQueueBlockPoolData* m_QueuePool;
+            internal AllocatorHandle m_AllocatorLabel;
 
             [NativeSetThreadIndex]
             internal int m_ThreadIndex;
@@ -834,7 +694,7 @@ namespace Unity.Collections
             /// <param name="value">The value to be enqueued.</param>
             public void Enqueue(T value)
             {
-                UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, m_ThreadIndex);
+                UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_AllocatorLabel, m_ThreadIndex);
                 UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
                 ++writeBlock->m_NumItems;
             }
@@ -846,7 +706,7 @@ namespace Unity.Collections
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
             internal void Enqueue(T value, int threadIndexOverride)
             {
-                UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_QueuePool, threadIndexOverride);
+                UnsafeQueueBlockHeader* writeBlock = UnsafeQueueData.AllocateWriteBlockMT<T>(m_Buffer, m_AllocatorLabel, threadIndexOverride);
                 UnsafeUtility.WriteArrayElement(writeBlock + 1, writeBlock->m_NumItems, value);
                 ++writeBlock->m_NumItems;
             }
@@ -875,14 +735,11 @@ namespace Unity.Collections
         [NativeDisableUnsafePtrRestriction]
         internal UnsafeQueueData* m_Buffer;
 
-        [NativeDisableUnsafePtrRestriction]
-        internal UnsafeQueueBlockPoolData* m_QueuePool;
-
-        internal AllocatorManager.AllocatorHandle m_AllocatorLabel;
+        internal AllocatorHandle m_AllocatorLabel;
 
         public void Dispose()
         {
-            UnsafeQueueData.DeallocateQueue(m_Buffer, m_QueuePool, m_AllocatorLabel);
+            UnsafeQueueData.DeallocateQueue(m_Buffer, m_AllocatorLabel);
         }
     }
 

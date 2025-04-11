@@ -1,5 +1,21 @@
 # Changelog
 
+
+## [2.5.7] - 2025-04-11
+
+### Changed
+
+* Updated the `com.unity.entities` dependency to version `1.3.14`
+* Updated the `com.unity.burst` dependency to version `1.8.19`
+* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.5`
+* Updated the `com.unity.test-framework dependency` to version `1.4.6`
+* The minimum supported editor version is now 2022.3.20f1
+
+### Fixed
+
+* UnsafeQueue memory leak due to OnDomainUnload callback being discarded by Burst.
+
+
 ## [2.5.3] - 2025-02-17
 
 ### Fixed
