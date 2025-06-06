@@ -1,7 +1,7 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.6.0-pre.3",
+  "version": "2.6.0-pre.4",
   "unity": "2022.3",
   "unityRelease": "20f1",
   "dependencies": {
@@ -18,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Added\n\n* `threadIndexOverride` method overloads for `ParallelWriter.Add/TryAdd` operations for `NativeParallelHashMap`, `UnsafeParallelHashMap`, `NativeParallelHashSet`, `UnsafeParallelHashSet`, `NativeQueue`, `UnsafeQueue`, `NativeParallelMultiHashMap`, and `UnsafeParallelMultiHashMap`. These overloads allow some performance critical use-cases to sub-divide work that would previously be forced against a single collection, by enabling the (unsafe) injection of many instances of these collections (via their respective `ParallelWriter`s) into the same job. For example, this would allow you to convert a `NativeParallelMultiHashMap<Tuple<TIndex,TKey>,TValue>.ParallelWriter` pattern into an (unsafe) `NativeList<UnsafeParallelHashMap<TKey,TValue>.ParallelWriter>[TIndex]` pattern, which can; reduce individual collection capacities, reduce insertion/removal/clear call overheads, reduce the need to manually sort (or otherwise post-process) collection results, and allow better segmentation of work (i.e. higher granularity).\n\n### Changed\n\n* Updated Burst dependency to version 1.8.21\n\n### Fixed\n\n* UnsafeQueue memory leak due to OnDomainUnload callback being discarded by Burst.\n* Fixed incorrect error message when a NativeStream foreach index is out-of-range."
+    "changelog": "### Fixed\n\n* Fixed an Issue where DataStreamReader failed to deserialize ulong variables only on Android, with burst off. Affected Unity 6.0.38 and onwards."
   },
   "upmCi": {
-    "footprint": "4b95eab3bb226288f4d9f156fe7576871293fdbf"
+    "footprint": "8c1c81a646a0e766425676a885d9fb99e1ccd6ed"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.6/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "1d68bdee543beb5e992946669847cdae6fd48d36"
+    "revision": "266ff518fda4c414e7e3f86e546afaba5f1046c3"
   }
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0-pre.4] - 2025-06-06
+
+### Fixed
+
+* Fixed an Issue where DataStreamReader failed to deserialize ulong variables only on Android, with burst off. Affected Unity 6.0.38 and onwards.
+
+
 ## [2.6.0-pre.3] - 2025-06-06
 
 ### Added

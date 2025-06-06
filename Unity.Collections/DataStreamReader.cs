@@ -446,9 +446,8 @@ namespace Unity.Collections
         /// <returns>An 8-byte unsigned long read from the current stream, or 0 if the end of the stream has been reached.</returns>
         public ulong ReadPackedULong(in StreamCompressionModel model)
         {
-            ulong value;
-            ((uint*)&value)[0] = ReadPackedUInt(model);
-            ((uint*)&value)[1] = ReadPackedUInt(model);
+            ulong value = ReadPackedUInt(model);
+            value |= (ulong)ReadPackedUInt(model) << 32;
             return value;
         }
 
