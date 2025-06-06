@@ -476,12 +476,12 @@ namespace Unity.Collections
                     throw new ArgumentException($"BeginForEachIndex must always be balanced by a EndForEachIndex call");
                 }
 
+                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < blockData->RangeCount);
+
                 if (0 != ranges[foreachIndex].ElementCount)
                 {
                     throw new ArgumentException($"BeginForEachIndex can only be called once for the same index ({foreachIndex}).");
                 }
-
-                Assert.IsTrue(foreachIndex >= 0 && foreachIndex < blockData->RangeCount);
 #endif
             }
 

@@ -161,7 +161,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="item">The value to add.</param>
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
             /// <returns>True if the value is not already present.</returns>
-            internal bool Add(T item, int threadIndexOverride) => m_Data.TryAdd(item, false, threadIndexOverride);
+            public bool Add(T item, int threadIndexOverride) => m_Data.TryAdd(item, false, threadIndexOverride);
         }
 
         /// <summary>

@@ -451,7 +451,7 @@ namespace Unity.Collections
             /// </summary>
             /// <param name="value">The value to be enqueued.</param>
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
-            internal void Enqueue(T value, int threadIndexOverride)
+            public void Enqueue(T value, int threadIndexOverride)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndThrow(m_Safety);

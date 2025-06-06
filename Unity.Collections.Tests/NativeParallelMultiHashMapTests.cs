@@ -9,6 +9,9 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
+using System.Threading;
+using Unity.Jobs.LowLevel.Unsafe;
+using Unity.Mathematics;
 
 internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
 {
@@ -678,5 +681,77 @@ internal class NativeParallelMultiHashMapTests : CollectionsTestFixture
         mapNested.Dispose();
         mapNestedStruct.Dispose();
         mapInner.Dispose();
+    }
+
+    struct JobWithManyCollectionsViaThreadIndex : IJobParallelFor
+    {
+        public const int InnerLoopBatchCount = 2;
+        public const int Threads = 5;
+        public const int Length = Threads * InnerLoopBatchCount;
+        public const int NestedLoops = 15;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter A;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter B;
+        public NativeParallelMultiHashMap<int, int>.ParallelWriter C;
+        [NativeSetThreadIndex] int m_ThreadIndex;
+
+        public void Execute(int index)
+        {
+            var value = index * 100;
+            for (int j = 0; j < NestedLoops; j++)
+            {
+                A.Add(index, value + j, m_ThreadIndex);
+                B.Add(index, value + j, m_ThreadIndex);
+                C.Add(index, value + j, m_ThreadIndex);
+            }
+        }
+    }
+    [Test(Description = "High performance use-cases can find gains using multiple maps (with the `threadIndexOverride`).")]
+    public void NativeParallelMultiHashMap_ForEach_ThreadIndexOverride_MultipleCollections()
+    {
+        var a = new NativeParallelMultiHashMap<int, int>(2048, CommonRwdAllocator.Handle);
+        var b = new NativeParallelMultiHashMap<int, int>(2048, CommonRwdAllocator.Handle);
+        var c = new NativeParallelMultiHashMap<int, int>(2048, CommonRwdAllocator.Handle);
+
+        var job = new JobWithManyCollectionsViaThreadIndex
+        {
+            A = a.AsParallelWriter(),
+            B = b.AsParallelWriter(),
+            C = c.AsParallelWriter(),
+        }.Schedule(JobWithManyCollectionsViaThreadIndex.Length, JobWithManyCollectionsViaThreadIndex.InnerLoopBatchCount, default);
+        job.Complete();
+
+        const int expectedNumEntries = JobWithManyCollectionsViaThreadIndex.Length * JobWithManyCollectionsViaThreadIndex.NestedLoops;
+        Assert.AreEqual(expectedNumEntries, a.Count(), "a");
+        Assert.AreEqual(expectedNumEntries, c.Count(), "b");
+        Assert.AreEqual(expectedNumEntries, c.Count(), "c");
+
+        for (int index = 0; index < JobWithManyCollectionsViaThreadIndex.Length; index++)
+        {
+            var aValuesForKey = a.GetValuesForKey(index);
+            var bValuesForKey = b.GetValuesForKey(index);
+            var cValuesForKey = c.GetValuesForKey(index);
+
+            // Deterministic order is returned backwards! I.e. Last in, first out.
+            // No determinism guarantees when writing to the same key, however, thus excluded from this test.
+            var value = index * 100;
+            for (int j = JobWithManyCollectionsViaThreadIndex.NestedLoops - 1; j >= 0; j--)
+            {
+                var msg = $"[{index},{j}] expects {value + j}";
+                Assert.IsTrue(aValuesForKey.MoveNext(), msg);
+                Assert.IsTrue(bValuesForKey.MoveNext(), msg);
+                Assert.IsTrue(cValuesForKey.MoveNext(), msg);
+
+                Assert.AreEqual(value + j, aValuesForKey.Current, msg);
+                Assert.AreEqual(value + j, bValuesForKey.Current, msg);
+                Assert.AreEqual(value + j, cValuesForKey.Current, msg);
+            }
+
+            Assert.IsFalse(aValuesForKey.MoveNext());
+            Assert.IsFalse(bValuesForKey.MoveNext());
+            Assert.IsFalse(cValuesForKey.MoveNext());
+        }
+        a.Dispose();
+        b.Dispose();
+        c.Dispose();
     }
 }

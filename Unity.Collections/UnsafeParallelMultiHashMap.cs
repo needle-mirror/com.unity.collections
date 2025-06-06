@@ -422,6 +422,21 @@ namespace Unity.Collections.LowLevel.Unsafe
                 Assert.IsTrue(m_ThreadIndex >= 0);
                 UnsafeParallelHashMapBase<TKey, TValue>.AddAtomicMulti(m_Buffer, key, item, m_ThreadIndex);
             }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>
+            /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+            /// </remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
+            public void Add(TKey key, TValue item, int threadIndexOverride)
+            {
+                Assert.IsTrue(m_ThreadIndex >= 0);
+                UnsafeParallelHashMapBase<TKey, TValue>.AddAtomicMulti(m_Buffer, key, item, threadIndexOverride);
+            }
         }
 
         /// <summary>

@@ -417,6 +417,23 @@ namespace Unity.Collections
 #endif
                 m_Writer.Add(key, item);
             }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>
+            /// If a key-value pair with this key is already present, an additional separate key-value pair is added.
+            /// </remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
+            public void Add(TKey key, TValue item, int threadIndexOverride)
+            {
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+                AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
+#endif
+                m_Writer.Add(key, item, threadIndexOverride);
+            }
         }
 
         /// <summary>

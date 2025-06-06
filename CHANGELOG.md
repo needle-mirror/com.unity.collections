@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.6.0-pre.3] - 2025-06-06
+
+### Added
+
+* `threadIndexOverride` method overloads for `ParallelWriter.Add/TryAdd` operations for `NativeParallelHashMap`, `UnsafeParallelHashMap`, `NativeParallelHashSet`, `UnsafeParallelHashSet`, `NativeQueue`, `UnsafeQueue`, `NativeParallelMultiHashMap`, and `UnsafeParallelMultiHashMap`. These overloads allow some performance critical use-cases to sub-divide work that would previously be forced against a single collection, by enabling the (unsafe) injection of many instances of these collections (via their respective `ParallelWriter`s) into the same job. For example, this would allow you to convert a `NativeParallelMultiHashMap<Tuple<TIndex,TKey>,TValue>.ParallelWriter` pattern into an (unsafe) `NativeList<UnsafeParallelHashMap<TKey,TValue>.ParallelWriter>[TIndex]` pattern, which can; reduce individual collection capacities, reduce insertion/removal/clear call overheads, reduce the need to manually sort (or otherwise post-process) collection results, and allow better segmentation of work (i.e. higher granularity).
+
+### Changed
+
+* Updated Burst dependency to version 1.8.21
+
+### Fixed
+
+* UnsafeQueue memory leak due to OnDomainUnload callback being discarded by Burst.
+* Fixed incorrect error message when a NativeStream foreach index is out-of-range.
+
+
 ## [2.6.0-exp.2] - 2025-03-07
 
 ### Changed
@@ -11,6 +27,21 @@
 ### Fixed
 
 * Fixed incorrect behavior of `UnsafeBitArray.ReadOnly.TestNone`
+
+
+## [2.5.7] - 2025-04-11
+
+### Changed
+
+* Updated the `com.unity.entities` dependency to version `1.3.14`
+* Updated the `com.unity.burst` dependency to version `1.8.19`
+* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.5`
+* Updated the `com.unity.test-framework dependency` to version `1.4.6`
+* The minimum supported editor version is now 2022.3.20f1
+
+### Fixed
+
+* UnsafeQueue memory leak due to OnDomainUnload callback being discarded by Burst.
 
 
 ## [2.5.3] - 2025-02-17

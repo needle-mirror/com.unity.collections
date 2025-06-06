@@ -1606,7 +1606,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="item">The value to add.</param>
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
             /// <returns>True if the key-value pair was added.</returns>
-            internal bool TryAdd(TKey key, TValue item, int threadIndexOverride)
+            public bool TryAdd(TKey key, TValue item, int threadIndexOverride)
             {
                 Assert.IsTrue(threadIndexOverride >= 0);
                 return UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, threadIndexOverride);

@@ -691,7 +691,7 @@ namespace Unity.Collections
             /// <param name="item">The value to add.</param>
             /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
             /// <returns>True if the key-value pair was added.</returns>
-            internal bool TryAdd(TKey key, TValue item, int threadIndexOverride)
+            public bool TryAdd(TKey key, TValue item, int threadIndexOverride)
             {
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
                 AtomicSafetyHandle.CheckWriteAndBumpSecondaryVersion(m_Safety);
