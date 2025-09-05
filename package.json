@@ -1,11 +1,11 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.6.0-pre.4",
+  "version": "2.6.2",
   "unity": "2022.3",
   "unityRelease": "20f1",
   "dependencies": {
-    "com.unity.burst": "1.8.21",
+    "com.unity.burst": "1.8.23",
     "com.unity.mathematics": "1.3.2",
     "com.unity.nuget.mono-cecil": "1.11.5",
     "com.unity.test-framework": "1.4.6",
@@ -18,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Fixed\n\n* Fixed an Issue where DataStreamReader failed to deserialize ulong variables only on Android, with burst off. Affected Unity 6.0.38 and onwards."
+    "changelog": "### Changed\n\n* Updated Burst dependency to version 1.8.23."
   },
   "upmCi": {
-    "footprint": "8c1c81a646a0e766425676a885d9fb99e1ccd6ed"
+    "footprint": "42cae399f4515d49e1ee8a8dafb6d2a9cf98306a"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.6/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "266ff518fda4c414e7e3f86e546afaba5f1046c3"
+    "revision": "34a49c9a68f70872c0a108dbef6cdea306d6b593"
   }
 }

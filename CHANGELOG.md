@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.6.2] - 2025-09-05
+
+
+### Changed
+
+* Updated Burst dependency to version 1.8.23.
+
+
 ## [2.6.0-pre.4] - 2025-06-06
 
 ### Fixed
@@ -21,7 +29,6 @@
 
 * UnsafeQueue memory leak due to OnDomainUnload callback being discarded by Burst.
 * Fixed incorrect error message when a NativeStream foreach index is out-of-range.
-
 
 ## [2.6.0-exp.2] - 2025-03-07
 
