@@ -70,7 +70,7 @@ namespace Unity.Collections
                 unsafe
                 {
                     fixed (void* ptr = &data)
-                        return ((byte*)ptr) + UnsafeUtility.SizeOf<ushort>();
+                        return ((byte*)ptr) + sizeof(ushort);
                 }
             }
         }
@@ -470,9 +470,9 @@ namespace Unity.Collections
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int StorageBytes<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
+        internal static unsafe int StorageBytes<BUFFER,T>() where BUFFER : unmanaged where T : unmanaged
         {
-            return UnsafeUtility.SizeOf<BUFFER>() - UnsafeUtility.SizeOf<ushort>() - PaddingBytes<T>();
+            return sizeof(BUFFER) - sizeof(ushort) - PaddingBytes<T>();
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
@@ -554,7 +554,7 @@ for(var size = 0; size < 5; ++size)
                 unsafe
                 {
                     fixed (void* ptr = &data)
-                        return ((byte*)ptr) + UnsafeUtility.SizeOf<ushort>();
+                        return ((byte*)ptr) + sizeof(ushort);
                 }
             }
         }

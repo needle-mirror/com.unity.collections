@@ -62,6 +62,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeParallelHashMap<T, bool>.MaxCapacity;
+
+        /// <summary>
         /// Whether this set has been allocated (and not yet deallocated).
         /// </summary>
         /// <value>True if this set has been allocated (and not yet deallocated).</value>

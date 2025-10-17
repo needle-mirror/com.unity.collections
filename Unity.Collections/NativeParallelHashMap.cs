@@ -170,6 +170,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeParallelHashMap<TKey, TValue>.MaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>
@@ -200,6 +205,7 @@ namespace Unity.Collections
         /// <param name="key">The key to add.</param>
         /// <param name="item">The value to add.</param>
         /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is not enough Capacity to contain the added element, and the container can't be resized.</exception>
         public void Add(TKey key, TValue item)
         {
             CheckWrite();
@@ -207,6 +213,12 @@ namespace Unity.Collections
 
             if (!added)
             {
+                if (m_HashMapData.m_Buffer->keyCapacity == UnsafeParallelHashMapData.kMaxCapacity)
+                {
+                    ThrowAtMaxCapacity();
+                    return;
+                }
+
                 ThrowKeyAlreadyAdded(key);
             }
         }
@@ -826,6 +838,12 @@ namespace Unity.Collections
         void ThrowKeyAlreadyAdded(TKey key)
         {
             throw new ArgumentException("An item with the same key has already been added", nameof(key));
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        void ThrowAtMaxCapacity()
+        {
+            throw new InvalidOperationException($"Capacity is insufficient, and resize would fail (Capacity {Capacity} / {MaxCapacity}, Count {Count()})!");
         }
     }
 

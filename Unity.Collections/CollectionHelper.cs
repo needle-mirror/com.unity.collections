@@ -100,6 +100,27 @@ namespace Unity.Collections
         /// </summary>
         /// <example><code>
         /// // 55 aligned to 16 is 64.
+        /// long size = CollectionHelper.Align(55, 16);
+        /// </code></example>
+        /// <param name="size">The size to align.</param>
+        /// <param name="alignmentPowerOfTwo">A non-zero, positive power of two.</param>
+        /// <returns>The smallest integer that is greater than or equal to<paramref name="size"/> and is a multiple of <paramref name="alignmentPowerOfTwo"/>.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="alignmentPowerOfTwo"/> is not a non-zero, positive power of two.</exception>
+        public static long Align(long size, int alignmentPowerOfTwo)
+        {
+            if (alignmentPowerOfTwo == 0)
+                return size;
+
+            CheckIntPositivePowerOfTwo(alignmentPowerOfTwo);
+
+            return (size + alignmentPowerOfTwo - 1) & ~(alignmentPowerOfTwo - 1);
+        }
+
+        /// <summary>
+        /// Returns an allocation size in bytes that factors in alignment.
+        /// </summary>
+        /// <example><code>
+        /// // 55 aligned to 16 is 64.
         /// ulong size = CollectionHelper.Align(55, 16);
         /// </code></example>
         /// <param name="size">The size to align.</param>
@@ -280,13 +301,22 @@ namespace Unity.Collections
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        internal static void CheckCapacityInRange(int capacity, int length)
+        internal static void CheckCapacityInRange(int capacity, int maxCapacity, int length)
         {
             if (capacity < 0)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} must be positive.");
 
+            if (capacity > maxCapacity)
+                throw new ArgumentException($"Capacity {capacity} value too large. Maximum capacity is {maxCapacity}.");
+
             if (capacity < length)
                 throw new ArgumentOutOfRangeException($"Capacity {capacity} is out of range in container of '{length}' Length.");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        internal static void CheckCapacityInRange(int capacity, int length)
+        {
+            CheckCapacityInRange(capacity, int.MaxValue, length);
         }
 
         /// <summary>

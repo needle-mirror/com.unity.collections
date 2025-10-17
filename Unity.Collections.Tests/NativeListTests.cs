@@ -61,6 +61,22 @@ internal class NativeListTests : CollectionsTestFixture
     }
 
     [Test]
+    [UnityPlatform(RuntimePlatform.WindowsEditor)] //some unnamed platforms don't have enough memory to run this test
+    public void NativeArrayFromNativeList_MaxCapacity()
+    {
+        var list = new NativeList<int>(NativeList<int>.MaxCapacity, Allocator.Persistent);
+        Assert.AreEqual(NativeList<int>.MaxCapacity, list.Capacity);
+
+        list.Length = list.Capacity;
+        Assert.AreEqual(NativeList<int>.MaxCapacity, list.Length);
+
+        NativeArray<int> array = list.AsArray();
+        Assert.AreEqual(NativeList<int>.MaxCapacity, array.Length);
+
+        list.Dispose();
+    }
+
+    [Test]
     [TestRequiresCollectionChecks]
     public void NativeArrayFromNativeListInvalidatesOnAdd()
     {

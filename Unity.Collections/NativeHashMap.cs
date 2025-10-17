@@ -149,7 +149,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         public NativeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
+            m_Data = HashMapHelper<TKey>.Alloc(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinCapacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -280,6 +280,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = HashMapHelper<TKey>.kMaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>
@@ -317,14 +322,25 @@ namespace Unity.Collections
         /// <param name="key">The key to add.</param>
         /// <param name="item">The value to add.</param>
         /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is not enough Capacity to contain the added element, and the container can't be resized.</exception>
         public void Add(TKey key, TValue item)
         {
-            var result = TryAdd(key, item);
+            CheckWrite();
 
-            if (!result)
+            var idx = m_Data->TryAdd(key);
+            if (-1 != idx)
             {
-                ThrowKeyAlreadyAdded(key);
+                UnsafeUtility.WriteArrayElement(m_Data->Ptr, idx, item);
+                return;
             }
+
+            if (Capacity == MaxCapacity)
+            {
+                ThrowAtMaxCapacity();
+                return;
+            }
+
+            ThrowKeyAlreadyAdded(key);
         }
 
         /// <summary>
@@ -800,6 +816,12 @@ namespace Unity.Collections
         void ThrowKeyAlreadyAdded(TKey key)
         {
             throw new ArgumentException($"An item with the same key has already been added: {key}");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        void ThrowAtMaxCapacity()
+        {
+            throw new InvalidOperationException($"Capacity is insufficient, and resize would fail (Capacity {Capacity} / {MaxCapacity}, Count {Count})!");
         }
     }
 

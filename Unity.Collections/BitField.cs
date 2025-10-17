@@ -12,7 +12,16 @@ namespace Unity.Collections
             return value & ~(alignPow2 - 1);
         }
 
+        internal static long AlignDown(long value, int alignPow2)
+        {
+            return value & ~(alignPow2 - 1);
+        }
         internal static int AlignUp(int value, int alignPow2)
+        {
+            return AlignDown(value + alignPow2 - 1, alignPow2);
+        }
+
+        internal static long AlignUp(long value, int alignPow2)
         {
             return AlignDown(value + alignPow2 - 1, alignPow2);
         }

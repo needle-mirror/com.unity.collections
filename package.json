@@ -1,11 +1,11 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "unity": "2022.3",
   "unityRelease": "20f1",
   "dependencies": {
-    "com.unity.burst": "1.8.23",
+    "com.unity.burst": "1.8.25",
     "com.unity.mathematics": "1.3.2",
     "com.unity.nuget.mono-cecil": "1.11.5",
     "com.unity.test-framework": "1.4.6",
@@ -18,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Changed\n\n* Updated Burst dependency to version 1.8.23."
+    "changelog": "### Added\n\n* `MaxCapacity` constant to define the maximum number of elements each container can hold.\n\n### Changed\n\n* Updated the Burst dependency to version 1.8.25\n\n### Fixed\n\n* Integer overflow when calculating memory size in bytes of containers that have a large number of elements."
   },
   "upmCi": {
-    "footprint": "42cae399f4515d49e1ee8a8dafb6d2a9cf98306a"
+    "footprint": "2f8ba4f6f87e9a79b64d29608466749cd28e280a"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.6/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "34a49c9a68f70872c0a108dbef6cdea306d6b593"
+    "revision": "24a86959758286a83e6dd55b789f094a23750872"
   }
 }

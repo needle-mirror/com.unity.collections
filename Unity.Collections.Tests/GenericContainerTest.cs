@@ -5,6 +5,8 @@ using Unity.Collections.Tests;
 using Unity.Jobs;
 using System;
 using Unity.Jobs.Tests.ManagedJobs;
+using UnityEngine.TestTools;
+using UnityEngine;
 
 [assembly: RegisterGenericJobType(typeof(GenericContainerJob<NativeArray<int>>))]
 [assembly: RegisterGenericJobType(typeof(GenericContainerJob<UnsafeAppendBuffer>))]
@@ -210,7 +212,7 @@ internal class GenericContainerTests : CollectionsTestFixture
 
         UnsafeList<int>.ReadOnly containerRo = default;
         Assert.False(containerRo.IsCreated);
-        Assert.True(containerRo.IsEmpty); 
+        Assert.True(containerRo.IsEmpty);
     }
 
     UnsafePtrList<int> CreateEmpty_UnsafePtrList()
@@ -684,6 +686,244 @@ internal class GenericContainerTests : CollectionsTestFixture
         Test_Dispose_Job_Then_Schedule_Work(new NativeRingQueue<int>(16, Allocator.Persistent));
         Test_Dispose_Job_Then_Schedule_Work(new NativeStream(16, Allocator.Persistent));
         Test_Dispose_Job_Then_Schedule_Work(new NativeText(16, Allocator.Persistent));
+    }
+
+    [Test]
+    [TestRequiresCollectionChecks("Tests job depending argument range checks - crashes without safety system")]
+    [Timeout(20*60000 /* 20 minutes */)]
+    [UnityPlatform(RuntimePlatform.WindowsEditor)] // some unnamed platforms don't have enough memory to run this test
+    public unsafe void Test_Container_Initialize_NumElements_To_MaxCapacity()
+    {
+        int[] range = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+        bool runSlowTests = false;
+
+        {
+            var container = new NativeArray<int>(int.MaxValue, Allocator.Persistent);
+            Assert.AreEqual(int.MaxValue, container.Length);
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeBitArray(NativeBitArray.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeBitArray.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeBitArray(UnsafeBitArray.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeBitArray.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeHashMap<int, int>(NativeHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeHashMap<int, int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i, i);
+                }
+
+                Assert.IsFalse(container.TryAdd(NativeHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+                Assert.Throws<InvalidOperationException>(() => container.Add(NativeHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeHashMap<int, int>(UnsafeHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeHashMap<int, int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i, i);
+                }
+
+                Assert.IsFalse(container.TryAdd(UnsafeHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+                Assert.Throws<InvalidOperationException>(() => container.Add(UnsafeHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeHashSet<int>(NativeHashSet<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeHashSet<int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i);
+                }
+
+//                Assert.IsFalse(container.TryAdd(NativeHashSet<int>.MaxCapacity + 0x1234));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeHashSet<int>(UnsafeHashSet<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeHashSet<int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i);
+                }
+
+//                Assert.IsFalse(container.TryAdd(UnsafeHashSet<int>.MaxCapacity + 0x1234));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeList<int>(NativeList<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeList<int>.MaxCapacity, container.Capacity);
+
+            container.Length = container.Capacity;
+            Assert.AreEqual(NativeList<int>.MaxCapacity, container.Length);
+
+            Assert.Throws<InvalidOperationException>(() => container.Add(0x1234));
+//            Assert.Throws<InvalidOperationException>(() => container.AddRange(new ReadOnlySpan<int>(range)));
+            Assert.Throws<InvalidOperationException>(() => container.AddReplicate(0x1234, 10));
+            Assert.Throws<InvalidOperationException>(() => container.InsertRangeWithBeginEnd(10, 20));
+            Assert.Throws<InvalidOperationException>(() => container.InsertRange(10, 10));
+
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeList<int>(UnsafeList<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeList<int>.MaxCapacity, container.Capacity);
+
+            container.Length = container.Capacity;
+            Assert.AreEqual(UnsafeList<int>.MaxCapacity, container.Length);
+
+            Assert.Throws<InvalidOperationException>(() => container.Add(0x1234));
+//            Assert.Throws<InvalidOperationException>(() => container.AddRange(new ReadOnlySpan<int>(range)));
+            Assert.Throws<InvalidOperationException>(() => container.AddReplicate(0x1234, 10));
+            Assert.Throws<InvalidOperationException>(() => container.InsertRangeWithBeginEnd(10, 20));
+            Assert.Throws<InvalidOperationException>(() => container.InsertRange(10, 10));
+
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeParallelHashMap<int, int>(NativeParallelHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeParallelHashMap<int, int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i, i);
+                }
+
+                Assert.IsFalse(container.TryAdd(NativeParallelHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+                Assert.Throws<InvalidOperationException>(() => container.Add(NativeParallelHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeParallelHashMap<int, int>(UnsafeParallelHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeParallelHashMap<int, int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i, i);
+                }
+
+                Assert.IsFalse(container.TryAdd(UnsafeParallelHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+                Assert.Throws<InvalidOperationException>(() => container.Add(UnsafeParallelHashMap<int, int>.MaxCapacity + 0x1234, 0x5678));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeParallelMultiHashMap<int, int>(NativeParallelMultiHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeParallelMultiHashMap<int, int>.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeParallelMultiHashMap<int, int>(UnsafeParallelMultiHashMap<int, int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeParallelMultiHashMap<int, int>.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeParallelHashSet<int>(NativeParallelHashSet<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeParallelHashSet<int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i);
+                }
+
+//                Assert.IsFalse(container.TryAdd(NativeParallelHashSet<int>.MaxCapacity + 0x1234));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeParallelHashSet<int>(UnsafeParallelHashSet<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeParallelHashSet<int>.MaxCapacity, container.Capacity);
+
+            if (runSlowTests)
+            {
+
+                for (int i = 0; i < container.Capacity; ++i)
+                {
+                    container.Add(i);
+                }
+
+//                Assert.IsFalse(container.TryAdd(UnsafeParallelHashSet<int>.MaxCapacity + 0x1234));
+            }
+
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeRingQueue<int>(NativeRingQueue<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeRingQueue<int>.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeRingQueue<int>(UnsafeRingQueue<int>.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeRingQueue<int>.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new NativeText(NativeText.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(NativeText.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
+
+        {
+            var container = new UnsafeText(UnsafeText.MaxCapacity, Allocator.Persistent);
+            Assert.AreEqual(UnsafeText.MaxCapacity, container.Capacity);
+            container.Dispose();
+        }
     }
 
     //-------------------------------------------------------------------------------------------------------

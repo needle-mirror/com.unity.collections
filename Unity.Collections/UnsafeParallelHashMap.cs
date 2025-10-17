@@ -89,6 +89,8 @@ namespace Unity.Collections.LowLevel.Unsafe
         [FieldOffset(40)]
         internal int allocatedIndexLength;
 
+        internal const int kMaxCapacity = int.MaxValue / 2;
+
 #if UNITY_2022_2_14F1_OR_NEWER
         const int kFirstFreeTLSOffset = JobsUtility.CacheLineSize < 64 ? 64 : JobsUtility.CacheLineSize;
         internal int* firstFreeTLS => (int*)((byte*)UnsafeUtility.AddressOf(ref this) + kFirstFreeTLSOffset);
@@ -100,9 +102,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         // 64 is the cache line size on x86, arm usually has 32 - so it is possible to save some memory there
         internal const int IntsPerCacheLine = JobsUtility.CacheLineSize / sizeof(int);
 
-        internal static int GetBucketSize(int capacity)
+        internal static long GetBucketSize(int capacity)
         {
-            return capacity * 2;
+            return (long)capacity * 2;
         }
 
         internal static int GrowCapacity(int capacity)
@@ -116,11 +118,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void AllocateHashMap<TKey, TValue>(int length, int bucketLength, AllocatorManager.AllocatorHandle label,
+        internal static void AllocateHashMap<TKey, TValue>(int length, long bucketLength, AllocatorManager.AllocatorHandle label,
             out UnsafeParallelHashMapData* outBuf)
             where TKey : unmanaged
             where TValue : unmanaged
         {
+            CheckCapacity(length);
+
 #if UNITY_2022_2_14F1_OR_NEWER
             int maxThreadCount = JobsUtility.ThreadIndexCount;
             // Calculate the size of UnsafeParallelHashMapData since we need to account for how many
@@ -128,17 +132,17 @@ namespace Unity.Collections.LowLevel.Unsafe
             Assert.IsTrue(sizeof(UnsafeParallelHashMapData) <= kFirstFreeTLSOffset);
             int hashMapDataSize = kFirstFreeTLSOffset + (sizeof(int) * IntsPerCacheLine * maxThreadCount);
 #else
-            int hashMapDataSize = sizeof(UnsafeParallelHashMapData);           
+            int hashMapDataSize = sizeof(UnsafeParallelHashMapData);
 #endif
             UnsafeParallelHashMapData* data = (UnsafeParallelHashMapData*)Memory.Unmanaged.Allocate(hashMapDataSize, JobsUtility.CacheLineSize, label);
 
             bucketLength = math.ceilpow2(bucketLength);
 
             data->keyCapacity = length;
-            data->bucketCapacityMask = bucketLength - 1;
+            data->bucketCapacityMask = (int)(bucketLength - 1);
 
-            int keyOffset, nextOffset, bucketOffset;
-            int totalSize = CalculateDataSize<TKey, TValue>(length, bucketLength, out keyOffset, out nextOffset, out bucketOffset);
+            long keyOffset, nextOffset, bucketOffset;
+            long totalSize = CalculateDataSize<TKey, TValue>(length, bucketLength, out keyOffset, out nextOffset, out bucketOffset);
 
             data->values = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             data->keys = data->values + keyOffset;
@@ -149,7 +153,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static void ReallocateHashMap<TKey, TValue>(UnsafeParallelHashMapData* data, int newCapacity, int newBucketCapacity, AllocatorManager.AllocatorHandle label)
+        internal static void ReallocateHashMap<TKey, TValue>(UnsafeParallelHashMapData* data, int newCapacity, long newBucketCapacity, AllocatorManager.AllocatorHandle label)
             where TKey : unmanaged
             where TValue : unmanaged
         {
@@ -162,8 +166,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             CheckHashMapReallocateDoesNotShrink(data, newCapacity);
 
-            int keyOffset, nextOffset, bucketOffset;
-            int totalSize = CalculateDataSize<TKey, TValue>(newCapacity, newBucketCapacity, out keyOffset, out nextOffset, out bucketOffset);
+            long keyOffset, nextOffset, bucketOffset;
+            long totalSize = CalculateDataSize<TKey, TValue>(newCapacity, newBucketCapacity, out keyOffset, out nextOffset, out bucketOffset);
 
             byte* newData = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, label);
             byte* newKeys = newData + keyOffset;
@@ -171,9 +175,9 @@ namespace Unity.Collections.LowLevel.Unsafe
             byte* newBuckets = newData + bucketOffset;
 
             // The items are taken from a free-list and might not be tightly packed, copy all of the old capcity
-            UnsafeUtility.MemCpy(newData, data->values, data->keyCapacity * UnsafeUtility.SizeOf<TValue>());
-            UnsafeUtility.MemCpy(newKeys, data->keys, data->keyCapacity * UnsafeUtility.SizeOf<TKey>());
-            UnsafeUtility.MemCpy(newNext, data->next, data->keyCapacity * UnsafeUtility.SizeOf<int>());
+            UnsafeUtility.MemCpy(newData, data->values, (long)data->keyCapacity * sizeof(TValue));
+            UnsafeUtility.MemCpy(newKeys, data->keys, (long)data->keyCapacity * sizeof(TKey));
+            UnsafeUtility.MemCpy(newNext, data->next, (long)data->keyCapacity * sizeof(int));
 
             for (int emptyNext = data->keyCapacity; emptyNext < newCapacity; ++emptyNext)
             {
@@ -186,6 +190,8 @@ namespace Unity.Collections.LowLevel.Unsafe
                 ((int*)newBuckets)[bucket] = -1;
             }
 
+            int newBucketCapacityMask = (int)(newBucketCapacity - 1);
+
             for (int bucket = 0; bucket <= data->bucketCapacityMask; ++bucket)
             {
                 int* buckets = (int*)data->buckets;
@@ -194,7 +200,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                 {
                     int curEntry = buckets[bucket];
                     buckets[bucket] = nextPtrs[curEntry];
-                    int newBucket = UnsafeUtility.ReadArrayElement<TKey>(data->keys, curEntry).GetHashCode() & (newBucketCapacity - 1);
+                    int newBucket = UnsafeUtility.ReadArrayElement<TKey>(data->keys, curEntry).GetHashCode() & newBucketCapacityMask;
                     nextPtrs[curEntry] = ((int*)newBuckets)[newBucket];
                     ((int*)newBuckets)[newBucket] = curEntry;
                 }
@@ -211,7 +217,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             data->next = newNext;
             data->buckets = newBuckets;
             data->keyCapacity = newCapacity;
-            data->bucketCapacityMask = newBucketCapacity - 1;
+            data->bucketCapacityMask = newBucketCapacityMask;
         }
 
         internal static void DeallocateHashMap(UnsafeParallelHashMapData* data, AllocatorManager.AllocatorHandle allocator)
@@ -221,19 +227,19 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         [GenerateTestsForBurstCompatibility(GenericTypeArguments = new [] { typeof(int), typeof(int) })]
-        internal static int CalculateDataSize<TKey, TValue>(int length, int bucketLength, out int keyOffset, out int nextOffset, out int bucketOffset)
+        internal static long CalculateDataSize<TKey, TValue>(int length, long bucketLength, out long keyOffset, out long nextOffset, out long bucketOffset)
             where TKey : unmanaged
             where TValue : unmanaged
         {
-            var sizeOfTValue = UnsafeUtility.SizeOf<TValue>();
-            var sizeOfTKey = UnsafeUtility.SizeOf<TKey>();
-            var sizeOfInt = UnsafeUtility.SizeOf<int>();
+            long sizeOfTValue = sizeof(TValue);
+            long sizeOfTKey = sizeof(TKey);
+            long sizeOfInt = sizeof(int);
 
-            var valuesSize = CollectionHelper.Align(sizeOfTValue * length, JobsUtility.CacheLineSize);
-            var keysSize = CollectionHelper.Align(sizeOfTKey * length, JobsUtility.CacheLineSize);
-            var nextSize = CollectionHelper.Align(sizeOfInt * length, JobsUtility.CacheLineSize);
-            var bucketSize = CollectionHelper.Align(sizeOfInt * bucketLength, JobsUtility.CacheLineSize);
-            var totalSize = valuesSize + keysSize + nextSize + bucketSize;
+            long valuesSize = CollectionHelper.Align(sizeOfTValue * length, JobsUtility.CacheLineSize);
+            long keysSize = CollectionHelper.Align(sizeOfTKey * length, JobsUtility.CacheLineSize);
+            long nextSize = CollectionHelper.Align(sizeOfInt * length, JobsUtility.CacheLineSize);
+            long bucketSize = CollectionHelper.Align(sizeOfInt * bucketLength, JobsUtility.CacheLineSize);
+            long totalSize = valuesSize + keysSize + nextSize + bucketSize;
 
             keyOffset = 0 + valuesSize;
             nextOffset = keyOffset + keysSize;
@@ -411,6 +417,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (data->keyCapacity > newCapacity)
                 throw new InvalidOperationException("Shrinking a hash map is not supported");
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void CheckCapacity(int capacity)
+        {
+            if (capacity > kMaxCapacity)
+            {
+                throw new ArgumentException($"Capacity {capacity} value too large. Maximum capacity is {kMaxCapacity}.");
+            }
+        }
     }
 
     [NativeContainer]
@@ -450,8 +466,8 @@ namespace Unity.Collections.LowLevel.Unsafe
     {
         internal static unsafe void Clear(UnsafeParallelHashMapData* data)
         {
-            UnsafeUtility.MemSet(data->buckets, 0xff, (data->bucketCapacityMask + 1) * 4);
-            UnsafeUtility.MemSet(data->next, 0xff, (data->keyCapacity) * 4);
+            UnsafeUtility.MemSet(data->buckets, 0xff, ((long)data->bucketCapacityMask + 1) * 4);
+            UnsafeUtility.MemSet(data->next, 0xff, ((long)data->keyCapacity) * 4);
 
 #if UNITY_2022_2_14F1_OR_NEWER
             int maxThreadCount = JobsUtility.ThreadIndexCount;
@@ -696,6 +712,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             TValue tempItem;
             NativeParallelMultiHashMapIterator<TKey> tempIt;
+
             if (isMultiHashMap || !TryGetFirstValueAtomic(data, key, out tempItem, out tempIt))
             {
                 // Allocate an entry from the free list
@@ -724,6 +741,11 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                     if (data->firstFreeTLS[0] < 0)
                     {
+                        if (data->keyCapacity == UnsafeParallelHashMapData.kMaxCapacity)
+                        {
+                            return false;
+                        }
+
                         int newCap = UnsafeParallelHashMapData.GrowCapacity(data->keyCapacity);
                         UnsafeParallelHashMapData.ReallocateHashMap<TKey, TValue>(data, newCap, UnsafeParallelHashMapData.GetBucketSize(newCap), allocation);
                     }
@@ -755,6 +777,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 return true;
             }
+
             return false;
         }
 
@@ -1028,7 +1051,7 @@ namespace Unity.Collections.LowLevel.Unsafe
                     throw new ArgumentException("must be valid");
 #endif
 
-                return ref UnsafeUtility.AsRef<TValue>(m_Buffer->values + UnsafeUtility.SizeOf<TValue>() * m_Index);
+                return ref UnsafeUtility.AsRef<TValue>(m_Buffer->values + sizeof(TValue) * m_Index);
             }
         }
 
@@ -1185,6 +1208,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeParallelHashMapData.kMaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>
@@ -1212,9 +1240,21 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="key">The key to add.</param>
         /// <param name="item">The value to add.</param>
         /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is not enough Capacity to contain the added element, and the container can't be resized.</exception>
         public void Add(TKey key, TValue item)
         {
-            UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
+            var added = UnsafeParallelHashMapBase<TKey, TValue>.TryAdd(m_Buffer, key, item, false, m_AllocatorLabel);
+
+            if (!added)
+            {
+                if (m_Buffer->keyCapacity == UnsafeParallelHashMapData.kMaxCapacity)
+                {
+                    ThrowAtMaxCapacity();
+                    return;
+                }
+
+                ThrowKeyAlreadyAdded(key);
+            }
         }
 
         /// <summary>
@@ -1366,6 +1406,18 @@ namespace Unity.Collections.LowLevel.Unsafe
         public ReadOnly AsReadOnly()
         {
             return new ReadOnly(this);
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        internal static void ThrowKeyAlreadyAdded(in TKey key)
+        {
+            throw new ArgumentException($"An item with the same key has already been added: {key}");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        void ThrowAtMaxCapacity()
+        {
+            throw new InvalidOperationException($"Capacity is insufficient, and resize would fail (Capacity {Capacity} / {MaxCapacity}, Count {Count()})!");
         }
 
         /// <summary>
@@ -1610,6 +1662,42 @@ namespace Unity.Collections.LowLevel.Unsafe
             {
                 Assert.IsTrue(threadIndexOverride >= 0);
                 return UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, threadIndexOverride);
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+            /// <exception cref="InvalidOperationException">If the underlying collection is full (as it cannot be resized within a parallel writer).</exception>
+            public void Add(TKey key, TValue item)
+            {
+                Assert.IsTrue(m_ThreadIndex >= 0);
+                bool result = UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, m_ThreadIndex);
+                if (!result)
+                    ThrowKeyAlreadyAdded(key);
+            }
+
+            /// <summary>
+            /// Adds a new key-value pair.
+            /// </summary>
+            /// <remarks>If the key is already present, this method throws without modifying the hash map.</remarks>
+            /// <param name="key">The key to add.</param>
+            /// <param name="item">The value to add.</param>
+            /// <param name="threadIndexOverride">The thread index which must be set by a field from a job struct with the <see cref="NativeSetThreadIndexAttribute"/> attribute.</param>
+            /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+            /// <exception cref="InvalidOperationException">If the underlying collection is full (as it cannot be resized within a parallel writer).</exception>
+            public void Add(TKey key, TValue item, int threadIndexOverride)
+            {
+                Assert.IsTrue(m_ThreadIndex >= 0);
+                bool result = UnsafeParallelHashMapBase<TKey, TValue>.TryAddAtomic(m_Buffer, key, item, threadIndexOverride);
+
+                if (!result)
+                {
+                    ThrowKeyAlreadyAdded(key);
+                }
             }
         }
 

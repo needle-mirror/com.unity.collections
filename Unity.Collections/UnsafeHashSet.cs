@@ -30,7 +30,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, 0, HashMapHelper<T>.kMinimumCapacity, allocator);
+            m_Data.Init(initialCapacity, 0, HashMapHelper<T>.kMinCapacity, allocator);
         }
 
         /// <summary>
@@ -64,6 +64,11 @@ namespace Unity.Collections.LowLevel.Unsafe
             readonly get => m_Data.Capacity;
             set => m_Data.Resize(value);
         }
+
+        /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = HashMapHelper<T>.kMaxCapacity;
 
         /// <summary>
         /// Whether this set has been allocated (and not yet deallocated).

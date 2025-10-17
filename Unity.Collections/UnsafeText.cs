@@ -198,6 +198,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = int.MaxValue - 1;
+
+        /// <summary>
         /// The current length in bytes of this string.
         /// </summary>
         /// <remarks>

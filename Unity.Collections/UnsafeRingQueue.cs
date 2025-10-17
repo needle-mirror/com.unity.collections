@@ -67,6 +67,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = int.MaxValue;
+
+        /// <summary>
         /// Initializes and returns an instance of UnsafeRingQueue which aliasing an existing buffer.
         /// </summary>
         /// <param name="ptr">An existing buffer to set as the internal buffer.</param>
@@ -94,7 +99,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             m_Filled = 0;
             m_Write = 0;
             m_Read = 0;
-            var sizeInBytes = capacity * UnsafeUtility.SizeOf<T>();
+            long sizeInBytes = (long)capacity * sizeof(T);
             Ptr = (T*)Memory.Unmanaged.Allocate(sizeInBytes, 16, allocator);
 
             if (options == NativeArrayOptions.ClearMemory)

@@ -93,6 +93,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeParallelHashMapData.kMaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>

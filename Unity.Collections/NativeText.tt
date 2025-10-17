@@ -243,6 +243,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeText.MaxCapacity;
+
+        /// <summary>
         /// Attempt to set the length in bytes of this string.
         /// </summary>
         /// <param name="newLength">The new length in bytes of the string.</param>

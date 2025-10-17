@@ -105,10 +105,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <value>True if the container is empty or the container has not been constructed.</value>
         public readonly bool IsEmpty => !IsCreated || Length == 0;
 
+        /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = int.MaxValue - 63;
+
         void Realloc(int capacityInBits)
         {
-            var newCapacity = Bitwise.AlignUp(capacityInBits, 64);
-            var sizeInBytes = newCapacity / 8;
+            int newCapacity = (int)math.min(Bitwise.AlignUp((long)capacityInBits, 64), int.MaxValue-63);
+            int sizeInBytes = newCapacity / 8;
 
             ulong* newPointer = null;
 
@@ -162,7 +167,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="capacityInBits">The new capacity.</param>
         public void SetCapacity(int capacityInBits)
         {
-            CollectionHelper.CheckCapacityInRange(capacityInBits, Length);
+            CollectionHelper.CheckCapacityInRange(capacityInBits, int.MaxValue-63, Length);
 
             if (Capacity == capacityInBits)
             {

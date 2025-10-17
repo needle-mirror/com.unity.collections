@@ -116,6 +116,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = int.MaxValue;
+
+        /// <summary>
         /// The element at an index.
         /// </summary>
         /// <param name="index">An index.</param>
@@ -181,7 +186,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (options == NativeArrayOptions.ClearMemory && Ptr != null)
             {
                 var sizeOf = sizeof(T);
-                UnsafeUtility.MemClear(Ptr, Capacity * sizeOf);
+                UnsafeUtility.MemClear(Ptr, (long)m_capacity * sizeOf);
             }
         }
 
@@ -321,7 +326,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="options">Whether newly allocated bytes should be zeroed out.</param>
         public void Resize(int length, NativeArrayOptions options = NativeArrayOptions.UninitializedMemory)
         {
-            var oldLength = m_length;
+            long oldLength = m_length;
 
             if (length > Capacity)
             {
@@ -332,7 +337,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             if (options == NativeArrayOptions.ClearMemory && oldLength < length)
             {
-                var num = length - oldLength;
+                long num = length - oldLength;
                 byte* ptr = (byte*)Ptr;
                 var sizeOf = sizeof(T);
                 UnsafeUtility.MemClear(ptr + oldLength * sizeOf, num * sizeOf);
@@ -379,7 +384,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             var sizeOf = sizeof(T);
             var newCapacity = math.max(capacity, CollectionHelper.CacheLineSize / sizeOf);
-            newCapacity = math.ceilpow2(newCapacity);
+            long ceilpow2 = math.ceilpow2((long)newCapacity);
+            newCapacity = (int)math.min(MaxCapacity, ceilpow2);
 
             if (newCapacity == Capacity)
             {
@@ -474,7 +480,8 @@ namespace Unity.Collections.LowLevel.Unsafe
                 m_length++;
                 return;
             }
-            
+
+            CheckResize(idx, 1, MaxCapacity);
             Resize(idx + 1);
             Ptr[idx] = value;
         }
@@ -491,8 +498,9 @@ namespace Unity.Collections.LowLevel.Unsafe
         {
             var idx = m_length;
 
-            if (m_length + count > Capacity)
+            if (m_length > Capacity - count)
             {
+                CheckResize(m_length, count, MaxCapacity);
                 Resize(m_length + count);
             }
             else
@@ -529,8 +537,10 @@ namespace Unity.Collections.LowLevel.Unsafe
         public void AddReplicate(in T value, int count)
         {
             var idx = m_length;
-            if (m_length + count > Capacity)
+
+            if (m_length > Capacity - count)
             {
+                CheckResize(m_length, count, MaxCapacity);
                 Resize(m_length + count);
             }
             else
@@ -579,8 +589,9 @@ namespace Unity.Collections.LowLevel.Unsafe
 
             var oldLength = m_length;
 
-            if (m_length + items > Capacity)
+            if (m_length > Capacity - items)
             {
+                CheckResize(m_length, items, MaxCapacity);
                 Resize(m_length + items);
             }
             else
@@ -1117,6 +1128,18 @@ namespace Unity.Collections.LowLevel.Unsafe
             if (Capacity < index + length)
             {
                 throw new InvalidOperationException($"AddNoResize assumes that list capacity is sufficient (Capacity {Capacity}, Length {Length}), requested length {length}!");
+            }
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void CheckResize(int currentLength, int numElements, int maxCapacity)
+        {
+            long newLength = (long)currentLength + numElements;
+
+            if (maxCapacity < newLength)
+            {
+                throw new InvalidOperationException($"Capacity is insufficient, and resize would fail (Capacity {maxCapacity}, Length {currentLength}), requested length {newLength}!");
             }
         }
     }

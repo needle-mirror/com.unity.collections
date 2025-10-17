@@ -41,7 +41,7 @@ namespace Unity.Collections
         /// <param name="allocator">The allocator to use.</param>
         public NativeHashSet(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
-            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, HashMapHelper<T>.kMinimumCapacity, allocator);
+            m_Data = HashMapHelper<T>.Alloc(initialCapacity, 0, HashMapHelper<T>.kMinCapacity, allocator);
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator);
@@ -107,6 +107,11 @@ namespace Unity.Collections
                 m_Data->Resize(value);
             }
         }
+
+        /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = HashMapHelper<T>.kMaxCapacity;
 
         /// <summary>
         /// Whether this set has been allocated (and not yet deallocated).

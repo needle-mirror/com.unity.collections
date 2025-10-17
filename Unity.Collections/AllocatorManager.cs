@@ -265,6 +265,9 @@ namespace Unity.Collections
         /// <summary>
         /// Used for calling an allocator function.
         /// </summary>
+        /// <param name="allocatorState">IntPtr to allocator's custom state.</param>
+        /// <param name="block">The block to allocate.</param>
+        /// <returns></returns>
         public delegate int TryFunction(IntPtr allocatorState, ref Block block);
 
         /// <summary>

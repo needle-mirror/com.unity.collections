@@ -118,7 +118,6 @@ namespace Unity.Collections
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
             CollectionHelper.CheckAllocator(allocator.Handle);
             CheckInitialCapacity(initialCapacity);
-            CheckTotalSize(initialCapacity, totalSize);
 
             m_Safety = CollectionHelper.CreateSafetyHandle(allocator.Handle);
             CollectionHelper.InitNativeContainer<T>(m_Safety);
@@ -239,6 +238,11 @@ namespace Unity.Collections
                 m_ListData->Capacity = value;
             }
         }
+
+        /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeList<T>.MaxCapacity;
 
         /// <summary>
         /// Returns the internal unsafe list.
@@ -726,7 +730,7 @@ namespace Unity.Collections
             AtomicSafetyHandle.CheckReadAndThrow(m_Safety);
             AtomicSafetyHandle.CheckWriteAndThrow(result.m_Safety);
 #endif
-            UnsafeUtility.MemCpy((byte*)result.m_Buffer, (byte*)m_ListData->Ptr, Length * UnsafeUtility.SizeOf<T>());
+            UnsafeUtility.MemCpy((byte*)result.m_Buffer, (byte*)m_ListData->Ptr, (long)Length * sizeof(T));
             return result;
         }
 
@@ -959,7 +963,7 @@ namespace Unity.Collections
 
                 var sizeOf = sizeof(T);
                 void* dst = (byte*)ListData->Ptr + idx * sizeOf;
-                UnsafeUtility.MemCpy(dst, ptr, count * sizeOf);
+                UnsafeUtility.MemCpy(dst, ptr, (long)count * sizeOf);
             }
 
             /// <summary>
@@ -994,16 +998,6 @@ namespace Unity.Collections
         {
             if (initialCapacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Capacity must be >= 0");
-        }
-
-        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
-        static void CheckTotalSize(int initialCapacity, long totalSize)
-        {
-            // Make sure we cannot allocate more than int.MaxValue (2,147,483,647 bytes)
-            // because the underlying UnsafeUtility.Malloc is expecting a int.
-            // TODO: change UnsafeUtility.Malloc to accept a UIntPtr length instead to match C++ API
-            if (totalSize > int.MaxValue)
-                throw new ArgumentOutOfRangeException(nameof(initialCapacity), $"Capacity * sizeof(T) cannot exceed {int.MaxValue} bytes");
         }
 
         [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]

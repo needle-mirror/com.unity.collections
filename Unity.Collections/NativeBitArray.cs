@@ -180,6 +180,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeBitArray.MaxCapacity;
+
+        /// <summary>
         /// Sets all the bits to 0.
         /// </summary>
         public void Clear()

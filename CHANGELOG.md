@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.6.3] - 2025-10-17
+
+### Added
+
+* `MaxCapacity` constant to define the maximum number of elements each container can hold.
+
+### Changed
+
+* Updated the Burst dependency to version 1.8.25
+
+### Fixed
+
+* Integer overflow when calculating memory size in bytes of containers that have a large number of elements.
+
+
 ## [2.6.2] - 2025-09-05
 
 

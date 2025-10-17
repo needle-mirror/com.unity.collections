@@ -248,7 +248,7 @@ namespace Unity.Collections
             array.m_AllocatorLabel = allocator.IsAutoDispose ? Allocator.None : allocator.ToAllocator;
             if (options == NativeArrayOptions.ClearMemory)
             {
-                UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
+                UnsafeUtility.MemClear(array.m_Buffer, (long)array.m_Length * sizeof(T));
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
@@ -275,7 +275,7 @@ namespace Unity.Collections
             array.m_AllocatorLabel = allocator.IsAutoDispose ? Allocator.None : allocator.ToAllocator;
             if (options == NativeArrayOptions.ClearMemory)
             {
-                UnsafeUtility.MemClear(array.m_Buffer, array.m_Length * UnsafeUtility.SizeOf<T>());
+                UnsafeUtility.MemClear(array.m_Buffer, (long)array.m_Length * sizeof(T));
             }
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS

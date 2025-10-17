@@ -135,6 +135,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeParallelMultiHashMap<TKey, TValue>.MaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>

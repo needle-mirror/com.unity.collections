@@ -80,6 +80,11 @@ namespace Unity.Collections
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = UnsafeRingQueue<T>.MaxCapacity;
+
+        /// <summary>
         /// Initializes and returns an instance of NativeRingQueue.
         /// </summary>
         /// <param name="capacity">The capacity.</param>

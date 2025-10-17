@@ -36,14 +36,15 @@ namespace Unity.Collections.LowLevel.Unsafe
         internal int SizeOfTValue;
         internal AllocatorManager.AllocatorHandle Allocator;
 
-        internal const int kMinimumCapacity = 256;
+        internal const int kMinCapacity = 256;
+        internal const int kMaxCapacity = 2 << 28;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int CalcCapacityCeilPow2(int capacity)
         {
             capacity = math.max(math.max(1, Count), capacity);
-            var newCapacity = math.max(capacity, 1 << Log2MinGrowth);
-            var result = math.ceilpow2(newCapacity);
+            int newCapacity = math.max(capacity, 1 << Log2MinGrowth);
+            int result = math.ceilpow2(newCapacity);
 
             return result;
         }
@@ -67,8 +68,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal void Clear()
         {
-            UnsafeUtility.MemSet(Buckets, 0xff, BucketCapacity * sizeof(int));
-            UnsafeUtility.MemSet(Next, 0xff, Capacity * sizeof(int));
+            UnsafeUtility.MemSet(Buckets, 0xff, (long)BucketCapacity * sizeof(int));
+            UnsafeUtility.MemSet(Next, 0xff, (long)Capacity * sizeof(int));
 
             Count = 0;
             FirstFreeIdx = -1;
@@ -77,6 +78,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal void Init(int capacity, int sizeOfValueT, int minGrowth, AllocatorManager.AllocatorHandle allocator)
         {
+            CheckCapacity(capacity);
+
             Count = 0;
             Log2MinGrowth = (byte)(32 - math.lzcnt(math.max(1, minGrowth) - 1));
 
@@ -86,8 +89,8 @@ namespace Unity.Collections.LowLevel.Unsafe
             Allocator = allocator;
             SizeOfTValue = sizeOfValueT;
 
-            int keyOffset, nextOffset, bucketOffset;
-            int totalSize = CalculateDataSize(capacity, BucketCapacity, sizeOfValueT, out keyOffset, out nextOffset, out bucketOffset);
+            long keyOffset, nextOffset, bucketOffset;
+            long totalSize = CalculateDataSize(capacity, BucketCapacity, sizeOfValueT, out keyOffset, out nextOffset, out bucketOffset);
 
             Ptr = (byte*)Memory.Unmanaged.Allocate(totalSize, JobsUtility.CacheLineSize, allocator);
             Keys = (TKey*)(Ptr + keyOffset);
@@ -129,6 +132,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal void Resize(int newCapacity)
         {
+            CheckCapacity(newCapacity);
+
             newCapacity = math.max(newCapacity, Count);
             var newBucketCapacity = math.ceilpow2(GetBucketSize(newCapacity));
 
@@ -142,8 +147,8 @@ namespace Unity.Collections.LowLevel.Unsafe
 
         internal void ResizeExact(int newCapacity, int newBucketCapacity)
         {
-            int keyOffset, nextOffset, bucketOffset;
-            int totalSize = CalculateDataSize(newCapacity, newBucketCapacity, SizeOfTValue, out keyOffset, out nextOffset, out bucketOffset);
+            long keyOffset, nextOffset, bucketOffset;
+            long totalSize = CalculateDataSize(newCapacity, newBucketCapacity, SizeOfTValue, out keyOffset, out nextOffset, out bucketOffset);
 
             var oldPtr = Ptr;
             var oldKeys = Keys;
@@ -178,16 +183,16 @@ namespace Unity.Collections.LowLevel.Unsafe
             ResizeExact(capacity, GetBucketSize(capacity));
         }
 
-        internal static int CalculateDataSize(int capacity, int bucketCapacity, int sizeOfTValue, out int outKeyOffset, out int outNextOffset, out int outBucketOffset)
+        internal static long CalculateDataSize(int capacity, int bucketCapacity, int sizeOfTValue, out long outKeyOffset, out long outNextOffset, out long outBucketOffset)
         {
-            var sizeOfTKey = sizeof(TKey);
-            var sizeOfInt = sizeof(int);
+            long sizeOfTKey = sizeof(TKey);
+            long sizeOfInt = sizeof(int);
 
-            var valuesSize = sizeOfTValue * capacity;
-            var keysSize = sizeOfTKey * capacity;
-            var nextSize = sizeOfInt * capacity;
-            var bucketSize = sizeOfInt * bucketCapacity;
-            var totalSize = valuesSize + keysSize + nextSize + bucketSize;
+            long valuesSize = (long)sizeOfTValue * capacity;
+            long keysSize = sizeOfTKey * capacity;
+            long nextSize = sizeOfInt * capacity;
+            long bucketSize = sizeOfInt * bucketCapacity;
+            long totalSize = valuesSize + keysSize + nextSize + bucketSize;
 
             outKeyOffset = 0 + valuesSize;
             outNextOffset = outKeyOffset + keysSize;
@@ -229,6 +234,11 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 if (AllocatedIndex >= Capacity && FirstFreeIdx < 0)
                 {
+                    if (Capacity == kMaxCapacity)
+                    {
+                        return -1;
+                    }
+
                     int newCap = CalcCapacityCeilPow2(Capacity + (1 << Log2MinGrowth));
                     Resize(newCap);
                 }
@@ -257,6 +267,7 @@ namespace Unity.Collections.LowLevel.Unsafe
 
                 return idx;
             }
+
             return -1;
         }
 
@@ -514,6 +525,16 @@ namespace Unity.Collections.LowLevel.Unsafe
                 throw new InvalidOperationException($"Internal HashMap error. idx {idx}");
             }
         }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void CheckCapacity(int capacity)
+        {
+            if (capacity > kMaxCapacity)
+            {
+                throw new ArgumentException($"Capacity {capacity} value too large. Maximum capacity is {kMaxCapacity}.");
+            }
+        }
     }
 
     /// <summary>
@@ -541,7 +562,7 @@ namespace Unity.Collections.LowLevel.Unsafe
         public UnsafeHashMap(int initialCapacity, AllocatorManager.AllocatorHandle allocator)
         {
             m_Data = default;
-            m_Data.Init(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinimumCapacity, allocator);
+            m_Data.Init(initialCapacity, sizeof(TValue), HashMapHelper<TKey>.kMinCapacity, allocator);
         }
 
         /// <summary>
@@ -619,6 +640,11 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
+        /// The maximum number of elements this type of container can hold.
+        /// </summary>
+        public const int MaxCapacity = HashMapHelper<TKey>.kMaxCapacity;
+
+        /// <summary>
         /// Removes all key-value pairs.
         /// </summary>
         /// <remarks>Does not change the capacity.</remarks>
@@ -653,14 +679,23 @@ namespace Unity.Collections.LowLevel.Unsafe
         /// <param name="key">The key to add.</param>
         /// <param name="item">The value to add.</param>
         /// <exception cref="ArgumentException">Thrown if the key was already present.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is not enough Capacity to contain the added element, and the container can't be resized.</exception>
         public void Add(TKey key, TValue item)
         {
-            var result = TryAdd(key, item);
-
-            if (!result)
+            var idx = m_Data.TryAdd(key);
+            if (-1 != idx)
             {
-                ThrowKeyAlreadyAdded(key);
+                UnsafeUtility.WriteArrayElement(m_Data.Ptr, idx, item);
+                return;
             }
+
+            if (Capacity == MaxCapacity)
+            {
+                ThrowAtMaxCapacity();
+                return;
+            }
+
+            ThrowKeyAlreadyAdded(key);
         }
 
         /// <summary>
@@ -996,6 +1031,12 @@ namespace Unity.Collections.LowLevel.Unsafe
         void ThrowKeyAlreadyAdded(TKey key)
         {
             throw new ArgumentException($"An item with the same key has already been added: {key}");
+        }
+
+        [Conditional("ENABLE_UNITY_COLLECTIONS_CHECKS"), Conditional("UNITY_DOTS_DEBUG")]
+        void ThrowAtMaxCapacity()
+        {
+            throw new InvalidOperationException($"Capacity is insufficient, and resize would fail (Capacity {Capacity} / {MaxCapacity}, Count {Count})!");
         }
     }
 
