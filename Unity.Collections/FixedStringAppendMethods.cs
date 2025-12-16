@@ -411,6 +411,12 @@ namespace Unity.Collections
         public static CopyError CopyFromTruncated<T>(ref this T fs, string s)
             where T : unmanaged, INativeList<byte>, IUTF8Bytes
         {
+            if (s == null)
+            {
+                fs.Length = 0;
+                return CopyError.None;
+            }
+
             int utf8Len;
             fixed (char* chars = s)
             {

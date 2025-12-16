@@ -1,13 +1,13 @@
 {
   "name": "com.unity.collections",
   "displayName": "Collections",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "unity": "2022.3",
   "unityRelease": "20f1",
   "dependencies": {
     "com.unity.burst": "1.8.25",
     "com.unity.mathematics": "1.3.2",
-    "com.unity.nuget.mono-cecil": "1.11.5",
+    "com.unity.nuget.mono-cecil": "1.11.6",
     "com.unity.test-framework": "1.4.6",
     "com.unity.test-framework.performance": "3.0.3"
   },
@@ -18,15 +18,15 @@
     "unity"
   ],
   "_upm": {
-    "changelog": "### Added\n\n* `MaxCapacity` constant to define the maximum number of elements each container can hold.\n\n### Changed\n\n* Updated the Burst dependency to version 1.8.25\n\n### Fixed\n\n* Integer overflow when calculating memory size in bytes of containers that have a large number of elements."
+    "changelog": "### Changed\n\n* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.6`\n* Updated the `com.unity.entities` dependency to version `1.4.4`\n\n### Fixed\n\n* Issue when `FixedStringNBytes` is compared to managed `String` to avoid use implicit cast."
   },
   "upmCi": {
-    "footprint": "2f8ba4f6f87e9a79b64d29608466749cd28e280a"
+    "footprint": "476cdab118cb2b22179abab49f8b0fec2d967cb4"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.collections@2.6/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/dots.git",
     "type": "git",
-    "revision": "24a86959758286a83e6dd55b789f094a23750872"
+    "revision": "57e44ce5b0bcde27ee6efefec8150a8a9726b461"
   }
 }

@@ -725,6 +725,27 @@ namespace Unity.Collections
         }
     }
 #>
+
+        /// <summary>
+        /// Returns true if a FixedString<#=BYTES#>Bytes and another string are equal.
+        /// </summary>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A `FixedString<#=BYTES#>Bytes` to compare for equality.</param>
+        /// <param name="b">A `String` to compare for equality.</param>
+        /// <returns>True if the two strings are equal.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        public static bool operator ==(in FixedString<#=BYTES#>Bytes a, String b) => a == (FixedString<#=BYTES#>Bytes)(b == null ? "" : b);
+
+        /// <summary>
+        /// Returns true if a FixedString<#=BYTES#>Bytes and another string are not equal.
+        /// </summary>
+        /// <remarks>Two strings are equal if they have equal length and all their characters match.</remarks>
+        /// <param name="a">A `FixedString<#=BYTES#>Bytes` to compare for equality.</param>
+        /// <param name="b">A `String` to compare for equality.</param>
+        /// <returns>True if the two strings are not equal.</returns>
+        [ExcludeFromBurstCompatTesting("Takes managed string")]
+        public static bool operator !=(in FixedString<#=BYTES#>Bytes a, String b) => a != (FixedString<#=BYTES#>Bytes)b;
+
         /// <summary>
         /// Returns a new FixedString<#=BYTES#>Bytes that is a copy of another string.
         /// </summary>

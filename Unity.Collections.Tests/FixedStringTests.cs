@@ -428,6 +428,14 @@ namespace Unity.Collections.Tests
             FixedStringN b = "banana";
             Assert.AreEqual(false, a.Equals(b));
             Assert.AreEqual(true, !b.Equals(a));
+
+            {
+                var string40Length = new string('a', 40);
+                var fixedString = new FixedString64Bytes(string40Length);
+                Assert.AreEqual(true, string40Length == fixedString);
+                Assert.AreEqual(true, fixedString.Equals(string40Length));
+                Assert.AreEqual(true, fixedString == string40Length);
+            }
         }
 
         [Test]

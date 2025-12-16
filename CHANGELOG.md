@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.6.4] - 2025-12-16
+
+### Changed
+
+* Updated the `com.unity.nuget.mono-cecil` dependency to version `1.11.6`
+* Updated the `com.unity.entities` dependency to version `1.4.4`
+
+### Fixed
+
+* Issue when `FixedStringNBytes` is compared to managed `String` to avoid use implicit cast.
+
+
+
+
 ## [2.6.3] - 2025-10-17
 
 ### Added
