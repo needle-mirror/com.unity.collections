@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
 namespace Unity.Collections
@@ -340,6 +341,14 @@ namespace Unity.Collections
             return endBit;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ushort sar(ushort val, int shift)
+        {
+            short tmp = (short)val;
+            tmp >>= shift;
+            return (ushort)tmp;
+        }
+
         static int FindUpto6bits(ulong* ptr, int beginBit, int endBit, int numBits)
         {
             var bits = (byte*)ptr;
@@ -347,15 +356,16 @@ namespace Unity.Collections
             byte beginMask = (byte)~(0xff << (beginBit & 7));
             byte endMask = (byte)~(0xff >> ((8 - (endBit & 7) & 7)));
 
-            var mask = 1 << numBits - 1;
+            var mask = (1 << numBits) - 1;
 
             for (int begin = beginBit / 8, end = AlignUp(endBit, 8) / 8, i = begin; i < end; ++i)
             {
-                var test = bits[i];
-                test |= i == begin ? beginMask : (byte)0;
-                test |= i == end - 1 ? endMask : (byte)0;
+                ushort test = bits[i];
+                test |= i == begin ? beginMask : (ushort)0;
+                test |= i == end - 1 ? endMask : (ushort)0;
+                test |= 0xff00;
 
-                if (test == 0xff)
+                if (test == 0xffff)
                 {
                     continue;
                 }
@@ -363,7 +373,7 @@ namespace Unity.Collections
                 for (int pos = i * 8, posEnd = pos + 7; pos < posEnd; ++pos)
                 {
                     var tz = tzcnt((byte)(test ^ 0xff));
-                    test >>= tz;
+                    test = sar(test, tz);
 
                     pos += tz;
 
@@ -372,7 +382,7 @@ namespace Unity.Collections
                         return pos;
                     }
 
-                    test >>= 1;
+                    test = sar(test, 1);
                 }
             }
 

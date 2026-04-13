@@ -1,14 +1,25 @@
 # Changelog
 
-## [2.6.5] - 2025-02-16
+## [2.6.6] - 2026-04-13
+
+### Changed
+
+* Updated the `com.unity.burst` dependency to version `1.8.28`
+
+
+### Fixed
+
+* NativeBitArray and UnsafeBitArray now correctly find contiguous sequences of 0-bits up to 6 bits in length.
+
+### Security
+
+## [2.6.5] - 2026-02-16
 
 
 ### Changed
 
 * Updated `com.unity.burst` dependency to version `1.8.27`
 
-
-### Security
 
 ## [2.6.4] - 2025-12-16
 

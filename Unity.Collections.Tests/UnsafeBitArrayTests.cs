@@ -476,6 +476,17 @@ namespace Unity.Collections.Tests
         }
 
         [Test]
+        public unsafe void UnsafeBitArray_Find_IN_105096()
+        {
+            UnsafeBitArray bits = new UnsafeBitArray(64, Allocator.Temp);
+            bits.SetBits(0,  (ulong.MaxValue << 16) | 0b11000001_10101000ul, 64);
+            Assert.AreEqual(9, bits.Find(0, 4));
+            Assert.AreEqual(9, bits.Find(0, 5));
+            Assert.AreEqual(int.MaxValue, bits.Find(0, 6));
+            Assert.AreEqual(int.MaxValue, bits.Find(0, 7));
+        }
+
+        [Test]
         public unsafe void UnsafeBitArray_Find_With_Begin_End()
         {
             var numBits = 512;

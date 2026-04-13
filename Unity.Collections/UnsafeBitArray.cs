@@ -503,12 +503,13 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns the index of the first occurrence in this array of *N* contiguous 0 bits.
+        /// Find a sequence of N contiguous 0 bits in a bit array. To achieve higher performance, it is not guaranteed that the found index is necessarily the first occurrence of such a sequence.
         /// </summary>
+        /// <remarks>The search does not guarantee the earliest occurrence in the array.</remarks>
         /// <remarks>The search is linear.</remarks>
         /// <param name="pos">Index of the bit at which to start searching.</param>
         /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
-        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns -1 if no occurrence is found.</returns>
+        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns int.MaxValue if no occurrence is found.</returns>
         public int Find(int pos, int numBits)
         {
             var count = Length - pos;
@@ -517,13 +518,14 @@ namespace Unity.Collections.LowLevel.Unsafe
         }
 
         /// <summary>
-        /// Returns the index of the first occurrence in this array of a given number of contiguous 0 bits.
+        /// Find a sequence of N contiguous 0 bits in a bit array. To achieve higher performance, it is not guaranteed that the found index is necessarily the first occurrence of such a sequence.
         /// </summary>
+        /// <remarks>The search does not guarantee the earliest occurrence in the array.</remarks>
         /// <remarks>The search is linear.</remarks>
         /// <param name="pos">Index of the bit at which to start searching.</param>
         /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
         /// <param name="count">Number of indexes to consider as the return value.</param>
-        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns -1 if no occurrence is found.</returns>
+        /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns int.MaxValue if no occurrence is found.</returns>
         public int Find(int pos, int count, int numBits)
         {
             CheckArgsPosCount(pos, count, numBits);
@@ -665,7 +667,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <remarks>The search is linear.</remarks>
             /// <param name="pos">Index of the bit at which to start searching.</param>
             /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
-            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns -1 if no occurrence is found.</returns>
+            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) the length of this array. Returns int.MaxValue if no occurrence is found.</returns>
             public readonly int Find(int pos, int numBits)
             {
                 var count = Length - pos;
@@ -680,7 +682,7 @@ namespace Unity.Collections.LowLevel.Unsafe
             /// <param name="pos">Index of the bit at which to start searching.</param>
             /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
             /// <param name="count">Number of indexes to consider as the return value.</param>
-            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns -1 if no occurrence is found.</returns>
+            /// <returns>The index of the first occurrence in this array of `numBits` contiguous 0 bits. Range is pos up to (but not including) `pos + count`. Returns int.MaxValue if no occurrence is found.</returns>
             public readonly int Find(int pos, int count, int numBits)
             {
                 CheckArgsPosCount(pos, count, numBits);

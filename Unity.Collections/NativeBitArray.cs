@@ -338,8 +338,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Finds the first length-*N* contiguous sequence of 0 bits in this bit array.
+        /// Find a sequence of N contiguous 0 bits in a bit array. To achieve higher performance, it is not guaranteed that the found index is necessarily the first occurrence of such a sequence.
         /// </summary>
+        /// <remarks>The search does not guarantee the earliest occurrence in the array.</remarks>
         /// <param name="pos">Index at which to start searching.</param>
         /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
         /// <returns>The index in this array where the sequence is found. The index will be greater than or equal to `pos`.
@@ -351,8 +352,9 @@ namespace Unity.Collections
         }
 
         /// <summary>
-        /// Finds the first length-*N* contiguous sequence of 0 bits in this bit array. Searches only a subsection.
+        /// Find a sequence of N contiguous 0 bits in a bit array. To achieve higher performance, it is not guaranteed that the found index is necessarily the first occurrence of such a sequence.
         /// </summary>
+        /// <remarks>The search does not guarantee the earliest occurrence in the array.</remarks>
         /// <param name="pos">Index at which to start searching.</param>
         /// <param name="numBits">Number of contiguous 0 bits to look for.</param>
         /// <param name="count">Number of bits to search.</param>
